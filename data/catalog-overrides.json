@@ -1,0 +1,156 @@
+{
+  "products": [
+    {
+      "name": "Электропривод для задвижек DN50-200 PN16",
+      "category": "elektroprivody",
+      "subcategory": "elektroprivody-dlya-zadvizhek",
+      "dn": 200,
+      "pn": 16,
+      "controlType": "Электропривод",
+      "priceByRequest": true,
+      "shortDescription": "Электропривод для автоматизации задвижек DN50-200. Поставка в составе комплекта или отдельно."
+    },
+    {
+      "name": "Электропривод для задвижек DN250-600 PN16",
+      "category": "elektroprivody",
+      "subcategory": "elektroprivody-dlya-zadvizhek",
+      "dn": 600,
+      "pn": 16,
+      "controlType": "Электропривод",
+      "priceByRequest": true
+    },
+    {
+      "name": "Электропривод для затворов DN50-200 PN16",
+      "category": "elektroprivody",
+      "subcategory": "elektroprivody-dlya-zatvorov",
+      "dn": 200,
+      "pn": 16,
+      "controlType": "Электропривод",
+      "priceByRequest": true
+    },
+    {
+      "name": "Электропривод для затворов DN250-600 PN16",
+      "category": "elektroprivody",
+      "subcategory": "elektroprivody-dlya-zatvorov",
+      "dn": 600,
+      "pn": 16,
+      "controlType": "Электропривод",
+      "priceByRequest": true
+    },
+    {
+      "name": "Электропривод для клапанов DN50-150 PN16",
+      "category": "elektroprivody",
+      "subcategory": "elektroprivody-dlya-klapanov",
+      "dn": 150,
+      "pn": 16,
+      "controlType": "Электропривод",
+      "priceByRequest": true
+    },
+    {
+      "name": "Электропривод для клапанов DN200-400 PN25",
+      "category": "elektroprivody",
+      "subcategory": "elektroprivody-dlya-klapanov",
+      "dn": 400,
+      "pn": 25,
+      "controlType": "Электропривод",
+      "priceByRequest": true
+    },
+    {
+      "name": "Болт фланцевый M16 DN100 PN16",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "krepezh-bolty",
+      "dn": 100,
+      "pn": 16,
+      "thread": "M16",
+      "material": "Сталь",
+      "connectionType": "Резьбовое",
+      "controlType": "Не требуется",
+      "priceByRequest": true
+    },
+    {
+      "name": "Болт фланцевый M24 DN200 PN25",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "krepezh-bolty",
+      "dn": 200,
+      "pn": 25,
+      "thread": "M24",
+      "material": "Сталь",
+      "connectionType": "Резьбовое",
+      "controlType": "Не требуется",
+      "priceByRequest": true
+    },
+    {
+      "name": "Шпилька фланцевая M20 DN150 PN16",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "krepezh-shpilki",
+      "dn": 150,
+      "pn": 16,
+      "thread": "M20",
+      "material": "Сталь",
+      "connectionType": "Резьбовое",
+      "controlType": "Не требуется",
+      "priceByRequest": true
+    },
+    {
+      "name": "Шпилька фланцевая M30 DN300 PN40",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "krepezh-shpilki",
+      "dn": 300,
+      "pn": 40,
+      "thread": "M30",
+      "material": "Сталь",
+      "connectionType": "Резьбовое",
+      "controlType": "Не требуется",
+      "priceByRequest": true
+    },
+    {
+      "name": "Гайка фланцевая M16 PN16",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "krepezh-gayki",
+      "pn": 16,
+      "thread": "M16",
+      "material": "Сталь",
+      "connectionType": "Резьбовое",
+      "controlType": "Не требуется",
+      "priceByRequest": true
+    },
+    {
+      "name": "Гайка фланцевая M24 PN40",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "krepezh-gayki",
+      "pn": 40,
+      "thread": "M24",
+      "material": "Сталь",
+      "connectionType": "Резьбовое",
+      "controlType": "Не требуется",
+      "priceByRequest": true
+    },
+    {
+      "name": "Прокладка паронитовая ПОН-Б DN100 PN16",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "prokladki-paronit-ponb",
+      "dn": 100,
+      "pn": 16,
+      "material": "Паронит",
+      "priceByRequest": true
+    },
+    {
+      "name": "Прокладка паронитовая ПОН-Б DN100 PN25",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "prokladki-paronit-ponb",
+      "dn": 100,
+      "pn": 25,
+      "material": "Паронит",
+      "priceByRequest": true
+    },
+    {
+      "name": "Прокладка паронитовая ПОН-Б DN100 PN40",
+      "category": "krepezh-i-prokladki",
+      "subcategory": "prokladki-paronit-ponb",
+      "dn": 100,
+      "pn": 40,
+      "material": "Паронит",
+      "priceByRequest": true
+    }
+  ]
+}
