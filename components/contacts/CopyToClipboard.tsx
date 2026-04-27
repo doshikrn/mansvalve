@@ -2,25 +2,28 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Copy } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
-const RESET_MS = 1700;
 const ERROR_MS = 2200;
+const TOAST_MS = 2000;
 
 type CopyToClipboardProps = {
   value: string;
   children: ReactNode;
   /**
    * `default` — small copy icon + underlined value.
-   * `minimal` — underlined value only; feedback is the same (badge below, in document flow).
+   * `minimal` — underlined value only.
+   * Success feedback: fixed-position toast (see root `ToasterClient`), not inline.
    */
   variant?: "default" | "minimal";
-  copiedText?: string;
   className?: string;
   kind?: "phone" | "email";
   "aria-label"?: string;
   title?: string;
+  /** Shown in toast: `Скопировано: {messageForCopyToast}`. Defaults to `value`. */
+  messageForCopyToast?: string;
 };
 
 async function copyTextToClipboard(text: string): Promise<boolean> {
@@ -48,32 +51,21 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
   }
 }
 
-function CopiedBadge({ text }: { text: string }) {
-  return (
-    <span
-      role="status"
-      aria-live="polite"
-      className="shrink-0 select-none rounded-md border border-emerald-200/90 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-emerald-800 shadow-sm"
-    >
-      {text}
-    </span>
-  );
-}
-
 /**
- * Click copies `value`. Success feedback: small «Скопировано» badge in normal flow, directly under the value (no fixed/absolute to viewport).
+ * Click copies `value` and shows a **toast** (bottom-right): «Скопировано: …».
+ * No inline badges; layout in header/footer is unchanged.
  */
 export function CopyToClipboard({
   value,
   children,
   variant = "default",
-  copiedText = "Скопировано",
   className,
   kind,
   "aria-label": ariaLabel,
   title,
+  messageForCopyToast,
 }: CopyToClipboardProps) {
-  const [phase, setPhase] = useState<"idle" | "copied" | "error">("idle");
+  const [errorFlash, setErrorFlash] = useState(false);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const defaultTitle = title ?? "Скопировать в буфер обмена";
@@ -106,6 +98,11 @@ export function CopyToClipboard({
     }
   }, [kind, value]);
 
+  const showSuccessToast = useCallback(() => {
+    const display = (messageForCopyToast ?? value).trim();
+    toast.success(`Скопировано: ${display}`, { duration: TOAST_MS });
+  }, [messageForCopyToast, value]);
+
   const handleClick = useCallback(async () => {
     if (resetTimer.current) {
       clearTimeout(resetTimer.current);
@@ -113,20 +110,17 @@ export function CopyToClipboard({
     }
     const ok = await copyTextToClipboard(value);
     if (ok) {
-      setPhase("copied");
       if (kind) runAnalytics();
-      resetTimer.current = setTimeout(() => {
-        setPhase("idle");
-        resetTimer.current = null;
-      }, RESET_MS);
+      showSuccessToast();
     } else {
-      setPhase("error");
+      setErrorFlash(true);
+      toast.error("Не удалось скопировать", { duration: ERROR_MS });
       resetTimer.current = setTimeout(() => {
-        setPhase("idle");
+        setErrorFlash(false);
         resetTimer.current = null;
       }, ERROR_MS);
     }
-  }, [value, kind, runAnalytics]);
+  }, [value, kind, runAnalytics, showSuccessToast]);
 
   useEffect(
     () => () => {
@@ -137,70 +131,45 @@ export function CopyToClipboard({
 
   if (variant === "minimal") {
     return (
-      <span className="inline-flex max-w-full min-w-0 flex-col items-start gap-1 self-start">
-        <button
-          type="button"
-          onClick={handleClick}
-          className={cn(
-            "group max-w-full min-w-0 rounded-md text-left transition-colors",
-            "inline-flex focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
-            "cursor-pointer",
-            phase === "error" && "text-amber-800",
-            className,
-          )}
-          title={defaultTitle}
-          aria-label={defaultAria}
-        >
-          {phase === "error" ? (
-            <span className="text-xs font-medium">Ошибка копирования</span>
-          ) : (
-            <span className="min-w-0 border-b border-dotted border-slate-300 group-hover:border-blue-500 group-hover:text-blue-800">
-              {children}
-            </span>
-          )}
-        </button>
-        {phase === "copied" && <CopiedBadge text={copiedText} />}
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex max-w-full min-w-0 flex-col items-start gap-1 self-start">
       <button
         type="button"
         onClick={handleClick}
         className={cn(
-          "group inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md text-left transition-colors",
-          "cursor-pointer hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
-          phase === "error" && "text-amber-800",
+          "group min-w-0 max-w-full rounded-md text-left transition-colors",
+          "inline-flex focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
+          "cursor-pointer",
+          errorFlash && "text-amber-800",
           className,
         )}
         title={defaultTitle}
         aria-label={defaultAria}
       >
-        {phase === "error" ? (
-          <span className="text-xs font-medium">Ошибка копирования</span>
-        ) : (
-          <span className="inline-flex min-w-0 items-center gap-1.5">
-            <Copy
-              className={cn(
-                "h-3.5 w-3.5 shrink-0 text-slate-400",
-                phase === "copied" && "text-emerald-600",
-              )}
-              aria-hidden="true"
-            />
-            <span
-              className={cn(
-                "min-w-0 underline decoration-slate-300 decoration-dotted underline-offset-2 group-hover:decoration-blue-600",
-                phase === "copied" && "text-emerald-800 decoration-emerald-200",
-              )}
-            >
-              {children}
-            </span>
-          </span>
-        )}
+        <span className="min-w-0 border-b border-dotted border-slate-300 group-hover:border-blue-500 group-hover:text-blue-800">
+          {children}
+        </span>
       </button>
-      {phase === "copied" && <CopiedBadge text={copiedText} />}
-    </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        "group inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md text-left transition-colors",
+        "cursor-pointer hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
+        errorFlash && "text-amber-800",
+        className,
+      )}
+      title={defaultTitle}
+      aria-label={defaultAria}
+    >
+      <span className="inline-flex min-w-0 items-center gap-1.5">
+        <Copy className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
+        <span className="min-w-0 underline decoration-slate-300 decoration-dotted underline-offset-2 group-hover:decoration-blue-600">
+          {children}
+        </span>
+      </span>
+    </button>
   );
 }

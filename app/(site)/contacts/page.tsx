@@ -178,6 +178,7 @@ export default async function ContactsPage() {
                         <CopyToClipboard
                           variant="minimal"
                           value={copy.value}
+                          messageForCopyToast={line}
                           kind={copy.kind}
                           className="font-medium text-slate-900"
                         >

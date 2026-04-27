@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { Suspense } from "react";
 import "./globals.css";
+import { ToasterClient } from "@/components/providers/ToasterClient";
 import { GlobalClickTracker } from "@/components/analytics/GlobalClickTracker";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -82,6 +83,7 @@ export default function RootLayout({
         )}
         <JsonLd id="organization-jsonld" data={organizationJsonLd} />
         <JsonLd id="website-jsonld" data={webSiteJsonLd} />
+        <ToasterClient />
         <GlobalClickTracker />
         <Suspense>
           <PageViewTracker />

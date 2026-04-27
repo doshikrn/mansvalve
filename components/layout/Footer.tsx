@@ -91,6 +91,7 @@ export async function Footer() {
                   <CopyToClipboard
                     variant="minimal"
                     value={COMPANY.phoneE164}
+                    messageForCopyToast={COMPANY.phoneDisplay}
                     kind="phone"
                     className="text-slate-600 hover:text-blue-700"
                   >
@@ -104,6 +105,7 @@ export async function Footer() {
                   <CopyToClipboard
                     variant="minimal"
                     value={COMPANY.email}
+                    messageForCopyToast={COMPANY.email}
                     kind="email"
                     className="min-w-0 text-slate-600 hover:text-blue-700"
                   >

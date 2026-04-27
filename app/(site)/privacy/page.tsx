@@ -184,6 +184,7 @@ export default function PrivacyPage() {
               <CopyToClipboard
                 variant="minimal"
                 value={COMPANY.email}
+                messageForCopyToast={COMPANY.email}
                 kind="email"
                 className="text-blue-800"
               >
@@ -196,6 +197,7 @@ export default function PrivacyPage() {
               <CopyToClipboard
                 variant="minimal"
                 value={COMPANY.phoneE164}
+                messageForCopyToast={COMPANY.phoneDisplay}
                 kind="phone"
                 className="text-blue-800"
               >
