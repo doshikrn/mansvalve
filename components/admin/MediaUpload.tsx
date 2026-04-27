@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 /** Remote / protocol-relative URLs use the image loader without host allowlist. */
 function mediaImageNeedsUnoptimized(url: string): boolean {
@@ -90,6 +91,15 @@ export function MediaUpload({
       ),
     [selected],
   );
+
+  useEffect(() => {
+    for (const item of library) {
+      warnInvalidMediaUrl(item.url, "MediaUpload.library");
+    }
+    for (const item of selected) {
+      warnInvalidMediaUrl(item.url, "MediaUpload.selected");
+    }
+  }, [library, selected]);
 
   async function handleFiles(files: FileList | File[]) {
     setError(null);

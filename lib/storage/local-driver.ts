@@ -45,9 +45,11 @@ export class LocalStorageDriver implements StorageDriver {
   }
 
   getPublicUrl(key: string): string {
-    const base = process.env.MEDIA_PUBLIC_BASE_URL?.trim() || PUBLIC_BASE;
     const normalized = normalizeKey(key);
-    return `${base.replace(/\/$/, "")}/${normalized}`;
+    const relativePath = `${PUBLIC_BASE}/${normalized}`;
+    const base = process.env.MEDIA_PUBLIC_BASE_URL?.trim();
+    if (!base) return relativePath;
+    return buildPublicUrlFromBase(base, normalized, relativePath);
   }
 }
 
@@ -79,4 +81,42 @@ function normalizeKey(key: string): string {
     .replace(/\.\.+/g, "")
     .replace(/\\/g, "/")
     .slice(0, 500);
+}
+
+function buildPublicUrlFromBase(
+  base: string,
+  normalizedKey: string,
+  fallbackRelative: string,
+): string {
+  const cleanBase = base.replace(/\/+$/, "");
+
+  // Relative base configured explicitly.
+  if (cleanBase.startsWith("/")) {
+    if (cleanBase.endsWith("/uploads")) {
+      return `${cleanBase}/${normalizedKey}`;
+    }
+    return `${cleanBase}/uploads/${normalizedKey}`;
+  }
+
+  // Absolute origin/path.
+  if (/^https?:\/\//i.test(cleanBase)) {
+    try {
+      const parsed = new URL(cleanBase);
+      const pathPrefix = parsed.pathname.replace(/\/+$/, "");
+      const joinedPath = pathPrefix.endsWith("/uploads")
+        ? `${pathPrefix}/${normalizedKey}`
+        : `${pathPrefix}/uploads/${normalizedKey}`;
+      return `${parsed.origin}${joinedPath}`;
+    } catch {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[media:local] invalid MEDIA_PUBLIC_BASE_URL, fallback to relative", {
+          value: base,
+        });
+      }
+      return fallbackRelative;
+    }
+  }
+
+  // Bare host or custom prefix fallback.
+  return `${cleanBase}${fallbackRelative}`;
 }

@@ -6,6 +6,7 @@ import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
 import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("ru-KZ", {
@@ -28,6 +29,7 @@ export function ProductCard({ product }: ProductCardProps) {
     `${product.categoryName} — ${product.name}` ||
     visual.imageAlt;
   const isRemoteImage = imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
+  warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
     <article className="group flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-md transition-all duration-200">

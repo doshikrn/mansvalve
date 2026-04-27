@@ -6,6 +6,7 @@ import { ChevronRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "@/lib/company";
 import { isDatabaseConfigured } from "@/lib/db/client";
+import { warnInvalidMediaUrl } from "@/lib/media-url";
 import { listPublicActiveCertificates } from "@/lib/services/certificates";
 
 export const metadata: Metadata = {
@@ -84,8 +85,13 @@ export default async function CertificatesPage() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {certificates.map((certificate) => (
-              <article
+            {certificates.map((certificate) => {
+              warnInvalidMediaUrl(
+                certificate.mediaUrl,
+                `CertificatesPage:${certificate.id}`,
+              );
+              return (
+                <article
                 key={certificate.id}
                 className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
               >
@@ -130,7 +136,8 @@ export default async function CertificatesPage() {
                   </div>
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -32,6 +32,7 @@ import {
 } from "@/lib/company";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 /* ── Static generation for all 303 products ──────────────────────── */
 
@@ -196,6 +197,7 @@ export default async function ProductPage({ params }: PageProps) {
     `${product.categoryName} — ${product.name}`;
   const heroImageRemote =
     heroImageSrc.startsWith("http://") || heroImageSrc.startsWith("https://");
+  warnInvalidMediaUrl(heroImageSrc, `ProductPage.hero:${product.slug}`);
 
   const formattedPrice =
     product.price && !product.priceByRequest ? formatPrice(product.price) : null;
