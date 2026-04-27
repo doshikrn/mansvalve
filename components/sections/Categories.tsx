@@ -66,13 +66,15 @@ export async function Categories() {
                 }`}
               >
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-site-border bg-slate-100">
+                  {/* 256px source for ~96×96 CSS box → sharp on 2–3× screens (fill+sizes alone often picks ~128px). */}
                   <Image
                     src={visual.imageSrc}
                     alt={visual.imageAlt}
-                    fill
-                    quality={100}
+                    width={256}
+                    height={256}
+                    quality={90}
                     sizes="96px"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover"
                   />
                 </div>
                 <div className="min-w-0 flex-1">

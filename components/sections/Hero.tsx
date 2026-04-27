@@ -55,27 +55,45 @@ export async function Hero() {
   const statIcons = [Clock, Package, MapPin] as const;
 
   return (
-    <section className="relative overflow-hidden bg-[#070d16] bg-gradient-to-b from-[#0a1524] via-[#0d1522] to-[#111827]">
+    <section className="relative overflow-hidden bg-[#0F1C2E]">
+      {/* Left: cool blue luminance */}
       <div
-        className="absolute inset-0 opacity-[0.055]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_110%_90%_at_-5%_45%,rgba(29,78,216,0.38)_0%,rgba(29,78,216,0.08)_38%,transparent_62%)]"
+        aria-hidden
+      />
+      {/* Right: warm accent (subtle) */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_95%_85%_at_108%_18%,rgba(234,88,12,0.14)_0%,rgba(234,88,12,0.03)_35%,transparent_58%)]"
+        aria-hidden
+      />
+      {/* Soft lift toward center */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_100%,rgba(15,28,46,0.55)_0%,transparent_58%)]"
+        aria-hidden
+      />
+      {/* Grid: very low contrast */}
+      <div
+        className="absolute inset-0 opacity-[0.07]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(148,163,184,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.35) 1px, transparent 1px)",
+            "linear-gradient(rgba(148,163,184,0.28) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.28) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
         }}
+        aria-hidden
+      />
+      {/* Depth: dark vignette / floor */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#070b12]/85 via-transparent to-[#05080e]/95"
+        aria-hidden
       />
       <div
-        className="pointer-events-none absolute -top-28 -right-28 h-[420px] w-[420px] rounded-full bg-zinc-800/25 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute left-[-8%] top-[22%] h-[min(480px,60vh)] w-[min(560px,80vw)] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.85)_0%,transparent_62%)] blur-2xl md:left-[6%]"
-        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(0,0,0,0.35)_0%,transparent_45%)]"
+        aria-hidden
       />
 
       <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
         <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-10 xl:gap-12">
-          <div>
+          <div className="hero-enter-left">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-600/70 bg-zinc-950/90 px-4 py-1.5 text-sm font-medium text-zinc-400">
               <MapPin className="h-4 w-4 shrink-0 text-zinc-500" />
               {heroContent.eyebrow}
@@ -83,7 +101,9 @@ export async function Hero() {
 
             <h1 className="mb-4 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[56px]">
               {heroContent.h1Line1}{" "}
-              <span className="text-[#8fb3d9]">{heroContent.h1Highlight}</span>
+              <span className="bg-gradient-to-r from-[#bfdbfe] via-[#60a5fa] to-[#1d4ed8] bg-clip-text text-transparent">
+                {heroContent.h1Highlight}
+              </span>
             </h1>
 
             <p className="mb-8 max-w-xl text-base leading-relaxed text-zinc-400 sm:text-[17px]">
@@ -99,7 +119,7 @@ export async function Hero() {
               <Button
                 asChild
                 size="lg"
-                className="h-auto min-h-[3.75rem] rounded-full border border-orange-950/80 bg-gradient-to-b from-orange-600 via-orange-700 to-orange-900 px-10 py-[0.875rem] text-lg font-semibold tracking-tight text-white shadow-[0_6px_0_0_rgba(0,0,0,0.45),0_12px_28px_-6px_rgba(0,0,0,0.55)] ring-1 ring-orange-500/25 transition-all duration-200 hover:-translate-y-0.5 hover:from-orange-500 hover:via-orange-600 hover:to-orange-800 hover:shadow-[0_8px_0_0_rgba(0,0,0,0.4),0_16px_36px_-8px_rgba(234,88,12,0.35)] hover:ring-orange-400/40 active:translate-y-0 active:shadow-[0_4px_0_0_rgba(0,0,0,0.5)] sm:min-h-[3.875rem]"
+                className="h-auto min-h-[3.75rem] rounded-full border border-orange-950/80 bg-gradient-to-b from-orange-600 via-orange-700 to-orange-900 px-10 py-[0.875rem] text-lg font-semibold tracking-tight text-white shadow-[0_0_0_1px_rgba(251,146,60,0.35),0_0_40px_-4px_rgba(234,88,12,0.55),0_6px_0_0_rgba(0,0,0,0.45),0_12px_28px_-6px_rgba(0,0,0,0.55)] ring-1 ring-orange-400/30 transition-[transform,box-shadow,filter] duration-300 ease-out hover:-translate-y-1 hover:from-orange-500 hover:via-orange-600 hover:to-orange-800 hover:shadow-[0_0_0_1px_rgba(253,186,116,0.5),0_0_56px_-2px_rgba(234,88,12,0.62),0_10px_0_0_rgba(0,0,0,0.38),0_18px_40px_-10px_rgba(234,88,12,0.42)] hover:ring-orange-300/50 active:translate-y-0 active:scale-[0.98] active:shadow-[0_0_28px_-6px_rgba(234,88,12,0.45),0_4px_0_0_rgba(0,0,0,0.52)] motion-reduce:hover:-translate-y-0 motion-reduce:hover:shadow-[0_0_0_1px_rgba(251,146,60,0.35),0_0_40px_-4px_rgba(234,88,12,0.55),0_6px_0_0_rgba(0,0,0,0.45),0_12px_28px_-6px_rgba(0,0,0,0.55)] motion-reduce:active:scale-100 sm:min-h-[3.875rem]"
               >
                 <a
                   href={buildCompanyWhatsAppUrl(HERO_KP_WHATSAPP_MESSAGE)}
@@ -144,7 +164,7 @@ export async function Hero() {
                 return (
                   <div
                     key={s.label}
-                    className="flex gap-3 sm:flex-1 sm:px-6 first:sm:pl-0 last:sm:pr-0"
+                    className="flex gap-3 rounded-lg transition-colors duration-300 ease-out hover:bg-white/[0.04] motion-reduce:hover:bg-transparent sm:flex-1 sm:px-6 first:sm:pl-0 last:sm:pr-0"
                   >
                     <Icon
                       className="mt-1 h-5 w-5 shrink-0 text-orange-700/85"
@@ -166,7 +186,7 @@ export async function Hero() {
           </div>
 
           <div className="lg:mt-6 lg:translate-y-2">
-            <div className="rounded-2xl border border-zinc-700 bg-[#121a28] p-5 shadow-[0_20px_44px_-24px_rgba(0,0,0,0.75)] sm:p-6">
+            <div className="hero-enter-right rounded-2xl border border-white/10 bg-white/[0.06] p-5 shadow-[0_28px_56px_-28px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.04)_inset] backdrop-blur-xl backdrop-saturate-150 sm:p-6">
               <div className="mb-4 flex items-end justify-between gap-3">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-700/95">
@@ -193,11 +213,11 @@ export async function Hero() {
                   return (
                     <article
                       key={product.id}
-                      className="group relative overflow-hidden rounded-xl border border-zinc-700 bg-[#0c121c] transition-all duration-300 hover:border-zinc-600 hover:shadow-[0_12px_28px_-18px_rgba(0,0,0,0.65)]"
+                      className="group relative overflow-hidden rounded-xl border border-zinc-700 bg-[#0c121c] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-zinc-500/85 hover:shadow-[0_16px_36px_-22px_rgba(0,0,0,0.62)] motion-reduce:hover:translate-y-0 motion-reduce:hover:border-zinc-700 motion-reduce:hover:shadow-none"
                     >
                       <Link
                         href={`/catalog/${product.slug}`}
-                        className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#121a28]"
+                        className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1C2E]"
                       >
                         <div className="relative aspect-[4/3] w-full border-b border-zinc-800 bg-zinc-900">
                           <Image
@@ -206,7 +226,7 @@ export async function Hero() {
                             fill
                             quality={100}
                             sizes="(max-width: 640px) 50vw, 240px"
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
                           />
                           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-[0.85]" />
                         </div>
