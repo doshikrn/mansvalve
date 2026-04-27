@@ -40,6 +40,7 @@ export function MainHeader({
                   priority
                   quality={100}
                   sizes="(max-width: 1024px) 88px, 96px"
+                  unoptimized
                   className="h-full w-full object-contain object-center"
                 />
               </span>

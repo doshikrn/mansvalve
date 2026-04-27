@@ -4,6 +4,7 @@ import { Mail, Phone } from "lucide-react";
 import { getPublicCatalogCategories } from "@/lib/public-catalog";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { COMPANY, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 export async function Footer() {
@@ -18,10 +19,11 @@ export async function Footer() {
             <Link href="/" className="inline-block" aria-label={`Главная — ${COMPANY.name}`}>
               <div className="relative h-14 w-14 sm:h-16 sm:w-16">
                 <Image
-                  src="/images/logo-mansvalve.png"
+                  src={HEADER_LOGO_SRC}
                   alt={`${COMPANY.name} — логотип`}
                   width={64}
                   height={64}
+                  unoptimized
                   className="h-14 w-14 rounded-full object-contain sm:h-16 sm:w-16"
                 />
               </div>

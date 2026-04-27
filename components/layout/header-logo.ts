@@ -1,5 +1,5 @@
 /**
- * Круглый фирменный знак MANSVALVE (`public/images/logo-mansvalve.png`).
- * При необходимости замените PNG в `public/images/` на актуальный макет — путь оставьте тем же.
+ * Круглый фирменный знак (`public/images/mansvalve-brand-mark.png`).
+ * Отдельное имя файла нужно, чтобы не цеплялся кеш `/_next/image` по старому URL.
  */
-export const HEADER_LOGO_SRC = "/images/logo-mansvalve.png" as const;
+export const HEADER_LOGO_SRC = "/images/mansvalve-brand-mark.png" as const;

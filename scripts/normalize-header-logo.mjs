@@ -1,6 +1,6 @@
 /**
- * Нормализует `public/images/logo-mansvalve.png`:
- * trim лишних полей, экспорт 512×512 PNG с сохранением пропорций (contain на белом).
+ * Нормализует фирменный знак `public/images/mansvalve-brand-mark.png`:
+ * trim, экспорт 512×512 PNG (contain на белом).
  */
 import sharp from "sharp";
 import { readFile, writeFile } from "fs/promises";
@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
-const target = join(root, "public/images/logo-mansvalve.png");
+const target = join(root, "public/images/mansvalve-brand-mark.png");
 
 async function main() {
   const raw = await readFile(target);
@@ -25,7 +25,7 @@ async function main() {
 
   await writeFile(target + ".bak.png", raw);
   await writeFile(target, out);
-  console.log("OK:", target, "(backup: logo-mansvalve.png.bak.png)");
+  console.log("OK:", target, "(backup: mansvalve-brand-mark.png.bak.png)");
 }
 
 main().catch((e) => {

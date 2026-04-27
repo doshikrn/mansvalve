@@ -25,7 +25,7 @@
 публичных товаров, DTO `lib/search/product-search-dto.ts`). Листинг
 `/catalog?q=…` в **`components/catalog/CatalogShell`** дополняет совпадения
 fuzzy-логикой `lib/search/fuzzy.ts` (согласовано по смыслу с поисковым
-хейстеком). Статика логотипа: **`public/images/logo-mansvalve.png`**. Иконки
+хейстеком). Статика логотипа: **`public/images/mansvalve-brand-mark.png`**. Иконки
 вкладки: **`app/icon.png`**, `app/apple-icon.png` (см. [file conventions: metadata / app icons](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons));
 в `app/layout.tsx` **не** дублируется `metadata.icons` — достаточно
 file-based).
