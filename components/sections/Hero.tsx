@@ -9,7 +9,13 @@ import {
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { applyCountTemplate } from "@/lib/site-content/models";
 import { resolveHomeHero } from "@/lib/site-content/public";
-import { COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
+import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
+
+const HERO_KP_WHATSAPP_MESSAGE =
+  "Здравствуйте! Хочу получить КП по промышленной запорной арматуре.";
+
+/** Маркетинговая цифра для блока статистики (не подменяет счётчики в карточках категорий). */
+const HERO_MARKETING_POSITIONS_LABEL = "700+ позиций";
 
 function getFeaturedProducts(
   categories: Awaited<ReturnType<typeof getPublicCatalogCategories>>,
@@ -40,7 +46,7 @@ export async function Hero() {
 
   const stats = [
     { val: heroContent.stat1Val, label: heroContent.stat1Label },
-    { val: heroContent.stat2Val, label: heroContent.stat2Label },
+    { val: HERO_MARKETING_POSITIONS_LABEL, label: heroContent.stat2Label },
     { val: heroContent.stat3Val, label: heroContent.stat3Label },
   ];
 
@@ -84,10 +90,15 @@ export async function Hero() {
                 size="lg"
                 className="h-14 rounded-full bg-blue-500 px-9 text-base font-semibold shadow-[0_12px_32px_-8px_rgba(59,130,246,0.65)] ring-1 ring-blue-300/30 transition-all hover:bg-blue-400 hover:shadow-[0_18px_40px_-8px_rgba(59,130,246,0.75)]"
               >
-                <Link href="/catalog">
+                <a
+                  href={buildCompanyWhatsAppUrl(HERO_KP_WHATSAPP_MESSAGE)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center"
+                >
                   {heroContent.primaryCta}
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
+                  <ArrowRight className="ml-2 h-5 w-5 shrink-0" />
+                </a>
               </Button>
 
               <Link
