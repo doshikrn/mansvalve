@@ -8,6 +8,7 @@ import {
   mediaAssets as mediaAssetsTable,
   type NewCertificate,
 } from "@/lib/db/schema";
+import { resolvePublicMediaUrl } from "@/lib/services/media";
 
 export type CertificateListItem = {
   id: number;
@@ -37,7 +38,7 @@ function mapRow(
 ): CertificateListItem {
   return {
     ...row.certificate,
-    mediaUrl: row.media.url,
+    mediaUrl: resolvePublicMediaUrl(row.media.url, row.media.storageKey),
     mediaAlt: row.media.alt,
     mediaMimeType: row.media.mimeType,
   };

@@ -9,6 +9,7 @@ import {
   products as productsTable,
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
+import { resolvePublicMediaUrl } from "@/lib/services/media";
 
 import type {
   PublicCatalogAdapter,
@@ -126,6 +127,7 @@ async function fetchPrimaryImageMap(
     .select({
       productId: productImagesTable.productId,
       url: mediaAssetsTable.url,
+      storageKey: mediaAssetsTable.storageKey,
       imageAlt: productImagesTable.alt,
       assetAlt: mediaAssetsTable.alt,
       isPrimary: productImagesTable.isPrimary,
@@ -148,7 +150,7 @@ async function fetchPrimaryImageMap(
   for (const row of rows) {
     if (!map.has(row.productId)) {
       map.set(row.productId, {
-        url: row.url,
+        url: resolvePublicMediaUrl(row.url, row.storageKey),
         alt: row.imageAlt || row.assetAlt || "",
       });
     }
@@ -210,6 +212,7 @@ async function fetchProductImages(productId: number): Promise<PublicCatalogProdu
   const rows = await db
     .select({
       url: mediaAssetsTable.url,
+      storageKey: mediaAssetsTable.storageKey,
       imageAlt: productImagesTable.alt,
       assetAlt: mediaAssetsTable.alt,
       isPrimary: productImagesTable.isPrimary,
@@ -228,7 +231,7 @@ async function fetchProductImages(productId: number): Promise<PublicCatalogProdu
     );
 
   return rows.map((row, index) => ({
-    url: row.url,
+    url: resolvePublicMediaUrl(row.url, row.storageKey),
     alt: row.imageAlt || row.assetAlt || "",
     isPrimary: row.isPrimary || index === 0,
     sortOrder: row.sortOrder,

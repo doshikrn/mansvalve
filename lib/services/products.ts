@@ -13,6 +13,7 @@ import {
   type NewProduct,
   type Product,
 } from "@/lib/db/schema";
+import { resolvePublicMediaUrl } from "@/lib/services/media";
 
 export type AdminProductRow = Product & {
   categorySlug: string;
@@ -216,7 +217,7 @@ export async function getProductById(id: number): Promise<ProductDetail | null> 
     images: images.map((img) => ({
       id: img.id,
       mediaId: img.mediaId,
-      url: img.url,
+      url: resolvePublicMediaUrl(img.url, img.storageKey),
       storageKey: img.storageKey,
       mimeType: img.mimeType,
       sizeBytes: img.sizeBytes,

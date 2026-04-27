@@ -118,5 +118,27 @@ function buildPublicUrlFromBase(
   }
 
   // Bare host or custom prefix fallback.
+  const trimmed = cleanBase.replace(/^\/+/, "");
+  const looksLikeHostWithPath = /^[a-z0-9.-]+(?::\d+)?\/.+/i.test(trimmed);
+  if (looksLikeHostWithPath) {
+    const [host, ...pathParts] = trimmed.split("/");
+    const pathPrefix = `/${pathParts.join("/")}`.replace(/\/+$/, "");
+    const joinedPath = pathPrefix.endsWith("/uploads")
+      ? `${pathPrefix}/${normalizedKey}`
+      : `${pathPrefix}/uploads/${normalizedKey}`;
+    const scheme = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(host)
+      ? "http://"
+      : "https://";
+    return `${scheme}${host}${joinedPath}`;
+  }
+
+  const looksLikeBareHost = /^[a-z0-9.-]+(?::\d+)?$/i.test(trimmed);
+  if (looksLikeBareHost) {
+    const scheme = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimmed)
+      ? "http://"
+      : "https://";
+    return `${scheme}${trimmed}${fallbackRelative}`;
+  }
+
   return `${cleanBase}${fallbackRelative}`;
 }

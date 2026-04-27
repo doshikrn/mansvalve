@@ -30,6 +30,40 @@ export type MediaListResult = {
   pageSize: number;
 };
 
+function isBrowserAccessibleUrl(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const url = value.trim();
+  if (!url) return false;
+  return (
+    url.startsWith("/") ||
+    url.startsWith("//") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://")
+  );
+}
+
+/**
+ * Compatibility layer for rows created with malformed base URLs in older
+ * deployments. Keeps using DB url when valid, otherwise reconstructs from key.
+ */
+export function resolvePublicMediaUrl(
+  rawUrl: string | null | undefined,
+  storageKey: string,
+): string {
+  if (isBrowserAccessibleUrl(rawUrl)) {
+    return rawUrl!.trim();
+  }
+  const fallback = getStorageDriver().getPublicUrl(storageKey);
+  if (process.env.NODE_ENV !== "production") {
+    console.warn("[media] invalid stored url, fallback to storage key", {
+      rawUrl,
+      storageKey,
+      fallback,
+    });
+  }
+  return fallback;
+}
+
 export async function createMediaAsset(
   payload: NewMediaAsset,
 ): Promise<MediaAsset> {
@@ -91,6 +125,7 @@ export async function listMediaAssets(
   return {
     items: rows.map((row) => ({
       ...row.asset,
+      url: resolvePublicMediaUrl(row.asset.url, row.asset.storageKey),
       usedInProducts: row.usedInProducts,
       usedInCertificates: row.usedInCertificates,
     })),
@@ -124,6 +159,7 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
 
   return rows.map((row) => ({
     ...row.asset,
+    url: resolvePublicMediaUrl(row.asset.url, row.asset.storageKey),
     usedInProducts: row.usedInProducts,
     usedInCertificates: row.usedInCertificates,
   }));
@@ -132,10 +168,14 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
 export async function getMediaAssetsByIds(ids: string[]): Promise<MediaAsset[]> {
   if (!ids.length) return [];
   const db = getDb();
-  return db
+  const rows = await db
     .select()
     .from(mediaAssetsTable)
     .where(inArray(mediaAssetsTable.id, ids));
+  return rows.map((row) => ({
+    ...row,
+    url: resolvePublicMediaUrl(row.url, row.storageKey),
+  }));
 }
 
 export async function updateMediaAlt(
