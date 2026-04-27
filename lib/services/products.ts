@@ -34,9 +34,23 @@ export type ProductImageDetail = {
   sortOrder: number;
 };
 
+export type ProductDocumentDetail = {
+  mediaId: string;
+  url: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  alt: string | null;
+};
+
 export type ProductDetail = AdminProductRow & {
   specs: { id: number; key: string; value: string; sortOrder: number }[];
   images: ProductImageDetail[];
+  documents: {
+    specification: ProductDocumentDetail | null;
+    questionnaire: ProductDocumentDetail | null;
+    documentation: ProductDocumentDetail | null;
+  };
 };
 
 export type ProductListOptions = {
@@ -205,6 +219,57 @@ export async function getProductById(id: number): Promise<ProductDetail | null> 
       ),
   ]);
 
+  const documentIds = [
+    row[0].product.specificationMediaId,
+    row[0].product.questionnaireMediaId,
+    row[0].product.documentationMediaId,
+  ].filter((v): v is string => Boolean(v));
+
+  const docsById = new Map<
+    string,
+    {
+      id: string;
+      url: string;
+      storageKey: string;
+      mimeType: string;
+      sizeBytes: number;
+      alt: string | null;
+      driver: string;
+    }
+  >();
+
+  if (documentIds.length > 0) {
+    const docRows = await db
+      .select({
+        id: mediaAssetsTable.id,
+        url: mediaAssetsTable.url,
+        storageKey: mediaAssetsTable.storageKey,
+        mimeType: mediaAssetsTable.mimeType,
+        sizeBytes: mediaAssetsTable.sizeBytes,
+        alt: mediaAssetsTable.alt,
+        driver: mediaAssetsTable.driver,
+      })
+      .from(mediaAssetsTable)
+      .where(inArray(mediaAssetsTable.id, documentIds));
+    for (const doc of docRows) {
+      docsById.set(doc.id, doc);
+    }
+  }
+
+  const mapDocument = (mediaId: string | null): ProductDocumentDetail | null => {
+    if (!mediaId) return null;
+    const doc = docsById.get(mediaId);
+    if (!doc) return null;
+    return {
+      mediaId: doc.id,
+      url: resolvePublicMediaUrl(doc.url, doc.storageKey, doc.driver),
+      storageKey: doc.storageKey,
+      mimeType: doc.mimeType,
+      sizeBytes: doc.sizeBytes,
+      alt: doc.alt,
+    };
+  };
+
   return {
     ...row[0].product,
     categorySlug: row[0].categorySlug ?? "",
@@ -228,6 +293,11 @@ export async function getProductById(id: number): Promise<ProductDetail | null> 
       isPrimary: img.isPrimary,
       sortOrder: img.sortOrder,
     })),
+    documents: {
+      specification: mapDocument(row[0].product.specificationMediaId),
+      questionnaire: mapDocument(row[0].product.questionnaireMediaId),
+      documentation: mapDocument(row[0].product.documentationMediaId),
+    },
   };
 }
 
@@ -280,6 +350,7 @@ export async function createProduct(
 ): Promise<number> {
   const db = getDb();
   const { specs, images, ...core } = payload;
+  await validateDocumentMedia(core);
   const names = await resolveDenormalizedNames(core.categoryId, core.subcategoryId);
 
   const inserted = await db
@@ -313,6 +384,7 @@ export async function updateProduct(
 ): Promise<void> {
   const db = getDb();
   const { specs, images, ...core } = payload;
+  await validateDocumentMedia(core);
   const names = await resolveDenormalizedNames(core.categoryId, core.subcategoryId);
 
   await db
@@ -419,4 +491,44 @@ function normalizeImages(
     sortOrder: index,
     isPrimary: index === resolvedPrimary,
   }));
+}
+
+async function validateDocumentMedia(
+  core: Omit<
+    ProductWritePayload,
+    "specs" | "images"
+  >,
+): Promise<void> {
+  const docIds = [
+    core.specificationMediaId,
+    core.questionnaireMediaId,
+    core.documentationMediaId,
+  ].filter((v): v is string => Boolean(v));
+
+  if (!docIds.length) return;
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: mediaAssetsTable.id,
+      mimeType: mediaAssetsTable.mimeType,
+    })
+    .from(mediaAssetsTable)
+    .where(inArray(mediaAssetsTable.id, docIds));
+  if (rows.length !== docIds.length) {
+    throw new Error("Some selected documents do not exist anymore.");
+  }
+
+  const allowedDocumentMime = new Set([
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ]);
+  for (const row of rows) {
+    if (!allowedDocumentMime.has(row.mimeType)) {
+      throw new Error("Invalid document format for product document fields.");
+    }
+  }
 }

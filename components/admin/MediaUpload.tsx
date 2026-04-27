@@ -19,6 +19,7 @@ function mediaImageNeedsUnoptimized(url: string): boolean {
 export type MediaLibraryItem = {
   id: string;
   url: string;
+  storageKey?: string;
   mimeType: string;
   sizeBytes: number;
   width: number | null;
@@ -78,6 +79,10 @@ export function MediaUpload({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const imageLibrary = useMemo(
+    () => library.filter((item) => item.mimeType.startsWith("image/")),
+    [library],
+  );
 
   const payload = useMemo(
     () =>
@@ -132,6 +137,7 @@ export function MediaUpload({
         const nextAsset: MediaLibraryItem = {
           id: uploaded.id,
           url: uploaded.url,
+          storageKey: uploaded.storageKey,
           mimeType: uploaded.mimeType,
           sizeBytes: uploaded.sizeBytes,
           width: uploaded.width,
@@ -223,7 +229,10 @@ export function MediaUpload({
         | {
             ok?: boolean;
             error?: string;
-            code?: "MEDIA_IN_USE_PRODUCT" | "MEDIA_IN_USE_CERTIFICATE";
+            code?:
+              | "MEDIA_IN_USE_PRODUCT"
+              | "MEDIA_IN_USE_CERTIFICATE"
+              | "MEDIA_IN_USE_PRODUCT_DOCUMENT";
           }
         | null;
 
@@ -233,6 +242,9 @@ export function MediaUpload({
         }
         if (body?.code === "MEDIA_IN_USE_CERTIFICATE") {
           throw new Error("Файл используется в сертификате.");
+        }
+        if (body?.code === "MEDIA_IN_USE_PRODUCT_DOCUMENT") {
+          throw new Error("Файл используется в документе товара.");
         }
         throw new Error(body?.error || "Не удалось удалить изображение.");
       }
@@ -410,11 +422,11 @@ export function MediaUpload({
         <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Медиа библиотека
         </h4>
-        {library.length === 0 ? (
+        {imageLibrary.length === 0 ? (
           <p className="text-sm text-muted-foreground">Библиотека пуста.</p>
         ) : (
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4">
-            {library.map((item) => {
+            {imageLibrary.map((item) => {
               const isSelected = selected.some((x) => x.mediaId === item.id);
               const deleting = deletingIds.has(item.id);
               return (
@@ -570,6 +582,7 @@ function uploadSingleFile(
 type UploadedAsset = {
   id: string;
   url: string;
+  storageKey?: string;
   mimeType: string;
   sizeBytes: number;
   width: number | null;

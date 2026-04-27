@@ -5,6 +5,7 @@ import { Pagination } from "@/components/catalog/Pagination";
 import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildCatalogItemListJsonLd } from "@/lib/structured-data";
+import { isFuzzyCatalogMatch } from "@/lib/search/fuzzy";
 import type {
   PublicCatalogCategory,
   PublicCatalogProduct as Product,
@@ -90,7 +91,7 @@ function applySecondaryFilters(pool: Product[], params: CatalogSearchParams): Pr
       ]
         .join(" ")
         .toLowerCase();
-      return hay.includes(q);
+      return hay.includes(q) || isFuzzyCatalogMatch(q, hay);
     });
   }
 

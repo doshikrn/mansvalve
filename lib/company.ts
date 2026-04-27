@@ -9,7 +9,9 @@ export const COMPANY = {
     city: "Алматы",
     street: "ул. Рыскулова 61в",
     full: "г. Алматы, ул. Рыскулова 61в, Алматы, Казахстан",
-    mapUrl: "https://maps.app.goo.gl/zSE75oeu7RJRpkqv6",
+    /** 2GIS — офис/склад; единый URL для кнопок «Открыть в 2GIS» и ссылок «на карте». */
+    mapUrl:
+      "https://2gis.kz/almaty/geo/9430047374996383/76.917283%2C43.288387?m=76.917325%2C43.288169%2F17.03",
   },
   bankDetails: {
     bin: "251140003794",

@@ -14,6 +14,7 @@ import {
   type MediaLibraryItem,
   type SelectedMediaItem,
 } from "@/components/admin/MediaUpload";
+import { ProductDocumentsUpload } from "@/components/admin/ProductDocumentsUpload";
 
 import type { ProductFormState } from "@/app/admin/products/actions";
 
@@ -28,12 +29,19 @@ type Props = {
   action: Action;
   categories: CategoryWithSubcategories[];
   mediaLibrary: MediaLibraryItem[];
+  documentLibrary: MediaLibraryItem[];
   product?: ProductDetail | null;
 };
 
 const INITIAL: ProductFormState = {};
 
-export function ProductForm({ action, categories, mediaLibrary, product }: Props) {
+export function ProductForm({
+  action,
+  categories,
+  mediaLibrary,
+  documentLibrary,
+  product,
+}: Props) {
   const [state, runAction] = useActionState(action, INITIAL);
   const [categoryId, setCategoryId] = useState<number | "">(
     product?.categoryId ?? "",
@@ -50,6 +58,11 @@ export function ProductForm({ action, categories, mediaLibrary, product }: Props
     isPrimary: img.isPrimary,
     sortOrder: img.sortOrder,
   }));
+  const selectedDocuments = {
+    specification: product?.documents.specification ?? null,
+    questionnaire: product?.documents.questionnaire ?? null,
+    documentation: product?.documents.documentation ?? null,
+  };
 
   return (
     <form action={runAction} className="space-y-6">
@@ -271,6 +284,13 @@ export function ProductForm({ action, categories, mediaLibrary, product }: Props
         uploadFolder="products"
         allowAttach
         attachOnUpload
+      />
+
+      <ProductDocumentsUpload
+        library={documentLibrary}
+        initial={selectedDocuments}
+        hiddenInputName="documentsPayload"
+        uploadFolder="products/documents"
       />
 
       {state.error ? (

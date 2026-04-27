@@ -14,14 +14,22 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 const MAX_ALT_LENGTH = 300;
-const ALLOWED_MIME = new Set([
+const ALLOWED_IMAGE_MIME = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
   "image/avif",
   "image/gif",
   "image/tiff",
+]);
+const ALLOWED_DOCUMENT_MIME = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ]);
 
 export async function POST(request: Request) {
@@ -65,18 +73,24 @@ export async function POST(request: Request) {
     );
   }
 
-  if (file.size > MAX_IMAGE_BYTES) {
+  const isImage = file.type.startsWith("image/");
+  const sizeLimit = isImage ? MAX_IMAGE_BYTES : MAX_DOCUMENT_BYTES;
+  if (file.size > sizeLimit) {
+    const maxMb = isImage ? 10 : 20;
     return NextResponse.json(
-      { ok: false, error: "File is too large. Max 10 MB." },
+      { ok: false, error: `File is too large. Max ${maxMb} MB.` },
       { status: 413 },
     );
   }
 
-  if (!ALLOWED_MIME.has(file.type)) {
+  const allowedImage = ALLOWED_IMAGE_MIME.has(file.type);
+  const allowedDocument = ALLOWED_DOCUMENT_MIME.has(file.type);
+  if (!allowedImage && !allowedDocument) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Unsupported media type. Please upload JPEG, PNG, WEBP or AVIF.",
+        error:
+          "Unsupported media type. Allowed: JPG, PNG, WEBP, AVIF, GIF, TIFF, PDF, DOC, DOCX, XLS, XLSX.",
       },
       { status: 415 },
     );
@@ -96,32 +110,41 @@ export async function POST(request: Request) {
 
   try {
     const source = Buffer.from(await file.arrayBuffer());
-
-    const output = await sharp(source, { failOn: "none" })
-      .rotate()
-      .resize({
-        width: 2200,
-        height: 2200,
-        fit: "inside",
-        withoutEnlargement: true,
-      })
-      .webp({ quality: 82, effort: 4 })
-      .toBuffer({ resolveWithObject: true });
-
-    const width = output.info.width ?? null;
-    const height = output.info.height ?? null;
-    const contentType = "image/webp";
-
     const originalName = stripExtension(file.name || "upload");
-    const namePrefix = slugify(originalName) || "image";
+    const namePrefix = slugify(originalName) || "file";
     const stamp = new Date().toISOString().slice(0, 10);
-    const key = `${folder}/${stamp}/${namePrefix}-${randomUUID()}.webp`;
+    let key = "";
+    let contentType = file.type;
+    let outputBody: Buffer = source;
+    let width: number | null = null;
+    let height: number | null = null;
+
+    if (allowedImage) {
+      const output = await sharp(source, { failOn: "none" })
+        .rotate()
+        .resize({
+          width: 2200,
+          height: 2200,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82, effort: 4 })
+        .toBuffer({ resolveWithObject: true });
+      outputBody = output.data;
+      width = output.info.width ?? null;
+      height = output.info.height ?? null;
+      contentType = "image/webp";
+      key = `${folder}/${stamp}/${namePrefix}-${randomUUID()}.webp`;
+    } else {
+      const safeExt = resolveDocumentExtension(file.type, file.name);
+      key = `${folder}/${stamp}/${namePrefix}-${randomUUID()}${safeExt}`;
+    }
 
     const driver = getStorageDriver();
     const uploaded = await driver.upload({
       key,
       contentType,
-      body: output.data,
+      body: outputBody,
     });
 
     const createdBy = Number.parseInt(session.sub, 10);
@@ -157,7 +180,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error: "Failed to process or upload image.",
+        error: "Failed to process or upload media.",
       },
       { status: 500 },
     );
@@ -181,4 +204,20 @@ function stripExtension(filename: string): string {
   const ext = path.extname(filename);
   if (!ext) return filename;
   return filename.slice(0, -ext.length);
+}
+
+function resolveDocumentExtension(mime: string, filename: string): string {
+  const ext = path.extname(filename).toLowerCase();
+  const byMime: Record<string, string> = {
+    "application/pdf": ".pdf",
+    "application/msword": ".doc",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      ".docx",
+    "application/vnd.ms-excel": ".xls",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+  };
+  const safeByMime = byMime[mime];
+  if (safeByMime) return safeByMime;
+  if ([".pdf", ".doc", ".docx", ".xls", ".xlsx"].includes(ext)) return ext;
+  return ".bin";
 }

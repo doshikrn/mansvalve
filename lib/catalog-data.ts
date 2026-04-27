@@ -23,6 +23,26 @@ export interface Product {
   weight: number | undefined;
   specs: Record<string, string>;
   shortDescription: string;
+  documents?: {
+    specification?: {
+      url: string;
+      mimeType: string;
+      sizeBytes: number;
+      label?: string;
+    };
+    questionnaire?: {
+      url: string;
+      mimeType: string;
+      sizeBytes: number;
+      label?: string;
+    };
+    documentation?: {
+      url: string;
+      mimeType: string;
+      sizeBytes: number;
+      label?: string;
+    };
+  };
 }
 
 export interface Category {

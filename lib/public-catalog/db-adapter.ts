@@ -14,6 +14,7 @@ import { resolvePublicMediaUrl } from "@/lib/services/media";
 import type {
   PublicCatalogAdapter,
   PublicCatalogCategory,
+  PublicCatalogProductDocument,
   PublicCatalogProduct,
   PublicCatalogProductImage,
   PublicCatalogSubcategory,
@@ -168,6 +169,11 @@ function mapProductRow(
         alt: string;
       }
     | undefined,
+  documents?: {
+    specification?: PublicCatalogProductDocument;
+    questionnaire?: PublicCatalogProductDocument;
+    documentation?: PublicCatalogProductDocument;
+  },
 ): PublicCatalogProduct {
   const product = row.product;
   const category = row.category;
@@ -196,6 +202,7 @@ function mapProductRow(
       `${product.name}. Категория: ${category.name}.`,
     primaryImageUrl: primaryImage?.url,
     primaryImageAlt: primaryImage?.alt || undefined,
+    documents,
   };
 }
 
@@ -300,6 +307,7 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
     if (!row.length) return undefined;
 
     const productId = row[0].product.id;
+    const productRow = row[0].product;
     const [specRows, images] = await Promise.all([
       db
         .select({
@@ -312,9 +320,63 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
       fetchProductImages(productId),
     ]);
 
+    const documentIds = [
+      productRow.specificationMediaId,
+      productRow.questionnaireMediaId,
+      productRow.documentationMediaId,
+    ].filter((v): v is string => Boolean(v));
+
+    let documentMap = new Map<
+      string,
+      {
+        id: string;
+        url: string;
+        storageKey: string;
+        driver: string;
+        mimeType: string;
+        sizeBytes: number;
+        alt: string | null;
+      }
+    >();
+
+    if (documentIds.length > 0) {
+      const documentRows = await db
+        .select({
+          id: mediaAssetsTable.id,
+          url: mediaAssetsTable.url,
+          storageKey: mediaAssetsTable.storageKey,
+          driver: mediaAssetsTable.driver,
+          mimeType: mediaAssetsTable.mimeType,
+          sizeBytes: mediaAssetsTable.sizeBytes,
+          alt: mediaAssetsTable.alt,
+        })
+        .from(mediaAssetsTable)
+        .where(inArray(mediaAssetsTable.id, documentIds));
+      documentMap = new Map(documentRows.map((doc) => [doc.id, doc]));
+    }
+
+    const mapDocument = (
+      mediaId: string | null,
+    ): PublicCatalogProductDocument | undefined => {
+      if (!mediaId) return undefined;
+      const doc = documentMap.get(mediaId);
+      if (!doc) return undefined;
+      return {
+        url: resolvePublicMediaUrl(doc.url, doc.storageKey, doc.driver),
+        mimeType: doc.mimeType,
+        sizeBytes: doc.sizeBytes,
+        label: doc.alt ?? undefined,
+      };
+    };
+
     const mapped = mapProductRow(row[0], images[0] ? { url: images[0].url, alt: images[0].alt } : undefined);
     mapped.specs = Object.fromEntries(specRows.map((spec) => [spec.key, spec.value]));
     mapped.images = images;
+    mapped.documents = {
+      specification: mapDocument(productRow.specificationMediaId),
+      questionnaire: mapDocument(productRow.questionnaireMediaId),
+      documentation: mapDocument(productRow.documentationMediaId),
+    };
     return mapped;
   },
 

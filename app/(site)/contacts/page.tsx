@@ -9,6 +9,7 @@ import {
   FileText,
   Building2,
 } from "lucide-react";
+import { ContactsMapBlock } from "@/components/contacts/ContactsMapBlock";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import {
   COMPANY,
@@ -70,7 +71,7 @@ const CONTACTS = [
     label: "Офис и склад",
     lines: [`г. ${COMPANY.address.city}`, COMPANY.address.street],
     href: COMPANY.address.mapUrl,
-    hrefLabel: "Открыть на карте",
+    hrefLabel: "Открыть в 2GIS",
     external: true,
   },
   {
@@ -206,67 +207,13 @@ export default async function ContactsPage() {
         </div>
       </div>
 
-      {/* ── Map placeholder ──────────────────────────────────────────── */}
+      {/* ── Как нас найти (статичная визуализация, ссылка на 2GIS) ───── */}
       <div className="border-t border-slate-100 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <h2 className="mb-6 text-xl font-bold text-slate-900">
             Как нас найти
           </h2>
-
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            {/* Map visual placeholder */}
-            <div
-              className="relative flex h-72 items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 lg:h-96"
-              aria-label={`Карта — г. ${COMPANY.address.city}, ${COMPANY.address.street}`}
-            >
-              {/* Subtle grid lines */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)",
-                  backgroundSize: "48px 48px",
-                  opacity: 0.25,
-                }}
-              />
-
-              {/* Pin */}
-              <div className="relative z-10 flex flex-col items-center gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-700 shadow-lg shadow-blue-500/30">
-                  <MapPin size={26} className="text-white" strokeWidth={1.75} />
-                </div>
-                <div className="text-center">
-                  <p className="font-semibold text-slate-900">
-                    г. {COMPANY.address.city}
-                  </p>
-                  <p className="mt-0.5 text-sm text-slate-500">
-                    {COMPANY.address.street}
-                  </p>
-                </div>
-                <a
-                  href={COMPANY.address.mapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-blue-700 hover:text-blue-700"
-                >
-                  Открыть в 2GIS →
-                </a>
-              </div>
-            </div>
-
-            {/* Address bar */}
-            <div className="flex flex-wrap gap-6 border-t border-slate-100 px-6 py-4">
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <MapPin size={14} className="text-blue-700" />
-                {COMPANY.address.full}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Clock size={14} className="text-blue-700" />
-                Пн – Пт: 09:00 – 18:00
-              </div>
-            </div>
-          </div>
+          <ContactsMapBlock />
         </div>
       </div>
 

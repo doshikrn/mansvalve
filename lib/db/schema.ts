@@ -196,6 +196,21 @@ export const products = pgTable(
 
     shortDescription: text("short_description"),
     longDescription: text("long_description"),
+    /** Файл-спецификация товара (PDF/DOC/XLS и т.п.). */
+    specificationMediaId: uuid("specification_media_id").references(
+      () => mediaAssets.id,
+      { onDelete: "restrict" },
+    ),
+    /** Опросный лист товара (по конкретной позиции). */
+    questionnaireMediaId: uuid("questionnaire_media_id").references(
+      () => mediaAssets.id,
+      { onDelete: "restrict" },
+    ),
+    /** Прочая техническая документация по позиции. */
+    documentationMediaId: uuid("documentation_media_id").references(
+      () => mediaAssets.id,
+      { onDelete: "restrict" },
+    ),
 
     isActive: boolean("is_active").notNull().default(true),
     isFeatured: boolean("is_featured").notNull().default(false),
@@ -217,6 +232,9 @@ export const products = pgTable(
     index("products_category_idx").on(table.categoryId),
     index("products_subcategory_idx").on(table.subcategoryId),
     index("products_is_active_idx").on(table.isActive),
+    index("products_spec_media_idx").on(table.specificationMediaId),
+    index("products_questionnaire_media_idx").on(table.questionnaireMediaId),
+    index("products_documentation_media_idx").on(table.documentationMediaId),
   ],
 );
 

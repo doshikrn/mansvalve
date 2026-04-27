@@ -71,6 +71,7 @@ export default async function EditProductPage({
         mediaLibrary={mediaAssets.map((asset) => ({
           id: asset.id,
           url: asset.url,
+          storageKey: asset.storageKey,
           mimeType: asset.mimeType,
           sizeBytes: asset.sizeBytes,
           width: asset.width,
@@ -83,6 +84,24 @@ export default async function EditProductPage({
               : String(asset.createdAt),
           usedInProducts: asset.usedInProducts,
         }))}
+        documentLibrary={mediaAssets
+          .filter((asset) => !asset.mimeType.startsWith("image/"))
+          .map((asset) => ({
+            id: asset.id,
+            url: asset.url,
+            storageKey: asset.storageKey,
+            mimeType: asset.mimeType,
+            sizeBytes: asset.sizeBytes,
+            width: asset.width,
+            height: asset.height,
+            alt: asset.alt,
+            driver: asset.driver,
+            createdAt:
+              asset.createdAt instanceof Date
+                ? asset.createdAt.toISOString()
+                : String(asset.createdAt),
+            usedInProducts: asset.usedInProducts,
+          }))}
         product={product}
       />
     </div>

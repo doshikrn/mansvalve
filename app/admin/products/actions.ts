@@ -29,6 +29,12 @@ const productImageSchema = z.object({
   sortOrder: z.number().int().nonnegative().optional().default(0),
 });
 
+const productDocumentsSchema = z.object({
+  specificationMediaId: z.string().uuid().nullable().optional(),
+  questionnaireMediaId: z.string().uuid().nullable().optional(),
+  documentationMediaId: z.string().uuid().nullable().optional(),
+});
+
 const productSchema = z.object({
   name: z.string().trim().min(2).max(300),
   slug: z
@@ -132,6 +138,7 @@ function parseProductForm(formData: FormData) {
     .map((r) => r.data);
 
   const images = readImages(formData);
+  const documents = readDocuments(formData);
 
   const data = parsed.data;
   const slug = slugify(data.slug ?? data.name);
@@ -158,6 +165,9 @@ function parseProductForm(formData: FormData) {
     sortOrder: data.sortOrder,
     specs,
     images,
+    specificationMediaId: documents.specificationMediaId,
+    questionnaireMediaId: documents.questionnaireMediaId,
+    documentationMediaId: documents.documentationMediaId,
   };
 
   return { ok: true as const, payload };
@@ -200,6 +210,38 @@ function readImages(formData: FormData) {
     isPrimary: index === resolvedPrimary,
     sortOrder: index,
   }));
+}
+
+function readDocuments(formData: FormData): z.infer<typeof productDocumentsSchema> {
+  const raw = formData.get("documentsPayload");
+  if (typeof raw !== "string" || !raw.trim()) {
+    return {
+      specificationMediaId: null,
+      questionnaireMediaId: null,
+      documentationMediaId: null,
+    };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = {};
+  }
+
+  const validated = productDocumentsSchema.safeParse(parsed);
+  if (!validated.success) {
+    return {
+      specificationMediaId: null,
+      questionnaireMediaId: null,
+      documentationMediaId: null,
+    };
+  }
+  return {
+    specificationMediaId: validated.data.specificationMediaId ?? null,
+    questionnaireMediaId: validated.data.questionnaireMediaId ?? null,
+    documentationMediaId: validated.data.documentationMediaId ?? null,
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -272,6 +314,12 @@ function humanizeError(err: unknown): string {
   }
   if (msg.includes("selected images do not exist")) {
     return "Некоторые изображения были удалены. Обновите страницу и попробуйте снова.";
+  }
+  if (msg.includes("selected documents do not exist")) {
+    return "Некоторые документы были удалены. Обновите страницу и попробуйте снова.";
+  }
+  if (msg.includes("Invalid document format")) {
+    return "Для документов товара доступны только PDF, DOC, DOCX, XLS и XLSX.";
   }
   return "Не удалось сохранить товар. Попробуйте ещё раз.";
 }

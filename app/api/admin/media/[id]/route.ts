@@ -47,6 +47,16 @@ export async function DELETE(
         { status: 409 },
       );
     }
+    if (message === "MEDIA_IN_USE_PRODUCT_DOCUMENT") {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "MEDIA_IN_USE_PRODUCT_DOCUMENT",
+          error: "Файл используется в документе товара.",
+        },
+        { status: 409 },
+      );
+    }
     if (message === "MEDIA_IN_USE_CERTIFICATE") {
       return NextResponse.json(
         {

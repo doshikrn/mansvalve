@@ -10,6 +10,8 @@ import {
   BadgeCheck,
   ArrowRight,
   Cpu,
+  Download,
+  FileText,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -206,6 +208,24 @@ export default async function ProductPage({ params }: PageProps) {
 
   const formattedPrice =
     product.price && !product.priceByRequest ? formatPrice(product.price) : null;
+  const productDocuments = [
+    {
+      id: "specification",
+      label: "Скачать файл-спецификацию",
+      doc: product.documents?.specification,
+    },
+    {
+      id: "questionnaire",
+      label: "Скачать опросный лист",
+      doc: product.documents?.questionnaire,
+    },
+    {
+      id: "documentation",
+      label: "Документация",
+      doc: product.documents?.documentation,
+    },
+  ] as const;
+  const hasProductDocuments = productDocuments.some((entry) => Boolean(entry.doc?.url));
 
   return (
     <div className="bg-white">
@@ -481,6 +501,42 @@ export default async function ProductPage({ params }: PageProps) {
           </div>
         </div>
       )}
+
+      <div className="border-t border-slate-100 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-700" />
+              <h2 className="text-lg font-bold text-slate-900">Документы по товару</h2>
+            </div>
+
+            {hasProductDocuments ? (
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {productDocuments.map((entry) =>
+                  entry.doc?.url ? (
+                    <a
+                      key={entry.id}
+                      href={entry.doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                      className="inline-flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:border-blue-600 hover:text-blue-700"
+                    >
+                      <span className="pr-3">{entry.label}</span>
+                      <Download className="h-4 w-4 shrink-0" />
+                    </a>
+                  ) : null,
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-600">
+                Документы предоставляются по запросу. Свяжитесь с менеджером для
+                получения спецификации и опросного листа.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* ── Request CTA + embedded form ─────────────────────────────── */}
       <div id="request-section" className="bg-blue-700 py-14 sm:py-16">

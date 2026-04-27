@@ -5,6 +5,13 @@ export interface PublicCatalogProductImage {
   sortOrder: number;
 }
 
+export interface PublicCatalogProductDocument {
+  url: string;
+  mimeType: string;
+  sizeBytes: number;
+  label?: string;
+}
+
 export interface PublicCatalogProduct {
   id: string;
   name: string;
@@ -28,6 +35,11 @@ export interface PublicCatalogProduct {
   primaryImageUrl?: string;
   primaryImageAlt?: string;
   images?: PublicCatalogProductImage[];
+  documents?: {
+    specification?: PublicCatalogProductDocument;
+    questionnaire?: PublicCatalogProductDocument;
+    documentation?: PublicCatalogProductDocument;
+  };
 }
 
 export interface PublicCatalogSubcategory {
