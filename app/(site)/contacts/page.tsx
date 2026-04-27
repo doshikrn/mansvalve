@@ -13,12 +13,7 @@ import {
 import { ContactsMapBlock } from "@/components/contacts/ContactsMapBlock";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
-import {
-  COMPANY,
-  COMPANY_EMAIL_HREF,
-  COMPANY_PHONE_HREF,
-  buildCompanyContactsQuickCardWhatsAppUrl,
-} from "@/lib/company";
+import { COMPANY, buildCompanyContactsQuickCardWhatsAppUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { resolveContactsCopy, resolveContactsMeta } from "@/lib/site-content/public";
 
@@ -65,8 +60,8 @@ const CONTACTS: Array<{
     label: "Телефон / WhatsApp",
     lines: [COMPANY.phoneDisplay],
     copy: { value: COMPANY.phoneE164, kind: "phone" },
-    href: COMPANY_PHONE_HREF,
-    hrefLabel: "Позвонить",
+    href: null,
+    hrefLabel: null,
     external: false,
   },
   {
@@ -74,8 +69,8 @@ const CONTACTS: Array<{
     label: "Электронная почта",
     lines: [COMPANY.email],
     copy: { value: COMPANY.email, kind: "email" },
-    href: COMPANY_EMAIL_HREF,
-    hrefLabel: "Написать письмо",
+    href: null,
+    hrefLabel: null,
     external: false,
   },
   {
@@ -181,6 +176,7 @@ export default async function ContactsPage() {
                     <p key={line} className="text-sm font-medium leading-relaxed text-slate-900">
                       {copy ? (
                         <CopyToClipboard
+                          variant="minimal"
                           value={copy.value}
                           kind={copy.kind}
                           className="font-medium text-slate-900"

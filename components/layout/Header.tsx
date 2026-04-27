@@ -4,12 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Menu, Search, X } from "lucide-react";
-import {
-  COMPANY,
-  COMPANY_EMAIL_HREF,
-  COMPANY_PHONE_HREF,
-  COMPANY_WHATSAPP_BASE_URL,
-} from "@/lib/company";
+import { COMPANY, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
@@ -119,14 +114,6 @@ export function Header() {
               >
                 {COMPANY.phoneDisplay}
               </CopyToClipboard>
-              <a
-                href={COMPANY_PHONE_HREF}
-                className="shrink-0 text-blue-600 hover:underline"
-                title="Позвонить"
-                aria-label="Позвонить"
-              >
-                Позвонить
-              </a>
             </div>
             <Sep />
             <div className="inline-flex min-w-0 max-w-[min(100%,18rem)] items-baseline gap-1.5 whitespace-nowrap text-slate-800 lg:max-w-[20rem] xl:max-w-[24rem]">
@@ -142,14 +129,6 @@ export function Header() {
                   {COMPANY.email}
                 </span>
               </CopyToClipboard>
-              <a
-                href={COMPANY_EMAIL_HREF}
-                className="shrink-0 text-blue-600 hover:underline"
-                title="Написать письмо"
-                aria-label="Написать письмо"
-              >
-                Почта
-              </a>
             </div>
             <Sep />
             <a
@@ -306,7 +285,7 @@ export function Header() {
             <div className="mt-3 flex flex-col gap-2 border-t border-slate-200 pt-3 text-sm text-slate-800">
               <div className="px-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Телефон</p>
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <div className="mt-1">
                   <CopyToClipboard
                     variant="minimal"
                     value={COMPANY.phoneE164}
@@ -315,38 +294,22 @@ export function Header() {
                   >
                     {COMPANY.phoneDisplay}
                   </CopyToClipboard>
-                  <a
-                    href={COMPANY_PHONE_HREF}
-                    className="shrink-0 text-blue-600"
-                    title="Позвонить"
-                    aria-label="Позвонить"
-                  >
-                    Позвонить
-                  </a>
                 </div>
               </div>
               <div className="px-1">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">E-mail</p>
-                <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <div className="mt-1">
                   <CopyToClipboard
                     variant="minimal"
                     value={COMPANY.email}
                     kind="email"
-                    className="min-w-0 flex-1 font-medium"
+                    className="min-w-0 font-medium"
                     title={COMPANY.email}
                   >
                     <span className="min-w-0 break-words" title={COMPANY.email}>
                       {COMPANY.email}
                     </span>
                   </CopyToClipboard>
-                  <a
-                    href={COMPANY_EMAIL_HREF}
-                    className="shrink-0 self-start text-blue-600"
-                    title="Написать письмо"
-                    aria-label="Написать письмо"
-                  >
-                    Написать
-                  </a>
                 </div>
               </div>
               <a

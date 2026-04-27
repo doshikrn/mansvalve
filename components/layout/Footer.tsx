@@ -3,12 +3,7 @@ import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 import { getPublicCatalogCategories } from "@/lib/public-catalog";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
-import {
-  COMPANY,
-  COMPANY_EMAIL_HREF,
-  COMPANY_PHONE_HREF,
-  COMPANY_WHATSAPP_BASE_URL,
-} from "@/lib/company";
+import { COMPANY, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 export async function Footer() {
@@ -92,42 +87,28 @@ export async function Footer() {
             <ul className="space-y-2.5 text-sm text-slate-500">
               <li className="flex items-start gap-2">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden />
-                <div className="min-w-0 flex flex-1 items-center justify-between gap-1.5">
+                <div className="min-w-0 flex-1">
                   <CopyToClipboard
+                    variant="minimal"
                     value={COMPANY.phoneE164}
                     kind="phone"
-                    className="min-w-0 text-slate-600 hover:text-blue-700"
+                    className="text-slate-600 hover:text-blue-700"
                   >
                     {COMPANY.phoneDisplay}
                   </CopyToClipboard>
-                  <a
-                    href={COMPANY_PHONE_HREF}
-                    className="shrink-0 rounded p-0.5 text-slate-400 transition hover:text-blue-700"
-                    title="Позвонить"
-                    aria-label="Позвонить"
-                  >
-                    <Phone className="h-3.5 w-3.5" />
-                  </a>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden />
-                <div className="min-w-0 flex flex-1 items-center justify-between gap-1.5">
+                <div className="min-w-0 flex-1">
                   <CopyToClipboard
+                    variant="minimal"
                     value={COMPANY.email}
                     kind="email"
                     className="min-w-0 text-slate-600 hover:text-blue-700"
                   >
                     {COMPANY.email}
                   </CopyToClipboard>
-                  <a
-                    href={COMPANY_EMAIL_HREF}
-                    className="shrink-0 rounded p-0.5 text-slate-400 transition hover:text-blue-700"
-                    title="Написать письмо"
-                    aria-label="Написать письмо"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                  </a>
                 </div>
               </li>
               <li className="flex items-center gap-2">

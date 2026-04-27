@@ -1,25 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, Copy } from "lucide-react";
+import { Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
-const RESET_MS = 1800;
+const RESET_MS = 1700;
 const ERROR_MS = 2200;
 
 type CopyToClipboardProps = {
   value: string;
   children: ReactNode;
   /**
-   * `default` — copy icon + underlined value.
-   * `minimal` — value only (no copy icon), success feedback as a small floating tooltip; use in headers/compact UI.
+   * `default` — small copy icon + underlined value.
+   * `minimal` — underlined value only; feedback is the same (badge below, in document flow).
    */
   variant?: "default" | "minimal";
-  /** Shown for ~1.8s after a successful copy (replaces `children` briefly) in `default` variant, or in tooltip in `minimal`. */
   copiedText?: string;
   className?: string;
-  /** For analytics: `phone_click` / `email_click` with `source: "copy"`. */
   kind?: "phone" | "email";
   "aria-label"?: string;
   title?: string;
@@ -50,9 +48,20 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
   }
 }
 
+function CopiedBadge({ text }: { text: string }) {
+  return (
+    <span
+      role="status"
+      aria-live="polite"
+      className="shrink-0 select-none rounded-md border border-emerald-200/90 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium leading-tight text-emerald-800 shadow-sm"
+    >
+      {text}
+    </span>
+  );
+}
+
 /**
- * Click copies `value` to the clipboard and shows “Скопировано” feedback.
- * Pair with a separate `tel:` / `mailto:` control when call/open is needed.
+ * Click copies `value`. Success feedback: small «Скопировано» badge in normal flow, directly under the value (no fixed/absolute to viewport).
  */
 export function CopyToClipboard({
   value,
@@ -128,22 +137,14 @@ export function CopyToClipboard({
 
   if (variant === "minimal") {
     return (
-      <span className="relative inline-flex max-w-full min-w-0">
-        {phase === "copied" && (
-          <span
-            role="status"
-            aria-live="polite"
-            className="pointer-events-none absolute bottom-full left-1/2 z-[60] mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-white shadow-md"
-          >
-            {copiedText}
-          </span>
-        )}
+      <span className="inline-flex max-w-full min-w-0 flex-col items-start gap-1 self-start">
         <button
           type="button"
           onClick={handleClick}
           className={cn(
-            "group inline-flex max-w-full min-w-0 items-center rounded-md text-left text-inherit transition-colors",
-            "cursor-pointer whitespace-nowrap focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
+            "group max-w-full min-w-0 rounded-md text-left transition-colors",
+            "inline-flex focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
+            "cursor-pointer",
             phase === "error" && "text-amber-800",
             className,
           )}
@@ -151,46 +152,55 @@ export function CopyToClipboard({
           aria-label={defaultAria}
         >
           {phase === "error" ? (
-            <span className="text-xs font-medium">Ошибка</span>
+            <span className="text-xs font-medium">Ошибка копирования</span>
           ) : (
             <span className="min-w-0 border-b border-dotted border-slate-300 group-hover:border-blue-500 group-hover:text-blue-800">
               {children}
             </span>
           )}
         </button>
+        {phase === "copied" && <CopiedBadge text={copiedText} />}
       </span>
     );
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={cn(
-        "group inline-flex max-w-full min-w-0 items-center gap-1 rounded-md text-left transition-colors",
-        "cursor-pointer hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
-        phase === "error" && "text-amber-800",
-        phase === "copied" && "text-emerald-700",
-        className,
-      )}
-      title={defaultTitle}
-      aria-label={defaultAria}
-    >
-      {phase === "copied" ? (
-        <span className="inline-flex min-w-0 items-center gap-1.5 font-medium">
-          <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          {copiedText}
-        </span>
-      ) : phase === "error" ? (
-        <span className="text-xs font-medium">Ошибка копирования</span>
-      ) : (
-        <span className="inline-flex min-w-0 items-center gap-1.5">
-          <Copy className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden="true" />
-          <span className="min-w-0 underline decoration-slate-300 decoration-dotted underline-offset-2 group-hover:decoration-blue-600">
-            {children}
+    <span className="inline-flex max-w-full min-w-0 flex-col items-start gap-1 self-start">
+      <button
+        type="button"
+        onClick={handleClick}
+        className={cn(
+          "group inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md text-left transition-colors",
+          "cursor-pointer hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
+          phase === "error" && "text-amber-800",
+          className,
+        )}
+        title={defaultTitle}
+        aria-label={defaultAria}
+      >
+        {phase === "error" ? (
+          <span className="text-xs font-medium">Ошибка копирования</span>
+        ) : (
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <Copy
+              className={cn(
+                "h-3.5 w-3.5 shrink-0 text-slate-400",
+                phase === "copied" && "text-emerald-600",
+              )}
+              aria-hidden="true"
+            />
+            <span
+              className={cn(
+                "min-w-0 underline decoration-slate-300 decoration-dotted underline-offset-2 group-hover:decoration-blue-600",
+                phase === "copied" && "text-emerald-800 decoration-emerald-200",
+              )}
+            >
+              {children}
+            </span>
           </span>
-        </span>
-      )}
-    </button>
+        )}
+      </button>
+      {phase === "copied" && <CopiedBadge text={copiedText} />}
+    </span>
   );
 }

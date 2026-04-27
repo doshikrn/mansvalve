@@ -27,11 +27,7 @@ import {
   type PublicCatalogProduct,
 } from "@/lib/public-catalog";
 import { buildProductBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/structured-data";
-import {
-  COMPANY,
-  COMPANY_PHONE_HREF,
-  buildCompanyProductInquiryWhatsAppUrl,
-} from "@/lib/company";
+import { COMPANY, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -548,17 +544,7 @@ export default async function ProductPage({ params }: PageProps) {
             Наши инженеры помогут выбрать арматуру по рабочим параметрам.
             Звоните или пишите — ответим быстро.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Button
-              size="lg"
-              className="rounded-xl bg-white text-base font-semibold text-blue-800 hover:bg-blue-50"
-              asChild
-            >
-              <a href={COMPANY_PHONE_HREF}>
-                <Phone className="mr-2 h-4 w-4" />
-                Позвонить нам
-              </a>
-            </Button>
+          <div className="flex flex-wrap items-center justify-center">
             <Button
               size="lg"
               variant="outline"

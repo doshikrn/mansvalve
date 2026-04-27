@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
-import {
-  COMPANY,
-  COMPANY_EMAIL_HREF,
-  COMPANY_PHONE_HREF,
-} from "@/lib/company";
+import { COMPANY } from "@/lib/company";
 
 const PRIVACY_TITLE = "Политика конфиденциальности — обработка персональных данных";
 
@@ -186,31 +182,26 @@ export default function PrivacyPage() {
             <li>
               электронная почта:{" "}
               <CopyToClipboard
+                variant="minimal"
                 value={COMPANY.email}
                 kind="email"
                 className="text-blue-800"
               >
                 {COMPANY.email}
-              </CopyToClipboard>{" "}
-              (<a className="text-blue-700 underline" href={COMPANY_EMAIL_HREF}>
-                написать
-              </a>
-              );
+              </CopyToClipboard>
+              .
             </li>
             <li>
               телефон:{" "}
               <CopyToClipboard
+                variant="minimal"
                 value={COMPANY.phoneE164}
                 kind="phone"
                 className="text-blue-800"
               >
                 {COMPANY.phoneDisplay}
-              </CopyToClipboard>{" "}
-              (
-              <a className="text-blue-700 underline" href={COMPANY_PHONE_HREF}>
-                позвонить
-              </a>
-              ).
+              </CopyToClipboard>
+              .
             </li>
           </ul>
           <p>Юр. и почтовый адрес: {COMPANY.address.full}.</p>
