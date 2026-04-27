@@ -22,6 +22,10 @@ export function MainHeader({
   onToggleMobileNav,
   mobileNavOpen,
 }: MainHeaderProps) {
+  const brandParts = COMPANY.name.trim().split(/\s+/);
+  const brandPrimary = brandParts[0] ?? COMPANY.name;
+  const brandSecondary = brandParts.slice(1).join(" ");
+
   return (
     <div className="border-b border-slate-200 bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-7 lg:px-10">
@@ -29,10 +33,10 @@ export function MainHeader({
           <div className="flex items-center justify-between gap-3 lg:block lg:justify-self-start">
             <Link
               href="/"
-              className="relative flex shrink-0 items-center"
+              className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3 lg:min-w-[180px] lg:max-w-[220px] lg:gap-3"
               aria-label={`${COMPANY.name} — на главную`}
             >
-              <span className="relative block h-14 w-14 shrink-0 overflow-hidden sm:h-[60px] sm:w-[60px]">
+              <span className="relative block h-12 w-12 shrink-0 overflow-hidden sm:h-14 sm:w-14 lg:h-[72px] lg:w-[72px] xl:h-[84px] xl:w-[84px]">
                 <Image
                   src={HEADER_LOGO_SRC}
                   alt={`${COMPANY.name} — логотип`}
@@ -40,10 +44,20 @@ export function MainHeader({
                   height={512}
                   priority
                   quality={100}
-                  sizes="64px"
+                  sizes="(max-width: 1023px) 56px, 84px"
                   unoptimized
                   className="h-full w-full object-contain object-center"
                 />
+              </span>
+              <span className="hidden min-w-0 flex-col justify-center leading-none lg:flex">
+                <span className="font-bold uppercase tracking-[0.08em] text-[#0c2342] xl:text-[15px]">
+                  {brandPrimary}
+                </span>
+                {brandSecondary ? (
+                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 xl:text-xs">
+                    {brandSecondary}
+                  </span>
+                ) : null}
               </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 lg:hidden">
