@@ -26,7 +26,7 @@ function NavDot() {
 export function TopBar() {
   return (
     <div className="border-b border-slate-200/90 bg-[#eceff3] text-slate-600">
-      <div className="mx-auto flex min-h-11 max-w-[1320px] items-center justify-between gap-4 px-5 sm:min-h-12 sm:px-7 lg:px-10">
+      <div className="mx-auto flex min-h-10 max-w-[1320px] items-center justify-between gap-3 px-5 sm:min-h-11 sm:px-7 lg:px-10">
         <nav
           className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[14px] font-medium leading-snug sm:flex sm:gap-3 sm:text-[15px] lg:text-base [&::-webkit-scrollbar]:h-0"
           aria-label="Служебная навигация"
@@ -50,7 +50,7 @@ export function TopBar() {
               href={COMPANY_TELEGRAM_PUBLIC_HREF}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200/80 hover:text-slate-800"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200/80 hover:text-slate-800"
               aria-label="Telegram"
             >
               <TelegramIcon className="h-[22px] w-[22px]" />
@@ -60,7 +60,7 @@ export function TopBar() {
             href={COMPANY_WHATSAPP_BASE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] ring-1 ring-[#25D366]/25 transition hover:bg-[#25D366]/25"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] ring-1 ring-[#25D366]/25 transition hover:bg-[#25D366]/25"
             aria-label="WhatsApp"
           >
             <WhatsappIcon className="h-[22px] w-[22px]" />

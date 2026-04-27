@@ -1,6 +1,10 @@
 /**
- * Генерирует `app/favicon.ico`, `app/icon.png`, `app/apple-icon.png`
- * из фирменного знака `public/images/mansvalve-brand-mark.png`.
+ * Генерирует `app/icon.png`, `app/apple-icon.png` из фирменного знака
+ * `public/images/mansvalve-brand-mark.png`.
+ *
+ * Браузерная вкладка использует PNG по конвенции Next (`app/icon.png`).
+ * Отдельный `favicon.ico` не создаём: генерация через `to-ico` давала на
+ * части окружений «битое» отображение иконки во вкладке.
  *
  * После замены PNG: `node scripts/build-app-icons.mjs`
  */
@@ -8,7 +12,6 @@ import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
-import toIco from "to-ico";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = join(__dir, "..");
@@ -29,20 +32,14 @@ async function resizePng(buf, sizePx) {
 async function main() {
   const src = await readFile(srcPath);
 
-  const png16 = await resizePng(src, 16);
-  const png32 = await resizePng(src, 32);
-  const png48 = await resizePng(src, 48);
   const icon512 = await resizePng(src, 512);
   const apple180 = await resizePng(src, 180);
 
-  const ico = await toIco([png16, png32, png48]);
-
-  await writeFile(join(appDir, "favicon.ico"), ico);
   await writeFile(join(appDir, "icon.png"), icon512);
   await writeFile(join(appDir, "apple-icon.png"), apple180);
 
   console.log(
-    "Wrote app/favicon.ico, app/icon.png, app/apple-icon.png from public/images/mansvalve-brand-mark.png",
+    "Wrote app/icon.png, app/apple-icon.png from public/images/mansvalve-brand-mark.png",
   );
 }
 

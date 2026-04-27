@@ -19,7 +19,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteBaseUrl()),
-  /** Favicons: `app/icon.png` + `app/apple-icon.png` (Next file convention). */
+  /** Tab / bookmarks: PNG via file convention (`app/icon.png`) — без битого ICO. */
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   title: {
     default: `${COMPANY.name} — трубопроводная арматура, задвижки, краны, клапаны в Казахстане`,
     template: `%s | ${COMPANY.name}`,
