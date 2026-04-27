@@ -4,9 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Menu, Search, X } from "lucide-react";
-import { COMPANY, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import { COMPANY, COMPANY_PHONE_HREF, COMPANY_EMAIL_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
-import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +18,7 @@ const NAV_LINKS = [
 ] as const;
 
 function Sep() {
-  return <span className="shrink-0 text-slate-300" aria-hidden="true">|</span>;
+  return <span className="mx-0.5 shrink-0 text-slate-300/80" aria-hidden="true">|</span>;
 }
 
 function goToCatalogQuery(q: string) {
@@ -65,22 +64,22 @@ export function Header() {
   }, [mobileSearchOpen]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Mobile: search + logo + menu */}
         <div className="flex items-center justify-between gap-2 py-3 md:hidden">
           <Link
             href="/"
-            className="block min-w-0 max-w-[calc(100%-5.5rem)]"
+            className="block min-w-0 max-w-[calc(100%-5.5rem)] p-0"
             aria-label={`Главная — ${COMPANY.name}`}
           >
-            <div className="relative h-12 w-[200px] sm:w-[220px]">
+            <div className="relative h-14 w-[min(200px,46vw)]">
               <Image
                 src="/images/logo-mansvalve-light.png"
                 alt={`${COMPANY.name} logo`}
                 fill
                 priority
-                sizes="(max-width: 640px) 200px, 220px"
+                sizes="(max-width: 640px) 46vw, 200px"
                 className="object-contain object-left"
               />
             </div>
@@ -88,7 +87,7 @@ export function Header() {
           <div className="flex shrink-0 items-center gap-0.5">
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100"
               onClick={() => {
                 setMobileSearchOpen(true);
                 setMobileOpen(false);
@@ -98,7 +97,7 @@ export function Header() {
               <Search className="h-5 w-5" />
             </button>
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md p-0 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg p-0 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
               aria-label={mobileOpen ? "Закрыть меню" : "Открыть меню"}
               aria-expanded={mobileOpen}
               onClick={() => {
@@ -119,10 +118,7 @@ export function Header() {
               if (e.target === e.currentTarget) setMobileSearchOpen(false);
             }}
           >
-            <div
-              className="w-full max-w-lg"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
+            <div className="w-full max-w-lg" onMouseDown={(e) => e.stopPropagation()}>
               <CatalogSearchPanel
                 isOpen
                 onClose={() => setMobileSearchOpen(false)}
@@ -133,59 +129,46 @@ export function Header() {
           </div>
         )}
 
-        {/* Desktop: two rows — contacts, then logo + nav + search */}
+        {/* Desktop */}
         <div className="hidden md:block">
-          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1.5 border-b border-slate-100 py-2 text-xs sm:text-sm">
-            <div className="inline-flex min-w-0 max-w-full items-baseline gap-1.5 whitespace-nowrap text-slate-800">
-              <span className="shrink-0 text-slate-500">Тел.:</span>
-              <CopyToClipboard
-                variant="minimal"
-                value={COMPANY.phoneE164}
-                messageForCopyToast={COMPANY.phoneDisplay}
-                kind="phone"
-                className="text-sm font-semibold"
+          <div className="flex min-h-8 items-center justify-center border-b border-slate-200/50 bg-slate-50/40 py-1.5 text-xs text-slate-500 sm:text-[13px]">
+            <div className="flex min-w-0 max-w-full flex-wrap items-center justify-center gap-y-0.5">
+              <a
+                href={COMPANY_PHONE_HREF}
+                className="shrink-0 transition-colors hover:text-slate-700"
               >
                 {COMPANY.phoneDisplay}
-              </CopyToClipboard>
-            </div>
-            <Sep />
-            <div className="inline-flex min-w-0 max-w-[min(100%,18rem)] items-baseline gap-1.5 whitespace-nowrap text-slate-800 lg:max-w-[20rem] xl:max-w-[24rem]">
-              <span className="shrink-0 text-slate-500">E-mail:</span>
-              <CopyToClipboard
-                variant="minimal"
-                value={COMPANY.email}
-                messageForCopyToast={COMPANY.email}
-                kind="email"
-                className="min-w-0 text-sm font-medium"
+              </a>
+              <Sep />
+              <a
+                href={COMPANY_EMAIL_HREF}
+                className="min-w-0 max-w-[14rem] truncate sm:max-w-md transition-colors hover:text-slate-700"
                 title={COMPANY.email}
               >
-                <span className="min-w-0 max-w-full truncate" title={COMPANY.email}>
-                  {COMPANY.email}
-                </span>
-              </CopyToClipboard>
+                {COMPANY.email}
+              </a>
+              <Sep />
+              <a
+                href={COMPANY_WHATSAPP_BASE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 font-medium text-slate-500 transition-colors hover:text-slate-800"
+              >
+                WhatsApp
+              </a>
             </div>
-            <Sep />
-            <a
-              href={COMPANY_WHATSAPP_BASE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-green-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-green-600"
-            >
-              <WhatsappIcon className="h-3.5 w-3.5" />
-              WhatsApp
-            </a>
           </div>
 
-          <div className="grid min-h-14 grid-cols-1 items-center gap-3 py-2.5 lg:grid-cols-[auto_1fr_auto] lg:gap-4">
+          <div className="grid items-center gap-x-4 gap-y-3 py-3.5 lg:grid-cols-[auto_1fr_auto] lg:gap-x-6 lg:py-4">
             <div className="flex min-w-0 justify-center lg:justify-start">
-              <Link href="/" className="block" aria-label={`Главная — ${COMPANY.name}`}>
-                <div className="relative mx-auto h-12 w-[192px] lg:mx-0 lg:h-14 lg:w-[220px]">
+              <Link href="/" className="block p-0" aria-label={`Главная — ${COMPANY.name}`}>
+                <div className="relative h-[3.75rem] w-[14.5rem] sm:h-16 sm:w-60 lg:h-[3.5rem] lg:w-[16.25rem]">
                   <Image
                     src="/images/logo-mansvalve-light.png"
                     alt={`${COMPANY.name} logo`}
                     fill
                     priority
-                    sizes="(max-width: 1280px) 220px, 240px"
+                    sizes="(max-width: 1280px) 16rem, 16.25rem"
                     className="object-contain object-left"
                   />
                 </div>
@@ -193,120 +176,117 @@ export function Header() {
             </div>
 
             <nav
-              className="mx-auto flex max-w-full min-w-0 flex-nowrap justify-center gap-x-2 overflow-x-auto text-sm font-medium text-slate-600 [scrollbar-width:none] sm:gap-x-3 md:gap-x-2 lg:gap-x-4 [&::-webkit-scrollbar]:hidden"
+              className="mx-auto flex max-w-full min-w-0 flex-nowrap justify-center gap-x-1 overflow-x-auto [scrollbar-width:none] lg:gap-x-3 xl:gap-x-6 [&::-webkit-scrollbar]:hidden"
               aria-label="Основная навигация"
             >
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="shrink-0 whitespace-nowrap transition-colors hover:text-blue-700"
+                  className="shrink-0 px-0.5 py-0.5 text-sm font-semibold text-slate-800 transition-all hover:text-blue-800/90 hover:underline decoration-slate-300/80 underline-offset-4"
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
 
-            <div
-              className="relative z-20 flex w-full min-w-0 items-center justify-center lg:justify-end"
-              ref={searchWrapRef}
-            >
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition",
-                  "hover:border-blue-300 hover:text-blue-700",
-                  "focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:outline-none",
-                  searchOpen && "border-blue-400 text-blue-700",
-                )}
-                onClick={() => setSearchOpen((o) => !o)}
-                aria-label="Поиск по каталогу"
-                aria-expanded={searchOpen}
-                id="header-search-trigger"
+            <div className="flex w-full min-w-0 items-center justify-center gap-2.5 lg:justify-end">
+              <div
+                className="relative z-20 flex min-w-0 max-w-full flex-1 items-center justify-end"
+                ref={searchWrapRef}
               >
-                <Search className="h-5 w-5" />
-              </button>
-              {searchOpen && (
-                <div className="absolute right-0 top-full z-50 mt-1.5">
-                  <CatalogSearchPanel
-                    isOpen
-                    onClose={() => setSearchOpen(false)}
-                    mode="dropdown"
-                    onSearchSubmit={goToCatalogQuery}
-                  />
+                <div
+                  className={cn(
+                    "w-full min-w-0 max-w-full overflow-hidden transition-[max-width,opacity] duration-300 ease-out will-change-[max-width]",
+                    searchOpen ? "max-w-[min(100%,300px)] opacity-100" : "max-w-0 opacity-0",
+                    !searchOpen && "pointer-events-none",
+                  )}
+                >
+                  {searchOpen && (
+                    <CatalogSearchPanel
+                      isOpen
+                      onClose={() => setSearchOpen(false)}
+                      mode="dropdown"
+                      onSearchSubmit={goToCatalogQuery}
+                      headerEmbed
+                    />
+                  )}
                 </div>
-              )}
+                <button
+                  type="button"
+                  className={cn(
+                    "ml-auto inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/60 px-3 text-sm text-slate-600 transition",
+                    "hover:border-slate-300 hover:bg-slate-100/80 hover:text-slate-900",
+                    "focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none",
+                    searchOpen && "pointer-events-none invisible absolute w-0 overflow-hidden p-0 opacity-0",
+                  )}
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Открыть поиск по каталогу"
+                  aria-expanded={searchOpen}
+                >
+                  <Search className="h-4 w-4" />
+                  <span className="whitespace-nowrap pr-0.5">Поиск</span>
+                </button>
+              </div>
+
+              <a
+                href={COMPANY_WHATSAPP_BASE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#25D366] px-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#1ebe57] hover:shadow active:scale-[0.99]"
+              >
+                <WhatsappIcon className="h-3.5 w-3.5" />
+                WhatsApp
+              </a>
             </div>
           </div>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white md:hidden">
-          <nav className="mx-auto max-w-7xl space-y-1 px-4 py-3">
+        <div className="bg-white md:hidden">
+          <nav className="mx-auto max-w-7xl space-y-0.5 px-4 py-3">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-blue-700"
+                className="block rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-blue-800"
               >
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 border-t border-slate-200 pt-2">
+            <div className="mt-2">
               <button
                 type="button"
                 onClick={() => {
                   setMobileOpen(false);
                   setMobileSearchOpen(true);
                 }}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
               >
                 <Search className="h-4 w-4 text-slate-500" />
                 Поиск по каталогу
               </button>
             </div>
-            <div className="mt-2 flex flex-col gap-2 border-t border-slate-200 pt-3 text-sm text-slate-800">
-              <div className="px-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Телефон</p>
-                <div className="mt-1">
-                  <CopyToClipboard
-                    variant="minimal"
-                    value={COMPANY.phoneE164}
-                    messageForCopyToast={COMPANY.phoneDisplay}
-                    kind="phone"
-                    className="font-medium"
-                  >
-                    {COMPANY.phoneDisplay}
-                  </CopyToClipboard>
-                </div>
-              </div>
-              <div className="px-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">E-mail</p>
-                <div className="mt-1">
-                  <CopyToClipboard
-                    variant="minimal"
-                    value={COMPANY.email}
-                    messageForCopyToast={COMPANY.email}
-                    kind="email"
-                    className="min-w-0 font-medium"
-                    title={COMPANY.email}
-                  >
-                    <span className="min-w-0 break-words" title={COMPANY.email}>
-                      {COMPANY.email}
-                    </span>
-                  </CopyToClipboard>
-                </div>
-              </div>
+            <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm text-slate-700">
+              <a href={COMPANY_PHONE_HREF} className="block rounded-md px-1 py-0.5 font-medium hover:bg-slate-50">
+                {COMPANY.phoneDisplay}
+              </a>
+              <a
+                href={COMPANY_EMAIL_HREF}
+                className="block break-all rounded-md px-1 py-0.5 text-slate-800 hover:bg-slate-50"
+              >
+                {COMPANY.email}
+              </a>
               <a
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-1 flex items-center justify-center gap-1.5 rounded-full bg-green-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#25D366] py-2.5 text-sm font-medium text-white transition hover:bg-[#1ebe57]"
               >
                 <WhatsappIcon className="h-4 w-4" />
-                Написать в WhatsApp
+                WhatsApp
               </a>
             </div>
           </nav>
