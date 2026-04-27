@@ -21,24 +21,32 @@ function formatKzt(n: number): string {
 const SUGGEST_LIMIT = 8;
 const DEBOUNCE_MS = 300;
 
-const HEADER_PLACEHOLDER = "Поиск по DN, PN, арматуре";
+const PLACEHOLDER_BAR = "Поиск по каталогу";
+const PLACEHOLDER_MODAL = "Название, DN, PN, модель…";
+
+export type CatalogSearchPanelVariant = "headerBar" | "modal";
 
 type CatalogSearchPanelProps = {
+  /** Main header: wide input, «Найти», always visible. */
+  variant: CatalogSearchPanelVariant;
   isOpen: boolean;
   onClose: () => void;
-  mode: "dropdown" | "fullscreen";
   onSearchSubmit: (q: string) => void;
-  /** Desktop header: compact input + popout list below. */
-  headerEmbed?: boolean;
+  /** A11y: avoid duplicate id when two instances are mounted. */
+  inputId?: string;
+  /** Analytics source suffix for catalog_search. */
+  analyticsSource?: "header-bar" | "header-modal";
 };
 
 export function CatalogSearchPanel({
+  variant,
   isOpen,
   onClose,
-  mode,
   onSearchSubmit,
-  headerEmbed = false,
+  inputId: inputIdProp,
+  analyticsSource = "header-bar",
 }: CatalogSearchPanelProps) {
+  const inputId = inputIdProp ?? (variant === "headerBar" ? "header-search-q" : "modal-search-q");
   const [q, setQ] = useState("");
   const [suggestions, setSuggestions] = useState<ProductSearchItemDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -107,7 +115,12 @@ export function CatalogSearchPanel({
     const t = rawQ.trim();
     if (!t) return;
     onSearchSubmit(t);
-    onClose();
+    if (variant === "headerBar") {
+      setQ("");
+      setSuggestions([]);
+    } else {
+      onClose();
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -115,7 +128,7 @@ export function CatalogSearchPanel({
     if (!q.trim()) return;
     const pageContext = getPageAnalyticsContext();
     trackEvent("catalog_search", {
-      source: "header-search",
+      source: analyticsSource,
       category: pageContext.category,
       product_slug: pageContext.product_slug,
       query: q.trim(),
@@ -124,13 +137,29 @@ export function CatalogSearchPanel({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") onClose();
+    if (e.key !== "Escape") return;
+    if (variant === "headerBar") {
+      setQ("");
+      setSuggestions([]);
+      inputRef.current?.blur();
+    } else {
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
 
   const allResultsHref = q.trim() ? `/catalog?q=${encodeURIComponent(q.trim())}` : "/catalog";
   const showHeaderDropdown = q.trim() || loading || fetchError;
+  const isBar = variant === "headerBar";
+  const inputLabelId = `${inputId}-label`;
+
+  const afterSuggestion = () => {
+    if (variant === "headerBar") {
+      setQ("");
+      setSuggestions([]);
+    }
+  };
 
   const suggestionsList = (
     <>
@@ -144,14 +173,23 @@ export function CatalogSearchPanel({
         </div>
       )}
       {q.trim() && !loading && !suggestions.length && !fetchError && (
-        <p className="p-3 text-sm text-slate-500">Нет совпадений в первых {SUGGEST_LIMIT} · откройте полный список ниже.</p>
+        <p className="p-3 text-sm text-slate-500">
+          Нет совпадений в первых {SUGGEST_LIMIT} · откройте полный список ниже.
+        </p>
       )}
       <ul className="py-0.5">
         {suggestions.map((p) => (
           <li key={p.slug} className="border-b border-slate-50 last:border-0">
             <Link
               href={`/catalog/${p.slug}`}
-              onClick={onClose}
+              onClick={() => {
+                if (isBar) {
+                  setQ("");
+                  setSuggestions([]);
+                } else {
+                  onClose();
+                }
+              }}
               className="flex gap-3 px-3 py-2.5 text-left transition hover:bg-slate-50"
             >
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-100">
@@ -189,14 +227,14 @@ export function CatalogSearchPanel({
       </ul>
       {q.trim() && (
         <div
-          className={cn(
-            "border-t border-slate-100 bg-white p-2",
-            !headerEmbed && "sticky bottom-0",
-          )}
+          className={cn("border-t border-slate-100 bg-white p-2", isBar ? "" : "sticky bottom-0")}
         >
           <Link
             href={allResultsHref}
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+              afterSuggestion();
+            }}
             className="flex items-center justify-center gap-1 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-200"
           >
             Показать все результаты
@@ -206,66 +244,50 @@ export function CatalogSearchPanel({
     </>
   );
 
-  const formInner = (
-    <form onSubmit={handleFormSubmit} className="w-full min-w-0" role="search">
-      <div className={cn("relative", headerEmbed && "flex items-center gap-1.5")}>
-        {headerEmbed && (
-          <span id="catalog-search-title" className="sr-only">
-            Поиск по каталогу
-          </span>
-        )}
-        <label className="relative block min-w-0 flex-1">
-          <span className="sr-only" id="catalog-search-input-label">
-            Поиск товаров по каталогу
-          </span>
-          <Search
-            className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-            aria-hidden
-          />
-          <input
-            id="catalog-search-input"
-            ref={inputRef}
-            type="search"
-            name="q"
-            value={q}
-            onChange={(e) => onInputChange(e.target.value)}
-            className={cn(
-              "w-full border text-sm text-slate-900 outline-none transition",
-              headerEmbed
-                ? "h-10 rounded-lg border-slate-200/90 bg-white pl-9 pr-2 shadow-sm placeholder:text-slate-400 focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/15"
-                : "h-11 rounded-xl border-slate-200 bg-slate-50/80 pl-9 pr-3 shadow-inner focus:border-blue-500 focus:bg-white",
-            )}
-            placeholder={headerEmbed ? HEADER_PLACEHOLDER : "Название, DN, PN, модель…"}
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-            aria-label="Поиск по каталогу"
-            aria-describedby="catalog-search-input-label"
-            aria-autocomplete="list"
-          />
-        </label>
-        {headerEmbed && (
-          <button
-            type="button"
-            onClick={onClose}
-            className="shrink-0 rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-            aria-label="Закрыть"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
-      </div>
-    </form>
-  );
-
-  if (headerEmbed) {
+  if (isBar) {
     return (
-      <div className="relative w-full min-w-0 max-w-[min(100vw,300px)]" onKeyDown={handleKeyDown}>
-        {formInner}
+      <div className="relative w-full min-w-0" onKeyDown={handleKeyDown}>
+        <span className="sr-only" id={inputLabelId}>
+          Поиск товаров по каталогу
+        </span>
+        <form
+          onSubmit={handleFormSubmit}
+          className="flex w-full min-w-0 items-stretch gap-0"
+          role="search"
+        >
+          <label className="relative min-w-0 flex-1">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 sm:h-5 sm:w-5"
+              aria-hidden
+            />
+            <input
+              id={inputId}
+              ref={inputRef}
+              type="search"
+              name="q"
+              value={q}
+              onChange={(e) => onInputChange(e.target.value)}
+              className="h-11 w-full min-w-0 rounded-l-lg border border-slate-300 border-r-0 bg-white pl-10 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none sm:h-12 sm:pl-11 sm:text-base"
+              placeholder={PLACEHOLDER_BAR}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+              aria-label="Поиск по каталогу"
+              aria-describedby={inputLabelId}
+              aria-autocomplete="list"
+            />
+          </label>
+          <button
+            type="submit"
+            className="shrink-0 rounded-r-lg border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:px-5 sm:text-base"
+          >
+            Найти
+          </button>
+        </form>
         {showHeaderDropdown && (
           <div
-            className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-72 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain rounded-lg border border-slate-200/90 bg-white py-0.5 shadow-lg shadow-slate-200/50 [scrollbar-width:thin]"
+            className="absolute right-0 left-0 z-[100] mt-1.5 max-h-[min(50vh,22rem)] min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain rounded-lg border border-slate-200/90 bg-white py-0.5 shadow-xl shadow-slate-300/40 [scrollbar-width:thin]"
             role="region"
             aria-label="Предпросмотр товаров"
             aria-live="polite"
@@ -277,13 +299,42 @@ export function CatalogSearchPanel({
     );
   }
 
+  const formInner = (
+    <form onSubmit={handleFormSubmit} className="w-full min-w-0" role="search">
+      <div className="relative">
+        <label className="block min-w-0">
+          <span className="sr-only" id="modal-form-label">
+            Поиск товаров по каталогу
+          </span>
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+            aria-hidden
+          />
+          <input
+            id={inputId}
+            ref={inputRef}
+            type="search"
+            name="q"
+            value={q}
+            onChange={(e) => onInputChange(e.target.value)}
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-9 pr-3 text-sm text-slate-900 shadow-inner focus:border-blue-500 focus:bg-white focus:outline-none"
+            placeholder={PLACEHOLDER_MODAL}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            aria-label="Поиск по каталогу"
+            aria-describedby="modal-form-label"
+            aria-autocomplete="list"
+          />
+        </label>
+      </div>
+    </form>
+  );
+
   return (
     <div
-      className={cn(
-        "flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-200/50",
-        mode === "dropdown" && "w-[min(100vw-1.5rem,28rem)] sm:w-[28rem]",
-        mode === "fullscreen" && "h-[min(100dvh,32rem)] w-full max-w-lg",
-      )}
+      className="flex h-[min(100dvh,32rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xl shadow-slate-200/50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="catalog-search-title"
@@ -304,11 +355,7 @@ export function CatalogSearchPanel({
       </div>
       <div className="p-3 pb-2">{formInner}</div>
       <div
-        className={cn(
-          "min-h-0 flex-1 overflow-y-auto border-t border-slate-100",
-          mode === "dropdown" && "max-h-72",
-          mode === "fullscreen" && "flex-1",
-        )}
+        className="min-h-0 flex-1 overflow-y-auto border-t border-slate-100"
         role="region"
         aria-label="Предпросмотр товаров"
         aria-live="polite"

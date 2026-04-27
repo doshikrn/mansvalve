@@ -15,14 +15,14 @@ export async function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div>
-            <Link href="/" className="block" aria-label={`Главная — ${COMPANY.name}`}>
-              <div className="relative h-14 w-[300px]">
+            <Link href="/" className="inline-block" aria-label={`Главная — ${COMPANY.name}`}>
+              <div className="relative h-14 w-14 sm:h-16 sm:w-16">
                 <Image
-                  src="/images/logo-mansvalve-light.png"
-                  alt={`${COMPANY.name} logo`}
-                  fill
-                  sizes="300px"
-                  className="object-contain object-left"
+                  src="/images/logo-mansvalve.png"
+                  alt={`${COMPANY.name} — логотип`}
+                  width={64}
+                  height={64}
+                  className="h-14 w-14 rounded-full object-contain sm:h-16 sm:w-16"
                 />
               </div>
             </Link>
