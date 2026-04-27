@@ -33,15 +33,14 @@ export async function Categories() {
     <section className="bg-slate-50 py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
-              Каталог
-            </div>
+          <div className="min-w-0">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-              Выберите группу арматуры
+              Каталог MANSVALVE GROUP
             </h2>
-            <p className="mt-2 max-w-xl text-base text-slate-500 sm:text-lg">
-              {products.length} позиций в наличии и под заказ. DN15–DN1000, PN16–PN64.
+            <p className="mt-2 max-w-[700px] text-base leading-relaxed text-slate-600 sm:text-lg">
+              {products.length} позиций в наличии и под заказ: задвижки, фланцы, дисковые затворы,
+              обратные клапаны, электроприводы и комплектующие. DN15–DN1000, PN16–PN64. Официальные
+              поставки с НДС и документами.
             </p>
           </div>
           <Link
