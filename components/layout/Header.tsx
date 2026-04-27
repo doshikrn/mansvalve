@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Menu, Search, X } from "lucide-react";
-import { COMPANY, COMPANY_PHONE_HREF, COMPANY_EMAIL_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import { COMPANY, COMPANY_PHONE_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ const NAV_LINKS = [
 ] as const;
 
 function Sep() {
-  return <span className="mx-0.5 shrink-0 text-slate-300/80" aria-hidden="true">|</span>;
+  return <span className="mx-0.5 shrink-0 text-gray-300" aria-hidden="true">|</span>;
 }
 
 function goToCatalogQuery(q: string) {
@@ -131,35 +132,26 @@ export function Header() {
 
         {/* Desktop */}
         <div className="hidden md:block">
-          <div className="flex min-h-8 items-center justify-center border-b border-slate-200/50 bg-slate-50/40 py-1.5 text-xs text-slate-500 sm:text-[13px]">
+          <div className="flex min-h-8 items-center justify-center border-b border-slate-200/50 bg-slate-50/40 py-1.5 text-xs text-gray-500 sm:text-[13px]">
             <div className="flex min-w-0 max-w-full flex-wrap items-center justify-center gap-y-0.5">
-              <a
-                href={COMPANY_PHONE_HREF}
-                className="shrink-0 transition-colors hover:text-slate-700"
-              >
-                {COMPANY.phoneDisplay}
-              </a>
+              <span className="shrink-0 font-normal tabular-nums">{COMPANY.phoneDisplay}</span>
               <Sep />
-              <a
-                href={COMPANY_EMAIL_HREF}
-                className="min-w-0 max-w-[14rem] truncate sm:max-w-md transition-colors hover:text-slate-700"
+              <CopyToClipboard
+                variant="minimal"
+                value={COMPANY.email}
+                messageForCopyToast={COMPANY.email}
+                kind="email"
                 title={COMPANY.email}
+                className="group min-w-0 max-w-[min(100%,14rem)] sm:max-w-md text-gray-500 hover:text-gray-600 [&_span]:border-gray-300 [&_span]:text-gray-500 group-hover:[&_span]:border-gray-400 group-hover:[&_span]:text-gray-600"
               >
-                {COMPANY.email}
-              </a>
-              <Sep />
-              <a
-                href={COMPANY_WHATSAPP_BASE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0 font-medium text-slate-500 transition-colors hover:text-slate-800"
-              >
-                WhatsApp
-              </a>
+                <span className="block min-w-0 max-w-full truncate" title={COMPANY.email}>
+                  {COMPANY.email}
+                </span>
+              </CopyToClipboard>
             </div>
           </div>
 
-          <div className="grid items-center gap-x-4 gap-y-3 py-3.5 lg:grid-cols-[auto_1fr_auto] lg:gap-x-6 lg:py-4">
+          <div className="grid items-center gap-x-3 gap-y-3 py-3.5 [grid-template-columns:minmax(0,auto)_minmax(0,1fr)_minmax(0,auto)] lg:gap-x-5 lg:py-4">
             <div className="flex min-w-0 justify-center lg:justify-start">
               <Link href="/" className="block p-0" aria-label={`Главная — ${COMPANY.name}`}>
                 <div className="relative h-[3.75rem] w-[14.5rem] sm:h-16 sm:w-60 lg:h-[3.5rem] lg:w-[16.25rem]">
@@ -190,9 +182,9 @@ export function Header() {
               ))}
             </nav>
 
-            <div className="flex w-full min-w-0 items-center justify-center gap-2.5 lg:justify-end">
+            <div className="flex w-full min-w-0 max-w-full items-center justify-center gap-1.5 sm:gap-2 md:min-w-0 md:shrink-0 md:justify-end">
               <div
-                className="relative z-20 flex min-w-0 max-w-full flex-1 items-center justify-end"
+                className="relative z-20 flex min-w-0 max-w-full flex-1 items-center justify-end sm:min-w-[2rem]"
                 ref={searchWrapRef}
               >
                 <div
@@ -230,13 +222,19 @@ export function Header() {
               </div>
 
               <a
+                href={COMPANY_PHONE_HREF}
+                className="inline-flex h-9 min-w-0 max-w-full shrink-0 items-center justify-center rounded-full border border-blue-200/80 bg-blue-50 px-2.5 text-xs font-semibold text-blue-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 sm:px-3.5 sm:text-sm"
+              >
+                {COMPANY.phoneDisplay}
+              </a>
+              <a
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#25D366] px-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#1ebe57] hover:shadow active:scale-[0.99]"
+                className="inline-flex h-9 min-w-0 max-w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#1ebe57] hover:shadow active:scale-[0.99] sm:px-3"
               >
-                <WhatsappIcon className="h-3.5 w-3.5" />
-                WhatsApp
+                <WhatsappIcon className="h-3.5 w-3.5 shrink-0" />
+                <span className="whitespace-nowrap">WhatsApp</span>
               </a>
             </div>
           </div>
@@ -270,15 +268,24 @@ export function Header() {
               </button>
             </div>
             <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-sm text-slate-700">
-              <a href={COMPANY_PHONE_HREF} className="block rounded-md px-1 py-0.5 font-medium hover:bg-slate-50">
+              <a
+                href={COMPANY_PHONE_HREF}
+                className="flex w-full items-center justify-center gap-1.5 rounded-full border border-blue-200/80 bg-blue-50 py-2.5 text-sm font-semibold text-blue-900 transition hover:border-blue-300 hover:bg-blue-100"
+              >
                 {COMPANY.phoneDisplay}
               </a>
-              <a
-                href={COMPANY_EMAIL_HREF}
-                className="block break-all rounded-md px-1 py-0.5 text-slate-800 hover:bg-slate-50"
+              <CopyToClipboard
+                variant="minimal"
+                value={COMPANY.email}
+                messageForCopyToast={COMPANY.email}
+                kind="email"
+                title={COMPANY.email}
+                className="w-full justify-center text-center text-slate-700"
               >
-                {COMPANY.email}
-              </a>
+                <span className="break-words" title={COMPANY.email}>
+                  {COMPANY.email}
+                </span>
+              </CopyToClipboard>
               <a
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"
