@@ -246,44 +246,54 @@ export function CatalogSearchPanel({
 
   if (isBar) {
     return (
-      <div className="relative w-full min-w-0" onKeyDown={handleKeyDown}>
+      <div className="relative w-full min-w-0 max-w-[560px]" onKeyDown={handleKeyDown}>
         <span className="sr-only" id={inputLabelId}>
           Поиск товаров по каталогу
         </span>
-        <form
-          onSubmit={handleFormSubmit}
-          className="flex w-full min-w-0 items-stretch gap-0"
-          role="search"
-        >
-          <label className="relative min-w-0 flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 sm:h-5 sm:w-5"
-              aria-hidden
-            />
-            <input
-              id={inputId}
-              ref={inputRef}
-              type="search"
-              name="q"
-              value={q}
-              onChange={(e) => onInputChange(e.target.value)}
-              className="h-11 w-full min-w-0 rounded-l-lg border border-slate-300 border-r-0 bg-white pl-10 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-900/10 focus:outline-none sm:h-12 sm:pl-11 sm:text-base"
-              placeholder={PLACEHOLDER_BAR}
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="off"
-              spellCheck={false}
-              aria-label="Поиск по каталогу"
-              aria-describedby={inputLabelId}
-              aria-autocomplete="list"
-            />
-          </label>
-          <button
-            type="submit"
-            className="shrink-0 rounded-r-lg border border-slate-900 bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:px-5 sm:text-base"
+        <form onSubmit={handleFormSubmit} className="w-full min-w-0" role="search">
+          <div
+            className={cn(
+              "flex h-[52px] w-full overflow-hidden rounded-xl border-2 border-slate-400 bg-white shadow-sm",
+              "transition-[box-shadow,border-color] focus-within:border-blue-700 focus-within:shadow-md focus-within:ring-2 focus-within:ring-blue-900/15",
+              "lg:h-14",
+            )}
           >
-            Найти
-          </button>
+            <label className="relative flex min-w-0 flex-1 items-center pl-10 lg:pl-11">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-slate-500 lg:left-3.5 lg:h-5 lg:w-5"
+                aria-hidden
+              />
+              <input
+                id={inputId}
+                ref={inputRef}
+                type="search"
+                name="q"
+                value={q}
+                onChange={(e) => onInputChange(e.target.value)}
+                className={cn(
+                  "h-full w-full min-w-0 border-0 bg-transparent py-0 pr-3 text-[15px] text-slate-900 outline-none",
+                  "placeholder:text-slate-400 focus:ring-0 lg:text-base",
+                )}
+                placeholder={PLACEHOLDER_BAR}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                aria-label="Поиск по каталогу"
+                aria-describedby={inputLabelId}
+                aria-autocomplete="list"
+              />
+            </label>
+            <button
+              type="submit"
+              className={cn(
+                "w-[112px] shrink-0 bg-slate-950 px-3 text-sm font-semibold text-white transition",
+                "hover:bg-slate-900 focus-visible:relative focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-white/80",
+              )}
+            >
+              Найти
+            </button>
+          </div>
         </form>
         {showHeaderDropdown && (
           <div
