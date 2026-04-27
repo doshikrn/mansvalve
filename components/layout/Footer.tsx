@@ -98,23 +98,27 @@ export function Footer() {
                 href={waKpUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-[3.25rem] flex-1 flex-col items-center justify-center rounded-xl bg-[#22c55e] px-4 py-2.5 text-center text-white shadow-sm transition hover:bg-[#16a34a] sm:min-w-[200px] lg:flex-initial"
+                className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-xl bg-[#22c55e] px-4 py-2.5 text-white shadow-sm transition hover:bg-[#16a34a] sm:min-w-[200px] lg:flex-initial"
               >
-                <span className="inline-flex items-center gap-2 text-sm font-bold">
-                  <WhatsappIcon className="h-5 w-5 shrink-0 text-white" />
-                  Получить КП в WhatsApp
+                <WhatsappIcon className="h-5 w-5 shrink-0 self-center text-white" aria-hidden />
+                <span className="min-w-0 text-left">
+                  <span className="block text-sm font-bold leading-snug">Получить КП в WhatsApp</span>
+                  <span className="mt-0.5 block text-[11px] font-medium leading-tight text-white/90">
+                    Быстрый ответ
+                  </span>
                 </span>
-                <span className="mt-0.5 text-[11px] font-medium text-white/90">Быстрый ответ</span>
               </a>
               <a
                 href={COMPANY_EMAIL_HREF}
-                className="inline-flex min-h-[3.25rem] flex-1 flex-col items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-center text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[200px] lg:flex-initial"
+                className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[200px] lg:flex-initial"
               >
-                <span className="inline-flex items-center gap-2 text-sm font-bold">
-                  <Mail className="h-5 w-5 shrink-0 text-slate-800" strokeWidth={2} aria-hidden />
-                  Отправить заявку
+                <Mail className="h-5 w-5 shrink-0 self-center text-slate-800" strokeWidth={2} aria-hidden />
+                <span className="min-w-0 text-left">
+                  <span className="block text-sm font-bold leading-snug">Отправить заявку</span>
+                  <span className="mt-0.5 block text-[11px] font-medium leading-tight text-slate-500">
+                    На почту
+                  </span>
                 </span>
-                <span className="mt-0.5 text-[11px] font-medium text-slate-500">На почту</span>
               </a>
             </div>
           </div>
@@ -173,8 +177,8 @@ export function Footer() {
               </p>
               <ul className="mt-4 space-y-1.5 text-xs leading-relaxed text-slate-400 sm:text-sm">
                 <li className="font-medium text-slate-200">ТОО MANSVALVE GROUP</li>
-                <li>БИН: 221040021234</li>
-                <li>ИИН/КПП: 600700450864</li>
+                <li>БИН: {COMPANY.bankDetails.bin}</li>
+                <li>ИИК {COMPANY.bankDetails.iik}</li>
                 <li>Алматы, Казахстан</li>
                 <li>Пн – Пт: 09:00 – 18:00</li>
               </ul>
