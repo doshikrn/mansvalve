@@ -60,8 +60,8 @@ const CASES: CaseItem[] = [
 
 function MetaPill({ icon: Icon, label, value }: { icon: typeof Package; label: string; value: string }) {
   return (
-    <div className="flex min-w-0 items-start gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 sm:items-center sm:gap-2.5">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 sm:mt-0" aria-hidden />
+    <div className="flex min-w-0 items-start gap-2 rounded-lg border border-site-border bg-site-bg px-3 py-2 sm:items-center sm:gap-2.5">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-site-primary sm:mt-0" aria-hidden />
       <div className="min-w-0 text-xs sm:text-sm">
         <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">{label}</p>
         <p className="font-semibold text-slate-800">{value}</p>
@@ -72,10 +72,10 @@ function MetaPill({ icon: Icon, label, value }: { icon: typeof Package; label: s
 
 export function DeliveryCase() {
   return (
-    <section className="bg-white py-20 sm:py-24" aria-labelledby="cases-heading">
+    <section className="bg-site-bg py-20 sm:py-24" aria-labelledby="cases-heading">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 max-w-3xl">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
             Реализованные поставки
           </div>
           <h2
@@ -90,7 +90,7 @@ export function DeliveryCase() {
           {CASES.map((c) => (
             <li
               key={c.title}
-              className="rounded-2xl border border-slate-200 bg-slate-50/40 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300/90 hover:shadow-md sm:p-6"
+              className="rounded-2xl border border-site-border bg-site-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-site-primary/40 hover:shadow-md sm:p-6"
             >
               <h3 className="text-lg font-bold text-slate-900 sm:text-xl">{c.title}</h3>
               <p className="mt-2 max-w-4xl text-sm leading-relaxed text-slate-600 sm:text-base">

@@ -115,11 +115,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-site-bg">
       <JsonLd id={`breadcrumbs-${category.slug}`} data={breadcrumbJsonLd} />
       <JsonLd id={`collection-page-${category.slug}`} data={collectionPageJsonLd} />
       {/* Page header */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           {/* Breadcrumbs */}
           <nav aria-label="Хлебные крошки" className="mb-4">
@@ -163,7 +163,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             {pluralSubcategories(category.subcategories.length)}
           </p>
 
-          <div className="relative mt-6 h-40 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-52">
+          <div className="relative mt-6 h-40 overflow-hidden rounded-2xl border border-site-border bg-slate-100 sm:h-52">
             <Image
               src={heroSrc}
               alt={heroAlt}
@@ -174,7 +174,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               sizes="(max-width: 640px) 100vw, 1200px"
               className="object-cover"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-900/45 via-slate-900/20 to-transparent" />
+            <div className="pointer-events-none absolute inset-0 bg-slate-900/25" />
           </div>
 
           {/* Subcategory links */}
@@ -184,7 +184,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 <Link
                   key={sub.id}
                   href={`/catalog/subcategory/${sub.slug}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                  className="inline-flex items-center gap-2 rounded-full border border-site-border bg-site-bg px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-site-primary hover:bg-[#EFF6FF] hover:text-site-primary-hover"
                 >
                   {sub.name}
                   <span className="rounded-full bg-slate-200/70 px-2 py-0.5 text-[11px] text-slate-700">
@@ -199,7 +199,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {/* ── Top SEO text block ─────────────────────────────────────── */}
       {seo && (
-        <section className="border-b border-slate-100 bg-white">
+        <section className="border-b border-site-border bg-site-card">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
             <div className="prose prose-slate max-w-3xl">
               {seo.topSeo.map((p, i) => (
@@ -212,7 +212,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {/* ── Trust / commercial block ───────────────────────────────── */}
       {seo && (
-        <section className="bg-slate-50">
+        <section className="bg-site-bg">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {seo.trust.map((text, i) => {
@@ -220,9 +220,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 return (
                   <div
                     key={i}
-                    className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-5"
+                    className="flex items-start gap-3 rounded-xl border border-site-border bg-site-card p-5 shadow-sm"
                   >
-                    <Icon size={22} className="mt-0.5 shrink-0 text-blue-600" />
+                    <Icon size={22} className="mt-0.5 shrink-0 text-site-primary" />
                     <p className="text-sm leading-relaxed text-slate-700">{text}</p>
                   </div>
                 );
@@ -244,7 +244,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {/* ── Bottom SEO text block ──────────────────────────────────── */}
       {seo && (
-        <section className="border-t border-slate-100 bg-white">
+        <section className="border-t border-site-border bg-site-card">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
             <div className="prose prose-slate max-w-3xl">
               {seo.bottomSeo.map((p, i) => (
@@ -257,26 +257,26 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {/* ── CTA block with embedded form ───────────────────────────── */}
       {seo && (
-        <section className="bg-blue-900 text-white">
+        <section className="bg-site-primary text-white">
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:flex lg:items-start lg:gap-12">
             <div className="mb-8 lg:mb-0 lg:w-1/2">
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 {seo.ctaHeading}
               </h2>
-              <p className="mt-3 text-lg text-blue-200">
+              <p className="mt-3 text-lg text-white/90">
                 {seo.ctaDescription}
               </p>
-              <ul className="mt-6 space-y-2 text-sm text-blue-200">
+              <ul className="mt-6 space-y-2 text-sm text-white/85">
                 <li className="flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-blue-300" />
+                  <ShieldCheck size={16} className="text-white/80" />
                   Бесплатная консультация инженера
                 </li>
                 <li className="flex items-center gap-2">
-                  <Truck size={16} className="text-blue-300" />
+                  <Truck size={16} className="text-white/80" />
                   Доставка по всему Казахстану
                 </li>
                 <li className="flex items-center gap-2">
-                  <FileText size={16} className="text-blue-300" />
+                  <FileText size={16} className="text-white/80" />
                   КП с ценами за 15 минут
                 </li>
               </ul>

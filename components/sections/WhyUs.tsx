@@ -56,10 +56,10 @@ const ITEMS: AdvantageItem[] = [
 
 export function WhyUs() {
   return (
-    <section className="bg-white py-20 sm:py-24">
+    <section className="bg-site-bg py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 max-w-3xl">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
             Преимущества
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
@@ -71,12 +71,12 @@ export function WhyUs() {
           {ITEMS.map(({ icon: Icon, metric, title, desc }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-[0_16px_30px_-18px_rgba(30,64,175,0.45)]"
+              className="group rounded-2xl border border-site-border bg-site-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-site-primary hover:shadow-lg hover:shadow-slate-900/10"
             >
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-700 transition-colors group-hover:bg-blue-700 group-hover:text-white">
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#EFF6FF] text-site-primary transition-colors group-hover:bg-site-primary group-hover:text-white">
                 <Icon className="h-6 w-6" />
               </div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-blue-700">
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-site-primary">
                 {metric}
               </p>
               <h3 className="mb-1 text-base font-bold text-slate-950 sm:text-[17px]">

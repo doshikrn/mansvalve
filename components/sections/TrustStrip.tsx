@@ -10,7 +10,7 @@ export async function TrustStrip() {
   return (
     <section
       aria-label="О компании"
-      className="border-b border-slate-200 bg-white py-6 sm:py-7"
+      className="border-b border-site-border bg-site-bg py-6 sm:py-7"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-slate-600 sm:text-base">

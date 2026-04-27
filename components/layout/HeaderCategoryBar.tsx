@@ -13,7 +13,7 @@ type HeaderCategoryBarProps = {
  */
 export function HeaderCategoryBar({ links }: HeaderCategoryBarProps) {
   return (
-    <div className="hidden border-t border-white/10 bg-[#0c2342] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:block">
+    <div className="hidden border-t border-white/10 bg-site-primary-hover shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:block">
       <div className="mx-auto flex max-w-[1320px] items-stretch px-5 sm:px-7 lg:px-10">
         <nav
           className="flex min-h-[56px] w-full flex-wrap items-center gap-x-4 gap-y-2 py-2 lg:min-h-[60px] lg:flex-nowrap lg:gap-x-6 lg:gap-y-0 lg:py-2.5"

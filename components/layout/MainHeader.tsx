@@ -49,7 +49,7 @@ export function MainHeader({
                 />
               </span>
               <span className="hidden min-w-0 flex-col justify-center leading-none lg:flex">
-                <span className="font-bold uppercase tracking-[0.08em] text-[#0c2342] xl:text-[15px]">
+                <span className="font-bold uppercase tracking-[0.08em] text-site-primary xl:text-[15px]">
                   {brandPrimary}
                 </span>
                 {brandSecondary ? (
@@ -88,8 +88,8 @@ export function MainHeader({
                 "[&_form>div.flex]:!h-[50px] [&_form>div.flex]:!min-h-[48px] [&_form>div.flex]:!max-h-[52px]",
                 "[&_label]:!pl-9 lg:[&_label]:!pl-10",
                 "[&_button[type=submit]]:!min-w-[6.5rem] [&_button[type=submit]]:!px-3 [&_button[type=submit]]:!py-0 [&_button[type=submit]]:!text-sm [&_button[type=submit]]:!font-bold",
-                "[&_button[type=submit]]:!bg-[#0c2342] [&_button[type=submit]]:!text-white",
-                "[&_button[type=submit]]:hover:!bg-[#152d52] [&_button[type=submit]]:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]",
+                "[&_button[type=submit]]:!bg-site-primary [&_button[type=submit]]:!text-white",
+                "[&_button[type=submit]]:hover:!bg-site-primary-hover [&_button[type=submit]]:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]",
               )}
             >
               <CatalogSearchPanel
@@ -111,12 +111,12 @@ export function MainHeader({
                 </p>
                 <a
                   href={COMPANY_PHONE_HREF}
-                  className="mt-1 inline-flex max-w-full items-center gap-2 rounded-md text-[15px] font-bold tabular-nums tracking-tight text-[#0c2342] no-underline outline-none transition-colors hover:text-[#152d52] focus-visible:ring-2 focus-visible:ring-[#0c2342]/35 focus-visible:ring-offset-2"
+                  className="mt-1 inline-flex max-w-full items-center gap-2 rounded-md text-[15px] font-bold tabular-nums tracking-tight text-site-primary no-underline outline-none transition-colors hover:text-site-primary-hover focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0c2342]/10 text-[#0c2342]">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary">
                     <Phone className="h-4 w-4" aria-hidden strokeWidth={2} />
                   </span>
-                  <span className="underline-offset-[3px] decoration-[#0c2342] no-underline hover:underline">
+                  <span className="underline-offset-[3px] decoration-site-primary no-underline hover:underline">
                     {COMPANY.phoneDisplay}
                   </span>
                 </a>
@@ -125,10 +125,10 @@ export function MainHeader({
                 <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Для заявок</p>
                 <a
                   href={COMPANY_EMAIL_HREF}
-                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-slate-800 no-underline outline-none transition-colors hover:text-[#0c2342] focus-visible:ring-2 focus-visible:ring-[#0c2342]/35 focus-visible:ring-offset-2"
+                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-slate-800 no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
                 >
                   <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden strokeWidth={2} />
-                  <span className="min-w-0 break-all underline-offset-[3px] decoration-[#0c2342] no-underline hover:underline">
+                  <span className="min-w-0 break-all underline-offset-[3px] decoration-site-primary no-underline hover:underline">
                     {COMPANY.email}
                   </span>
                 </a>
@@ -137,14 +137,14 @@ export function MainHeader({
 
             <Link
               href="/delivery"
-              className="group flex max-w-[220px] min-w-[168px] flex-col justify-center rounded-xl border border-[#0c2342]/20 bg-gradient-to-br from-[#0c2342]/[0.05] via-white to-white px-3 py-2.5 ring-1 ring-[#0c2342]/10 transition hover:border-[#0c2342]/35 hover:shadow-sm"
+              className="group flex max-w-[220px] min-w-[168px] flex-col justify-center rounded-xl border border-site-primary/20 bg-site-card px-3 py-2.5 ring-1 ring-site-primary/10 transition hover:border-site-primary/35 hover:shadow-sm"
             >
               <span className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0c2342] text-white transition group-hover:bg-[#152d52]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-site-primary text-white transition group-hover:bg-site-primary-hover">
                   <Truck className="h-4 w-4" aria-hidden strokeWidth={2} />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-bold leading-tight text-[#0c2342]">Доставка</span>
+                  <span className="block text-sm font-bold leading-tight text-site-primary">Доставка</span>
                   <span className="mt-0.5 block text-[11px] leading-snug text-slate-600">По РК и под заказ</span>
                 </span>
               </span>

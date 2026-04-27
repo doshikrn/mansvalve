@@ -21,7 +21,7 @@ export default async function SiteLayout({
   return (
     <>
       <Header categoryLinks={categoryLinks} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 bg-site-bg">{children}</main>
       <Footer />
       <FloatingWhatsApp />
     </>

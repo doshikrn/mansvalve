@@ -11,7 +11,7 @@ export async function Footer() {
   const categories = await getPublicCatalogCategories();
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-50 py-10">
+    <footer className="border-t border-site-border bg-site-card py-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
@@ -42,7 +42,7 @@ export async function Footer() {
                 <li key={cat.id}>
                   <Link
                     href={`/catalog/category/${cat.slug}`}
-                    className="hover:text-blue-700 transition-colors"
+                    className="hover:text-site-primary-hover transition-colors"
                   >
                     {cat.name}
                   </Link>
@@ -56,32 +56,32 @@ export async function Footer() {
             <h4 className="mb-3 text-sm font-semibold text-slate-900">Компания</h4>
             <ul className="space-y-1.5 text-sm text-slate-500">
               <li>
-                <Link href="/about" className="hover:text-blue-700 transition-colors">
+                <Link href="/about" className="hover:text-site-primary-hover transition-colors">
                   О компании
                 </Link>
               </li>
               <li>
-                <Link href="/contacts" className="hover:text-blue-700 transition-colors">
+                <Link href="/contacts" className="hover:text-site-primary-hover transition-colors">
                   Контакты
                 </Link>
               </li>
               <li>
-                <Link href="/certificates" className="hover:text-blue-700 transition-colors">
+                <Link href="/certificates" className="hover:text-site-primary-hover transition-colors">
                   Сертификаты
                 </Link>
               </li>
               <li>
-                <Link href="/delivery" className="hover:text-blue-700 transition-colors">
+                <Link href="/delivery" className="hover:text-site-primary-hover transition-colors">
                   Доставка
                 </Link>
               </li>
               <li>
-                <Link href="/#faq" className="hover:text-blue-700 transition-colors">
+                <Link href="/#faq" className="hover:text-site-primary-hover transition-colors">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-blue-700 transition-colors">
+                <Link href="/privacy" className="hover:text-site-primary-hover transition-colors">
                   Политика конфиденциальности
                 </Link>
               </li>
@@ -100,7 +100,7 @@ export async function Footer() {
                     value={COMPANY.phoneE164}
                     messageForCopyToast={COMPANY.phoneDisplay}
                     kind="phone"
-                    className="text-slate-600 hover:text-blue-700"
+                    className="text-slate-600 hover:text-site-primary-hover"
                   >
                     {COMPANY.phoneDisplay}
                   </CopyToClipboard>
@@ -114,7 +114,7 @@ export async function Footer() {
                     value={COMPANY.email}
                     messageForCopyToast={COMPANY.email}
                     kind="email"
-                    className="min-w-0 text-slate-600 hover:text-blue-700"
+                    className="min-w-0 text-slate-600 hover:text-site-primary-hover"
                   >
                     {COMPANY.email}
                   </CopyToClipboard>
@@ -126,7 +126,7 @@ export async function Footer() {
                   href={COMPANY_WHATSAPP_BASE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-blue-700 transition-colors"
+                  className="hover:text-site-primary-hover transition-colors"
                 >
                   WhatsApp
                 </a>

@@ -117,11 +117,11 @@ export default async function SubcategoryPage({ params, searchParams }: PageProp
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-site-bg">
       <JsonLd id={`breadcrumbs-subcategory-${context.subcategory.slug}`} data={breadcrumbJsonLd} />
       <JsonLd id={`collection-page-subcategory-${context.subcategory.slug}`} data={collectionPageJsonLd} />
 
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <nav aria-label="Хлебные крошки" className="mb-4">
             <ol className="flex items-center gap-1.5 text-sm">

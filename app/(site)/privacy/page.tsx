@@ -186,7 +186,7 @@ export default function PrivacyPage() {
                 value={COMPANY.email}
                 messageForCopyToast={COMPANY.email}
                 kind="email"
-                className="text-blue-800"
+                className="text-site-primary-hover"
               >
                 {COMPANY.email}
               </CopyToClipboard>
@@ -199,7 +199,7 @@ export default function PrivacyPage() {
                 value={COMPANY.phoneE164}
                 messageForCopyToast={COMPANY.phoneDisplay}
                 kind="phone"
-                className="text-blue-800"
+                className="text-site-primary-hover"
               >
                 {COMPANY.phoneDisplay}
               </CopyToClipboard>

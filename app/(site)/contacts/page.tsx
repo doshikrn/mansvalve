@@ -107,10 +107,10 @@ export default async function ContactsPage() {
   const copy = await resolveContactsCopy();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-site-bg">
 
       {/* ── Page header ─────────────────────────────────────────────── */}
-      <div className="border-b border-slate-200 bg-slate-50">
+      <div className="border-b border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
 
           {/* Breadcrumbs */}
@@ -148,7 +148,7 @@ export default async function ContactsPage() {
 
           {/* LEFT — request form (3 / 5 columns) */}
           <div className="lg:col-span-3">
-            <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:p-10">
+            <div className="rounded-2xl border border-site-border bg-site-card p-8 shadow-sm lg:p-10">
               <div className="mb-7">
                 <h2 className="mb-2 text-xl font-bold text-slate-900">{copy.formTitle}</h2>
                 <p className="text-sm text-slate-500">{copy.formHelper}</p>
@@ -163,10 +163,10 @@ export default async function ContactsPage() {
             {CONTACTS.map(({ icon: Icon, label, lines, copy, href, hrefLabel, external }) => (
               <div
                 key={label}
-                className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 transition-colors"
+                className="flex gap-4 rounded-xl border border-site-border bg-site-card p-5 transition-colors hover:border-site-primary/40"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                  <Icon size={18} className="text-blue-700" strokeWidth={1.75} />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EFF6FF]">
+                  <Icon size={18} className="text-site-primary" strokeWidth={1.75} />
                 </div>
                 <div className="min-w-0">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
@@ -194,7 +194,7 @@ export default async function ContactsPage() {
                       href={href}
                       target={external ? "_blank" : undefined}
                       rel={external ? "noopener noreferrer" : undefined}
-                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:underline transition-colors"
+                      className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-site-primary transition-colors hover:underline"
                     >
                       {hrefLabel} →
                     </a>
@@ -227,7 +227,7 @@ export default async function ContactsPage() {
       </div>
 
       {/* ── Как нас найти (статичная визуализация, ссылка на 2GIS) ───── */}
-      <div className="border-t border-slate-100 bg-slate-50">
+      <div className="border-t border-site-border bg-site-bg">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <h2 className="mb-6 text-xl font-bold text-slate-900">
             Как нас найти
@@ -237,22 +237,22 @@ export default async function ContactsPage() {
       </div>
 
       {/* ── Requisites ──────────────────────────────────────────────── */}
-      <div className="border-t border-slate-100 bg-white">
+      <div className="border-t border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50">
-              <FileText size={16} className="text-blue-700" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF6FF]">
+              <FileText size={16} className="text-site-primary" />
             </div>
             <h2 className="text-xl font-bold text-slate-900">Реквизиты</h2>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="overflow-hidden rounded-xl border border-site-border">
             <table className="w-full text-sm">
               <tbody>
                 {REQUISITES.map(({ label, value }, idx) => (
                   <tr
                     key={label}
-                    className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}
+                    className={idx % 2 === 0 ? "bg-site-card" : "bg-site-bg"}
                   >
                     <td className="w-1/2 border-r border-slate-100 px-5 py-3.5 font-medium text-slate-500 lg:w-1/3">
                       {label}

@@ -40,7 +40,7 @@ export function Pagination({
       {currentPage > 1 ? (
         <Link
           href={buildHref(currentPage - 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-site-bg"
           aria-label="Предыдущая страница"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -67,8 +67,8 @@ export function Pagination({
             className={cn(
               "flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors",
               page === currentPage
-                ? "bg-blue-700 text-white"
-                : "text-slate-600 hover:bg-slate-100",
+                ? "bg-site-primary text-white"
+                : "text-slate-600 hover:bg-site-bg",
             )}
             aria-current={page === currentPage ? "page" : undefined}
           >
@@ -81,7 +81,7 @@ export function Pagination({
       {currentPage < totalPages ? (
         <Link
           href={buildHref(currentPage + 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-site-bg"
           aria-label="Следующая страница"
         >
           <ChevronRight className="h-4 w-4" />

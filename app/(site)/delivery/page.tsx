@@ -48,10 +48,10 @@ const BULLETS = [
 
 export default function DeliveryPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <div className="border-b border-slate-200 bg-slate-50">
+    <div className="min-h-screen bg-site-bg">
+      <div className="border-b border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
-          <p className="text-sm font-medium text-blue-700">Логистика</p>
+          <p className="text-sm font-medium text-site-primary">Логистика</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             {PG_TITLE}
           </h1>
@@ -63,8 +63,8 @@ export default function DeliveryPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-        <div className="mb-8 flex items-start gap-2 rounded-lg border border-blue-100 bg-blue-50/80 px-4 py-3 text-sm text-slate-700">
-          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" aria-hidden />
+        <div className="mb-8 flex items-start gap-2 rounded-lg border border-site-border bg-[#EFF6FF] px-4 py-3 text-sm text-slate-700">
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-site-primary" aria-hidden />
           <p>
             База и отгрузка: <span className="font-medium">г. Алматы</span> — дальнейшая логистика по
             согласованию.
@@ -74,7 +74,7 @@ export default function DeliveryPage() {
         <ul className="space-y-4">
           {BULLETS.map(({ icon: Icon, text }) => (
             <li key={text} className="flex gap-3 text-slate-700">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-blue-700">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-bg text-site-primary ring-1 ring-site-border">
                 <Icon className="h-4 w-4" aria-hidden />
               </span>
               <p className="pt-0.5 leading-relaxed">{text}</p>
@@ -90,7 +90,7 @@ export default function DeliveryPage() {
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button asChild size="lg" className="bg-blue-700 text-white hover:bg-blue-600">
+          <Button asChild size="lg" className="bg-site-primary text-white hover:bg-site-primary-hover">
             <Link href="/#request-section">Получить коммерческое предложение</Link>
           </Button>
           <Button asChild size="lg" variant="outline">

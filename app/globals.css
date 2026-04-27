@@ -46,6 +46,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Публичный сайт MANSVALVE — единая B2B-палитра */
+  --color-site-bg: #f4f7fb;
+  --color-site-card: #ffffff;
+  --color-site-border: #e2e8f0;
+  --color-site-primary: #1d4ed8;
+  --color-site-primary-hover: #1e40af;
+  --color-site-cta: #ea580c;
 }
 
 :root {
@@ -64,7 +71,7 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --border: #e2e8f0;
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.87 0 0);

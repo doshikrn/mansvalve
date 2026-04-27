@@ -32,7 +32,7 @@ export function ProductCard({ product }: ProductCardProps) {
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
-    <article className="group flex flex-col rounded-xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-md transition-all duration-200">
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-site-border bg-site-card transition-all duration-200 hover:border-site-primary hover:shadow-lg hover:shadow-slate-900/10">
       {/* Category visual fallback */}
       <Link
         href={detailHref}
@@ -87,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Product name */}
         <Link
           href={detailHref}
-          className="mb-1.5 block text-sm font-semibold leading-snug text-slate-900 hover:text-blue-700 transition-colors line-clamp-2"
+          className="mb-1.5 block text-sm font-semibold leading-snug text-slate-900 transition-colors line-clamp-2 hover:text-site-primary-hover"
         >
           {product.name}
         </Link>
@@ -104,7 +104,7 @@ export function ProductCard({ product }: ProductCardProps) {
               {formatPrice(product.price)}
             </p>
           ) : (
-            <p className="text-sm font-semibold text-blue-700">
+            <p className="text-sm font-semibold text-site-primary">
               Цена по запросу
             </p>
           )}
@@ -120,7 +120,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </Button>
           <Button
             size="sm"
-            className="flex-1 bg-green-500 text-xs text-white hover:bg-green-600 border-0"
+            className="flex-1 border-0 bg-site-cta text-xs text-white hover:opacity-90"
             asChild
           >
             <a

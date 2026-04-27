@@ -8,17 +8,17 @@ export async function RequestCTA() {
   return (
     <section
       id="request-section"
-      className="scroll-mt-20 sm:scroll-mt-24 md:scroll-mt-32 bg-gradient-to-br from-blue-700 to-blue-900 py-20 sm:py-24"
+      className="scroll-mt-20 sm:scroll-mt-24 md:scroll-mt-32 bg-site-primary py-20 sm:py-24"
     >
       <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
         <h2 className="mb-3 text-3xl font-bold text-white sm:text-4xl">{title}</h2>
-        <p className="mb-8 text-base text-blue-200 sm:text-lg">{subtitle}</p>
+        <p className="mb-8 text-base text-white/90 sm:text-lg">{subtitle}</p>
 
         <div className="mx-auto max-w-lg text-left">
           <QuickRequestForm variant="dark" source="homepage-request-cta" />
         </div>
 
-        <p className="mt-4 text-sm text-blue-300">
+        <p className="mt-4 text-sm text-white/80">
           {footerHint}{" "}
           <a
             href={COMPANY_WHATSAPP_BASE_URL}

@@ -28,10 +28,10 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-slate-50 py-20 sm:py-24">
+    <section id="how-it-works" className="bg-site-bg py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 max-w-2xl">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
             Как мы работаем
           </div>
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
@@ -40,7 +40,7 @@ export function HowItWorks() {
         </div>
 
         <div className="relative">
-          <div className="absolute left-0 right-0 top-8 hidden h-px bg-slate-300 lg:block" />
+          <div className="absolute left-0 right-0 top-8 hidden h-px bg-site-border lg:block" />
 
           <ol className="grid gap-8 lg:grid-cols-5">
             {STEPS.map((step) => (
@@ -48,7 +48,7 @@ export function HowItWorks() {
                 key={step.num}
                 className="relative flex flex-col items-center text-center lg:px-2"
               >
-                <div className="relative z-10 mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-blue-300 bg-white text-lg font-bold text-blue-700 shadow-sm">
+                <div className="relative z-10 mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-site-primary bg-site-card text-lg font-bold text-site-primary shadow-sm">
                   {step.num}
                 </div>
                 <h3 className="mb-1 text-sm font-semibold uppercase tracking-[0.06em] text-slate-900 sm:text-base">

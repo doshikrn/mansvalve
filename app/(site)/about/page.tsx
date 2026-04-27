@@ -164,7 +164,7 @@ export default async function AboutPage() {
                   key={label}
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-6"
                 >
-                  <p className="text-3xl font-bold tracking-tight text-blue-700">
+                  <p className="text-3xl font-bold tracking-tight text-site-primary">
                     {value}
                   </p>
                   <p className="mt-1.5 text-sm text-slate-500">{label}</p>
@@ -187,7 +187,7 @@ export default async function AboutPage() {
             </div>
             <Link
               href="/catalog"
-              className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-1.5 text-sm font-semibold text-site-primary hover:text-site-primary-hover transition-colors"
             >
               Открыть каталог <ArrowRight className="h-4 w-4" />
             </Link>
@@ -198,13 +198,13 @@ export default async function AboutPage() {
               <Link
                 key={cat.id}
                 href={`/catalog/category/${cat.slug}`}
-                className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-blue-300 hover:shadow-md"
+                className="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 transition-all hover:border-site-primary hover:shadow-md"
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 transition-colors group-hover:bg-blue-100">
-                  <Package className="h-6 w-6 text-blue-700" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EFF6FF] transition-colors group-hover:bg-site-primary/10">
+                  <Package className="h-6 w-6 text-site-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-site-primary transition-colors">
                     {cat.name}
                   </h3>
                   <p className="mt-0.5 text-xs text-slate-500">
@@ -212,7 +212,7 @@ export default async function AboutPage() {
                     {cat.subcategories.length === 1 ? "подкатегория" : "подкатегории"}
                   </p>
                 </div>
-                <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-colors group-hover:text-blue-500" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-colors group-hover:text-site-primary" />
               </Link>
             ))}
           </div>
@@ -231,7 +231,7 @@ export default async function AboutPage() {
                 key={title}
                 className="rounded-2xl border border-slate-100 bg-slate-50 p-6"
               >
-                <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-site-primary/15 text-site-primary">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="mb-2 text-sm font-semibold text-slate-900">
@@ -250,8 +250,8 @@ export default async function AboutPage() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
 
             <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <Users className="h-5 w-5 text-blue-700" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EFF6FF]">
+                <Users className="h-5 w-5 text-site-primary" />
               </div>
               <h3 className="text-base font-semibold text-slate-900">
                 Работаем с юридическими лицами
@@ -264,8 +264,8 @@ export default async function AboutPage() {
             </div>
 
             <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <Globe className="h-5 w-5 text-blue-700" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EFF6FF]">
+                <Globe className="h-5 w-5 text-site-primary" />
               </div>
               <h3 className="text-base font-semibold text-slate-900">
                 Доставка по всему Казахстану
@@ -278,8 +278,8 @@ export default async function AboutPage() {
             </div>
 
             <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <BadgeCheck className="h-5 w-5 text-blue-700" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EFF6FF]">
+                <BadgeCheck className="h-5 w-5 text-site-primary" />
               </div>
               <h3 className="text-base font-semibold text-slate-900">
                 Сертифицированная продукция
@@ -306,7 +306,7 @@ export default async function AboutPage() {
                 key={label}
                 className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-5 py-3"
               >
-                <ShieldCheck className="h-4 w-4 shrink-0 text-blue-700" />
+                <ShieldCheck className="h-4 w-4 shrink-0 text-site-primary" />
                 <div>
                   <p className="text-sm font-bold text-slate-900">{label}</p>
                   <p className="text-xs text-slate-500">{sub}</p>
@@ -318,16 +318,16 @@ export default async function AboutPage() {
       </div>
 
       {/* ── CTA banner ──────────────────────────────────────────────── */}
-      <div className="bg-blue-700 py-14 sm:py-16">
+      <div className="bg-site-primary py-14 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
           <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
             {aboutCopy.ctaTitle}
           </h2>
-          <p className="mx-auto mb-8 max-w-xl text-lg text-blue-200">{aboutCopy.ctaSubtitle}</p>
+          <p className="mx-auto mb-8 max-w-xl text-lg text-white/90">{aboutCopy.ctaSubtitle}</p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button
               size="lg"
-              className="rounded-xl bg-white text-base font-semibold text-blue-800 hover:bg-blue-50"
+              className="rounded-xl bg-white text-base font-semibold text-site-primary-hover hover:bg-[#EFF6FF]"
               asChild
             >
               <Link href="/catalog">

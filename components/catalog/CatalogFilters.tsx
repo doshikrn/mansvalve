@@ -175,7 +175,7 @@ function FilterFormContent({
             onChange={(e) => onSearchInputChange(e.target.value)}
             placeholder="Название, DN, резьба…"
             autoComplete="off"
-            className="h-10 w-full rounded-lg border border-slate-200/80 bg-white pl-9 pr-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/15 focus:outline-none"
+            className="h-10 w-full rounded-lg border border-site-border bg-site-card pl-9 pr-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-site-primary focus:ring-2 focus:ring-site-primary/15 focus:outline-none"
             aria-label="Поиск по каталогу"
           />
         </div>
@@ -197,8 +197,8 @@ function FilterFormContent({
               className={cn(
                 "flex w-full items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-all",
                 pathname === "/catalog" && !categoryQuery
-                  ? "bg-slate-900/95 text-white shadow-sm"
-                  : "text-slate-700 hover:bg-slate-100/80",
+                  ? "bg-site-primary text-white shadow-sm"
+                  : "text-slate-700 hover:bg-site-bg",
               )}
             >
               {pathname === "/catalog" && !categoryQuery ? (
@@ -225,8 +225,8 @@ function FilterFormContent({
                   className={cn(
                     "flex w-full items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-all",
                     active
-                      ? "bg-slate-900/95 text-white shadow-sm"
-                      : "text-slate-700 hover:bg-slate-100/80",
+                      ? "bg-site-primary text-white shadow-sm"
+                      : "text-slate-700 hover:bg-site-bg",
                   )}
                 >
                   {active ? (
@@ -242,7 +242,7 @@ function FilterFormContent({
               <button
                 type="button"
                 onClick={() => setShowAllCategories((v) => !v)}
-                className="mt-0.5 flex w-full items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-blue-700 transition hover:bg-slate-50/90 hover:text-blue-800"
+                className="mt-0.5 flex w-full items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-site-primary transition hover:bg-site-bg hover:text-site-primary-hover"
                 aria-expanded={showAllCategories}
               >
                 {showAllCategories ? (
@@ -264,7 +264,7 @@ function FilterFormContent({
 
       {showSubcategoryFilter && (
         <FilterSection title="Подкатегория">
-          <div className="space-y-1 rounded-lg border border-slate-200/60 bg-slate-50/40 p-1.5">
+          <div className="space-y-1 rounded-lg border border-site-border bg-site-bg p-1.5">
             <button
               type="button"
               onClick={() => setParam("subcategory", "")}
@@ -276,7 +276,7 @@ function FilterFormContent({
               )}
             >
               {!activeSubcategory ? (
-                <Check className="h-4 w-4 shrink-0 text-blue-600" strokeWidth={2.5} aria-hidden />
+                <Check className="h-4 w-4 shrink-0 text-site-primary" strokeWidth={2.5} aria-hidden />
               ) : (
                 <span className="h-4 w-4 shrink-0" aria-hidden />
               )}
@@ -297,7 +297,7 @@ function FilterFormContent({
                   )}
                 >
                   {on ? (
-                    <Check className="h-4 w-4 shrink-0 text-blue-600" strokeWidth={2.5} aria-hidden />
+                    <Check className="h-4 w-4 shrink-0 text-site-primary" strokeWidth={2.5} aria-hidden />
                   ) : (
                     <span className="h-4 w-4 shrink-0" aria-hidden />
                   )}
@@ -309,7 +309,7 @@ function FilterFormContent({
               <button
                 type="button"
                 onClick={() => setShowAllSubcategories((v) => !v)}
-                className="mt-0.5 flex w-full items-center justify-center gap-1 rounded-md py-1.5 text-xs font-medium text-blue-700 transition hover:bg-white/60 hover:text-blue-800"
+                className="mt-0.5 flex w-full items-center justify-center gap-1 rounded-md py-1.5 text-xs font-medium text-site-primary transition hover:bg-site-card hover:text-site-primary-hover"
                 aria-expanded={showAllSubcategories}
               >
                 {showAllSubcategories ? (
@@ -507,7 +507,7 @@ function FilterPanelCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/70 bg-white p-5 shadow-md shadow-slate-200/30",
+        "rounded-2xl border border-site-border bg-site-card p-5 shadow-md shadow-slate-900/5",
         isPending && "pointer-events-none opacity-60",
       )}
     >
@@ -734,7 +734,7 @@ export function CatalogFilters({
             <SlidersHorizontal className="h-4 w-4" />
             Фильтры
             {activeCount > 0 && (
-              <span className="ml-0.5 rounded-full bg-slate-900 px-1.5 py-0.5 text-[0.65rem] text-white">
+              <span className="ml-0.5 rounded-full bg-site-primary px-1.5 py-0.5 text-[0.65rem] text-white">
                 {activeCount}
               </span>
             )}
