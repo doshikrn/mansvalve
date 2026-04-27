@@ -27,6 +27,7 @@ type FilterSelectMenuProps = {
   className?: string;
 };
 
+/** Ancestors that can scroll; used to re-anchor the fixed popover to the trigger (not to close on scroll). */
 function getScrollableAncestors(node: HTMLElement | null): (HTMLElement | Window)[] {
   const out: (HTMLElement | Window)[] = [window];
   let el: HTMLElement | null = node?.parentElement ?? null;
@@ -60,6 +61,7 @@ export function FilterSelectMenu({
   } | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const rafReposition = useRef<number | null>(null);
   const listId = useId();
   const selected = options.find((o) => o.value === value);
   const display = value && selected ? selected.label : value ? value : emptyLabel;
@@ -94,21 +96,36 @@ export function FilterSelectMenu({
     return () => window.removeEventListener("resize", onWin);
   }, [open, updatePosition]);
 
+  const scheduleReposition = useCallback(() => {
+    if (rafReposition.current != null) {
+      cancelAnimationFrame(rafReposition.current);
+    }
+    rafReposition.current = requestAnimationFrame(() => {
+      rafReposition.current = null;
+      updatePosition();
+    });
+  }, [updatePosition]);
+
+  useEffect(
+    () => () => {
+      if (rafReposition.current != null) cancelAnimationFrame(rafReposition.current);
+    },
+    [],
+  );
+
+  /** Re-anchor the popover to the trigger when the page or a scrollable ancestor moves (sidebar, window). */
   useEffect(() => {
     if (!open || !triggerRef.current) return;
-    const onScrollClose = () => {
-      setOpen(false);
-    };
     const watch = getScrollableAncestors(triggerRef.current);
     for (const node of watch) {
-      node.addEventListener("scroll", onScrollClose, { capture: true });
+      node.addEventListener("scroll", scheduleReposition, { passive: true, capture: true });
     }
     return () => {
       for (const node of watch) {
-        node.removeEventListener("scroll", onScrollClose, { capture: true });
+        node.removeEventListener("scroll", scheduleReposition, { capture: true });
       }
     };
-  }, [open]);
+  }, [open, scheduleReposition]);
 
   useEffect(() => {
     if (!open) return;
@@ -120,10 +137,10 @@ export function FilterSelectMenu({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
-    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown, true);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("pointerdown", onPointerDown, true);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -141,11 +158,12 @@ export function FilterSelectMenu({
         maxHeight: pos.maxHeight,
       }}
       data-catalog-filter-menu
+      onWheel={(e) => e.stopPropagation()}
     >
       <ul
         id={listId}
         role="listbox"
-        className="max-h-[inherit] overflow-y-auto overscroll-y-contain rounded-lg border border-slate-200/80 bg-white py-1.5 text-sm shadow-lg shadow-slate-200/40 [scrollbar-width:thin]"
+        className="max-h-[inherit] overflow-y-auto overscroll-y-contain rounded-lg border border-slate-200/80 bg-white py-1.5 text-sm shadow-lg shadow-slate-200/40 [scrollbar-color:rgba(15,23,42,0.2)_transparent] [scrollbar-width:thin]"
         aria-label={ariaLabel}
       >
         {allOptions.map((opt) => {

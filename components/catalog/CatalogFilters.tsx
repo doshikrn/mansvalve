@@ -11,7 +11,7 @@ import {
   useId,
   type ReactNode,
 } from "react";
-import { Check, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Search, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PublicCatalogCategory as Category } from "@/lib/public-catalog";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
@@ -93,6 +93,10 @@ type FilterFormContentProps = {
   setParam: (key: string, value: string) => void;
 };
 
+/** "Все" + N first links; if more items exist, show a toggle. */
+const CATEGORY_LIST_PREVIEW = 6;
+const SUBCATEGORY_LIST_PREVIEW = 6;
+
 function FilterFormContent({
   categories,
   subcategoryOptions,
@@ -119,6 +123,36 @@ function FilterFormContent({
   activeConnectionType,
   activeControlType,
 }: FilterFormContentProps) {
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [showAllSubcategories, setShowAllSubcategories] = useState(false);
+  const categoryListOverflows = categories.length > CATEGORY_LIST_PREVIEW;
+  const subListOverflows = subcategoryOptions.length > SUBCATEGORY_LIST_PREVIEW;
+  const activeCategoryIndex = categories.findIndex(
+    (c) => pathname === `/catalog/category/${c.slug}`,
+  );
+  const activeSubIndex = subcategoryOptions.findIndex(
+    (s) => s.id === activeSubcategory,
+  );
+  /** If current selection is outside the short list, we must show the full list (no setState in effects). */
+  const mustShowAllCategories =
+    categoryListOverflows && activeCategoryIndex >= CATEGORY_LIST_PREVIEW;
+  const mustShowAllSubcategories =
+    subListOverflows && activeSubIndex >= SUBCATEGORY_LIST_PREVIEW;
+
+  const useFullCategoryList =
+    !categoryListOverflows ||
+    showAllCategories ||
+    mustShowAllCategories;
+  const useFullSubcategoryList =
+    !subListOverflows || showAllSubcategories || mustShowAllSubcategories;
+
+  const categorySlice = useFullCategoryList
+    ? categories
+    : categories.slice(0, CATEGORY_LIST_PREVIEW);
+  const subSlice = useFullSubcategoryList
+    ? subcategoryOptions
+    : subcategoryOptions.slice(0, SUBCATEGORY_LIST_PREVIEW);
+
   return (
     <div className="flex flex-col gap-0">
       <div className="space-y-2.5">
@@ -149,7 +183,7 @@ function FilterFormContent({
 
       {showCategoryTabs && (
         <FilterSection title="Категория">
-          <div className="max-h-52 space-y-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]">
+          <div className="space-y-1 pr-0.5">
             <Link
               href="/catalog"
               onClick={() =>
@@ -174,7 +208,7 @@ function FilterFormContent({
               )}
               <span className="min-w-0 flex-1 leading-snug">Все категории</span>
             </Link>
-            {categories.map((cat) => {
+            {categorySlice.map((cat) => {
               const active = pathname === `/catalog/category/${cat.slug}`;
               return (
                 <Link
@@ -204,13 +238,33 @@ function FilterFormContent({
                 </Link>
               );
             })}
+            {categoryListOverflows && !mustShowAllCategories && (
+              <button
+                type="button"
+                onClick={() => setShowAllCategories((v) => !v)}
+                className="mt-0.5 flex w-full items-center justify-center gap-1 rounded-lg py-2 text-xs font-medium text-blue-700 transition hover:bg-slate-50/90 hover:text-blue-800"
+                aria-expanded={showAllCategories}
+              >
+                {showAllCategories ? (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Свернуть
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Показать ещё ({categories.length - CATEGORY_LIST_PREVIEW})
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </FilterSection>
       )}
 
       {showSubcategoryFilter && (
         <FilterSection title="Подкатегория">
-          <div className="max-h-52 space-y-1 overflow-y-auto rounded-lg border border-slate-200/60 bg-slate-50/40 p-1.5 [scrollbar-width:thin]">
+          <div className="space-y-1 rounded-lg border border-slate-200/60 bg-slate-50/40 p-1.5">
             <button
               type="button"
               onClick={() => setParam("subcategory", "")}
@@ -228,7 +282,7 @@ function FilterFormContent({
               )}
               <span className="min-w-0 flex-1">Все</span>
             </button>
-            {subcategoryOptions.map((sub) => {
+            {subSlice.map((sub) => {
               const on = activeSubcategory === sub.id;
               return (
                 <button
@@ -251,6 +305,26 @@ function FilterFormContent({
                 </button>
               );
             })}
+            {subListOverflows && !mustShowAllSubcategories && (
+              <button
+                type="button"
+                onClick={() => setShowAllSubcategories((v) => !v)}
+                className="mt-0.5 flex w-full items-center justify-center gap-1 rounded-md py-1.5 text-xs font-medium text-blue-700 transition hover:bg-white/60 hover:text-blue-800"
+                aria-expanded={showAllSubcategories}
+              >
+                {showAllSubcategories ? (
+                  <>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                    Свернуть
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    Показать ещё ({subcategoryOptions.length - SUBCATEGORY_LIST_PREVIEW})
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </FilterSection>
       )}
@@ -627,20 +701,33 @@ export function CatalogFilters({
 
   const activeCount = filterChipItems.length;
 
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [sheetOpen]);
+
   return (
     <div className="lg:grid lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10">
       <aside
-        className="hidden w-full min-w-0 self-start lg:sticky lg:top-24 lg:block lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto lg:pb-2"
+        className="hidden w-full min-w-0 self-start lg:sticky lg:top-24 lg:mb-2 lg:flex lg:max-h-[calc(100vh-6.5rem)] lg:min-h-0 lg:flex-col lg:pb-0"
         aria-label="Фильтры каталога"
       >
-        <FilterPanelCard
-          isPending={isPending}
-          headerId="catalog-filters-title"
+        <div
+          className="min-h-0 w-full flex-1 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable] py-0.5 [scrollbar-width:thin] [scrollbar-color:rgba(15,23,42,0.2)_transparent]"
         >
-          <div aria-labelledby="catalog-filters-title">
-            <FilterFormContent {...formProps} searchFieldId={searchIdSidebar} />
-          </div>
-        </FilterPanelCard>
+          <FilterPanelCard
+            isPending={isPending}
+            headerId="catalog-filters-title"
+          >
+            <div aria-labelledby="catalog-filters-title">
+              <FilterFormContent {...formProps} searchFieldId={searchIdSidebar} />
+            </div>
+          </FilterPanelCard>
+        </div>
       </aside>
 
       <div className="min-w-0">
@@ -679,12 +766,12 @@ export function CatalogFilters({
         <SheetContent
           side="left"
           showCloseButton
-          className="flex h-full max-h-dvh !w-full max-w-[min(100vw,22rem)] flex-col gap-0 border-slate-200 p-0 sm:max-w-[22rem]"
+          className="flex h-full max-h-dvh !w-full max-w-[min(100vw,22rem)] flex-col gap-0 border-slate-200 p-0 sm:max-w-[22rem] sm:max-h-dvh"
         >
-          <SheetHeader className="border-b border-slate-100 px-4 pb-3 pt-2">
+          <SheetHeader className="shrink-0 border-b border-slate-100 px-4 pb-3 pt-2">
             <SheetTitle>Подбор по параметрам</SheetTitle>
           </SheetHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-4">
+          <div className="min-h-0 min-w-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain px-4 py-4 [scrollbar-width:thin]">
             <div className={cn(isPending && "pointer-events-none opacity-60")}>
               <FilterFormContent {...formProps} searchFieldId={searchIdSheet} />
             </div>
