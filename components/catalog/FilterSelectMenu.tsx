@@ -1,6 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState, type WheelEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type WheelEvent,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   useFloating,
@@ -20,6 +29,27 @@ import { cn } from "@/lib/utils";
 const DROPDOWN_MAX_HEIGHT_PX = 240;
 const MOBILE_BREAKPOINT_PX = 1024; // matches `lg` in the layout
 const DROPDOWN_Z = 300;
+/** Open: subtle, trigger-relative (placement-aware Y, no horizontal fly) */
+const POP_MS = 150;
+const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+function transformOriginForPlacement(placement: string | undefined): string {
+  if (!placement) return "top left";
+  if (placement.startsWith("top")) {
+    if (placement.endsWith("end")) return "bottom right";
+    if (placement === "top") return "bottom center";
+    return "bottom left";
+  }
+  if (placement.startsWith("bottom")) {
+    if (placement.endsWith("end")) return "top right";
+    if (placement === "bottom") return "top center";
+    return "top left";
+  }
+  if (placement.startsWith("left")) return "right center";
+  if (placement.startsWith("right")) return "left center";
+  return "top left";
+}
+
 
 export type FilterSelectOption = { value: string; label: string };
 
@@ -34,7 +64,7 @@ type FilterSelectMenuProps = {
 };
 
 const MOBILE_SHEET_CLASS =
-  "fixed bottom-0 left-0 right-0 z-[310] max-h-[min(80vh,520px)] flex flex-col rounded-t-2xl border border-slate-200/80 bg-white shadow-2xl animate-in slide-in-from-bottom-4 duration-200";
+  "fixed bottom-0 left-0 right-0 z-[310] max-h-[min(80vh,520px)] flex flex-col rounded-t-2xl border border-slate-200/80 bg-white shadow-2xl animate-in fade-in [animation-duration:150ms] [animation-fill-mode:both] [animation-timing-function:cubic-bezier(0.16,1,0.3,1)]";
 
 const MOBILE_BACKDROP_CLASS =
   "fixed inset-0 z-[305] bg-slate-900/40 animate-in fade-in-0 duration-200";
@@ -155,7 +185,9 @@ export function FilterSelectMenu({
     return () => document.removeEventListener("keydown", onKey);
   }, [isMobileOpen]);
 
-  const { refs, context, floatingStyles } = useFloating({
+  const [enterReady, setEnterReady] = useState(false);
+
+  const { refs, context, floatingStyles, placement, isPositioned } = useFloating({
     open: isDesktopOpen,
     onOpenChange: (next) => {
       if (!isMobile) setOpen(next);
@@ -209,6 +241,35 @@ export function FilterSelectMenu({
     },
     [onChange],
   );
+
+  useLayoutEffect(() => {
+    if (!isDesktopOpen) {
+      setEnterReady(false);
+      return;
+    }
+    if (!isPositioned) return;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setEnterReady(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [isDesktopOpen, isPositioned]);
+
+  const popoverInnerMotion: CSSProperties = useMemo(() => {
+    const p = placement ?? "bottom-start";
+    const side = p.split("-")[0] ?? "bottom";
+    let from: string;
+    if (side === "top") from = "translate3d(0, 0.25rem, 0) scale(0.98)";
+    else if (side === "bottom") from = "translate3d(0, -0.25rem, 0) scale(0.98)";
+    else if (side === "left") from = "translate3d(0.25rem, 0, 0) scale(0.98)";
+    else if (side === "right") from = "translate3d(-0.25rem, 0, 0) scale(0.98)";
+    else from = "translate3d(0, -0.25rem, 0) scale(0.98)";
+    return {
+      transformOrigin: transformOriginForPlacement(placement),
+      opacity: isPositioned && enterReady ? 1 : 0,
+      transform: isPositioned && enterReady ? "translate3d(0,0,0) scale(1)" : from,
+      transition: `opacity ${POP_MS}ms ${EASE_OUT}, transform ${POP_MS}ms ${EASE_OUT}`,
+    };
+  }, [placement, isPositioned, enterReady]);
 
   return (
     <div className={cn("relative w-full", className)}>
@@ -284,21 +345,32 @@ export function FilterSelectMenu({
             // Callback ref from Floating UI; not a ref.current read
             // eslint-disable-next-line react-hooks/refs
             ref={refs.setFloating}
-            className="min-h-0 min-w-0 origin-top overflow-y-auto overscroll-y-contain rounded-lg border border-slate-200/80 bg-white text-sm shadow-xl shadow-slate-200/50 outline-none animate-in fade-in-0 duration-100 [scrollbar-color:rgba(15,23,42,0.2)_transparent] [scrollbar-width:thin]"
+            className="box-border flex min-h-0 w-full min-w-0 max-w-full flex-col overflow-visible outline-none"
             style={floatingStyles}
             {...getFloatingProps({
               onWheel: (e: WheelEvent) => e.stopPropagation(),
             })}
             data-catalog-filter-floating
+            data-floating-side={placement?.split("-")[0] ?? "bottom"}
           >
-            <OptionsList
-              listId={listId}
-              ariaLabel={ariaLabel}
-              allOptions={allOptions}
-              value={value}
-              onPick={onPick}
-              scrollable={false}
-            />
+            <div
+              className="flex min-h-0 w-full min-w-0 max-w-full flex-1 flex-col overflow-hidden rounded-lg border border-slate-200/80 bg-white text-sm shadow-xl shadow-slate-200/50"
+              style={popoverInnerMotion}
+            >
+              <div
+                className="min-h-0 w-full min-w-0 flex-1 overflow-y-auto overscroll-y-contain [scrollbar-color:rgba(15,23,42,0.2)_transparent] [scrollbar-width:thin]"
+                data-floating-content
+              >
+                <OptionsList
+                  listId={listId}
+                  ariaLabel={ariaLabel}
+                  allOptions={allOptions}
+                  value={value}
+                  onPick={onPick}
+                  scrollable={false}
+                />
+              </div>
+            </div>
           </div>
         </FloatingPortal>
       )}
