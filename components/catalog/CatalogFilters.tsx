@@ -712,22 +712,15 @@ export function CatalogFilters({
 
   return (
     <div className="lg:grid lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10">
-      <aside
-        className="hidden w-full min-w-0 self-start lg:sticky lg:top-24 lg:mb-2 lg:flex lg:max-h-[calc(100vh-6.5rem)] lg:min-h-0 lg:flex-col lg:pb-0"
-        aria-label="Фильтры каталога"
-      >
-        <div
-          className="min-h-0 w-full flex-1 overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable] py-0.5 [scrollbar-width:thin] [scrollbar-color:rgba(15,23,42,0.2)_transparent]"
+      <aside className="hidden w-full min-w-0 self-start lg:block" aria-label="Фильтры каталога">
+        <FilterPanelCard
+          isPending={isPending}
+          headerId="catalog-filters-title"
         >
-          <FilterPanelCard
-            isPending={isPending}
-            headerId="catalog-filters-title"
-          >
-            <div aria-labelledby="catalog-filters-title">
-              <FilterFormContent {...formProps} searchFieldId={searchIdSidebar} />
-            </div>
-          </FilterPanelCard>
-        </div>
+          <div aria-labelledby="catalog-filters-title">
+            <FilterFormContent {...formProps} searchFieldId={searchIdSidebar} />
+          </div>
+        </FilterPanelCard>
       </aside>
 
       <div className="min-w-0">
