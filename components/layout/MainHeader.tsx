@@ -31,16 +31,16 @@ export function MainHeader({
               className="relative flex shrink-0 items-center"
               aria-label={`${COMPANY.name} — на главную`}
             >
-              <span className="relative block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-slate-200/90 shadow-sm sm:h-[80px] sm:w-[80px] xl:h-[88px] xl:w-[88px]">
+              <span className="relative block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full bg-white p-1.5 ring-2 ring-slate-200/90 shadow-sm sm:h-[80px] sm:w-[80px] xl:h-[88px] xl:w-[88px]">
                 <Image
                   src={HEADER_LOGO_SRC}
                   alt={`${COMPANY.name} — логотип`}
-                  width={256}
-                  height={256}
+                  width={512}
+                  height={512}
                   priority
                   quality={100}
                   sizes="(max-width: 1024px) 88px, 96px"
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-contain object-center"
                 />
               </span>
             </Link>
