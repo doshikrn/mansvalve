@@ -14,6 +14,7 @@ const STATIC_ROUTES = [
   "/certificates",
   "/delivery",
   "/privacy",
+  "/terms",
 ] as const;
 
 function absoluteUrl(baseUrl: string, path: string): string {
