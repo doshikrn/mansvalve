@@ -24,6 +24,22 @@ export const COMPANY = {
 export const COMPANY_PHONE_HREF = `tel:${COMPANY.phoneE164}`;
 export const COMPANY_EMAIL_HREF = `mailto:${COMPANY.email}`;
 
+/** Pre-filled Gmail compose (КП) — use for public CTAs that must open webmail, not mailto. */
+const GMAIL_KP_SUBJECT = "Заявка на КП";
+const GMAIL_KP_BODY = "Здравствуйте, нужна коммерческое предложение";
+
+/** `https://mail.google.com/mail/?view=cm&fs=1&to=…&su=…&body=…` — safe for new tab. */
+export const COMPANY_GMAIL_COMPOSE_KP_URL = (() => {
+  const q = new URLSearchParams({
+    view: "cm",
+    fs: "1",
+    to: COMPANY.email,
+    su: GMAIL_KP_SUBJECT,
+    body: GMAIL_KP_BODY,
+  });
+  return `https://mail.google.com/mail/?${q.toString()}`;
+})();
+
 /** Digits only, E.164 without + — required by `https://wa.me/<number>`. */
 const WHATSAPP_WA_ME_NUMBER = COMPANY.whatsappNumber.replace(/\D/g, "");
 

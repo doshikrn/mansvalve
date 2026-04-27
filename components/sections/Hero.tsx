@@ -9,6 +9,7 @@ import {
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { applyCountTemplate } from "@/lib/site-content/models";
 import { resolveHomeHero } from "@/lib/site-content/public";
+import { COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
 function getFeaturedProducts(
   categories: Awaited<ReturnType<typeof getPublicCatalogCategories>>,
@@ -90,7 +91,10 @@ export async function Hero() {
               </Button>
 
               <Link
-                href="#request"
+                href={COMPANY_GMAIL_COMPOSE_KP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                prefetch={false}
                 className="group inline-flex items-center gap-2 rounded-full px-2 py-2 text-base font-medium text-slate-200 transition-colors hover:text-white"
               >
                 <FileText className="h-5 w-5 text-blue-300 transition-colors group-hover:text-blue-200" />

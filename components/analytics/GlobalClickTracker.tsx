@@ -32,7 +32,7 @@ export function GlobalClickTracker() {
         return;
       }
 
-      if (href.startsWith("mailto:")) {
+      if (href.startsWith("mailto:") || href.includes("mail.google.com/mail/")) {
         trackEvent("email_click", basePayload);
         return;
       }

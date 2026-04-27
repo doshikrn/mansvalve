@@ -535,7 +535,10 @@ export default async function ProductPage({ params }: PageProps) {
       </div>
 
       {/* ── Request CTA + embedded form ─────────────────────────────── */}
-      <div id="request-section" className="bg-blue-700 py-14 sm:py-16">
+      <div
+        id="request-section"
+        className="scroll-mt-20 sm:scroll-mt-24 md:scroll-mt-32 bg-blue-700 py-14 sm:py-16"
+      >
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
           <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
             Нужна помощь с подбором?
