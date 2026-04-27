@@ -69,6 +69,11 @@ export async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/delivery" className="hover:text-blue-700 transition-colors">
+                  Доставка
+                </Link>
+              </li>
+              <li>
                 <Link href="/#faq" className="hover:text-blue-700 transition-colors">
                   FAQ
                 </Link>

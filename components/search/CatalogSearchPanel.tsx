@@ -265,7 +265,7 @@ export function CatalogSearchPanel({
         {formInner}
         {showHeaderDropdown && (
           <div
-            className="absolute left-0 right-0 top-full z-[60] mt-1.5 max-h-72 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain rounded-lg border border-slate-200/90 bg-white py-0.5 shadow-lg shadow-slate-200/50 [scrollbar-width:thin]"
+            className="absolute left-0 right-0 top-full z-[100] mt-1.5 max-h-72 min-w-0 overflow-y-auto overflow-x-hidden overscroll-y-contain rounded-lg border border-slate-200/90 bg-white py-0.5 shadow-lg shadow-slate-200/50 [scrollbar-width:thin]"
             role="region"
             aria-label="Предпросмотр товаров"
             aria-live="polite"
