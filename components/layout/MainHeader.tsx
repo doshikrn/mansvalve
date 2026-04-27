@@ -4,9 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
-import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_EMAIL_HREF, COMPANY_PHONE_HREF } from "@/lib/company";
 import { cn } from "@/lib/utils";
 
 type MainHeaderProps = {
@@ -110,37 +109,29 @@ export function MainHeader({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-500">
                   Отдел продаж
                 </p>
-                <CopyToClipboard
-                  variant="minimal"
-                  value={COMPANY.phoneE164}
-                  messageForCopyToast={COMPANY.phoneDisplay}
-                  kind="phone"
-                  title="Скопировать номер отдела продаж"
-                  className="mt-1 inline-flex w-full max-w-full text-left"
+                <a
+                  href={COMPANY_PHONE_HREF}
+                  className="mt-1 inline-flex max-w-full items-center gap-2 rounded-md text-[15px] font-bold tabular-nums tracking-tight text-[#0c2342] no-underline outline-none transition-colors hover:text-[#152d52] focus-visible:ring-2 focus-visible:ring-[#0c2342]/35 focus-visible:ring-offset-2"
                 >
-                  <span className="inline-flex items-center gap-2 text-[15px] font-bold tabular-nums tracking-tight text-[#0c2342]">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0c2342]/10 text-[#0c2342]">
-                      <Phone className="h-4 w-4" aria-hidden strokeWidth={2} />
-                    </span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#0c2342]/10 text-[#0c2342]">
+                    <Phone className="h-4 w-4" aria-hidden strokeWidth={2} />
+                  </span>
+                  <span className="underline-offset-[3px] decoration-[#0c2342] no-underline hover:underline">
                     {COMPANY.phoneDisplay}
                   </span>
-                </CopyToClipboard>
+                </a>
               </div>
               <div className="border-t border-slate-200/80 pt-2">
                 <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Для заявок</p>
-                <div className="mt-1 flex items-start gap-2">
+                <a
+                  href={COMPANY_EMAIL_HREF}
+                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-slate-800 no-underline outline-none transition-colors hover:text-[#0c2342] focus-visible:ring-2 focus-visible:ring-[#0c2342]/35 focus-visible:ring-offset-2"
+                >
                   <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden strokeWidth={2} />
-                  <CopyToClipboard
-                    variant="minimal"
-                    value={COMPANY.email}
-                    messageForCopyToast={COMPANY.email}
-                    kind="email"
-                    title={COMPANY.email}
-                    className="!inline-block max-w-full text-left text-xs font-semibold leading-snug text-slate-800 hover:text-[#0c2342]"
-                  >
+                  <span className="min-w-0 break-all underline-offset-[3px] decoration-[#0c2342] no-underline hover:underline">
                     {COMPANY.email}
-                  </CopyToClipboard>
-                </div>
+                  </span>
+                </a>
               </div>
             </div>
 
