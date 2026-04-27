@@ -7,7 +7,8 @@ import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { COMPANY } from "@/lib/company";
 
-const LOGO_SRC = "/images/logo-mansvalve-group.png";
+/** Одиночный знак без «двойного» composite — см. `public/images/logo-mansvalve.png` */
+const LOGO_SRC = "/images/logo-mansvalve.png";
 
 type MainHeaderProps = {
   onSearchSubmit: (q: string) => void;
@@ -32,16 +33,18 @@ export function MainHeader({
               className="relative flex shrink-0 items-center"
               aria-label={`${COMPANY.name} — на главную`}
             >
-              <Image
-                src={LOGO_SRC}
-                alt={`${COMPANY.name} — логотип`}
-                width={360}
-                height={120}
-                priority
-                quality={100}
-                sizes="180px"
-                className="h-[52px] w-[170px] max-w-[180px] object-contain object-left sm:h-[56px] sm:w-[176px] xl:h-[60px] xl:w-[180px]"
-              />
+              <span className="relative block h-[56px] w-[56px] shrink-0 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-[60px] sm:w-[60px] xl:h-[64px] xl:w-[64px]">
+                <Image
+                  src={LOGO_SRC}
+                  alt={`${COMPANY.name} — логотип`}
+                  width={128}
+                  height={128}
+                  priority
+                  quality={100}
+                  sizes="64px"
+                  className="h-full w-full object-cover object-center"
+                />
+              </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 lg:hidden">
               <button
@@ -113,7 +116,7 @@ export function MainHeader({
                   Логистика
                 </span>
                 <span className="mt-0.5 block text-sm font-semibold leading-snug text-slate-900">
-                  Оплата и доставка
+                  Доставка
                 </span>
               </span>
             </Link>

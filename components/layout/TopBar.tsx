@@ -1,15 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, Phone } from "lucide-react";
-import {
-  COMPANY,
-  COMPANY_PHONE_HREF,
-  COMPANY_TELEGRAM_PUBLIC_HREF,
-  COMPANY_WHATSAPP_BASE_URL,
-} from "@/lib/company";
+import { Phone } from "lucide-react";
+import { COMPANY, COMPANY_TELEGRAM_PUBLIC_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { cn } from "@/lib/utils";
 
 export const TOP_BAR_LINKS = [
@@ -69,15 +65,19 @@ export function TopBar() {
           >
             <WhatsappIcon className="h-4 w-4" />
           </a>
-          <a
-            href={COMPANY_PHONE_HREF}
+          <CopyToClipboard
+            variant="minimal"
+            value={COMPANY.phoneDisplay}
+            messageForCopyToast={COMPANY.phoneDisplay}
+            kind="phone"
+            title="Нажмите, чтобы скопировать номер"
             className="inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums text-slate-800 sm:text-[13px]"
-            title="Позвонить"
           >
-            <Phone className="h-3.5 w-3.5 text-slate-500 sm:hidden" aria-hidden />
-            <span>{COMPANY.phoneDisplay}</span>
-            <ChevronDown className="hidden h-3 w-3 text-slate-400 sm:inline" aria-hidden />
-          </a>
+            <span className="inline-flex items-center gap-1">
+              <Phone className="h-3.5 w-3.5 shrink-0 text-slate-500 sm:hidden" aria-hidden />
+              {COMPANY.phoneDisplay}
+            </span>
+          </CopyToClipboard>
         </div>
       </div>
     </div>

@@ -117,7 +117,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
               onClick={() => setMobileOpen(false)}
               className="block rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
-              Оплата и доставка
+              Доставка
             </Link>
             <div className="my-1 border-t border-slate-100" />
             <p className="px-3 pt-1 text-[10px] font-medium uppercase text-slate-500">Для заявок:</p>
