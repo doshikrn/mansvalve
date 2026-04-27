@@ -11,7 +11,12 @@ const ERROR_MS = 2200;
 type CopyToClipboardProps = {
   value: string;
   children: ReactNode;
-  /** Shown for ~1.8s after a successful copy (replaces `children` briefly). */
+  /**
+   * `default` — copy icon + underlined value.
+   * `minimal` — value only (no copy icon), success feedback as a small floating tooltip; use in headers/compact UI.
+   */
+  variant?: "default" | "minimal";
+  /** Shown for ~1.8s after a successful copy (replaces `children` briefly) in `default` variant, or in tooltip in `minimal`. */
   copiedText?: string;
   className?: string;
   /** For analytics: `phone_click` / `email_click` with `source: "copy"`. */
@@ -52,6 +57,7 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
 export function CopyToClipboard({
   value,
   children,
+  variant = "default",
   copiedText = "Скопировано",
   className,
   kind,
@@ -119,6 +125,42 @@ export function CopyToClipboard({
     },
     [],
   );
+
+  if (variant === "minimal") {
+    return (
+      <span className="relative inline-flex max-w-full min-w-0">
+        {phase === "copied" && (
+          <span
+            role="status"
+            aria-live="polite"
+            className="pointer-events-none absolute bottom-full left-1/2 z-[60] mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-white shadow-md"
+          >
+            {copiedText}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={handleClick}
+          className={cn(
+            "group inline-flex max-w-full min-w-0 items-center rounded-md text-left text-inherit transition-colors",
+            "cursor-pointer whitespace-nowrap focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:ring-offset-2 focus-visible:outline-none",
+            phase === "error" && "text-amber-800",
+            className,
+          )}
+          title={defaultTitle}
+          aria-label={defaultAria}
+        >
+          {phase === "error" ? (
+            <span className="text-xs font-medium">Ошибка</span>
+          ) : (
+            <span className="min-w-0 border-b border-dotted border-slate-300 group-hover:border-blue-500 group-hover:text-blue-800">
+              {children}
+            </span>
+          )}
+        </button>
+      </span>
+    );
+  }
 
   return (
     <button
