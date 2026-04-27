@@ -25,7 +25,7 @@ function NavDot() {
 
 export function TopBar() {
   return (
-    <div className="border-b border-slate-200/90 bg-[#eceff3] text-slate-600">
+    <div className="border-b border-site-border bg-site-surface text-site-muted">
       <div className="mx-auto flex min-h-10 max-w-[1320px] items-center justify-between gap-3 px-5 sm:min-h-11 sm:px-7 lg:px-10">
         <nav
           className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[14px] font-medium leading-snug sm:flex sm:gap-3 sm:text-[15px] lg:text-base [&::-webkit-scrollbar]:h-0"
@@ -36,7 +36,7 @@ export function TopBar() {
               {i > 0 ? <NavDot /> : null}
               <Link
                 href={item.href}
-                className="whitespace-nowrap text-slate-700 transition-colors hover:text-slate-950"
+                className="whitespace-nowrap text-site-muted transition-colors hover:text-site-ink"
               >
                 {item.label}
               </Link>
@@ -50,7 +50,7 @@ export function TopBar() {
               href={COMPANY_TELEGRAM_PUBLIC_HREF}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200/80 hover:text-slate-800"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-site-muted transition hover:bg-white/70 hover:text-site-ink"
               aria-label="Telegram"
             >
               <TelegramIcon className="h-[22px] w-[22px]" />
@@ -60,7 +60,7 @@ export function TopBar() {
             href={COMPANY_WHATSAPP_BASE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] ring-1 ring-[#25D366]/25 transition hover:bg-[#25D366]/25"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-site-whatsapp text-white shadow-sm transition hover:bg-site-whatsapp-hover"
             aria-label="WhatsApp"
           >
             <WhatsappIcon className="h-[22px] w-[22px]" />
@@ -71,10 +71,10 @@ export function TopBar() {
             messageForCopyToast={COMPANY.phoneDisplay}
             kind="phone"
             title="Нажмите, чтобы скопировать номер"
-            className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-slate-800 sm:text-[15px] lg:text-base"
+            className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-site-ink sm:text-[15px] lg:text-base"
           >
             <span className="inline-flex items-center gap-1">
-              <Phone className="h-3.5 w-3.5 shrink-0 text-slate-500 sm:hidden" aria-hidden />
+              <Phone className="h-3.5 w-3.5 shrink-0 text-site-muted sm:hidden" aria-hidden />
               {COMPANY.phoneDisplay}
             </span>
           </CopyToClipboard>

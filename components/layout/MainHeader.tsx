@@ -26,7 +26,7 @@ export function MainHeader({
   const brandSecondary = brandParts.slice(1).join(" ");
 
   return (
-    <div className="border-b border-slate-200 bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)]">
+    <div className="border-b border-site-border bg-site-card shadow-[0_1px_4px_rgba(15,27,45,0.05)]">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-7 lg:px-10">
         <div className="grid min-h-[72px] grid-cols-1 items-center gap-3 py-3.5 lg:min-h-[76px] lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5 lg:py-3 xl:min-h-[80px] xl:gap-6">
           <div className="flex items-center justify-between gap-3 lg:block lg:justify-self-start">
@@ -53,7 +53,7 @@ export function MainHeader({
                   {brandPrimary}
                 </span>
                 {brandSecondary ? (
-                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600 xl:text-xs">
+                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-site-muted xl:text-xs">
                     {brandSecondary}
                   </span>
                 ) : null}
@@ -62,7 +62,7 @@ export function MainHeader({
             <div className="flex shrink-0 items-center gap-2 lg:hidden">
               <button
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-site-border bg-site-card text-site-muted shadow-sm"
                 onClick={onOpenMobileSearch}
                 aria-label="Поиск по каталогу"
               >
@@ -70,7 +70,7 @@ export function MainHeader({
               </button>
               <button
                 type="button"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-site-border bg-site-card text-site-muted shadow-sm"
                 onClick={onToggleMobileNav}
                 aria-label={mobileNavOpen ? "Закрыть меню" : "Открыть меню"}
                 aria-expanded={mobileNavOpen}
@@ -104,9 +104,9 @@ export function MainHeader({
           </div>
 
           <div className="hidden shrink-0 flex-col gap-2 lg:flex xl:flex-row xl:items-stretch xl:gap-3">
-            <div className="flex max-w-[272px] min-w-[208px] flex-col gap-2 rounded-xl border border-slate-200/90 bg-gradient-to-br from-white via-slate-50/50 to-white px-3 py-2.5 ring-1 ring-slate-900/[0.04]">
+            <div className="flex max-w-[272px] min-w-[208px] flex-col gap-2 rounded-lg border border-site-border bg-site-card px-3 py-2.5 ring-1 ring-site-deep/[0.04]">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-site-muted">
                   Отдел продаж
                 </p>
                 <a
@@ -122,12 +122,12 @@ export function MainHeader({
                 </a>
               </div>
               <div className="border-t border-slate-200/80 pt-2">
-                <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">Для заявок</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide text-site-muted">Для заявок</p>
                 <a
                   href={COMPANY_EMAIL_HREF}
-                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-slate-800 no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
                 >
-                  <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden strokeWidth={2} />
+                  <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-site-muted" aria-hidden strokeWidth={2} />
                   <span className="min-w-0 break-all underline-offset-[3px] decoration-site-primary no-underline hover:underline">
                     {COMPANY.email}
                   </span>
@@ -137,7 +137,7 @@ export function MainHeader({
 
             <Link
               href="/delivery"
-              className="group flex max-w-[220px] min-w-[168px] flex-col justify-center rounded-xl border border-site-primary/20 bg-site-card px-3 py-2.5 ring-1 ring-site-primary/10 transition hover:border-site-primary/35 hover:shadow-sm"
+              className="group flex max-w-[220px] min-w-[168px] flex-col justify-center rounded-lg border border-site-primary/20 bg-site-card px-3 py-2.5 ring-1 ring-site-primary/10 transition hover:border-site-primary/35 hover:shadow-sm"
             >
               <span className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-site-primary text-white transition group-hover:bg-site-primary-hover">
@@ -145,7 +145,7 @@ export function MainHeader({
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-bold leading-tight text-site-primary">Доставка</span>
-                  <span className="mt-0.5 block text-[11px] leading-snug text-slate-600">По РК и под заказ</span>
+                  <span className="mt-0.5 block text-[11px] leading-snug text-site-muted">По РК и под заказ</span>
                 </span>
               </span>
             </Link>

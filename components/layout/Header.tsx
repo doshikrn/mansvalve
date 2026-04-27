@@ -53,7 +53,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
   }, [mobileSearchOpen]);
 
   return (
-    <header className="relative w-full bg-white shadow-sm shadow-slate-900/5">
+    <header className="relative w-full bg-site-card shadow-sm shadow-site-deep/5">
       <TopBar />
       <MainHeader
         onSearchSubmit={goToCatalog}
@@ -71,7 +71,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
 
       {mobileSearchOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-slate-900/50 p-3 pt-4 lg:hidden"
+          className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-site-deep/55 p-3 pt-4 lg:hidden"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setMobileSearchOpen(false);
           }}
@@ -91,14 +91,14 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
 
       {mobileOpen && (
         <div
-          className="border-t border-slate-200 bg-white shadow-sm lg:hidden"
+          className="border-t border-site-border bg-site-card shadow-sm lg:hidden"
           id="site-mobile-menu"
         >
           <nav className="mx-auto max-w-[1320px] space-y-0.5 px-5 py-3 sm:px-7" aria-label="Навигация по разделу">
             <Link
               href="/catalog"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-md px-3 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+              className="block rounded-md px-3 py-2.5 text-sm font-semibold text-site-ink hover:bg-site-bg"
             >
               Каталог
             </Link>
@@ -107,7 +107,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="block rounded-md px-3 py-2.5 text-sm font-medium text-site-muted hover:bg-site-bg"
               >
                 {link.label}
               </Link>
@@ -115,12 +115,12 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
             <Link
               href="/delivery"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-md px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="block rounded-md px-3 py-2.5 text-sm font-medium text-site-muted hover:bg-site-bg"
             >
               Доставка
             </Link>
-            <div className="my-1 border-t border-slate-100" />
-            <p className="px-3 pt-1 text-[10px] font-medium uppercase text-slate-500">Для заявок:</p>
+            <div className="my-1 border-t border-site-border" />
+            <p className="px-3 pt-1 text-[10px] font-medium uppercase text-site-muted">Для заявок:</p>
             <div className="px-3 py-1.5 text-sm">
               <CopyToClipboard
                 variant="minimal"
@@ -143,14 +143,14 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
                 {COMPANY.phoneDisplay}
               </CopyToClipboard>
             </div>
-            <p className="px-3 pt-2 text-[10px] font-medium uppercase text-slate-500">Связь</p>
+            <p className="px-3 pt-2 text-[10px] font-medium uppercase text-site-muted">Связь</p>
             <div className="mt-1 flex flex-wrap items-center gap-2 px-3">
               {COMPANY_TELEGRAM_PUBLIC_HREF ? (
                 <a
                   href={COMPANY_TELEGRAM_PUBLIC_HREF}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-slate-200 px-3 text-sm font-medium text-slate-700"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-site-border px-3 text-sm font-medium text-site-muted"
                 >
                   <TelegramIcon className="h-4 w-4" />
                   Telegram
@@ -160,7 +160,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-[#25D366] px-3 text-sm font-medium text-white"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-site-whatsapp px-3 text-sm font-medium text-white hover:bg-site-whatsapp-hover"
               >
                 <WhatsappIcon className="h-4 w-4" />
                 WhatsApp
@@ -172,9 +172,9 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
                 setMobileOpen(false);
                 setMobileSearchOpen(true);
               }}
-              className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-sm font-medium text-site-muted hover:bg-site-bg"
             >
-              <Search className="h-4 w-4 text-slate-500" strokeWidth={1.75} />
+              <Search className="h-4 w-4 text-site-muted" strokeWidth={1.75} />
               Поиск по каталогу (полноэкранно)
             </button>
           </nav>

@@ -79,44 +79,44 @@ export interface QuickRequestFormProps {
 const STYLES = {
   light: {
     idPrefix: "contact",
-    label: "text-slate-700",
-    labelOptional: "text-slate-400",
+    label: "text-site-ink",
+    labelOptional: "text-site-muted",
     inputBase:
-      "text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500",
+      "text-site-ink outline-none transition placeholder:text-site-muted/70 focus:ring-2 focus:ring-site-primary/35",
     inputNormal:
-      "border-slate-200 bg-white hover:border-slate-300 focus:border-blue-500",
+      "border-site-border bg-white hover:border-site-primary/35 focus:border-site-primary",
     inputError: "border-red-400 bg-red-50 focus:ring-red-400",
     textarea:
-      "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500",
+      "border-site-border bg-white text-site-ink placeholder:text-site-muted/70 hover:border-site-primary/35 focus:border-site-primary focus:ring-2 focus:ring-site-primary/35",
     errorText: "text-red-600",
-    submitBtn: "bg-blue-700 text-white hover:bg-blue-600",
-    footer: "text-slate-400",
-    policyLink: "text-slate-500 underline decoration-slate-400 underline-offset-2 hover:text-slate-800",
-    successTitle: "text-slate-900",
-    successBody: "text-slate-500",
-    resetBtn: "text-slate-400 hover:text-slate-700",
+    submitBtn: "!bg-site-primary !text-white hover:!bg-site-primary-hover",
+    footer: "text-site-muted",
+    policyLink: "text-site-muted underline decoration-site-border underline-offset-2 hover:text-site-ink",
+    successTitle: "text-site-ink",
+    successBody: "text-site-muted",
+    resetBtn: "text-site-muted hover:text-site-ink",
     errorBox: "border-red-200 bg-red-50 text-red-700",
     errorLink: "text-red-700",
   },
   dark: {
     idPrefix: "request",
-    label: "text-blue-200",
-    labelOptional: "text-blue-300/70",
+    label: "text-slate-200",
+    labelOptional: "text-slate-400",
     inputBase:
       "text-white outline-none transition focus:ring-2 focus:ring-white/30",
     inputNormal:
-      "border-blue-400/30 bg-white/10 placeholder:text-blue-300 hover:border-blue-300/50 focus:border-white focus:bg-white/15",
+      "border-white/20 bg-white/10 placeholder:text-slate-400 hover:border-white/35 focus:border-white focus:bg-white/15",
     inputError:
-      "border-red-400/70 bg-red-500/10 placeholder:text-blue-300",
+      "border-red-400/70 bg-red-500/10 placeholder:text-slate-400",
     textarea:
-      "border-blue-400/30 bg-white/10 text-white placeholder:text-blue-300 hover:border-blue-300/50 focus:border-white focus:bg-white/15 focus:ring-2 focus:ring-white/30",
+      "border-white/20 bg-white/10 text-white placeholder:text-slate-400 hover:border-white/35 focus:border-white focus:bg-white/15 focus:ring-2 focus:ring-white/30",
     errorText: "text-red-300",
-    submitBtn: "bg-white text-blue-800 hover:bg-blue-50",
-    footer: "text-blue-300",
-    policyLink: "text-blue-200/90 underline decoration-blue-300/50 underline-offset-2 hover:text-white",
+    submitBtn: "!bg-site-cta !text-white hover:!bg-orange-700",
+    footer: "text-slate-300",
+    policyLink: "text-slate-200 underline decoration-slate-400/60 underline-offset-2 hover:text-white",
     successTitle: "text-white",
-    successBody: "text-blue-200",
-    resetBtn: "text-blue-300 hover:text-white",
+    successBody: "text-slate-300",
+    resetBtn: "text-slate-300 hover:text-white",
     errorBox: "border-red-300/40 bg-red-500/10 text-red-100",
     errorLink: "text-red-100",
   },
@@ -487,7 +487,7 @@ export function QuickRequestForm({
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       {submitState === "error" && (
-        <div className={`rounded-xl border px-4 py-3 text-sm ${s.errorBox}`} role="alert">
+        <div className={`rounded-lg border px-4 py-3 text-sm ${s.errorBox}`} role="alert">
           <p>{submitError ?? "Не удалось отправить заявку через сайт."}</p>
           <a
             href={buildWhatsAppUrl(values, productContext)}
@@ -520,7 +520,7 @@ export function QuickRequestForm({
             if (errors.name) setErrors((err) => ({ ...err, name: undefined }));
           }}
           placeholder="Иван Петров / ТОО «Строй-КЗ»"
-          className={`w-full rounded-xl border px-4 py-3.5 text-sm ${s.inputBase} ${
+          className={`w-full rounded-lg border px-4 py-3.5 text-sm ${s.inputBase} ${
             errors.name ? s.inputError : s.inputNormal
           }`}
         />
@@ -546,7 +546,7 @@ export function QuickRequestForm({
           disabled={submitState === "submitting"}
           onChange={(e) => handlePhoneChange(e.target.value)}
           placeholder="+7 (700) 000-00-00"
-          className={`w-full rounded-xl border px-4 py-3.5 text-sm ${s.inputBase} ${
+          className={`w-full rounded-lg border px-4 py-3.5 text-sm ${s.inputBase} ${
             errors.phone ? s.inputError : s.inputNormal
           }`}
         />
@@ -573,7 +573,7 @@ export function QuickRequestForm({
           disabled={submitState === "submitting"}
           onChange={(e) => setValues((v) => ({ ...v, comment: e.target.value }))}
           placeholder="Что нужно? (DN, PN, количество, тип арматуры — по возможности)"
-          className={`w-full resize-none rounded-xl border px-4 py-3.5 text-sm outline-none transition ${s.textarea}`}
+          className={`w-full resize-none rounded-lg border px-4 py-3.5 text-sm outline-none transition ${s.textarea}`}
         />
       </div>
 
@@ -597,7 +597,7 @@ export function QuickRequestForm({
         type="submit"
         size="lg"
         disabled={submitState === "submitting"}
-        className={`w-full rounded-xl py-4 text-base font-bold ${s.submitBtn}`}
+        className={`w-full rounded-lg py-4 text-base font-bold shadow-sm transition-colors ${s.submitBtn}`}
       >
         <Send className="mr-2 h-4 w-4" />
         {submitState === "submitting" ? "Отправляем КП..." : "Получить КП"}

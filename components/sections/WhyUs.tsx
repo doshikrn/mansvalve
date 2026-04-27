@@ -56,13 +56,13 @@ const ITEMS: AdvantageItem[] = [
 
 export function WhyUs() {
   return (
-    <section className="bg-site-bg py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="site-section">
+      <div className="site-container">
         <div className="mb-10 max-w-3xl">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
+          <div className="site-eyebrow">
             Преимущества
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+          <h2 className="site-heading">
             Почему нас выбирают подрядчики, ТЭЦ, нефтегазовые и промышленные компании
           </h2>
         </div>
@@ -71,18 +71,18 @@ export function WhyUs() {
           {ITEMS.map(({ icon: Icon, metric, title, desc }) => (
             <div
               key={title}
-              className="group rounded-2xl border border-site-border bg-site-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-site-primary hover:shadow-lg hover:shadow-slate-900/10"
+              className="site-card group p-6"
             >
-              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#EFF6FF] text-site-primary transition-colors group-hover:bg-site-primary group-hover:text-white">
+              <div className="site-icon mb-4 h-12 w-12">
                 <Icon className="h-6 w-6" />
               </div>
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-site-primary">
                 {metric}
               </p>
-              <h3 className="mb-1 text-base font-bold text-slate-950 sm:text-[17px]">
+              <h3 className="mb-1 text-base font-bold text-site-ink sm:text-[17px]">
                 {title}
               </h3>
-              <p className="text-sm leading-snug text-slate-500">
+              <p className="text-sm leading-snug text-site-muted">
                 {desc}
               </p>
             </div>

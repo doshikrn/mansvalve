@@ -43,16 +43,16 @@ const SEGMENTS: { icon: LucideIcon; title: string; text: string }[] = [
 
 export function WhoWeSupply() {
   return (
-    <section className="bg-site-bg py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="site-section">
+      <div className="site-container">
         <div className="mb-10 max-w-3xl">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
+          <div className="site-eyebrow">
             С кем работаем
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h2 className="site-heading">
             Кому поставляем промышленную запорную арматуру
           </h2>
-          <p className="mt-3 text-base text-slate-600 sm:text-lg">
+          <p className="site-copy mt-3">
             Работаем в сегментах B2B и B2G. Закрываем объектные поставки по договору с
             прогнозируемыми сроками, фиксированной спецификацией и полным комплектом документов.
           </p>
@@ -62,15 +62,15 @@ export function WhoWeSupply() {
           {SEGMENTS.map(({ icon: Icon, title, text }) => (
             <li
               key={title}
-              className="rounded-2xl border border-site-border bg-site-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-site-primary hover:shadow-md sm:p-6"
+              className="site-card p-5 sm:p-6"
             >
               <div className="flex gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EFF6FF] text-site-primary">
+                <div className="site-icon">
                   <Icon className="h-5 w-5" aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-base font-bold text-slate-900 sm:text-[17px]">{title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-500 sm:text-[15px]">
+                  <h3 className="text-base font-bold text-site-ink sm:text-[17px]">{title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-site-muted sm:text-[15px]">
                     {text}
                   </p>
                 </div>

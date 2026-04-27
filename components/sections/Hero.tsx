@@ -57,71 +57,63 @@ export async function Hero() {
   const statIcons = [Clock, Package, MapPin] as const;
 
   return (
-    <section className="relative overflow-hidden bg-[#0F1C2E]">
-      {/* Left: cool blue luminance */}
+    <section className="relative overflow-hidden border-b border-site-deep bg-site-deep">
+      {/* Controlled industrial depth */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_110%_90%_at_-5%_45%,rgba(29,78,216,0.38)_0%,rgba(29,78,216,0.08)_38%,transparent_62%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(15,27,45,0.98)_0%,rgba(18,40,67,0.98)_48%,rgba(21,49,80,0.95)_100%)]"
         aria-hidden
       />
-      {/* Right: warm accent (subtle) */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_95%_85%_at_108%_18%,rgba(234,88,12,0.14)_0%,rgba(234,88,12,0.03)_35%,transparent_58%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_78%_70%_at_-12%_18%,rgba(29,78,216,0.42)_0%,rgba(29,78,216,0.14)_42%,transparent_70%)]"
         aria-hidden
       />
-      {/* Soft lift toward center */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_100%,rgba(15,28,46,0.55)_0%,transparent_58%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(234,88,12,0.12)_0%,rgba(234,88,12,0.035)_36%,transparent_62%)]"
         aria-hidden
       />
-      {/* Grid: very low contrast */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.05)_45%,rgba(255,255,255,0.08)_100%)] lg:block"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 opacity-[0.08]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(148,163,184,0.28) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.28) 1px, transparent 1px)",
+            "linear-gradient(rgba(226,232,240,0.32) 1px, transparent 1px), linear-gradient(90deg, rgba(226,232,240,0.32) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
         }}
         aria-hidden
       />
-      {/* Depth: dark vignette / floor */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#070b12]/85 via-transparent to-[#05080e]/95"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(0,0,0,0.35)_0%,transparent_45%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.5)_0%,transparent_34%,rgba(2,6,23,0.62)_100%)]"
         aria-hidden
       />
 
-      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+      <div className="site-container relative py-16 sm:py-20 lg:py-24">
         <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-10 xl:gap-12">
           <div className="hero-enter-left">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-zinc-600/70 bg-zinc-950/90 px-4 py-1.5 text-sm font-medium text-zinc-400">
-              <MapPin className="h-4 w-4 shrink-0 text-zinc-500" />
+            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.08] px-4 py-1.5 text-sm font-semibold text-slate-200 shadow-sm">
+              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
               {heroContent.eyebrow}
             </div>
 
-            <h1 className="mb-4 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[56px]">
+            <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[56px]">
               {heroContent.h1Line1}{" "}
-              <span className="bg-gradient-to-r from-[#bfdbfe] via-[#60a5fa] to-[#1d4ed8] bg-clip-text text-transparent">
+              <span className="text-[#bfdbfe]">
                 {heroContent.h1Highlight}
               </span>
             </h1>
 
-            <p className="mb-8 max-w-xl text-base leading-relaxed text-zinc-400 sm:text-[17px]">
+            <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-300 sm:text-[17px]">
               {heroContent.subhead}
             </p>
 
             <div className="relative">
-              <div
-                className="pointer-events-none absolute -inset-x-6 -inset-y-5 rounded-[3rem] bg-[radial-gradient(ellipse_at_50%_50%,rgba(234,88,12,0.18)_0%,rgba(234,88,12,0.05)_42%,transparent_72%)] opacity-90 sm:-inset-x-10"
-                aria-hidden="true"
-              />
-              <div className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-5">
+              <div className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
               <Button
                 asChild
                 size="lg"
-                className="h-auto min-h-[3.75rem] rounded-full border border-orange-950/80 bg-gradient-to-b from-orange-600 via-orange-700 to-orange-900 px-10 py-[0.875rem] text-lg font-semibold tracking-tight text-white shadow-[0_0_0_1px_rgba(251,146,60,0.35),0_0_40px_-4px_rgba(234,88,12,0.55),0_6px_0_0_rgba(0,0,0,0.45),0_12px_28px_-6px_rgba(0,0,0,0.55)] ring-1 ring-orange-400/30 transition-[transform,box-shadow,filter] duration-300 ease-out hover:-translate-y-1 hover:from-orange-500 hover:via-orange-600 hover:to-orange-800 hover:shadow-[0_0_0_1px_rgba(253,186,116,0.5),0_0_56px_-2px_rgba(234,88,12,0.62),0_10px_0_0_rgba(0,0,0,0.38),0_18px_40px_-10px_rgba(234,88,12,0.42)] hover:ring-orange-300/50 active:translate-y-0 active:scale-[0.98] active:shadow-[0_0_28px_-6px_rgba(234,88,12,0.45),0_4px_0_0_rgba(0,0,0,0.52)] motion-reduce:hover:-translate-y-0 motion-reduce:hover:shadow-[0_0_0_1px_rgba(251,146,60,0.35),0_0_40px_-4px_rgba(234,88,12,0.55),0_6px_0_0_rgba(0,0,0,0.45),0_12px_28px_-6px_rgba(0,0,0,0.55)] motion-reduce:active:scale-100 sm:min-h-[3.875rem]"
+                className="site-primary-cta h-auto min-h-[3.5rem] px-8 py-[0.875rem] text-base font-semibold tracking-tight sm:min-h-[3.625rem] sm:text-lg"
               >
                 <a
                   href={buildCompanyWhatsAppUrl(HERO_KP_WHATSAPP_MESSAGE)}
@@ -139,10 +131,10 @@ export async function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 prefetch={false}
-                className="group inline-flex items-center justify-center gap-2 self-start rounded-full border border-zinc-600 bg-zinc-950/90 px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:border-zinc-500 hover:bg-zinc-900 hover:text-zinc-200 sm:self-center"
+                className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-white/15 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm transition-colors hover:border-white/30 hover:bg-white/[0.12] hover:text-white sm:self-center"
               >
-                <FileText className="h-4 w-4 shrink-0 text-zinc-600 transition-colors group-hover:text-zinc-400" />
-                <span className="border-b border-transparent pb-px transition-[border-color,color] group-hover:border-zinc-500 group-hover:text-zinc-100">
+                <FileText className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-white" />
+                <span>
                   {heroContent.secondaryCta}
                 </span>
               </Link>
@@ -153,23 +145,23 @@ export async function Hero() {
               {heroContent.trustPoints.map((point, i) => (
                 <span
                   key={`${i}-${point.slice(0, 12)}`}
-                  className="rounded-full border border-zinc-700 bg-zinc-950/70 px-3 py-1 text-xs font-medium text-zinc-400"
+                  className="rounded-lg border border-white/12 bg-white/[0.07] px-3 py-1 text-xs font-semibold text-slate-200 shadow-sm"
                 >
                   {point}
                 </span>
               ))}
             </div>
 
-            <div className="mt-10 flex flex-col gap-8 border-t border-zinc-700/90 pt-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-zinc-700/90">
+            <div className="mt-10 flex flex-col gap-8 border-t border-white/15 pt-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-white/15">
               {stats.map((s, idx) => {
                 const Icon = statIcons[idx] ?? Clock;
                 return (
                   <div
                     key={s.label}
-                    className="flex gap-3 rounded-lg transition-colors duration-300 ease-out hover:bg-white/[0.04] motion-reduce:hover:bg-transparent sm:flex-1 sm:px-6 first:sm:pl-0 last:sm:pr-0"
+                    className="flex gap-3 rounded-lg transition-colors duration-200 ease-out hover:bg-white/[0.05] motion-reduce:hover:bg-transparent sm:flex-1 sm:px-6 first:sm:pl-0 last:sm:pr-0"
                   >
                     <Icon
-                      className="mt-1 h-5 w-5 shrink-0 text-orange-700/85"
+                    className="mt-1 h-5 w-5 shrink-0 text-site-cta"
                       strokeWidth={1.75}
                       aria-hidden
                     />
@@ -177,7 +169,7 @@ export async function Hero() {
                       <div className="text-2xl font-bold tabular-nums tracking-tight text-white sm:text-[1.65rem] lg:text-[1.75rem]">
                         {s.val}
                       </div>
-                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-zinc-500 sm:text-[11px]">
+                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-slate-400 sm:text-[11px]">
                         {s.label}
                       </div>
                     </div>
@@ -188,19 +180,19 @@ export async function Hero() {
           </div>
 
           <div className="lg:mt-6 lg:translate-y-2">
-            <div className="hero-enter-right rounded-2xl border border-white/10 bg-white/[0.06] p-5 shadow-[0_28px_56px_-28px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.04)_inset] backdrop-blur-xl backdrop-saturate-150 sm:p-6">
+            <div className="hero-enter-right rounded-lg border border-site-border bg-white p-5 shadow-[0_24px_48px_-28px_rgba(15,23,42,0.35)] sm:p-6">
               <div className="mb-4 flex items-end justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-700/95">
+                  <div className="text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
                     {heroContent.featuredEyebrow}
                   </div>
-                  <div className="mt-1 text-base font-semibold text-zinc-100">
+                  <div className="mt-1 text-base font-semibold text-site-ink">
                     {heroContent.featuredTitle}
                   </div>
                 </div>
                 <Link
                   href="/catalog"
-                  className="shrink-0 text-sm font-semibold text-orange-600 transition-colors hover:text-orange-500"
+                  className="shrink-0 text-sm font-semibold text-site-cta transition-colors hover:text-orange-700"
                 >
                   {featuredLink}
                 </Link>
@@ -215,13 +207,13 @@ export async function Hero() {
                   return (
                     <article
                       key={product.id}
-                      className="group relative overflow-hidden rounded-xl border border-zinc-700 bg-[#0c121c] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-zinc-500/85 hover:shadow-[0_16px_36px_-22px_rgba(0,0,0,0.62)] motion-reduce:hover:translate-y-0 motion-reduce:hover:border-zinc-700 motion-reduce:hover:shadow-none"
+                      className="group relative overflow-hidden rounded-lg border border-site-border bg-white transition-[transform,box-shadow,border-color] duration-200 ease-out will-change-transform hover:-translate-y-0.5 hover:border-site-primary/45 hover:shadow-md hover:shadow-site-deep/10 motion-reduce:hover:translate-y-0"
                     >
                       <Link
                         href={`/catalog/${product.slug}`}
-                        className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-700/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0F1C2E]"
+                        className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-site-primary/50 focus-visible:ring-offset-2"
                       >
-                        <div className="relative aspect-[4/3] w-full border-b border-zinc-800 bg-zinc-900">
+                        <div className="relative aspect-[4/3] w-full border-b border-site-border bg-slate-100">
                           <Image
                             src={visual.imageSrc}
                             alt={visual.imageAlt}
@@ -230,25 +222,25 @@ export async function Hero() {
                             sizes="(max-width: 640px) 50vw, 240px"
                             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
                           />
-                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-[0.85]" />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/45 via-slate-950/5 to-transparent opacity-55 transition-opacity duration-300 group-hover:opacity-70" />
                         </div>
                       </Link>
                       <div className="p-3">
-                        <p className="line-clamp-2 text-left text-xs font-semibold leading-snug text-zinc-100 sm:text-[13px]">
+                        <p className="line-clamp-2 text-left text-xs font-semibold leading-snug text-site-ink sm:text-[13px]">
                           {product.name}
                         </p>
-                        <p className="mt-1 truncate text-left text-[11px] text-zinc-500">
+                        <p className="mt-1 truncate text-left text-[11px] text-slate-500">
                           {product.categoryName}
                         </p>
 
                         <div className="mt-3 flex items-end justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-[#9bb9d6]">
+                            <p className="truncate text-sm font-semibold text-site-primary">
                               {hasDirectPrice && product.price != null
                                 ? formatPrice(product.price)
                                 : "По запросу"}
                             </p>
-                            <p className="text-[11px] text-zinc-500">
+                            <p className="text-[11px] text-slate-500">
                               {hasDirectPrice ? "ориентир по прайсу" : "цена в КП"}
                             </p>
                           </div>
@@ -256,7 +248,7 @@ export async function Hero() {
                             asChild
                             size="sm"
                             variant="secondary"
-                            className="h-8 rounded-full border border-zinc-600 bg-zinc-800 px-3 text-[11px] font-semibold text-zinc-200 transition-all duration-300 hover:border-zinc-500 hover:bg-zinc-700 group-hover:border-orange-900/80 group-hover:bg-orange-950/80"
+                            className="h-8 rounded-lg border border-site-border bg-slate-100 px-3 text-[11px] font-semibold text-slate-700 transition-all duration-200 hover:border-site-primary/45 hover:bg-slate-200"
                           >
                             <Link href={`/catalog/${product.slug}`}>
                               Подробнее

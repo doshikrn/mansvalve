@@ -47,12 +47,20 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
   /* Публичный сайт MANSVALVE — единая B2B-палитра */
-  --color-site-bg: #f4f7fb;
+  --color-site-bg: #f3f6fa;
+  --color-site-surface: #e9eef5;
   --color-site-card: #ffffff;
-  --color-site-border: #e2e8f0;
-  --color-site-primary: #1d4ed8;
-  --color-site-primary-hover: #1e40af;
+  --color-site-border: #d8e1eb;
+  --color-site-ink: #0f172a;
+  --color-site-muted: #526173;
+  --color-site-deep: #0f1b2d;
+  --color-site-deep-soft: #152740;
+  --color-site-primary: #1f5f99;
+  --color-site-primary-hover: #174a78;
   --color-site-cta: #ea580c;
+  --color-site-cta-hover: #c2410c;
+  --color-site-whatsapp: #25d366;
+  --color-site-whatsapp-hover: #1fb95a;
 }
 
 :root {
@@ -71,7 +79,7 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #e2e8f0;
+  --border: #d8e1eb;
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.87 0 0);
@@ -79,7 +87,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -141,6 +149,53 @@
   }
 }
 
+@layer components {
+  .site-section {
+    @apply bg-site-bg py-16 sm:py-20;
+  }
+
+  .site-container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6;
+  }
+
+  .site-eyebrow {
+    @apply mb-2 text-xs font-semibold uppercase text-site-primary;
+    letter-spacing: 0.12em;
+  }
+
+  .site-heading {
+    @apply text-2xl font-bold tracking-tight text-site-ink sm:text-3xl lg:text-4xl;
+  }
+
+  .site-copy {
+    @apply text-base leading-relaxed text-site-muted sm:text-lg;
+  }
+
+  .site-card {
+    @apply rounded-lg border border-site-border bg-site-card shadow-sm transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-site-primary/45 hover:shadow-md hover:shadow-site-deep/10 motion-reduce:hover:translate-y-0;
+  }
+
+  .site-card-quiet {
+    @apply rounded-lg border border-site-border bg-site-card shadow-sm;
+  }
+
+  .site-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary transition-colors;
+  }
+
+  .site-card:hover .site-icon {
+    @apply bg-site-primary text-white;
+  }
+
+  .site-link-button {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-site-border bg-site-card px-4 py-2 text-sm font-semibold text-site-ink shadow-sm transition-[border-color,box-shadow,color] duration-200 hover:border-site-primary/55 hover:text-site-primary-hover hover:shadow-md;
+  }
+
+  .site-primary-cta {
+    @apply rounded-lg !border-site-cta-hover !bg-site-cta !text-white shadow-sm transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:!bg-site-cta-hover hover:shadow-md focus-visible:ring-2 focus-visible:ring-site-cta/45 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:hover:translate-y-0;
+  }
+}
+
 /* Hero (главная): мягкое появление без JS; уважает prefers-reduced-motion */
 @keyframes hero-enter-left {
   from {
@@ -183,4 +238,14 @@
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+.site-primary-cta {
+  background-color: var(--color-site-cta) !important;
+  border-color: var(--color-site-cta-hover) !important;
+  color: #ffffff !important;
+}
+
+.site-primary-cta:hover {
+  background-color: var(--color-site-cta-hover) !important;
 }

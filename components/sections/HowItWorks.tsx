@@ -1,60 +1,60 @@
 const STEPS = [
   {
     num: "01",
-    title: "Заявка",
-    desc: "ТЗ или DN/PN",
+    title: "ЗАЯВКА",
+    desc: "Получаем ваш запрос или спецификацию.",
   },
   {
     num: "02",
-    title: "КП",
-    desc: "Коммерческое предложение за 15 минут",
+    title: "КП ЗА 15 МИНУТ",
+    desc: "Цена, наличие, сроки, документы.",
   },
   {
     num: "03",
-    title: "Договор",
-    desc: "Фиксируем условия",
+    title: "ДОГОВОР",
+    desc: "Официально с НДС, фиксируем условия.",
   },
   {
     num: "04",
-    title: "Отгрузка",
-    desc: "Склад или завод",
+    title: "ПОСТАВКА",
+    desc: "Склад / завод / производство под заказ.",
   },
   {
     num: "05",
-    title: "Доставка",
-    desc: "По Казахстану",
+    title: "ДОСТАВКА",
+    desc: "По адресу заказчика по всему Казахстану.",
   },
 ] as const;
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-site-bg py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 max-w-2xl">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-site-primary">
+    <section id="how-it-works" className="site-section">
+      <div className="site-container">
+        <div className="mb-10 max-w-3xl">
+          <div className="site-eyebrow">
             Как мы работаем
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            5 шагов: от заявки до поставки
+          <h2 className="site-heading">
+            От заявки до поставки — за 5 понятных шагов
           </h2>
         </div>
 
         <div className="relative">
-          <div className="absolute left-0 right-0 top-8 hidden h-px bg-site-border lg:block" />
+          <div className="absolute left-0 right-0 top-7 hidden h-px bg-site-border lg:block" />
 
-          <ol className="grid gap-8 lg:grid-cols-5">
+          <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {STEPS.map((step) => (
               <li
                 key={step.num}
-                className="relative flex flex-col items-center text-center lg:px-2"
+                className="site-card relative flex flex-col p-5 lg:min-h-[190px]"
               >
-                <div className="relative z-10 mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-site-primary bg-site-card text-lg font-bold text-site-primary shadow-sm">
+                <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-lg border border-site-primary/30 bg-site-card text-lg font-bold text-site-primary shadow-sm">
                   {step.num}
                 </div>
-                <h3 className="mb-1 text-sm font-semibold uppercase tracking-[0.06em] text-slate-900 sm:text-base">
+                <h3 className="mb-2 text-sm font-bold uppercase text-site-ink sm:text-base">
                   {step.title}
                 </h3>
-                <p className="text-xs leading-snug text-slate-700 sm:text-sm">
+                <p className="text-sm leading-relaxed text-site-muted">
                   {step.desc}
                 </p>
               </li>

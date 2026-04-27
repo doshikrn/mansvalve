@@ -66,14 +66,14 @@ export function Footer() {
     <footer className="mt-auto">
       {/* Pre-footer CTA */}
       <section
-        className="border-b border-slate-200/80 bg-slate-50"
+        className="border-b border-site-border bg-site-bg"
         aria-labelledby="footer-pre-cta-heading"
       >
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start lg:items-center lg:gap-5">
               <div
-                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-900/10 sm:h-[4.5rem] sm:w-[4.5rem]"
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-site-primary text-white shadow-sm shadow-blue-900/10 sm:h-[4.5rem] sm:w-[4.5rem]"
                 aria-hidden
               >
                 <div className="relative flex h-10 w-10 items-center justify-center">
@@ -84,11 +84,11 @@ export function Footer() {
               <div className="max-w-xl text-center sm:text-left">
                 <h2
                   id="footer-pre-cta-heading"
-                  className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl"
+                className="text-lg font-bold tracking-tight text-site-ink sm:text-xl"
                 >
                   Нужна цена или подбор арматуры?
                 </h2>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 sm:text-[15px]">
+                <p className="mt-1.5 text-sm leading-relaxed text-site-muted sm:text-[15px]">
                   Получите коммерческое предложение с ценой, сроками и документами за 15 минут.
                 </p>
               </div>
@@ -98,7 +98,7 @@ export function Footer() {
                 href={waKpUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-xl bg-[#22c55e] px-4 py-2.5 text-white shadow-sm transition hover:bg-[#16a34a] sm:min-w-[200px] lg:flex-initial"
+                className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-lg bg-site-whatsapp px-4 py-2.5 text-white shadow-sm transition hover:bg-site-whatsapp-hover sm:min-w-[200px] lg:flex-initial"
               >
                 <WhatsappIcon className="h-5 w-5 shrink-0 self-center text-white" aria-hidden />
                 <span className="min-w-0 text-left">
@@ -110,7 +110,7 @@ export function Footer() {
               </a>
               <a
                 href={COMPANY_EMAIL_HREF}
-                className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 shadow-sm transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[200px] lg:flex-initial"
+                className="inline-flex min-h-[3.25rem] flex-1 items-center justify-center gap-2.5 rounded-lg border border-site-border bg-white px-4 py-2.5 text-site-ink shadow-sm transition hover:border-site-primary/45 hover:bg-site-bg sm:min-w-[200px] lg:flex-initial"
               >
                 <Mail className="h-5 w-5 shrink-0 self-center text-slate-800" strokeWidth={2} aria-hidden />
                 <span className="min-w-0 text-left">
@@ -127,7 +127,7 @@ export function Footer() {
 
       {/* Trust strip */}
       <section
-        className="border-b border-slate-200/90 bg-slate-100/90"
+        className="border-b border-site-border bg-site-surface"
         aria-label="Преимущества компании"
       >
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
@@ -137,16 +137,16 @@ export function Footer() {
                 key={text}
                 className={
                   i > 0
-                    ? "flex gap-3 pt-4 sm:pt-0 lg:border-l lg:border-slate-300/70 lg:pl-5 lg:pt-0"
+                    ? "flex gap-3 pt-4 sm:pt-0 lg:border-l lg:border-site-border lg:pl-5 lg:pt-0"
                     : "flex gap-3"
                 }
               >
                 <Icon
-                  className="mt-0.5 h-5 w-5 shrink-0 text-slate-600"
+                  className="mt-0.5 h-5 w-5 shrink-0 text-site-primary"
                   strokeWidth={1.75}
                   aria-hidden
                 />
-                <p className="text-xs leading-snug text-slate-700 sm:text-[13px]">{text}</p>
+                <p className="text-xs leading-snug text-site-muted sm:text-[13px]">{text}</p>
               </li>
             ))}
           </ul>
@@ -154,7 +154,7 @@ export function Footer() {
       </section>
 
       {/* Main footer + bottom bar */}
-      <div className="bg-[#111827] text-slate-300">
+      <div className="bg-site-deep text-slate-300">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             {/* Brand */}
@@ -259,7 +259,7 @@ export function Footer() {
                 href={waContactUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#22c55e] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#16a34a] sm:w-auto sm:min-w-[200px]"
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-site-whatsapp px-4 py-3 text-sm font-semibold text-white transition hover:bg-site-whatsapp-hover sm:w-auto sm:min-w-[200px]"
               >
                 <WhatsappIcon className="h-5 w-5 text-white" />
                 Написать в WhatsApp

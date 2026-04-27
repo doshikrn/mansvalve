@@ -32,11 +32,11 @@ export function ProductCard({ product }: ProductCardProps) {
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-site-border bg-site-card transition-all duration-200 hover:border-site-primary hover:shadow-lg hover:shadow-slate-900/10">
+    <article className="group flex flex-col overflow-hidden rounded-lg border border-site-border bg-site-card transition-all duration-200 hover:border-site-primary hover:shadow-lg hover:shadow-site-deep/10">
       {/* Category visual fallback */}
       <Link
         href={detailHref}
-        className="relative flex h-40 items-center justify-center bg-slate-50"
+        className="relative flex h-40 items-center justify-center bg-site-bg"
         tabIndex={-1}
         aria-hidden="true"
       >
@@ -50,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/10 to-transparent" />
-        <span className="absolute bottom-2 left-2 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+        <span className="absolute bottom-2 left-2 rounded-md bg-site-card px-2 py-0.5 text-[11px] font-medium text-site-muted">
           {product.categoryName}
         </span>
       </Link>
@@ -60,25 +60,25 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Spec badges */}
         <div className="mb-2.5 flex flex-wrap gap-1.5">
           {product.dn != null && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-              <span className="text-slate-400">DN</span>
+            <span className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
+              <span className="text-site-primary">DN</span>
               {product.dn}
             </span>
           )}
           {product.pn != null && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-              <span className="text-slate-400">PN</span>
+            <span className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
+              <span className="text-site-primary">PN</span>
               {product.pn}
             </span>
           )}
           {product.thread && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-              <span className="text-slate-400">M</span>
+            <span className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
+              <span className="text-site-primary">M</span>
               {product.thread.replace(/^M/i, "")}
             </span>
           )}
           {product.material && (
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+            <span className="rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
               {product.material}
             </span>
           )}
@@ -87,20 +87,20 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Product name */}
         <Link
           href={detailHref}
-          className="mb-1.5 block text-sm font-semibold leading-snug text-slate-900 transition-colors line-clamp-2 hover:text-site-primary-hover"
+          className="mb-1.5 block text-sm font-semibold leading-snug text-site-ink transition-colors line-clamp-2 hover:text-site-primary-hover"
         >
           {product.name}
         </Link>
 
         {/* Description */}
-        <p className="mb-3 text-xs text-slate-500 leading-relaxed line-clamp-2 flex-1">
+        <p className="mb-3 text-xs text-site-muted leading-relaxed line-clamp-2 flex-1">
           {product.shortDescription}
         </p>
 
         {/* Price */}
         <div className="mb-3">
           {product.price && !product.priceByRequest ? (
-            <p className="text-lg font-bold text-slate-900 tracking-tight">
+            <p className="text-lg font-bold text-site-ink tracking-tight">
               {formatPrice(product.price)}
             </p>
           ) : (
@@ -120,7 +120,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </Button>
           <Button
             size="sm"
-            className="flex-1 border-0 bg-site-cta text-xs text-white hover:opacity-90"
+            className="flex-1 border-0 !bg-site-whatsapp text-xs !text-white hover:!bg-site-whatsapp-hover"
             asChild
           >
             <a
