@@ -190,6 +190,7 @@ export async function getProductById(id: number): Promise<ProductDetail | null> 
         sizeBytes: mediaAssetsTable.sizeBytes,
         width: mediaAssetsTable.width,
         height: mediaAssetsTable.height,
+        driver: mediaAssetsTable.driver,
       })
       .from(productImagesTable)
       .innerJoin(
@@ -217,7 +218,7 @@ export async function getProductById(id: number): Promise<ProductDetail | null> 
     images: images.map((img) => ({
       id: img.id,
       mediaId: img.mediaId,
-      url: resolvePublicMediaUrl(img.url, img.storageKey),
+      url: resolvePublicMediaUrl(img.url, img.storageKey, img.driver),
       storageKey: img.storageKey,
       mimeType: img.mimeType,
       sizeBytes: img.sizeBytes,

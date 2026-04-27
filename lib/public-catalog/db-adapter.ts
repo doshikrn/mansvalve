@@ -128,6 +128,7 @@ async function fetchPrimaryImageMap(
       productId: productImagesTable.productId,
       url: mediaAssetsTable.url,
       storageKey: mediaAssetsTable.storageKey,
+      driver: mediaAssetsTable.driver,
       imageAlt: productImagesTable.alt,
       assetAlt: mediaAssetsTable.alt,
       isPrimary: productImagesTable.isPrimary,
@@ -150,7 +151,7 @@ async function fetchPrimaryImageMap(
   for (const row of rows) {
     if (!map.has(row.productId)) {
       map.set(row.productId, {
-        url: resolvePublicMediaUrl(row.url, row.storageKey),
+        url: resolvePublicMediaUrl(row.url, row.storageKey, row.driver),
         alt: row.imageAlt || row.assetAlt || "",
       });
     }
@@ -213,6 +214,7 @@ async function fetchProductImages(productId: number): Promise<PublicCatalogProdu
     .select({
       url: mediaAssetsTable.url,
       storageKey: mediaAssetsTable.storageKey,
+      driver: mediaAssetsTable.driver,
       imageAlt: productImagesTable.alt,
       assetAlt: mediaAssetsTable.alt,
       isPrimary: productImagesTable.isPrimary,
@@ -231,7 +233,7 @@ async function fetchProductImages(productId: number): Promise<PublicCatalogProdu
     );
 
   return rows.map((row, index) => ({
-    url: resolvePublicMediaUrl(row.url, row.storageKey),
+    url: resolvePublicMediaUrl(row.url, row.storageKey, row.driver),
     alt: row.imageAlt || row.assetAlt || "",
     isPrimary: row.isPrimary || index === 0,
     sortOrder: row.sortOrder,

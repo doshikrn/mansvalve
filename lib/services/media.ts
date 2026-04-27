@@ -49,7 +49,16 @@ function isBrowserAccessibleUrl(value: string | null | undefined): boolean {
 export function resolvePublicMediaUrl(
   rawUrl: string | null | undefined,
   storageKey: string,
+  assetDriver?: string | null,
 ): string {
+  const configuredDriver = (process.env.MEDIA_DRIVER || "local").toLowerCase();
+
+  // For local driver in local mode, always derive from storage key.
+  // This auto-heals rows with malformed historical `url` values.
+  if (assetDriver === "local" && configuredDriver === "local") {
+    return getStorageDriver().getPublicUrl(storageKey);
+  }
+
   if (isBrowserAccessibleUrl(rawUrl)) {
     return rawUrl!.trim();
   }
@@ -125,7 +134,11 @@ export async function listMediaAssets(
   return {
     items: rows.map((row) => ({
       ...row.asset,
-      url: resolvePublicMediaUrl(row.asset.url, row.asset.storageKey),
+      url: resolvePublicMediaUrl(
+        row.asset.url,
+        row.asset.storageKey,
+        row.asset.driver,
+      ),
       usedInProducts: row.usedInProducts,
       usedInCertificates: row.usedInCertificates,
     })),
@@ -159,7 +172,11 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
 
   return rows.map((row) => ({
     ...row.asset,
-    url: resolvePublicMediaUrl(row.asset.url, row.asset.storageKey),
+    url: resolvePublicMediaUrl(
+      row.asset.url,
+      row.asset.storageKey,
+      row.asset.driver,
+    ),
     usedInProducts: row.usedInProducts,
     usedInCertificates: row.usedInCertificates,
   }));
@@ -174,7 +191,7 @@ export async function getMediaAssetsByIds(ids: string[]): Promise<MediaAsset[]> 
     .where(inArray(mediaAssetsTable.id, ids));
   return rows.map((row) => ({
     ...row,
-    url: resolvePublicMediaUrl(row.url, row.storageKey),
+    url: resolvePublicMediaUrl(row.url, row.storageKey, row.driver),
   }));
 }
 

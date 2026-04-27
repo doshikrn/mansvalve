@@ -38,7 +38,11 @@ function mapRow(
 ): CertificateListItem {
   return {
     ...row.certificate,
-    mediaUrl: resolvePublicMediaUrl(row.media.url, row.media.storageKey),
+    mediaUrl: resolvePublicMediaUrl(
+      row.media.url,
+      row.media.storageKey,
+      row.media.driver,
+    ),
     mediaAlt: row.media.alt,
     mediaMimeType: row.media.mimeType,
   };
