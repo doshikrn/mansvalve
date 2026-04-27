@@ -1,12 +1,14 @@
 import "server-only";
 
 import { promises as fs } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 import type { StorageDriver, UploadInput, UploadResult } from "./types";
 
-const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
 const PUBLIC_BASE = "/uploads";
+
+const UPLOAD_ROOT = resolveUploadRoot();
 
 /**
  * Filesystem-backed storage driver intended for local development. Files are
@@ -47,6 +49,28 @@ export class LocalStorageDriver implements StorageDriver {
     const normalized = normalizeKey(key);
     return `${base.replace(/\/$/, "")}/${normalized}`;
   }
+}
+
+function resolveUploadRoot(): string {
+  const explicit = process.env.MEDIA_LOCAL_UPLOAD_ROOT?.trim();
+  if (explicit) {
+    return path.resolve(explicit);
+  }
+
+  const cwd = process.cwd();
+  const cwdPublicDir = path.join(cwd, "public");
+  if (existsSync(cwdPublicDir)) {
+    return path.join(cwd, "public", "uploads");
+  }
+
+  // Compatibility for deployments started from the workspace parent
+  // where the Next app itself lives in ./mansvalve.
+  const nestedAppRoot = path.join(cwd, "mansvalve");
+  if (existsSync(path.join(nestedAppRoot, "public"))) {
+    return path.join(nestedAppRoot, "public", "uploads");
+  }
+
+  return path.join(cwd, "public", "uploads");
 }
 
 function normalizeKey(key: string): string {

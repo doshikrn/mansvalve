@@ -5,6 +5,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import { getStorageDriver } from "@/lib/storage";
 import {
+  certificates as certificatesTable,
   mediaAssets as mediaAssetsTable,
   productImages as productImagesTable,
   type MediaAsset,
@@ -19,6 +20,7 @@ export type MediaListOptions = {
 
 export type MediaAssetWithUsage = MediaAsset & {
   usedInProducts: number;
+  usedInCertificates?: number;
 };
 
 export type MediaListResult = {
@@ -49,16 +51,22 @@ export async function listMediaAssets(
   const db = getDb();
   const offset = (Math.max(1, page) - 1) * pageSize;
 
-  const usageCountExpr = sql<number>`count(${productImagesTable.id})::int`;
+  const usageCountExpr = sql<number>`count(distinct ${productImagesTable.id})::int`;
+  const certUsageExpr = sql<number>`count(distinct ${certificatesTable.id})::int`;
   const base = db
     .select({
       asset: mediaAssetsTable,
       usedInProducts: usageCountExpr,
+      usedInCertificates: certUsageExpr,
     })
     .from(mediaAssetsTable)
     .leftJoin(
       productImagesTable,
       eq(productImagesTable.mediaId, mediaAssetsTable.id),
+    )
+    .leftJoin(
+      certificatesTable,
+      eq(certificatesTable.mediaAssetId, mediaAssetsTable.id),
     )
     .groupBy(mediaAssetsTable.id)
     .orderBy(desc(mediaAssetsTable.createdAt))
@@ -66,7 +74,12 @@ export async function listMediaAssets(
     .offset(offset);
 
   const rows = onlyUnused
-    ? await base.having(sql`count(${productImagesTable.id}) = 0`)
+    ? await base.having(
+        and(
+          sql`count(${productImagesTable.id}) = 0`,
+          sql`count(${certificatesTable.id}) = 0`,
+        ),
+      )
     : await base;
 
   const countRows = await db
@@ -76,7 +89,11 @@ export async function listMediaAssets(
     .from(mediaAssetsTable);
 
   return {
-    items: rows.map((row) => ({ ...row.asset, usedInProducts: row.usedInProducts })),
+    items: rows.map((row) => ({
+      ...row.asset,
+      usedInProducts: row.usedInProducts,
+      usedInCertificates: row.usedInCertificates,
+    })),
     total: countRows[0]?.value ?? 0,
     page,
     pageSize,
@@ -89,12 +106,17 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
   const rows = await db
     .select({
       asset: mediaAssetsTable,
-      usedInProducts: sql<number>`count(${productImagesTable.id})::int`,
+      usedInProducts: sql<number>`count(distinct ${productImagesTable.id})::int`,
+      usedInCertificates: sql<number>`count(distinct ${certificatesTable.id})::int`,
     })
     .from(mediaAssetsTable)
     .leftJoin(
       productImagesTable,
       eq(productImagesTable.mediaId, mediaAssetsTable.id),
+    )
+    .leftJoin(
+      certificatesTable,
+      eq(certificatesTable.mediaAssetId, mediaAssetsTable.id),
     )
     .groupBy(mediaAssetsTable.id)
     .orderBy(desc(mediaAssetsTable.createdAt))
@@ -103,6 +125,7 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
   return rows.map((row) => ({
     ...row.asset,
     usedInProducts: row.usedInProducts,
+    usedInCertificates: row.usedInCertificates,
   }));
 }
 
@@ -128,16 +151,28 @@ export async function updateMediaAlt(
 
 export async function deleteMediaAssetById(id: string): Promise<void> {
   const db = getDb();
-  const usageRows = await db
+  const productUsageRows = await db
     .select({
       value: sql<number>`count(*)::int`,
     })
     .from(productImagesTable)
     .where(eq(productImagesTable.mediaId, id));
-  const usage = usageRows[0]?.value ?? 0;
+  const productUsage = productUsageRows[0]?.value ?? 0;
 
-  if (usage > 0) {
-    throw new Error("MEDIA_IN_USE");
+  if (productUsage > 0) {
+    throw new Error("MEDIA_IN_USE_PRODUCT");
+  }
+
+  const certificateUsageRows = await db
+    .select({
+      value: sql<number>`count(*)::int`,
+    })
+    .from(certificatesTable)
+    .where(eq(certificatesTable.mediaAssetId, id));
+  const certificateUsage = certificateUsageRows[0]?.value ?? 0;
+
+  if (certificateUsage > 0) {
+    throw new Error("MEDIA_IN_USE_CERTIFICATE");
   }
 
   const found = await db
@@ -167,11 +202,19 @@ export async function deleteUnusedAssetsByIds(ids: string[]): Promise<number> {
 
   const removable: { id: string; storageKey: string }[] = [];
   for (const candidate of candidates) {
-    const usage = await db
+    const productUsageRows = await db
       .select({ value: sql<number>`count(*)::int` })
       .from(productImagesTable)
       .where(eq(productImagesTable.mediaId, candidate.id));
-    if ((usage[0]?.value ?? 0) === 0) {
+    const productUsage = productUsageRows[0]?.value ?? 0;
+
+    const certificateUsageRows = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(certificatesTable)
+      .where(eq(certificatesTable.mediaAssetId, candidate.id));
+    const certificateUsage = certificateUsageRows[0]?.value ?? 0;
+
+    if (productUsage === 0 && certificateUsage === 0) {
       removable.push(candidate);
     }
   }

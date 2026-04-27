@@ -210,10 +210,20 @@ export function MediaUpload({
         method: "DELETE",
       });
       const body = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string }
+        | {
+            ok?: boolean;
+            error?: string;
+            code?: "MEDIA_IN_USE_PRODUCT" | "MEDIA_IN_USE_CERTIFICATE";
+          }
         | null;
 
       if (!response.ok || body?.ok === false) {
+        if (body?.code === "MEDIA_IN_USE_PRODUCT") {
+          throw new Error("Файл используется в товаре.");
+        }
+        if (body?.code === "MEDIA_IN_USE_CERTIFICATE") {
+          throw new Error("Файл используется в сертификате.");
+        }
         throw new Error(body?.error || "Не удалось удалить изображение.");
       }
 

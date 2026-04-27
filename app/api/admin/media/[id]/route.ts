@@ -37,12 +37,22 @@ export async function DELETE(
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown_error";
-    if (message === "MEDIA_IN_USE") {
+    if (message === "MEDIA_IN_USE_PRODUCT") {
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "Media is attached to one or more products. Remove links first.",
+          code: "MEDIA_IN_USE_PRODUCT",
+          error: "Файл используется в товаре.",
+        },
+        { status: 409 },
+      );
+    }
+    if (message === "MEDIA_IN_USE_CERTIFICATE") {
+      return NextResponse.json(
+        {
+          ok: false,
+          code: "MEDIA_IN_USE_CERTIFICATE",
+          error: "Файл используется в сертификате.",
         },
         { status: 409 },
       );

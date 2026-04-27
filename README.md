@@ -85,12 +85,21 @@ Media storage (обязательно выбрать и настроить):
   - `MEDIA_PUBLIC_BASE_URL`
 - При `MEDIA_DRIVER=local`:
   - убедитесь, что `MEDIA_PUBLIC_BASE_URL` корректен для вашего окружения (или оставьте fallback `/uploads`).
+  - опционально можно задать `MEDIA_LOCAL_UPLOAD_ROOT` для явного пути хранения
+    на диске (если процесс запускается не из папки Next.js приложения).
 
 Важно:
 
 - Если `NEXT_PUBLIC_GTM_ID` пустой: GTM не грузится, analytics events безопасно no-op.
 - Если Telegram-переменные не заданы: форма может открыть WhatsApp fallback, но это не замена рабочей server delivery.
 - Если `DATABASE_URL`/`ADMIN_SESSION_SECRET` не заданы: админка и управление контентом не готовы к production.
+
+Локальная совместимость (для старых инсталляций):
+
+- Текущая логика локального драйвера пишет в `public/uploads/...` **внутри Next app root**.
+- Если раньше файлы писались из другого `cwd` и оказались вне текущего `public/uploads`,
+  переместите их в актуальную папку `public/uploads` или задайте корректный
+  `MEDIA_LOCAL_UPLOAD_ROOT` и синхронизируйте `MEDIA_PUBLIC_BASE_URL`.
 
 ### Step-by-step deployment guide
 
