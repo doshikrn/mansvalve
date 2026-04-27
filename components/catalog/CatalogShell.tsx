@@ -220,18 +220,18 @@ export function CatalogShell({
           showCategoryTabs={!effectiveLockedCategoryId}
           showSubcategoryFilter={!lockedSubcategoryId}
           showThreadFilter={threadOptions.length > 0}
-        />
+        >
+          <div className="flex flex-col gap-6">
+            <ProductGrid products={pageItems} total={filtered.length} />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              basePath={basePath}
+              searchParams={paginationParams}
+            />
+          </div>
+        </CatalogFilters>
       </Suspense>
-
-      <div className="mt-6">
-        <ProductGrid products={pageItems} total={filtered.length} />
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          basePath={basePath}
-          searchParams={paginationParams}
-        />
-      </div>
     </div>
   );
 }

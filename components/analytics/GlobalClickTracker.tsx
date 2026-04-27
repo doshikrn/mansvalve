@@ -32,6 +32,11 @@ export function GlobalClickTracker() {
         return;
       }
 
+      if (href.startsWith("mailto:")) {
+        trackEvent("email_click", basePayload);
+        return;
+      }
+
       if (WHATSAPP_PATTERN.test(href)) {
         trackEvent("whatsapp_click", basePayload);
       }

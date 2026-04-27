@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import {
   COMPANY,
   COMPANY_EMAIL_HREF,
@@ -182,8 +183,35 @@ export default function PrivacyPage() {
           <p>Если нужно уточнить, что хранится по заявке, задать вопрос о данных или
             связаться в рамках B2B:</p>
           <ul>
-            <li>электронная почта: <a className="text-blue-700 underline" href={COMPANY_EMAIL_HREF}>{COMPANY.email}</a>;</li>
-            <li>телефон: <a className="text-blue-700 underline" href={COMPANY_PHONE_HREF}>{COMPANY.phoneDisplay}</a>.</li>
+            <li>
+              электронная почта:{" "}
+              <CopyToClipboard
+                value={COMPANY.email}
+                kind="email"
+                className="text-blue-800"
+              >
+                {COMPANY.email}
+              </CopyToClipboard>{" "}
+              (<a className="text-blue-700 underline" href={COMPANY_EMAIL_HREF}>
+                написать
+              </a>
+              );
+            </li>
+            <li>
+              телефон:{" "}
+              <CopyToClipboard
+                value={COMPANY.phoneE164}
+                kind="phone"
+                className="text-blue-800"
+              >
+                {COMPANY.phoneDisplay}
+              </CopyToClipboard>{" "}
+              (
+              <a className="text-blue-700 underline" href={COMPANY_PHONE_HREF}>
+                позвонить
+              </a>
+              ).
+            </li>
           </ul>
           <p>Юр. и почтовый адрес: {COMPANY.address.full}.</p>
         </div>

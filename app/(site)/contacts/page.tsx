@@ -8,8 +8,10 @@ import {
   Clock,
   FileText,
   Building2,
+  type LucideIcon,
 } from "lucide-react";
 import { ContactsMapBlock } from "@/components/contacts/ContactsMapBlock";
+import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import {
   COMPANY,
@@ -49,11 +51,20 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /* ── Static data ─────────────────────────────────────────────────── */
 
-const CONTACTS = [
+const CONTACTS: Array<{
+  icon: LucideIcon;
+  label: string;
+  lines: string[];
+  copy?: { value: string; kind: "phone" | "email" };
+  href: string | null;
+  hrefLabel: string | null;
+  external: boolean;
+}> = [
   {
     icon: Phone,
     label: "Телефон / WhatsApp",
     lines: [COMPANY.phoneDisplay],
+    copy: { value: COMPANY.phoneE164, kind: "phone" },
     href: COMPANY_PHONE_HREF,
     hrefLabel: "Позвонить",
     external: false,
@@ -62,6 +73,7 @@ const CONTACTS = [
     icon: Mail,
     label: "Электронная почта",
     lines: [COMPANY.email],
+    copy: { value: COMPANY.email, kind: "email" },
     href: COMPANY_EMAIL_HREF,
     hrefLabel: "Написать письмо",
     external: false,
@@ -82,7 +94,7 @@ const CONTACTS = [
     hrefLabel: null,
     external: false,
   },
-] as const;
+];
 
 const REQUISITES = [
   { label: "Полное наименование", value: COMPANY.legalName },
@@ -153,7 +165,7 @@ export default async function ContactsPage() {
           {/* RIGHT — contact cards (2 / 5 columns) */}
           <div className="flex flex-col gap-4 lg:col-span-2">
 
-            {CONTACTS.map(({ icon: Icon, label, lines, href, hrefLabel, external }) => (
+            {CONTACTS.map(({ icon: Icon, label, lines, copy, href, hrefLabel, external }) => (
               <div
                 key={label}
                 className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 transition-colors"
@@ -167,7 +179,17 @@ export default async function ContactsPage() {
                   </p>
                   {lines.map((line) => (
                     <p key={line} className="text-sm font-medium leading-relaxed text-slate-900">
-                      {line}
+                      {copy ? (
+                        <CopyToClipboard
+                          value={copy.value}
+                          kind={copy.kind}
+                          className="font-medium text-slate-900"
+                        >
+                          {line}
+                        </CopyToClipboard>
+                      ) : (
+                        line
+                      )}
                     </p>
                   ))}
                   {href && hrefLabel && (

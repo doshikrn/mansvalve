@@ -1,8 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { getPublicCatalogCategories } from "@/lib/public-catalog";
-import { COMPANY, COMPANY_PHONE_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
+import {
+  COMPANY,
+  COMPANY_EMAIL_HREF,
+  COMPANY_PHONE_HREF,
+  COMPANY_WHATSAPP_BASE_URL,
+} from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 export async function Footer() {
@@ -83,15 +89,46 @@ export async function Footer() {
           {/* Contact info */}
           <div>
             <h4 className="mb-3 text-sm font-semibold text-slate-900">Связаться</h4>
-            <ul className="space-y-2 text-sm text-slate-500">
-              <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-slate-400" />
-                <a
-                  href={COMPANY_PHONE_HREF}
-                  className="hover:text-blue-700 transition-colors"
-                >
-                  {COMPANY.phoneDisplay}
-                </a>
+            <ul className="space-y-2.5 text-sm text-slate-500">
+              <li className="flex items-start gap-2">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                <div className="min-w-0 flex flex-1 items-center justify-between gap-1.5">
+                  <CopyToClipboard
+                    value={COMPANY.phoneE164}
+                    kind="phone"
+                    className="min-w-0 text-slate-600 hover:text-blue-700"
+                  >
+                    {COMPANY.phoneDisplay}
+                  </CopyToClipboard>
+                  <a
+                    href={COMPANY_PHONE_HREF}
+                    className="shrink-0 rounded p-0.5 text-slate-400 transition hover:text-blue-700"
+                    title="Позвонить"
+                    aria-label="Позвонить"
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                <div className="min-w-0 flex flex-1 items-center justify-between gap-1.5">
+                  <CopyToClipboard
+                    value={COMPANY.email}
+                    kind="email"
+                    className="min-w-0 text-slate-600 hover:text-blue-700"
+                  >
+                    {COMPANY.email}
+                  </CopyToClipboard>
+                  <a
+                    href={COMPANY_EMAIL_HREF}
+                    className="shrink-0 rounded p-0.5 text-slate-400 transition hover:text-blue-700"
+                    title="Написать письмо"
+                    aria-label="Написать письмо"
+                  >
+                    <Mail className="h-3.5 w-3.5" />
+                  </a>
+                </div>
               </li>
               <li className="flex items-center gap-2">
                 <WhatsappIcon className="h-4 w-4 text-green-500" />
