@@ -13,50 +13,36 @@ type HeaderCategoryBarProps = {
  */
 export function HeaderCategoryBar({ links }: HeaderCategoryBarProps) {
   return (
-    <>
-      <div className="hidden border-t border-white/10 bg-[#0c2342] shadow-inner md:block">
-        <div className="mx-auto flex max-w-[1320px] items-stretch px-5 sm:px-7 lg:px-10">
-          <nav
-            className="flex min-h-[56px] w-full items-center gap-1 py-1 lg:min-h-[60px] lg:gap-0"
-            aria-label="Категории каталога"
-          >
-            <Link
-              href="/catalog"
-              className="flex shrink-0 items-center gap-2 rounded-md px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 lg:px-4"
-            >
-              <LayoutGrid className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-              Все категории
-            </Link>
-
-            <span className="mx-2 hidden h-6 w-px shrink-0 bg-white/20 lg:inline-block" aria-hidden />
-
-            <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1 gap-y-1 lg:flex-nowrap lg:gap-x-0 lg:overflow-x-auto [&::-webkit-scrollbar]:h-1.5">
-              {links.map((item) => (
-                <li key={item.href} className="shrink-0">
-                  <Link
-                    href={item.href}
-                    className="block whitespace-nowrap rounded-md px-3 py-2.5 text-sm font-medium text-white/95 transition hover:bg-white/10 lg:px-3.5"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-      <div className="border-t border-white/10 bg-[#0c2342] md:hidden">
-        <div className="mx-auto flex max-w-[1320px] items-center px-5 py-2 sm:px-7">
+    <div className="hidden border-t border-white/10 bg-[#0c2342] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:block">
+      <div className="mx-auto flex max-w-[1320px] items-stretch px-5 sm:px-7 lg:px-10">
+        <nav
+          className="flex min-h-[56px] w-full flex-wrap items-center gap-x-4 gap-y-2 py-2 lg:min-h-[60px] lg:flex-nowrap lg:gap-x-6 lg:gap-y-0 lg:py-2.5"
+          aria-label="Категории каталога"
+        >
           <Link
             href="/catalog"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 transition hover:bg-white/15"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-white/[0.14] px-4 py-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-white/25 transition hover:bg-white/[0.22] hover:ring-white/40 lg:px-5"
           >
-            <LayoutGrid className="h-4 w-4" aria-hidden />
-            Каталог и категории
+            <LayoutGrid className="h-[18px] w-[18px] shrink-0 opacity-95" aria-hidden strokeWidth={2} />
+            Все категории
           </Link>
-        </div>
+
+          <span className="hidden h-7 w-px shrink-0 bg-white/25 lg:inline-block" aria-hidden />
+
+          <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 lg:flex-nowrap lg:gap-x-4 lg:overflow-x-auto lg:pb-0.5 [&::-webkit-scrollbar]:h-1.5">
+            {links.map((item) => (
+              <li key={item.href} className="shrink-0">
+                <Link
+                  href={item.href}
+                  className="block whitespace-nowrap rounded-lg px-3.5 py-2.5 text-sm font-medium text-white/92 transition hover:bg-white/12 hover:text-white lg:px-4"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-    </>
+    </div>
   );
 }

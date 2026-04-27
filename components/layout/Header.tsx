@@ -53,7 +53,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
   }, [mobileSearchOpen]);
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white shadow-sm shadow-slate-900/5">
+    <header className="relative w-full bg-white shadow-sm shadow-slate-900/5">
       <TopBar />
       <MainHeader
         onSearchSubmit={goToCatalog}
