@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { label: "Каталог", href: "/catalog" },
   { label: "Как работаем", href: "/#how-it-works" },
   { label: "FAQ", href: "/#faq" },
+  { label: "Сертификаты", href: "/certificates" },
   { label: "Контакты", href: "/contacts" },
 ] as const;
 
@@ -35,7 +36,7 @@ export function Header() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden gap-6 text-sm font-medium text-slate-600 md:flex">
+        <nav className="hidden gap-3 text-sm font-medium text-slate-600 lg:gap-5 xl:gap-6 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}

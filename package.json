@@ -14,7 +14,8 @@
     "db:import-catalog": "tsx scripts/db/import-catalog.ts",
     "admin:create": "tsx scripts/db/create-admin.ts",
     "catalog:parity-check": "tsx scripts/catalog-parity-check.ts",
-    "seo:audit": "tsx scripts/seo-audit.ts"
+    "seo:audit": "tsx scripts/seo-audit.ts",
+    "build:icons": "node scripts/build-app-icons.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",
@@ -49,6 +50,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
+    "to-ico": "^1.1.5",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }
