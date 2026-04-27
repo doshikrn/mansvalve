@@ -130,9 +130,9 @@ export type HomeMetaContent = z.infer<typeof homeMetaSchema>;
 
 export function defaultHomeMeta(companyName: string): HomeMetaContent {
   return {
-    ogTitle: `${companyName} — Промышленная арматура в Казахстане`,
+    ogTitle: `${companyName} — трубопроводная арматура, задвижки, краны, клапаны в Казахстане`,
     ogDescription:
-      "Задвижки, краны, затворы и клапаны от DN15 до DN1000 с сертификатами. Комплект под объект за 1 день.",
+      "B2B поставки промышленной трубопроводной арматуры по Казахстану: задвижки, шаровые краны, затворы, клапаны DN15–DN1000. КП за 1 день, ГОСТ/DIN/ISO, склад в Алматы.",
   };
 }
 
@@ -145,9 +145,9 @@ export type PageMetaContent = z.infer<typeof pageMetaSchema>;
 
 export function defaultAboutMeta(companyName: string): PageMetaContent {
   return {
-    title: "О компании",
+    title: "О компании — B2B поставщик трубопроводной арматуры",
     description:
-      `${companyName} — B2B поставщик промышленной арматуры в Казахстане. Прямые поставки задвижек, шаровых кранов, затворов и клапанов. Сертификаты ГОСТ/DIN/ISO, доставка по всему РК.`,
+      `${companyName} — надёжный B2B партнёр по поставкам трубопроводной арматуры в Казахстан: задвижки, краны, клапаны, затворы. Прямые контракты, склад в Алматы, гидроиспытания, документы для тендера, доставка по РК.`,
   };
 }
 
@@ -158,9 +158,9 @@ export function defaultContactsMeta(input: {
   city: string;
 }): PageMetaContent {
   return {
-    title: "Контакты",
+    title: "Контакты — заявка, коммерческое предложение и доставка",
     description:
-      `Свяжитесь с ${input.companyName}: ${input.phoneDisplay}, ${input.email}. Офис и склад в ${input.city}. Оставьте заявку — ответим в течение 2 рабочих часов.`,
+      `Контакты ${input.companyName} в Казахстане: ${input.phoneDisplay}, ${input.email}. Офис и склад в ${input.city}. Заявка на КП, консультация инженера, поставка арматуры по договору. Ответ в течение 2 рабочих часов.`,
   };
 }
 

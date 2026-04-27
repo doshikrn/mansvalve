@@ -66,7 +66,7 @@ Copy-Item .env.example .env.local
 
 Минимально required для production:
 
-- `SITE_URL` — публичный базовый URL сайта (canonical/OG, `sitemap.xml`, `robots.txt`).
+- `SITE_URL` — публичный базовый URL сайта (canonical/OG, `sitemap.xml`, `robots.txt`). Для production задайте канонический домен с `https` (сейчас: `https://mansvalve-group.kz`), **не** IP-адрес сервера.
 - `DATABASE_URL` — строка подключения Postgres для admin/cms/leads.
 - `ADMIN_SESSION_SECRET` — секрет подписи админ-сессий (длинная случайная строка).
 - `TELEGRAM_BOT_TOKEN` — server-only токен Telegram-бота для `POST /api/request`.
@@ -172,9 +172,44 @@ Media storage (обязательно выбрать и настроить):
 | 9 | **`phone_click`** — клик по `tel:`. |
 | 10 | **`catalog_search`** — поиск в каталоге. |
 | 11 | **`catalog_filter_change`** — смена фильтра (категория, подкатегория, сортировка и т.д., см. `CatalogFilters`). |
-| 12 | Для событий из `lib/analytics.ts` в dataLayer: поля **`session_id`**, **`event_id`**, плюс контекст **`page`**, **`source`**, при необходимости **`product_slug`** / **`category`**. Настройте в GTM триггеры и теги GA4 по этим именам `event`. |
+| 12 | Для событий из `lib/analytics.ts` в dataLayer: на каждом событии есть **`event_id`**, **`session_id`**, **`page`**, **`pathname`**, при необходимости **`product_slug`** / **`category`** / **`source`**. Настройте в GTM триггеры и теги GA4 / Google Ads по этим именам `event`. |
 
-**Readiness:** без `NEXT_PUBLIC_GTM_ID` клиентский слой событий отключён, сайт не падает. С GTM — bootstrap в `app/layout.tsx`, события уходят в `dataLayer` (и в `gtag`, если прокинут тегом).
+**Readiness:** без `NEXT_PUBLIC_GTM_ID` клиентский слой событий отключён, сайт не падает. С GTM — bootstrap в `app/layout.tsx`, события **только** в `dataLayer` (без дублирования через `gtag` в коде приложения).
+
+## Analytics / Ads / Retargeting handoff
+
+Идентификаторы (для маркетинга и настройки GTM / GA4 / Google Ads):
+
+| | ID |
+|---|-----|
+| **GTM (контейнер)** | `GTM-NJZFLQSV` |
+| **GA4 (поток)** | `G-K08PEJC569` |
+| **Env в приложении** | `NEXT_PUBLIC_GTM_ID=GTM-NJZFLQSV` (публичная переменная) |
+
+**Важно:** в репозитории **нет** прямых скриптов Google Ads / gtag / GA4 — только GTM. Ремаркетинг, конверсии и теги GA4 настраиваются **в GTM и интерфейсе Google Ads** маркетологом. Код пушит события в `dataLayer`; дальше маршрутизация — на стороне GTM.
+
+**События `dataLayer` (имя `event`), которые эмитит фронтенд:**
+
+| Событие | Назначение |
+|---------|------------|
+| `page_view` | Просмотр страницы (в т.ч. при навигации в App Router) |
+| `catalog_view` | Витрина каталога: `/catalog`, `/catalog/category/...` |
+| `product_view` | Карточка товара `/catalog/[slug]` |
+| `request_form_view` | Форма заявки вошла в зону видимости |
+| `request_form_submit_success` | **Основная конверсия (lead):** успешный `POST /api/request` |
+| `request_form_submit_error` | Ошибка отправки формы |
+| `whatsapp_click` | Клик по ссылке WhatsApp (и программный fallback в форме) |
+| `phone_click` | Клик по `tel:` |
+| `catalog_search` | Поиск в каталоге (debounce) |
+| `catalog_filter_change` | Смена фильтра / таба категории / сброс |
+| *Дополнительно* | `scroll_depth`, `page_engagement` — вовлечённость, не обязательны для конверсий |
+
+**Поля на каждом событии (для дедупликации и атрибуции):** `event_id`, `session_id`, `page` (путь + query), `pathname`; при релевантности — `product_slug`, `category`, `source`.
+
+**Конверсии:**
+
+- **Основная (macro):** `request_form_submit_success` — настройка цели/конверсии в GA4 и, при необходимости, импорт в Google Ads.
+- **Микроконверсии:** `whatsapp_click`, `phone_click` — полезны для воронки и аукциона, не заменяют lead.
 
 ---
 

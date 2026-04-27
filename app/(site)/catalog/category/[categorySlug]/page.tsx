@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description =
     customMeta?.trim() || buildCategoryPageDescription(category, productCount);
 
-  const title = `${category.name} — купить в Казахстане`;
+  const title = `${category.name} — промышленная арматура, Казахстан`;
 
   const canonicalPath = `/catalog/category/${category.slug}`;
 
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: canonicalPath,
     },
     openGraph: {
-      title: `${category.name} | ${COMPANY.name}`,
+      title: `${title} | ${COMPANY.name}`,
       description,
       url: canonicalPath,
       siteName: COMPANY.name,
@@ -71,7 +71,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: "summary_large_image",
-      title: `${category.name} | ${COMPANY.name}`,
+      title: `${title} | ${COMPANY.name}`,
       description,
     },
   };
@@ -320,8 +320,8 @@ function pluralSubcategories(n: number): string {
 function buildCategoryPageDescription(category: Category, productCount: number): string {
   const subcategoryNames = category.subcategories.map((s) => s.name).join(", ");
   return (
-    `${category.name} промышленные — ${productCount} позиций в наличии и под заказ. ` +
-    `${subcategoryNames}. ` +
-    "Сертификаты ГОСТ/DIN/ISO. Доставка по всему Казахстану."
+    `${category.name} — промышленная трубопроводная арматура: ${productCount} позиций в наличии и под заказ. ` +
+    `Подкатегории: ${subcategoryNames}. ` +
+    "Сертификаты ГОСТ/DIN/ISO, КП, доставка по Казахстану."
   );
 }

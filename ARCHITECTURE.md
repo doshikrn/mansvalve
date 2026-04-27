@@ -33,7 +33,7 @@
 - серверный API для приёма заявок (`POST /api/request`) — Telegram +
   best-effort запись в `leads`;
 - базовая web-аналитика: bootstrap GTM в `app/layout.tsx` при
-  `NEXT_PUBLIC_GTM_ID`, события в `dataLayer` / `gtag` из `lib/analytics.ts`
+  `NEXT_PUBLIC_GTM_ID`, события в `dataLayer` из `lib/analytics.ts`
   и клиентских трекеров (`PageViewTracker`, `GlobalClickTracker`, форма,
   `CatalogFilters`); при **отсутствии** `NEXT_PUBLIC_GTM_ID` скрипт GTM
   не грузится, `trackEvent` — no-op. SEO: metadata, JSON-LD, `sitemap`/`robots`.
@@ -47,7 +47,7 @@
 - UI: `shadcn/ui`, `radix-ui`, `lucide-react`.
 - БД: Postgres, `drizzle-orm`, `postgres` (драйвер), миграции `drizzle-kit`.
 - Auth админки: `jose` (JWT в httpOnly cookie), `bcryptjs`.
-- Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` + опциональный `gtag`
+- Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` (GA4/Ads настраиваются в GTM)
   (см. `lib/analytics.ts`).
 - Линтинг: `ESLint` (`eslint-config-next`).
 - Подключены точечно: `@supabase/supabase-js` (драйвер медиа Supabase),
@@ -95,7 +95,7 @@ mansvalve/
 │   ├── auth/*
 │   ├── storage/*
 │   ├── company.ts                 # реквизиты, tel/mail, wa.me, хелперы WhatsApp
-│   ├── analytics.ts               # trackEvent, dataLayer/gtag (GTM-флаг)
+│   ├── analytics.ts               # trackEvent → dataLayer (GTM-флаг)
 │   └── …
 ├── next.config.ts
 ├── data/catalog-products.json     # источник при PUBLIC_CATALOG_SOURCE=json
@@ -186,10 +186,10 @@ Browser
    `getPublicCatalogProducts`.
 3. **Заявки** — как раньше по UX, плюс запись в `leads` и обновление полей
    Telegram-доставки.
-4. **Аналитика** — `trackEvent` пушит в `dataLayer` (и `gtag`, если задан
-   тегом) только при заданном **`NEXT_PUBLIC_GTM_ID`** (иначе no-op); трекинг
-   кликов `tel:` / WhatsApp, просмотры страниц, форма, каталог — в прежних
-   компонентах.
+4. **Аналитика** — `trackEvent` пушит в `dataLayer` только при заданном
+   **`NEXT_PUBLIC_GTM_ID`** (иначе no-op). GA4/Ads не подключаются в коде — только
+   GTM. Трекинг кликов `tel:` / WhatsApp, просмотры страниц, форма, каталог — в
+   прежних компонентах.
 5. **Редактирование контента/мета** — `/admin/content` → server action →
    `upsertContentBlock` → `revalidatePath` для `/`, `/about`, `/contacts` и
    т.д.

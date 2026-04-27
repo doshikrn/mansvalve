@@ -41,7 +41,7 @@ function buildSubcategoryDescription(
   subcategory: Subcategory,
   productCount: number,
 ): string {
-  return `${subcategory.name} (${category.name}) — ${productCount} позиций в наличии и под заказ. Фильтрация по DN, PN, резьбе, материалу, типу соединения и типу управления.`;
+  return `${subcategory.name} в категории «${category.name}» — ${productCount} позиций. Промышленная арматура в Казахстане: DN, PN, материал, КП, доставка по РК. Фильтрация в каталоге.`;
 }
 
 export async function generateStaticParams() {
@@ -66,15 +66,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     customMeta?.trim() ||
     buildSubcategoryDescription(context.category, context.subcategory, productCount);
   const canonicalPath = `/catalog/subcategory/${context.subcategory.slug}`;
+  const pageTitle = `${context.subcategory.name} — ${context.category.name} · Казахстан`;
 
   return {
-    title: `${context.subcategory.name} — купить в Казахстане`,
+    title: pageTitle,
     description,
     alternates: {
       canonical: canonicalPath,
     },
     openGraph: {
-      title: `${context.subcategory.name} | ${COMPANY.name}`,
+      title: `${pageTitle} | ${COMPANY.name}`,
       description,
       url: canonicalPath,
       siteName: COMPANY.name,
@@ -83,7 +84,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: "summary_large_image",
-      title: `${context.subcategory.name} | ${COMPANY.name}`,
+      title: `${pageTitle} | ${COMPANY.name}`,
       description,
     },
   };
@@ -164,9 +165,12 @@ export default async function SubcategoryPage({ params, searchParams }: PageProp
 
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             {context.subcategory.name}
+            <span className="mt-1 block text-xl font-semibold text-slate-500 sm:mt-2 sm:text-2xl">
+              {context.category.name} · Казахстан
+            </span>
           </h1>
           <p className="mt-2 text-lg text-slate-500">
-            {subcategoryProducts.length} позиций · раздел «{context.category.name}»
+            {subcategoryProducts.length} позиций в каталоге
           </p>
         </div>
       </div>

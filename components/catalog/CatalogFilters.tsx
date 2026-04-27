@@ -70,7 +70,6 @@ export function CatalogFilters({
       const pageContext = getPageAnalyticsContext(pathname);
       trackEvent("catalog_filter_change", {
         source: "catalog-filters",
-        page: pageContext.page,
         category: pageContext.category,
         filter_key: key,
         filter_value: value || "all",
@@ -99,7 +98,6 @@ export function CatalogFilters({
       const pageContext = getPageAnalyticsContext(pathname);
       trackEvent("catalog_search", {
         source: "catalog-filters",
-        page: pageContext.page,
         category: pageContext.category,
         query,
       });
@@ -131,7 +129,6 @@ export function CatalogFilters({
     const pageContext = getPageAnalyticsContext(pathname);
     trackEvent("catalog_filter_change", {
       source: "catalog-filters",
-      page: pageContext.page,
       category: pageContext.category,
       filter_key: "all",
       filter_value: "reset",
@@ -175,7 +172,6 @@ export function CatalogFilters({
             onClick={() =>
               trackEvent("catalog_filter_change", {
                 source: "catalog-filters",
-                page: pathname,
                 category: "all",
                 filter_key: "category",
                 filter_value: "all",
@@ -197,7 +193,6 @@ export function CatalogFilters({
               onClick={() =>
                 trackEvent("catalog_filter_change", {
                   source: "catalog-filters",
-                  page: pathname,
                   category: cat.slug,
                   filter_key: "category",
                   filter_value: cat.slug,

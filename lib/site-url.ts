@@ -16,6 +16,11 @@ function normalizeBaseUrl(value: string | undefined): string | null {
   }
 }
 
+/**
+ * Base URL for absolute links (metadata, sitemap, robots, JSON-LD).
+ * Set `SITE_URL` to the public **domain** (e.g. `https://mansvalve-group.kz`), not
+ * a bare server IP, or `/sitemap.xml` and `robots.txt` will expose the wrong host.
+ */
 export function getSiteBaseUrl(): string {
   const explicitBaseUrl = normalizeBaseUrl(process.env.SITE_URL);
   if (explicitBaseUrl) return explicitBaseUrl;

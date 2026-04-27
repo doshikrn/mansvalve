@@ -12,7 +12,6 @@ export interface PageAnalyticsContext {
 declare global {
   interface Window {
     dataLayer?: Array<Record<string, unknown>>;
-    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -62,11 +61,35 @@ export function getPageAnalyticsContext(pathname?: string): PageAnalyticsContext
 
 const GTM_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_GTM_ID?.trim());
 
+/**
+ * Base fields for every dataLayer event (URL-derived). Callers may override with
+ * a more specific `product_slug` / `category` (e.g. from product form context).
+ */
+function getDefaultDataLayerContext(): AnalyticsPayload {
+  if (typeof window === "undefined") return {};
+  const pathname = window.location.pathname;
+  const page = `${pathname}${window.location.search || ""}`;
+  const { product_slug, category } = getPageAnalyticsContext(pathname);
+  const out: AnalyticsPayload = {
+    page,
+    pathname,
+  };
+  if (product_slug) out.product_slug = product_slug;
+  if (category) out.category = category;
+  return out;
+}
+
+/**
+ * Pushes a single custom event to `dataLayer` for GTM (GA4, Ads, remarketing
+ * are configured in GTM only—no direct gtag/GA scripts here, to avoid duplicate hits).
+ */
 export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
   if (typeof window === "undefined") return;
   if (!GTM_CONFIGURED) return;
 
-  const normalizedPayload = normalizePayload(payload);
+  const defaults = getDefaultDataLayerContext();
+  const merged: AnalyticsPayload = { ...defaults, ...payload };
+  const normalizedPayload = normalizePayload(merged);
   const analyticsPayload = {
     ...normalizedPayload,
     session_id: getSessionId(),
@@ -80,14 +103,6 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
         event: eventName,
         ...analyticsPayload,
       });
-    } catch {
-      // Ignore analytics transport errors.
-    }
-
-    try {
-      if (typeof window.gtag === "function") {
-        window.gtag("event", eventName, analyticsPayload);
-      }
     } catch {
       // Ignore analytics transport errors.
     }

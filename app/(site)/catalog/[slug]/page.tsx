@@ -71,11 +71,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const standard = product.specs["Стандарт"] ?? "";
   const canonicalPath = `/catalog/${product.slug}`;
   const ogTitle = `${product.name} | ${COMPANY.name}`;
-  const ogDescription = product.shortDescription;
+  const longDescription = `${product.categoryName} ${product.name}. ${specs}. ${standard ? standard + ". " : ""}${priceHint} Поставки по Казахстану. КП: ${COMPANY.phoneDisplay}.`;
+  const ogDescription =
+    product.shortDescription?.trim() ||
+    `${product.name} — купить в РК, запросить КП. ${product.categoryName}. ${specs || "Параметры в карточке"}.`;
 
   return {
-    title: `${product.name} — купить в Казахстане`,
-    description: `${product.categoryName} ${product.name}. ${specs}. ${standard ? standard + ". " : ""}${priceHint} Поставки по всему Казахстану. Запросить КП: ${COMPANY.phoneDisplay}.`,
+    title: `${product.name} — купить в Казахстане, КП и доставка`,
+    description: longDescription,
     alternates: {
       canonical: canonicalPath,
     },
@@ -84,6 +87,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: ogDescription,
       type: "website",
       url: canonicalPath,
+      siteName: COMPANY.name,
+      locale: "ru_KZ",
     },
     twitter: {
       card: "summary_large_image",

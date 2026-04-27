@@ -7,17 +7,19 @@ import {
   COMPANY_PHONE_HREF,
 } from "@/lib/company";
 
+const PRIVACY_TITLE = "Политика конфиденциальности — обработка персональных данных";
+
 export const metadata: Metadata = {
-  title: "Политика конфиденциальности",
+  title: PRIVACY_TITLE,
   description:
-    `Как ${COMPANY.legalName} обрабатывает персональные данные посетителей сайта, заявки, аналитику, cookie и доставку заявок в Telegram.`,
+    `Политика обработки персональных данных ${COMPANY.legalName} (${COMPANY.name}): заявки, cookie, аналитика, Telegram, хранение лидов, контакты по вопросам данных. Казахстан.`,
   alternates: {
     canonical: "/privacy",
   },
   openGraph: {
-    title: `Политика конфиденциальности | ${COMPANY.name}`,
+    title: `${PRIVACY_TITLE} | ${COMPANY.name}`,
     description:
-      `Персональные данные, заявки, аналитика и хранение лидов: ${COMPANY.legalName}.`,
+      `Как обрабатываются данные на сайте: формы, UTM, хранение заявок, Telegram. ${COMPANY.legalName}.`,
     url: "/privacy",
     siteName: COMPANY.name,
     locale: "ru_KZ",
@@ -25,9 +27,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `Политика конфиденциальности | ${COMPANY.name}`,
+    title: `${PRIVACY_TITLE} | ${COMPANY.name}`,
     description:
-      `Персональные данные, заявки, аналитика: ${COMPANY.legalName}.`,
+      `Обработка персональных данных посетителей и B2B-заявок. ${COMPANY.legalName}, Казахстан.`,
   },
 };
 

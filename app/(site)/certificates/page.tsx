@@ -9,17 +9,19 @@ import { isDatabaseConfigured } from "@/lib/db/client";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 import { listPublicActiveCertificates } from "@/lib/services/certificates";
 
+const CERT_TITLE = "Сертификаты соответствия ГОСТ, DIN, ISO — документация на арматуру";
+
 export const metadata: Metadata = {
-  title: "Сертификаты",
+  title: CERT_TITLE,
   description:
-    `Сертификаты и документы ${COMPANY.name}: подтверждение качества и соответствия поставляемой продукции.`,
+    `Сертификаты и паспорта качества на трубопроводную арматуру ${COMPANY.name}: задвижки, краны, клапаны, затворы. Подтверждение стандартов, комплект документов к поставке по Казахстану.`,
   alternates: {
     canonical: "/certificates",
   },
   openGraph: {
-    title: `Сертификаты | ${COMPANY.name}`,
+    title: `${CERT_TITLE} | ${COMPANY.name}`,
     description:
-      `Сертификаты и документы ${COMPANY.name}: подтверждение качества и соответствия поставляемой продукции.`,
+      `Документы и сертификаты ГОСТ/DIN/ISO на поставляемую промышленную арматуру. ${COMPANY.name}, Казахстан.`,
     url: "/certificates",
     siteName: COMPANY.name,
     locale: "ru_KZ",
@@ -27,9 +29,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `Сертификаты | ${COMPANY.name}`,
+    title: `${CERT_TITLE} | ${COMPANY.name}`,
     description:
-      `Сертификаты и документы ${COMPANY.name}: подтверждение качества и соответствия поставляемой продукции.`,
+      `Сертификаты и документация на арматуру: ГОСТ, DIN, ISO. ${COMPANY.name} — поставки по РК.`,
   },
 };
 

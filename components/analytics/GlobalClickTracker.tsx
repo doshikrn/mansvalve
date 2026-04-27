@@ -21,7 +21,6 @@ export function GlobalClickTracker() {
       const pageContext = getPageAnalyticsContext(window.location.pathname);
       const basePayload = {
         source: "link",
-        page: pageContext.page,
         product_slug: pageContext.product_slug,
         category: pageContext.category,
         href,
