@@ -63,6 +63,11 @@ export async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/certificates" className="hover:text-blue-700 transition-colors">
+                  Сертификаты
+                </Link>
+              </li>
+              <li>
                 <Link href="/#faq" className="hover:text-blue-700 transition-colors">
                   FAQ
                 </Link>

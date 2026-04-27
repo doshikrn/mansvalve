@@ -6,7 +6,14 @@ import {
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
 
-const STATIC_ROUTES = ["/", "/catalog", "/about", "/contacts", "/privacy"] as const;
+const STATIC_ROUTES = [
+  "/",
+  "/catalog",
+  "/about",
+  "/contacts",
+  "/certificates",
+  "/privacy",
+] as const;
 
 function absoluteUrl(baseUrl: string, path: string): string {
   return new URL(path, `${baseUrl}/`).toString();

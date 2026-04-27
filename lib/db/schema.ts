@@ -265,6 +265,39 @@ export type ProductImage = typeof productImages.$inferSelect;
 export type NewProductImage = typeof productImages.$inferInsert;
 
 /* -------------------------------------------------------------------------- */
+/* Certificates                                                               */
+/* -------------------------------------------------------------------------- */
+
+export const certificates = pgTable(
+  "certificates",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    title: varchar("title", { length: 300 }).notNull(),
+    description: text("description"),
+    mediaAssetId: uuid("media_asset_id")
+      .notNull()
+      .references(() => mediaAssets.id, { onDelete: "restrict" }),
+    issuedAt: timestamp("issued_at", { withTimezone: true }),
+    sortOrder: integer("sort_order").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("certificates_is_active_idx").on(table.isActive),
+    index("certificates_sort_order_idx").on(table.sortOrder),
+    index("certificates_media_asset_idx").on(table.mediaAssetId),
+  ],
+);
+
+export type Certificate = typeof certificates.$inferSelect;
+export type NewCertificate = typeof certificates.$inferInsert;
+
+/* -------------------------------------------------------------------------- */
 /* Leads                                                                      */
 /* -------------------------------------------------------------------------- */
 

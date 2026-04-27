@@ -15,6 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Дашборд", match: (p) => p === "/admin" },
   { href: "/admin/products", label: "Товары" },
   { href: "/admin/categories", label: "Категории" },
+  { href: "/admin/certificates", label: "Сертификаты" },
   { href: "/admin/leads", label: "Заявки" },
   { href: "/admin/media", label: "Медиа" },
   { href: "/admin/content", label: "Контент" },

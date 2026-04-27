@@ -1,6 +1,6 @@
 # Архитектура проекта MANSVALVE (AS-IS)
 
-Обновлено: 2026-04-24  
+Обновлено: 2026-04-27  
 Аудитория: внешний архитектор / техлид, подключающийся к проекту.
 
 > **Сводка состояния на дату обновления.** Одно приложение Next.js: публичный
@@ -8,10 +8,13 @@
 > товаров, категорий, медиа, заявок и **контент-блоков** (`content_blocks`).
 > Публичный каталог читается через **`lib/public-catalog`** с переключателем
 > **`PUBLIC_CATALOG_SOURCE`** (`json` по умолчанию | `db`). Редактирование
-> ключевого текстового контента сайта — **`/admin/content`** (без
-> page-builder): данные в БД, на публичных страницах — резолверы
-> **`lib/site-content/public.ts`** с **fallback на дефолты**, если БД выключена
-> или блок не задан. Заявки: Telegram + строка в `leads`. Клиентские
+> контента и **SEO-мета** (главная, about, contacts) — **`/admin/content`**
+> (без page-builder): `content_blocks` + на публичных страницах — резолверы
+> **`lib/site-content/public.ts`** **merge** с дефолтами из
+> `lib/site-content/models.ts` (без БД, без строки, при невалидном JSON —
+> дефолты; с частичной записью в БД — дозаполнение полей). Страница
+> **политики конфиденциальности** — `/privacy` (текст в репо, `COMPANY` из
+> `lib/company.ts`). Заявки: Telegram + строка в `leads`. Клиентские
 > компоненты админки **не** импортируют `lib/services/leads.ts` (там
 > `server-only`); подписи статусов и `normalizeLeadStatus` вынесены в
 > **`lib/leads/lead-status-public.ts`**.
@@ -23,13 +26,17 @@
 Текущее состояние:
 
 - маркетинговый сайт (landing + доверительные блоки + CTA), часть текстов
-  на главной / about / contacts **опционально** из БД;
+  и **мета-описаний** главной, about, contacts **опционально** из БД
+  (`content_blocks`);
 - каталог с фильтрами, пагинацией, страницами категорий/подкатегорий и
   карточками товаров — источник данных **JSON или БД** (флаг);
 - серверный API для приёма заявок (`POST /api/request`) — Telegram +
   best-effort запись в `leads`;
-- базовая web-аналитика (GTM/dataLayer/gtag) и SEO (metadata + JSON-LD +
-  sitemap/robots);
+- базовая web-аналитика: bootstrap GTM в `app/layout.tsx` при
+  `NEXT_PUBLIC_GTM_ID`, события в `dataLayer` / `gtag` из `lib/analytics.ts`
+  и клиентских трекеров (`PageViewTracker`, `GlobalClickTracker`, форма,
+  `CatalogFilters`); при **отсутствии** `NEXT_PUBLIC_GTM_ID` скрипт GTM
+  не грузится, `trackEvent` — no-op. SEO: metadata, JSON-LD, `sitemap`/`robots`.
 - **админ-панель**: товары, категории/подкатегории, медиа, заявки, контент
   сайта, JWT-сессия.
 
@@ -40,7 +47,8 @@
 - UI: `shadcn/ui`, `radix-ui`, `lucide-react`.
 - БД: Postgres, `drizzle-orm`, `postgres` (драйвер), миграции `drizzle-kit`.
 - Auth админки: `jose` (JWT в httpOnly cookie), `bcryptjs`.
-- Аналитика: GTM/GA через `dataLayer` и `gtag`.
+- Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` + опциональный `gtag`
+  (см. `lib/analytics.ts`).
 - Линтинг: `ESLint` (`eslint-config-next`).
 - Подключены точечно: `@supabase/supabase-js` (драйвер медиа Supabase),
   `zod` для валидации.
@@ -50,12 +58,13 @@
 ```text
 mansvalve/
 ├── app/
-│   ├── layout.tsx                 # общий chrome (GTM, JSON-LD, трекеры)
+│   ├── layout.tsx                 # общий chrome (GTM при env, JSON-LD, трекеры)
 │   ├── (site)/                    # публичный сайт
 │   │   ├── layout.tsx             # Header / Footer
 │   │   ├── page.tsx               # главная (+ generateMetadata из content)
-│   │   ├── about/page.tsx
-│   │   ├── contacts/page.tsx
+│   │   ├── about/page.tsx         # + generateMetadata (meta из CMS)
+│   │   ├── contacts/page.tsx      # + generateMetadata (meta из CMS)
+│   │   ├── privacy/page.tsx       # политика конфиденциальности
 │   │   └── catalog/**
 │   ├── admin/
 │   │   ├── layout.tsx
@@ -73,6 +82,7 @@ mansvalve/
 │   ├── sections/*                 # Hero, TrustStrip, FAQ, RequestCTA …
 │   ├── catalog/*
 │   ├── contacts/QuickRequestForm.tsx
+│   ├── analytics/*                # PageViewTracker, GlobalClickTracker
 │   ├── admin/*                    # LeadEditForm, ProductForm, …
 │   ├── layout/*
 │   └── ui/*
@@ -84,8 +94,10 @@ mansvalve/
 │   ├── db/                        # schema, client, migrations
 │   ├── auth/*
 │   ├── storage/*
-│   ├── company.ts
+│   ├── company.ts                 # реквизиты, tel/mail, wa.me, хелперы WhatsApp
+│   ├── analytics.ts               # trackEvent, dataLayer/gtag (GTM-флаг)
 │   └── …
+├── next.config.ts
 ├── data/catalog-products.json     # источник при PUBLIC_CATALOG_SOURCE=json
 ├── proxy.ts                       # guard /admin/*
 ├── drizzle.config.ts
@@ -123,15 +135,18 @@ Browser
   статические дефолты в коде.
 - `GET /catalog`, `/catalog/category/...`, `/catalog/subcategory/...`,
   `/catalog/[slug]`.
-- `GET /about`, `/contacts` — часть текстов из `content_blocks` + fallback.
+- `GET /about`, `/contacts` — тексты и **metadata** (title/description) из
+  `content_blocks` через `resolveAboutCopy` / `resolveContactsCopy` и
+  `resolveAboutMeta` / `resolveContactsMeta` + merge с дефолтами.
+- `GET /privacy` — политика конфиденциальности (статический контент + `COMPANY`).
 - `POST /api/request` — заявка.
 - `GET /robots.txt`, `GET /sitemap.xml`.
 
 **Админка** (за `proxy.ts` + `requireAdmin`)
 
 - `/admin/login`, `/admin`, `/admin/products`, `/admin/categories`, …
-- **`/admin/content`** — формы по секциям (hero, trust, FAQ, CTA, meta, about,
-  contacts).
+- **`/admin/content`** — формы по секциям (hero, trust, FAQ, CTA, meta главной,
+  **meta about / meta contacts**, тексты about и contacts).
 
 ## 6) Модель данных
 
@@ -153,29 +168,38 @@ Browser
 ### Контент сайта (`content_blocks`)
 
 - Стабильные ключи — `lib/site-content/keys.ts` (например `site.home.hero`,
-  `site.about.copy`, …).
+  `site.meta.home`, **`site.meta.about`**, **`site.meta.contacts`**, `site.about.copy`,
+  `site.contacts.copy`, …).
 - Схемы и значения по умолчанию — `lib/site-content/models.ts` (zod + merge).
 - Публичное чтение — **`lib/site-content/public.ts`** (`resolveHomeHero`,
-  `resolveTrustStrip`, …): если `DATABASE_URL` не задан или запись отсутствует
-  / невалидна — используются дефолты (**публичный сайт без БД не ломается**).
+  `resolveHomeMeta`, `resolveAboutMeta`, `resolveContactsMeta`, `resolveTrustStrip`,
+  …): если `DATABASE_URL` не задан или запись отсутствует / невалидна —
+  используются дефолты (**публичный сайт без БД не ломается**); при частичном
+  JSON в БД — **shallow merge** с дефолтами.
 
 ## 7) Основные потоки
 
-1. **Рендер и SEO** — metadata на `/` может браться из `resolveHomeMeta()`.
+1. **Рендер и SEO** — `generateMetadata` на `/`, `/about`, `/contacts` из
+   `resolveHomeMeta()`, `resolveAboutMeta()`, `resolveContactsMeta()` (при
+   непустом `SITE_URL` — корректные absolute URL через `metadataBase`).
 2. **Каталог** — единый вход `getPublicCatalogCategories` /
    `getPublicCatalogProducts`.
 3. **Заявки** — как раньше по UX, плюс запись в `leads` и обновление полей
    Telegram-доставки.
-4. **Аналитика** — без изменений концепции (dataLayer / gtag).
-5. **Редактирование текстов** — админ сохраняет форму на `/admin/content` →
-   server action → `upsertContentBlock` → `revalidatePath` для `/`, `/about`,
-   `/contacts`, `/admin/content`.
+4. **Аналитика** — `trackEvent` пушит в `dataLayer` (и `gtag`, если задан
+   тегом) только при заданном **`NEXT_PUBLIC_GTM_ID`** (иначе no-op); трекинг
+   кликов `tel:` / WhatsApp, просмотры страниц, форма, каталог — в прежних
+   компонентах.
+5. **Редактирование контента/мета** — `/admin/content` → server action →
+   `upsertContentBlock` → `revalidatePath` для `/`, `/about`, `/contacts` и
+   т.д.
 
 ## 8) Интеграции и окружение
 
 **Публичный сайт и сборка**
 
-- `SITE_URL`, `NEXT_PUBLIC_GTM_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`.
+- `SITE_URL`, `NEXT_PUBLIC_GTM_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+  (полный перечень и чеклисты выката — `README.md`).
 
 **БД и админка**
 
@@ -196,7 +220,8 @@ Browser
 ## 9) Нефункциональные характеристики
 
 - **Сборка**: `next build` должен проходить без импорта `server-only` /
-  `postgres` в клиентский бандл форм редактирования (см. раздел 13.11).
+  `postgres` в клиентский бандл публичных/клиентских форм (см. раздел 13.4).
+- **`next.config.ts`**: `poweredByHeader: false` (прочие детали деплоя — `README.md`).
 - **Деградация**: отсутствие БД не отключает маркетинговый сайт за счёт
   fallback-контента и JSON-каталога.
 - **Rate limit** заявок по-прежнему in-memory (ограничение для горизонтального
@@ -204,8 +229,9 @@ Browser
 
 ## 10) Актуальные архитектурные ограничения
 
-1. Часть маркетинговых текстов (WhyUs, HowItWorks, футер, метаданные about/
-   contacts и т.д.) пока **не** вынесена в `content_blocks`.
+1. Тексты части marketing-секций (**WhyUs, HowItWorks, DeliveryCase, WhoWeSupply**,
+   **Footer**) пока **не** в `content_blocks` (в отличие от home/about/contacts
+   copy+meta, hero, FAQ, trust strip, request CTA, meta главной).
 2. Rate limiter заявок — процесс-local.
 3. Нет распределённого CI/e2e в репозитории (рекомендуется как следующий шаг
    качества).
@@ -214,8 +240,7 @@ Browser
 
 ## 11) Приоритеты следующего этапа (TO-BE, кратко)
 
-1. Расширить CMS-покрытие (мета about/contacts, футер, оставшиеся секции) —
-  приоритет по продукту.
+1. Расширить CMS-покрытие (футер, оставшиеся секции лендинга) — по продукту.
 2. Redis/edge KV для rate limiting и кэшей при необходимости.
 3. CI: `lint`, `tsc`, `build`, smoke-сценарии.
 4. ADR по хранению контента и каталога.
@@ -249,14 +274,18 @@ Browser
   внутренней заметки через **`updateLeadAction`**; отображение legacy-статусов
   `won`/`lost` как «Завершена» через **`normalizeLeadStatus`**.
 - **Контент сайта** — `/admin/content`: hero, trust strip, request CTA, FAQ,
-  SEO главной, тексты about и contacts; хранение в **`content_blocks`**.
+  **meta главной (OG)**, **meta about / meta contacts (title, description)**,
+  тексты about и contacts; хранение в **`content_blocks`**.
 
 ### 13.3 Публичное применение контента
 
 - Секции **`Hero`**, **`TrustStrip`**, **`FAQ`**, **`RequestCTA`** — async
   server components, данные через `resolve*` из `lib/site-content/public.ts`.
-- Страницы **`/about`**, **`/contacts`**, **`/`** (metadata) — используют те
-  же резолверы / `generateMetadata` где подключено.
+- Страницы **`/about`**, **`/contacts`**, **`/`** — `generateMetadata` из
+  `resolveHomeMeta` / `resolveAboutMeta` / `resolveContactsMeta` (merge с
+  дефолтами в `lib/site-content/models.ts`).
+- **`/privacy`** — статическая публичная страница; ссылка в **Footer**;
+  не редактируется из `/admin/content`.
 - Сервис **`lib/services/content-blocks.ts`** — `getContentBlock`,
   `upsertContentBlock`, опционально список по префиксу.
 
@@ -269,18 +298,25 @@ Browser
   UI) лежат в **`lib/leads/lead-status-public.ts`** без `server-only` и без
   доступа к БД.
 
-### 13.5 Поток заявки (без изменения смысла)
+### 13.5 `lib/company.ts` и внешние CTA
+
+- Единая точка **реквизитов**, `tel:`, e-mail, **`wa.me`** (номер в виде
+  цифр, query `text` с `encodeURIComponent` в `buildCompanyWhatsAppUrl`).
+- Хелперы для **каталога** (запрос по товару) и **контактов** — в том же
+  файле, чтобы ссылки на WhatsApp не дублировались.
+
+### 13.6 Поток заявки (без изменения смысла)
 
 `QuickRequestForm` → `POST /api/request` → валидация / rate limit / honeypot
 → **`persistLeadSafely`** → Telegram → **`updateLeadDelivery`**.
 
-### 13.6 Миграция каталога «JSON → БД»
+### 13.7 Миграция каталога «JSON → БД»
 
 - Импорт: `npm run db:import-catalog`.
 - Переключение витрины: **`PUBLIC_CATALOG_SOURCE`** / legacy-флаг
   **`PUBLIC_CATALOG_FROM_DB`**.
 
-### 13.7 Таблица `content_blocks` и `company_settings`
+### 13.8 Таблица `content_blocks` и `company_settings`
 
 - Редактируемый маркетинговый контент слайса CMS хранится в **`content_blocks`**
   (JSON по ключу).
