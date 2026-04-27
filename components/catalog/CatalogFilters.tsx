@@ -11,11 +11,12 @@ import {
   useId,
   type ReactNode,
 } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, Search, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PublicCatalogCategory as Category } from "@/lib/public-catalog";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
+import { FilterSelectMenu } from "@/components/catalog/FilterSelectMenu";
 import {
   Sheet,
   SheetContent,
@@ -39,9 +40,6 @@ interface CatalogFiltersProps {
   children: ReactNode;
 }
 
-const selectClassName =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 shadow-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500";
-
 function FilterSection({
   title,
   children,
@@ -52,8 +50,13 @@ function FilterSection({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-2", className)}>
-      <h3 className="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-500">
+    <div
+      className={cn(
+        "space-y-2.5 border-t border-slate-100/90 pt-4 first:mt-0 first:space-y-2 first:border-0 first:pt-0",
+        className,
+      )}
+    >
+      <h3 className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
         {title}
       </h3>
       {children}
@@ -117,10 +120,10 @@ function FilterFormContent({
   activeControlType,
 }: FilterFormContentProps) {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="space-y-2">
+    <div className="flex flex-col gap-0">
+      <div className="space-y-2.5">
         <label
-          className="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-500"
+          className="text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-slate-500"
           htmlFor={searchFieldId}
         >
           Поиск
@@ -128,7 +131,7 @@ function FilterFormContent({
         <div className="relative">
           <Search
             size={16}
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
             aria-hidden="true"
           />
           <input
@@ -138,7 +141,7 @@ function FilterFormContent({
             onChange={(e) => onSearchInputChange(e.target.value)}
             placeholder="Название, DN, резьба…"
             autoComplete="off"
-            className="h-9 w-full rounded-md border border-slate-200 bg-white pl-8 pr-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30"
+            className="h-10 w-full rounded-lg border border-slate-200/80 bg-white pl-9 pr-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/15 focus:outline-none"
             aria-label="Поиск по каталогу"
           />
         </div>
@@ -146,7 +149,7 @@ function FilterFormContent({
 
       {showCategoryTabs && (
         <FilterSection title="Категория">
-          <div className="flex max-h-44 flex-col gap-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]">
+          <div className="max-h-52 space-y-1 overflow-y-auto pr-0.5 [scrollbar-width:thin]">
             <Link
               href="/catalog"
               onClick={() =>
@@ -158,155 +161,157 @@ function FilterFormContent({
                 })
               }
               className={cn(
-                "rounded-md px-2.5 py-2 text-sm font-medium transition-colors",
+                "flex w-full items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-all",
                 pathname === "/catalog" && !categoryQuery
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-50 text-slate-700 hover:bg-slate-100",
+                  ? "bg-slate-900/95 text-white shadow-sm"
+                  : "text-slate-700 hover:bg-slate-100/80",
               )}
             >
-              Все категории
+              {pathname === "/catalog" && !categoryQuery ? (
+                <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} aria-hidden />
+              ) : (
+                <span className="h-4 w-4 shrink-0" aria-hidden />
+              )}
+              <span className="min-w-0 flex-1 leading-snug">Все категории</span>
             </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/catalog/category/${cat.slug}`}
-                onClick={() =>
-                  trackEvent("catalog_filter_change", {
-                    source: "catalog-filters",
-                    category: cat.slug,
-                    filter_key: "category",
-                    filter_value: cat.slug,
-                  })
-                }
-                className={cn(
-                  "rounded-md px-2.5 py-2 text-sm font-medium transition-colors",
-                  pathname === `/catalog/category/${cat.slug}`
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-50 text-slate-700 hover:bg-slate-100",
-                )}
-              >
-                {cat.name}
-              </Link>
-            ))}
+            {categories.map((cat) => {
+              const active = pathname === `/catalog/category/${cat.slug}`;
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/catalog/category/${cat.slug}`}
+                  onClick={() =>
+                    trackEvent("catalog_filter_change", {
+                      source: "catalog-filters",
+                      category: cat.slug,
+                      filter_key: "category",
+                      filter_value: cat.slug,
+                    })
+                  }
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-sm font-medium transition-all",
+                    active
+                      ? "bg-slate-900/95 text-white shadow-sm"
+                      : "text-slate-700 hover:bg-slate-100/80",
+                  )}
+                >
+                  {active ? (
+                    <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} aria-hidden />
+                  ) : (
+                    <span className="h-4 w-4 shrink-0" aria-hidden />
+                  )}
+                  <span className="min-w-0 flex-1 leading-snug">{cat.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </FilterSection>
       )}
 
       {showSubcategoryFilter && (
-        <FilterSection title="Тип товара">
-          <select
-            value={activeSubcategory}
-            onChange={(e) => setParam("subcategory", e.target.value)}
-            className={selectClassName}
-            aria-label="Тип товара"
-          >
-            <option value="">Все</option>
-            {subcategoryOptions.map((sub) => (
-              <option key={sub.id} value={sub.id}>
-                {sub.name}
-              </option>
-            ))}
-          </select>
+        <FilterSection title="Подкатегория">
+          <div className="max-h-52 space-y-1 overflow-y-auto rounded-lg border border-slate-200/60 bg-slate-50/40 p-1.5 [scrollbar-width:thin]">
+            <button
+              type="button"
+              onClick={() => setParam("subcategory", "")}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm font-medium transition",
+                !activeSubcategory
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:bg-white/70",
+              )}
+            >
+              {!activeSubcategory ? (
+                <Check className="h-4 w-4 shrink-0 text-blue-600" strokeWidth={2.5} aria-hidden />
+              ) : (
+                <span className="h-4 w-4 shrink-0" aria-hidden />
+              )}
+              <span className="min-w-0 flex-1">Все</span>
+            </button>
+            {subcategoryOptions.map((sub) => {
+              const on = activeSubcategory === sub.id;
+              return (
+                <button
+                  key={sub.id}
+                  type="button"
+                  onClick={() => setParam("subcategory", sub.id)}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm transition",
+                    on
+                      ? "bg-white font-medium text-slate-900 shadow-sm"
+                      : "text-slate-600 hover:bg-white/70",
+                  )}
+                >
+                  {on ? (
+                    <Check className="h-4 w-4 shrink-0 text-blue-600" strokeWidth={2.5} aria-hidden />
+                  ) : (
+                    <span className="h-4 w-4 shrink-0" aria-hidden />
+                  )}
+                  <span className="min-w-0 flex-1 break-words leading-snug">{sub.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </FilterSection>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <FilterSection title="DN" className="min-w-0">
-          <select
+      <div className="grid grid-cols-2 gap-3 border-t border-slate-100/90 pt-4 max-[400px]:grid-cols-1">
+        <FilterSection title="DN" className="!border-0 !pt-0">
+          <FilterSelectMenu
+            aria-label="Номинальный диаметр (DN)"
             value={activeDn}
-            onChange={(e) => setParam("dn", e.target.value)}
-            className={selectClassName}
-            aria-label="DN"
-          >
-            <option value="">Все</option>
-            {dnOptions.map((dn) => (
-              <option key={dn} value={String(dn)}>
-                DN{dn}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setParam("dn", v)}
+            options={dnOptions.map((dn) => ({ value: String(dn), label: `DN${dn}` }))}
+            emptyLabel="Все"
+          />
         </FilterSection>
-        <FilterSection title="PN" className="min-w-0">
-          <select
+        <FilterSection title="PN" className="!border-0 !pt-0">
+          <FilterSelectMenu
+            aria-label="Номинальное давление (PN)"
             value={activePn}
-            onChange={(e) => setParam("pn", e.target.value)}
-            className={selectClassName}
-            aria-label="PN"
-          >
-            <option value="">Все</option>
-            {pnOptions.map((pn) => (
-              <option key={pn} value={String(pn)}>
-                PN{pn}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setParam("pn", v)}
+            options={pnOptions.map((pn) => ({ value: String(pn), label: `PN${pn}` }))}
+            emptyLabel="Все"
+          />
         </FilterSection>
       </div>
 
       <FilterSection title="Материал">
-        <select
-          value={activeMaterial}
-          onChange={(e) => setParam("material", e.target.value)}
-          className={selectClassName}
+        <FilterSelectMenu
           aria-label="Материал"
-        >
-          <option value="">Все</option>
-          {materialOptions.map((mat) => (
-            <option key={mat} value={mat}>
-              {mat}
-            </option>
-          ))}
-        </select>
+          value={activeMaterial}
+          onChange={(v) => setParam("material", v)}
+          options={materialOptions.map((m) => ({ value: m, label: m }))}
+        />
       </FilterSection>
 
       {showThreadFilter && (
         <FilterSection title="Резьба">
-          <select
-            value={activeThread}
-            onChange={(e) => setParam("thread", e.target.value)}
-            className={selectClassName}
+          <FilterSelectMenu
             aria-label="Резьба"
-          >
-            <option value="">Все</option>
-            {threadOptions.map((thread) => (
-              <option key={thread} value={thread}>
-                {thread}
-              </option>
-            ))}
-          </select>
+            value={activeThread}
+            onChange={(v) => setParam("thread", v)}
+            options={threadOptions.map((t) => ({ value: t, label: t }))}
+          />
         </FilterSection>
       )}
 
       <FilterSection title="Тип соединения">
-        <select
-          value={activeConnectionType}
-          onChange={(e) => setParam("connectionType", e.target.value)}
-          className={selectClassName}
+        <FilterSelectMenu
           aria-label="Тип соединения"
-        >
-          <option value="">Все</option>
-          {connectionTypeOptions.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          value={activeConnectionType}
+          onChange={(v) => setParam("connectionType", v)}
+          options={connectionTypeOptions.map((t) => ({ value: t, label: t }))}
+        />
       </FilterSection>
 
       <FilterSection title="Тип управления">
-        <select
-          value={activeControlType}
-          onChange={(e) => setParam("controlType", e.target.value)}
-          className={selectClassName}
+        <FilterSelectMenu
           aria-label="Тип управления"
-        >
-          <option value="">Все</option>
-          {controlTypeOptions.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          value={activeControlType}
+          onChange={(v) => setParam("controlType", v)}
+          options={controlTypeOptions.map((t) => ({ value: t, label: t }))}
+        />
       </FilterSection>
     </div>
   );
@@ -317,29 +322,45 @@ type ChipItem = { key: string; label: string; paramKey: string };
 function ActiveFilterChips({
   items,
   onRemove,
+  onClearAll,
 }: {
   items: ChipItem[];
   onRemove: (paramKey: string) => void;
+  onClearAll: () => void;
 }) {
   if (items.length === 0) return null;
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-2">
-      {items.map((item) => (
-        <span
-          key={item.key}
-          className="inline-flex max-w-full items-center gap-1 rounded-full border border-slate-200 bg-white py-0.5 pl-2.5 pr-0.5 text-xs text-slate-800 shadow-sm"
+    <div className="mb-4 space-y-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs font-medium text-slate-500">Активные фильтры</p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onClearAll}
+          className="h-8 w-fit shrink-0 px-2 text-xs text-slate-600 hover:text-slate-900"
         >
-          <span className="min-w-0 truncate">{item.label}</span>
-          <button
-            type="button"
-            onClick={() => onRemove(item.paramKey)}
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-            aria-label={`Сбросить: ${item.label}`}
+          Сбросить все
+        </Button>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {items.map((item) => (
+          <span
+            key={item.key}
+            className="inline-flex max-w-full items-center gap-0.5 rounded-lg border border-slate-200/80 bg-white py-0.5 pl-2.5 pr-0.5 text-xs text-slate-800 shadow-sm"
           >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </span>
-      ))}
+            <span className="min-w-0 truncate font-medium">{item.label}</span>
+            <button
+              type="button"
+              onClick={() => onRemove(item.paramKey)}
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+              aria-label={`Сбросить: ${item.label}`}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -375,7 +396,7 @@ function buildFilterChipItems(
   }
   if (showSubcategoryFilter && sub) {
     const name = subcategoryOptions.find((s) => s.id === sub)?.name ?? sub;
-    out.push({ key: `sub-${sub}`, paramKey: "subcategory", label: `Тип: ${name}` });
+    out.push({ key: `sub-${sub}`, paramKey: "subcategory", label: `Подкатегория: ${name}` });
   }
   if (dn) out.push({ key: `dn-${dn}`, paramKey: "dn", label: `DN${dn}` });
   if (pn) out.push({ key: `pn-${pn}`, paramKey: "pn", label: `PN${pn}` });
@@ -401,39 +422,28 @@ function buildFilterChipItems(
 }
 
 function FilterPanelCard({
-  hasFilters,
   isPending,
-  onClear,
   children,
   headerId,
 }: {
-  hasFilters: boolean;
   isPending: boolean;
-  onClear: () => void;
   children: ReactNode;
   headerId: string;
 }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm",
+        "rounded-2xl border border-slate-200/70 bg-white p-5 shadow-md shadow-slate-200/30",
         isPending && "pointer-events-none opacity-60",
       )}
     >
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <h2 id={headerId} className="text-sm font-semibold text-slate-900">
-          Фильтры
-        </h2>
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="text-xs font-medium text-blue-600 transition hover:text-blue-800"
-          >
-            Сбросить
-          </button>
-        )}
-      </div>
+      <h2
+        id={headerId}
+        className="mb-1 text-sm font-semibold tracking-tight text-slate-900"
+      >
+        Подбор по параметрам
+      </h2>
+      <p className="mb-4 text-xs leading-relaxed text-slate-500">Уточните критерии, результат обновляется в списке ниже</p>
       {children}
     </div>
   );
@@ -624,9 +634,7 @@ export function CatalogFilters({
         aria-label="Фильтры каталога"
       >
         <FilterPanelCard
-          hasFilters={hasFilters}
           isPending={isPending}
-          onClear={clearAll}
           headerId="catalog-filters-title"
         >
           <div aria-labelledby="catalog-filters-title">
@@ -661,6 +669,7 @@ export function CatalogFilters({
             }
             removeParam(key);
           }}
+          onClearAll={clearAll}
         />
 
         {children}
@@ -673,7 +682,7 @@ export function CatalogFilters({
           className="flex h-full max-h-dvh !w-full max-w-[min(100vw,22rem)] flex-col gap-0 border-slate-200 p-0 sm:max-w-[22rem]"
         >
           <SheetHeader className="border-b border-slate-100 px-4 pb-3 pt-2">
-            <SheetTitle>Фильтры</SheetTitle>
+            <SheetTitle>Подбор по параметрам</SheetTitle>
           </SheetHeader>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-4">
             <div className={cn(isPending && "pointer-events-none opacity-60")}>
@@ -683,7 +692,7 @@ export function CatalogFilters({
           <SheetFooter className="border-t border-slate-100 sm:flex-col">
             {hasFilters && (
               <Button type="button" variant="secondary" className="w-full" onClick={clearAll}>
-                Сбросить фильтры
+                Сбросить все
               </Button>
             )}
             <Button type="button" className="w-full" onClick={() => setSheetOpen(false)}>
