@@ -31,6 +31,9 @@ export type HomeHeroContent = z.infer<typeof homeHeroSchema>;
 export const homeHeroPersistSchema = homeHeroSchema.omit({ stat2Val: true });
 export type HomeHeroPersistContent = z.infer<typeof homeHeroPersistSchema>;
 
+/** Маркетинговая цифра для публичного текста (ссылка «Все {{COUNT}}…» в hero), не равна фактическому числу SKU. */
+export const MARKETING_CATALOG_LINK_COUNT = "700+";
+
 export const DEFAULT_HOME_HERO: HomeHeroContent = {
   eyebrow: "Промышленная арматура · склад в Алматы",
   h1Line1: "Поставка промышленной арматуры",
@@ -183,7 +186,7 @@ export const DEFAULT_ABOUT_COPY: AboutCopyContent = {
     "Основной клиент — промышленные предприятия, строительные организации, тепловые и энергетические компании, а также проектировщики и подрядчики, которым нужен полный комплект арматуры под объект с документацией для тендера.",
     "Каждая позиция проходит гидравлические испытания перед отгрузкой. Предоставляем паспорт качества, сертификат соответствия и протокол испытаний — это наш стандарт, а не дополнительная услуга.",
   ],
-  productGroupsLine: "{{CAT}} категорий арматуры, {{PROD}} позиций в наличии и под заказ",
+  productGroupsLine: "{{CAT}} категорий арматуры, 700+ позиций в наличии и под заказ",
   ctaTitle: "Готовы к сотрудничеству?",
   ctaSubtitle:
     "Свяжитесь с нами — подберём арматуру под ваш объект и подготовим коммерческое предложение за 15 минут.",
@@ -209,17 +212,24 @@ export function applyPlaceholders(text: string, companyName: string): string {
   return text.replaceAll("{{COMPANY}}", companyName);
 }
 
-export function applyCountTemplate(text: string, count: number): string {
+export function applyCountTemplate(text: string, count: number | string): string {
   return text.replaceAll("{{COUNT}}", String(count));
 }
 
 export function applyAboutCounts(
   text: string,
-  values: { company: string; categories: number; products: number },
+  values: {
+    company: string;
+    categories: number;
+    products: number;
+    /** Подстановка `{{PROD}}` для маркетинга (например «700+»). Без этого — фактическое число позиций. */
+    productsMarketing?: string;
+  },
 ): string {
+  const prod = values.productsMarketing ?? String(values.products);
   return applyPlaceholders(text, values.company)
     .replaceAll("{{CAT}}", String(values.categories))
-    .replaceAll("{{PROD}}", String(values.products));
+    .replaceAll("{{PROD}}", prod);
 }
 
 function shallowMerge<T extends Record<string, unknown>>(base: T, patch: unknown): T {

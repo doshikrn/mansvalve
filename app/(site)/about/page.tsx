@@ -18,7 +18,11 @@ import {
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
 import { COMPANY } from "@/lib/company";
-import { applyAboutCounts, applyPlaceholders } from "@/lib/site-content/models";
+import {
+  applyAboutCounts,
+  applyPlaceholders,
+  MARKETING_CATALOG_LINK_COUNT,
+} from "@/lib/site-content/models";
 import { resolveAboutCopy, resolveAboutMeta } from "@/lib/site-content/public";
 
 /* ── SEO ──────────────────────────────────────────────────────────── */
@@ -98,10 +102,11 @@ export default async function AboutPage() {
     company: COMPANY.name,
     categories: categoryCount,
     products: productCount,
+    productsMarketing: MARKETING_CATALOG_LINK_COUNT,
   });
 
   const stats = [
-    { value: `${productCount}+`, label: "позиции в каталоге" },
+    { value: MARKETING_CATALOG_LINK_COUNT, label: "позиции в каталоге" },
     { value: String(categoryCount), label: "категорий арматуры" },
     { value: "DN15–DN1000", label: "диапазон диаметров" },
     { value: "15 мин", label: "подготовка КП" },

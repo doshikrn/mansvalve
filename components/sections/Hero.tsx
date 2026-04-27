@@ -7,7 +7,7 @@ import {
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
 import { getCategoryVisual } from "@/lib/category-visuals";
-import { applyCountTemplate } from "@/lib/site-content/models";
+import { applyCountTemplate, MARKETING_CATALOG_LINK_COUNT } from "@/lib/site-content/models";
 import { resolveHomeHero } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
@@ -42,7 +42,6 @@ export async function Hero() {
   ]);
   const heroContent = await resolveHomeHero(prods.length);
   const featured = getFeaturedProducts(cats, prods);
-  const productCount = prods.length;
 
   const stats = [
     { val: heroContent.stat1Val, label: heroContent.stat1Label },
@@ -50,7 +49,10 @@ export async function Hero() {
     { val: heroContent.stat3Val, label: heroContent.stat3Label },
   ];
 
-  const featuredLink = applyCountTemplate(heroContent.featuredLinkTemplate, productCount);
+  const featuredLink = applyCountTemplate(
+    heroContent.featuredLinkTemplate,
+    MARKETING_CATALOG_LINK_COUNT,
+  );
 
   const statIcons = [Clock, Package, MapPin] as const;
 
