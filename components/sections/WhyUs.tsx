@@ -1,4 +1,11 @@
-import { Clock, ShieldCheck, Wallet, FileCheck2 } from "lucide-react";
+import {
+  Building2,
+  Clock,
+  FileCheck2,
+  MapPin,
+  ShieldCheck,
+  Wallet,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface AdvantageItem {
@@ -11,27 +18,39 @@ interface AdvantageItem {
 const ITEMS: AdvantageItem[] = [
   {
     icon: Clock,
-    metric: "1 день",
-    title: "КП за 1 рабочий день",
-    desc: "Фиксируем цену, срок и спецификацию в одном ответе.",
+    metric: "15 минут",
+    title: "Коммерческое предложение за 15 минут",
+    desc: "Подготовим актуальную цену, срок поставки и спецификацию в одном ответе.",
   },
   {
     icon: ShieldCheck,
     metric: "100% контроль",
-    title: "Контроль перед отгрузкой",
-    desc: "Паспорт качества и проверка каждой партии.",
+    title: "Контроль качества перед отгрузкой",
+    desc: "Проверка каждой партии, соответствие заявке и паспорт качества.",
   },
   {
     icon: Wallet,
-    metric: "до -25%",
-    title: "Экономия до 25%",
-    desc: "Прямые заводские контракты и складской запас в Алматы.",
+    metric: "До 25% выгоднее",
+    title: "Экономия до 25% на закупке",
+    desc: "Прямые заводские контракты, оптимальная логистика и складской запас в Алматы.",
   },
   {
     icon: FileCheck2,
     metric: "ГОСТ / DIN / ISO",
-    title: "Документы под тендер",
-    desc: "ГОСТ, DIN, ISO и закрывающие документы под объект.",
+    title: "Документы под тендер и объект",
+    desc: "Сертификаты, паспорта, ГОСТ / DIN / ISO и полный комплект закрывающих документов.",
+  },
+  {
+    icon: MapPin,
+    metric: "Казахстан",
+    title: "Поставка по всему Казахстану",
+    desc: "Алматы, Астана, Шымкент и регионы — отгрузка точно в согласованный срок.",
+  },
+  {
+    icon: Building2,
+    metric: "B2B / B2G",
+    title: "Работаем с бизнесом и госзаказчиками",
+    desc: "Договор, НДС, спецификации, счета и сопровождение поставки до закрытия сделки.",
   },
 ];
 
@@ -39,16 +58,16 @@ export function WhyUs() {
   return (
     <section className="bg-white py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 max-w-2xl">
+        <div className="mb-10 max-w-3xl">
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
             Преимущества
           </div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Почему с нами работают подрядчики
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+            Почему нас выбирают подрядчики, ТЭЦ, нефтегазовые и промышленные компании
           </h2>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ITEMS.map(({ icon: Icon, metric, title, desc }) => (
             <div
               key={title}

@@ -389,7 +389,7 @@ export default async function ProductPage({ params }: PageProps) {
                     Цена по запросу
                   </p>
                   <p className="mt-1.5 text-sm text-slate-500">
-                    Укажите количество и сроки — подготовим КП в течение 2 часов.
+                    Укажите количество и сроки — подготовим КП за 15 минут.
                   </p>
                 </>
               )}

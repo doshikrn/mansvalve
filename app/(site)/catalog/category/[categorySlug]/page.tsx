@@ -277,7 +277,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 </li>
                 <li className="flex items-center gap-2">
                   <FileText size={16} className="text-blue-300" />
-                  КП с ценами в течение 2 часов
+                  КП с ценами за 15 минут
                 </li>
               </ul>
             </div>

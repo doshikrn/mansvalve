@@ -53,8 +53,8 @@ export async function generateMetadata(): Promise<Metadata> {
 const ADVANTAGES = [
   {
     icon: Clock,
-    title: "Комплект за 1 рабочий день",
-    desc: "Подбираем арматуру под ваш объект от DN15 до DN1000 с полным пакетом сертификатов и доставкой по Казахстану.",
+    title: "Коммерческое предложение за 15 минут",
+    desc: "Подбираем арматуру под ваш объект от DN15 до DN1000: цена, срок и спецификация в одном ответе, доставка по Казахстану.",
   },
   {
     icon: ShieldCheck,
@@ -68,7 +68,7 @@ const ADVANTAGES = [
   },
   {
     icon: FileText,
-    title: "КП под тендер за 2 часа",
+    title: "КП под тендер за 15 минут",
     desc: "Готовим коммерческое предложение и спецификацию с гарантией соответствия ГОСТ, DIN и PN-стандартам.",
   },
 ] as const;
@@ -104,7 +104,7 @@ export default async function AboutPage() {
     { value: `${productCount}+`, label: "позиции в каталоге" },
     { value: String(categoryCount), label: "категорий арматуры" },
     { value: "DN15–DN1000", label: "диапазон диаметров" },
-    { value: "2 ч", label: "подготовка КП" },
+    { value: "15 мин", label: "подготовка КП" },
   ] as const;
 
   return (
