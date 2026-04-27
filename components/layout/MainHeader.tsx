@@ -5,13 +5,8 @@ import Link from "next/link";
 import { Mail, Menu, Search, Truck, X } from "lucide-react";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
+import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
 import { COMPANY } from "@/lib/company";
-
-/**
- * Горизонтальный знак `logo-mansvalve-horizontal.png` (из app-build): в файле два варианта;
- * показываем верхнюю половину — светлый вариант для белого хедера.
- */
-const LOGO_SRC = "/images/logo-mansvalve-horizontal.png";
 
 type MainHeaderProps = {
   onSearchSubmit: (q: string) => void;
@@ -36,16 +31,18 @@ export function MainHeader({
               className="relative flex shrink-0 items-center"
               aria-label={`${COMPANY.name} — на главную`}
             >
-              <Image
-                src={LOGO_SRC}
-                alt={`${COMPANY.name} — логотип`}
-                width={360}
-                height={120}
-                priority
-                quality={100}
-                sizes="(max-width: 1024px) 200px, 192px"
-                className="h-[52px] w-[176px] max-w-[188px] object-cover object-left-top [clip-path:inset(0_0_50%_0)] sm:h-[56px] sm:w-[184px] xl:h-[58px] xl:w-[188px]"
-              />
+              <span className="relative block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-slate-200/90 shadow-sm sm:h-[80px] sm:w-[80px] xl:h-[88px] xl:w-[88px]">
+                <Image
+                  src={HEADER_LOGO_SRC}
+                  alt={`${COMPANY.name} — логотип`}
+                  width={256}
+                  height={256}
+                  priority
+                  quality={100}
+                  sizes="(max-width: 1024px) 88px, 96px"
+                  className="h-full w-full object-cover object-center"
+                />
+              </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 lg:hidden">
               <button
