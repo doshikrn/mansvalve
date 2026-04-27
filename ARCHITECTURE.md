@@ -19,6 +19,17 @@
 > `server-only`); подписи статусов и `normalizeLeadStatus` вынесены в
 > **`lib/leads/lead-status-public.ts`**.
 
+**Публичный поиск и бренд:** шапка вызывает **`GET /api/search/products`**
+(роут `app/api/search/products/route.ts`) — на сервере
+**`searchPublicProducts`** в `lib/search/product-search.ts` (тот же пул
+публичных товаров, DTO `lib/search/product-search-dto.ts`). Листинг
+`/catalog?q=…` в **`components/catalog/CatalogShell`** дополняет совпадения
+fuzzy-логикой `lib/search/fuzzy.ts` (согласовано по смыслу с поисковым
+хейстеком). Статика логотипа: **`public/images/logo-mansvalve.png`**. Иконки
+вкладки: **`app/icon.png`**, `app/apple-icon.png` (см. [file conventions: metadata / app icons](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons));
+в `app/layout.tsx` **не** дублируется `metadata.icons` — достаточно
+file-based).
+
 ## 1) Назначение системы
 
 `MANSVALVE` — B2B-сайт поставщика промышленной арматуры для Казахстана.
@@ -27,7 +38,9 @@
 
 - маркетинговый сайт (landing + доверительные блоки + CTA), часть текстов
   и **мета-описаний** главной, about, contacts **опционально** из БД
-  (`content_blocks`);
+  (`content_blocks`); **шапка** — двухуровневый B2B-образец: служебная
+  панель (серый фон, быстрые ссылки) + основная зона: логотип, **поиск по
+  каталогу** с подсказками (`/api/search/products`) и CTA-контакты;
 - каталог с фильтрами, пагинацией, страницами категорий/подкатегорий и
   карточками товаров — источник данных **JSON или БД** (флаг);
 - серверный API для приёма заявок (`POST /api/request`) — Telegram +
@@ -58,9 +71,10 @@
 ```text
 mansvalve/
 ├── app/
-│   ├── layout.tsx                 # общий chrome (GTM при env, JSON-LD, трекеры)
+│   ├── layout.tsx                 # GTM, JSON-LD, трекеры, шрифты; без Header/Footer
+│   ├── icon.png, apple-icon.png  # фавикон (file convention)
 │   ├── (site)/                    # публичный сайт
-│   │   ├── layout.tsx             # Header / Footer
+│   │   ├── layout.tsx             # Header (2-ур., поиск) / Footer / Float WA
 │   │   ├── page.tsx               # главная (+ generateMetadata из content)
 │   │   ├── about/page.tsx         # + generateMetadata (meta из CMS)
 │   │   ├── contacts/page.tsx      # + generateMetadata (meta из CMS)
@@ -77,6 +91,7 @@ mansvalve/
 │   │   └── ...
 │   └── api/
 │       ├── request/route.ts       # заявки
+│       ├── search/products/       # GET: автодополнение для шапки (публичный)
 │       └── admin/media/**
 ├── components/
 │   ├── sections/*                 # Hero, TrustStrip, FAQ, RequestCTA …
@@ -84,7 +99,8 @@ mansvalve/
 │   ├── contacts/QuickRequestForm.tsx
 │   ├── analytics/*                # PageViewTracker, GlobalClickTracker
 │   ├── admin/*                    # LeadEditForm, ProductForm, …
-│   ├── layout/*
+│   ├── layout/*                   # Header, Footer, FloatingWhatsApp
+│   ├── search/CatalogSearchPanel  # bar + подсказки, modal (моб./поиск-иконка)
 │   └── ui/*
 ├── lib/
 │   ├── public-catalog/            # единая точка: JSON vs DB для витрины
@@ -94,10 +110,12 @@ mansvalve/
 │   ├── db/                        # schema, client, migrations
 │   ├── auth/*
 │   ├── storage/*
-│   ├── company.ts                 # реквизиты, tel/mail, wa.me, хелперы WhatsApp
+│   ├── company.ts                 # реквизиты, tel/mail, wa.me, опц. публ. Telegram URL
+│   ├── search/                    # product-search API + fuzzy, DTO
 │   ├── analytics.ts               # trackEvent → dataLayer (GTM-флаг)
 │   └── …
 ├── next.config.ts
+├── public/images/                # бренд (логотип) и публичные картинки
 ├── data/catalog-products.json     # источник при PUBLIC_CATALOG_SOURCE=json
 ├── proxy.ts                       # guard /admin/*
 ├── drizzle.config.ts
@@ -114,6 +132,7 @@ Browser
       -> app/(site)/*  (RSC + часть секций async + resolve* из lib/site-content)
       -> app/admin/*   (RSC + server actions; клиент только там, где нужен)
       -> app/api/request  -> validate -> persistLeadSafely -> Telegram
+      -> app/api/search/products  -> searchPublicProducts (клиент: шапка, карточки)
       -> lib/public-catalog  -> JSON файл или Drizzle-запросы
       -> lib/services/*      # server-only там, где помечено
 ```
@@ -133,8 +152,11 @@ Browser
 - `GET /` — лендинг; hero / trust / FAQ / request CTA / meta главной —
   контент из БД при наличии настроенной БД и строк в `content_blocks`, иначе
   статические дефолты в коде.
-- `GET /catalog`, `/catalog/category/...`, `/catalog/subcategory/...`,
+- `GET /catalog` (query `q`, фильтры) — `CatalogShell`; `q` с той же семантикой,
+  что и глобальный поиск, плюс `/catalog/category/...`, `/catalog/subcategory/...`,
   `/catalog/[slug]`.
+- `GET /api/search/products?q&limit` — **публичный** JSON (автодополнение, без
+  секрета; не путать с `TELEGRAM_*` для заявок).
 - `GET /about`, `/contacts` — тексты и **metadata** (title/description) из
   `content_blocks` через `resolveAboutCopy` / `resolveContactsCopy` и
   `resolveAboutMeta` / `resolveContactsMeta` + merge с дефолтами.
@@ -183,7 +205,9 @@ Browser
    `resolveHomeMeta()`, `resolveAboutMeta()`, `resolveContactsMeta()` (при
    непустом `SITE_URL` — корректные absolute URL через `metadataBase`).
 2. **Каталог** — единый вход `getPublicCatalogCategories` /
-   `getPublicCatalogProducts`.
+   `getPublicCatalogProducts`; **поиск** — `CatalogSearchPanel` (шапка) +
+   `trackEvent("catalog_search", { source: "header-bar" | "header-modal", … })`
+   при GTM, `/catalog` с fuzzy.
 3. **Заявки** — как раньше по UX, плюс запись в `leads` и обновление полей
    Telegram-доставки.
 4. **Аналитика** — `trackEvent` пушит в `dataLayer` только при заданном
@@ -198,8 +222,9 @@ Browser
 
 **Публичный сайт и сборка**
 
-- `SITE_URL`, `NEXT_PUBLIC_GTM_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
-  (полный перечень и чеклисты выката — `README.md`).
+- `SITE_URL`, `NEXT_PUBLIC_GTM_ID`, `NEXT_PUBLIC_TELEGRAM_URL` (опция: ссылка в
+  панели шапки, не путать с `TELEGRAM_*` в заявках), `TELEGRAM_BOT_TOKEN`,
+  `TELEGRAM_CHAT_ID` (полный перечень и чеклисты выката — `README.md`).
 
 **БД и админка**
 
@@ -301,9 +326,25 @@ Browser
 ### 13.5 `lib/company.ts` и внешние CTA
 
 - Единая точка **реквизитов**, `tel:`, e-mail, **`wa.me`** (номер в виде
-  цифр, query `text` с `encodeURIComponent` в `buildCompanyWhatsAppUrl`).
+  цифр, query `text` с `encodeURIComponent` в `buildCompanyWhatsAppUrl`),
+  при необходимости **публичной ссылки Telegram**:
+  `COMPANY_TELEGRAM_PUBLIC_HREF` (из `NEXT_PUBLIC_TELEGRAM_URL`), не смешивать
+  с `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` для `POST /api/request`.
 - Хелперы для **каталога** (запрос по товару) и **контактов** — в том же
-  файле, чтобы ссылки на WhatsApp не дублировались.
+  файле, чтобы ссылки на WhatsApp не дублировались. Визуальные CTA: плавающий
+  виджет **`FloatingWhatsApp`**, плюс иконки/телефон в служебной панели шапки
+  и блок «для заявок» / «оплата и доставка» в основной — без дублирования
+  лишнего «ряда контактов» с теми же цифрами.
+
+### 13.5.1 Публичная шапка и поиск
+
+- **`Header`** (client) — `components/layout/Header.tsx`: `lg+` в центре
+  `CatalogSearchPanel` (`variant: headerBar`), `Enter` / «Найти» ведут на
+  `/catalog?q=...`, клик по подсказке — `/catalog/[slug]`. Ниже `lg` — иконка
+  поиска (overlay `variant: modal`) + выезжающий блок с навигацией и
+  заявками/контактами.
+- **`/api/search/products`** — `app/api/search/products/route.ts`, тот же пул
+  публичных товаров, что и витрина, без PII.
 
 ### 13.6 Поток заявки (без изменения смысла)
 
