@@ -7,8 +7,11 @@ import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { COMPANY } from "@/lib/company";
 
-/** Одиночный знак без «двойного» composite — см. `public/images/logo-mansvalve.png` */
-const LOGO_SRC = "/images/logo-mansvalve.png";
+/**
+ * Горизонтальный знак `logo-mansvalve-horizontal.png` (из app-build): в файле два варианта;
+ * показываем верхнюю половину — светлый вариант для белого хедера.
+ */
+const LOGO_SRC = "/images/logo-mansvalve-horizontal.png";
 
 type MainHeaderProps = {
   onSearchSubmit: (q: string) => void;
@@ -33,18 +36,16 @@ export function MainHeader({
               className="relative flex shrink-0 items-center"
               aria-label={`${COMPANY.name} — на главную`}
             >
-              <span className="relative block h-[56px] w-[56px] shrink-0 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-[60px] sm:w-[60px] xl:h-[64px] xl:w-[64px]">
-                <Image
-                  src={LOGO_SRC}
-                  alt={`${COMPANY.name} — логотип`}
-                  width={128}
-                  height={128}
-                  priority
-                  quality={100}
-                  sizes="64px"
-                  className="h-full w-full object-cover object-center"
-                />
-              </span>
+              <Image
+                src={LOGO_SRC}
+                alt={`${COMPANY.name} — логотип`}
+                width={360}
+                height={120}
+                priority
+                quality={100}
+                sizes="(max-width: 1024px) 200px, 192px"
+                className="h-[52px] w-[176px] max-w-[188px] object-cover object-left-top [clip-path:inset(0_0_50%_0)] sm:h-[56px] sm:w-[184px] xl:h-[58px] xl:w-[188px]"
+              />
             </Link>
             <div className="flex shrink-0 items-center gap-2 lg:hidden">
               <button
@@ -106,19 +107,12 @@ export function MainHeader({
 
             <Link
               href="/delivery"
-              className="flex max-w-[260px] min-w-[200px] items-start gap-3 rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-3.5 shadow-sm ring-1 ring-slate-900/5 transition hover:border-blue-600/35 hover:shadow-md"
+              className="flex max-w-[220px] min-w-[180px] items-center gap-3 rounded-xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-3.5 shadow-sm ring-1 ring-slate-900/5 transition hover:border-blue-600/35 hover:shadow-md"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-800/10 text-slate-800">
                 <Truck className="h-5 w-5" aria-hidden />
               </span>
-              <span className="min-w-0 text-left">
-                <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                  Логистика
-                </span>
-                <span className="mt-0.5 block text-sm font-semibold leading-snug text-slate-900">
-                  Доставка
-                </span>
-              </span>
+              <span className="text-base font-semibold leading-snug text-slate-900">Доставка</span>
             </Link>
           </div>
         </div>

@@ -26,9 +26,9 @@ function NavDot() {
 export function TopBar() {
   return (
     <div className="border-b border-slate-200/90 bg-[#eceff3] text-slate-600">
-      <div className="mx-auto flex min-h-10 max-w-[1320px] items-center justify-between gap-4 px-5 sm:min-h-11 sm:px-7 lg:px-10">
+      <div className="mx-auto flex min-h-11 max-w-[1320px] items-center justify-between gap-4 px-5 sm:min-h-12 sm:px-7 lg:px-10">
         <nav
-          className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[12px] font-medium leading-tight sm:flex sm:gap-3 [&::-webkit-scrollbar]:h-0"
+          className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[14px] font-medium leading-snug sm:flex sm:gap-3 sm:text-[15px] lg:text-base [&::-webkit-scrollbar]:h-0"
           aria-label="Служебная навигация"
         >
           {TOP_BAR_LINKS.map((item, i) => (
@@ -36,7 +36,7 @@ export function TopBar() {
               {i > 0 ? <NavDot /> : null}
               <Link
                 href={item.href}
-                className="whitespace-nowrap text-slate-600 transition-colors hover:text-slate-900"
+                className="whitespace-nowrap text-slate-700 transition-colors hover:text-slate-950"
               >
                 {item.label}
               </Link>
@@ -44,26 +44,26 @@ export function TopBar() {
           ))}
         </nav>
 
-        <div className={cn("flex shrink-0 items-center gap-2.5 sm:gap-3", "ml-auto sm:ml-0")}>
+        <div className={cn("flex shrink-0 items-center gap-3 sm:gap-3.5", "ml-auto sm:ml-0")}>
           {COMPANY_TELEGRAM_PUBLIC_HREF ? (
             <a
               href={COMPANY_TELEGRAM_PUBLIC_HREF}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-200/80 hover:text-slate-800"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-200/80 hover:text-slate-800"
               aria-label="Telegram"
             >
-              <TelegramIcon className="h-4 w-4" />
+              <TelegramIcon className="h-[22px] w-[22px]" />
             </a>
           ) : null}
           <a
             href={COMPANY_WHATSAPP_BASE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#25D366] transition hover:bg-slate-200/70"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-[#25D366]/15 text-[#25D366] ring-1 ring-[#25D366]/25 transition hover:bg-[#25D366]/25"
             aria-label="WhatsApp"
           >
-            <WhatsappIcon className="h-4 w-4" />
+            <WhatsappIcon className="h-[22px] w-[22px]" />
           </a>
           <CopyToClipboard
             variant="minimal"
@@ -71,7 +71,7 @@ export function TopBar() {
             messageForCopyToast={COMPANY.phoneDisplay}
             kind="phone"
             title="Нажмите, чтобы скопировать номер"
-            className="inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums text-slate-800 sm:text-[13px]"
+            className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-slate-800 sm:text-[15px] lg:text-base"
           >
             <span className="inline-flex items-center gap-1">
               <Phone className="h-3.5 w-3.5 shrink-0 text-slate-500 sm:hidden" aria-hidden />
