@@ -141,7 +141,7 @@ export function ProductShowcaseCarousel({
       <div
         className={cn(
           "relative z-[2] isolate min-h-0 w-full",
-          isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[540px] lg:min-h-[560px]",
+          isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] lg:min-h-[540px]",
         )}
       >
         <article
@@ -154,19 +154,19 @@ export function ProductShowcaseCarousel({
         >
             <div
               className={cn(
-                "grid min-h-0 flex-1 lg:items-stretch",
+                "grid min-h-0 w-full flex-1 lg:items-stretch",
                 isHero
                   ? "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
-                  : "lg:grid-cols-[1.22fr_0.78fr]",
+                  : "lg:h-full lg:min-h-0 lg:grid-cols-[1.22fr_0.78fr]",
               )}
             >
               <Link
                 href={`/catalog/${product.slug}`}
                 className={cn(
-                  "relative block w-full shrink-0 overflow-hidden lg:border-r",
+                  "relative block min-h-0 w-full overflow-hidden lg:border-r",
                   isHero
-                    ? "h-[300px] sm:h-[340px] lg:h-[min(500px,100%)] lg:min-h-[500px] border-white/[0.06]"
-                    : "h-[300px] sm:h-[360px] lg:h-[min(440px,100%)] lg:min-h-[440px] border-site-border/80",
+                    ? "shrink-0 h-[300px] sm:h-[340px] lg:h-[min(500px,100%)] lg:min-h-[500px] border-white/[0.06]"
+                    : "h-[280px] shrink-0 sm:h-[300px] lg:h-full lg:min-h-0 lg:shrink lg:self-stretch lg:rounded-l-[calc(0.75rem-1px)] border-site-border/80",
                 )}
               >
                 <Image
@@ -178,7 +178,13 @@ export function ProductShowcaseCarousel({
                   unoptimized={image.src.startsWith("http://") || image.src.startsWith("https://")}
                   className="object-cover motion-reduce:transition-none transition-transform duration-500 ease-out hover:scale-[1.02] motion-reduce:hover:scale-100"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-site-deep/65 via-site-deep/5 to-transparent" />
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-gradient-to-t to-transparent",
+                    isHero ? "from-site-deep/65 via-site-deep/5" : "from-black/[0.12] via-transparent",
+                  )}
+                  aria-hidden
+                />
                 <div
                   className={cn(
                     "absolute bottom-3 left-3 max-w-[min(100%,calc(100%-1.5rem))] rounded-md border px-3 py-2 shadow-sm",
@@ -207,13 +213,15 @@ export function ProductShowcaseCarousel({
               <div
                 className={cn(
                   "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5",
-                  isHero ? "lg:min-h-[500px] lg:justify-between lg:pt-5" : "lg:min-h-[440px]",
+                  isHero
+                    ? "lg:min-h-[500px] lg:justify-between lg:pt-5"
+                    : "gap-y-3 lg:h-full lg:min-h-0 lg:gap-y-4 lg:self-stretch lg:py-5",
                 )}
               >
                 {!isHero ? (
                   <div
                     className={cn(
-                      "mb-3 inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-semibold",
+                      "inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-semibold",
                       "border-site-border/90 bg-site-bg text-site-primary",
                     )}
                   >
@@ -227,20 +235,20 @@ export function ProductShowcaseCarousel({
                 )}
                 <h4
                   className={cn(
-                    "min-h-[4.5rem] max-w-full shrink-0 break-words font-bold leading-[1.2] tracking-tight [overflow-wrap:anywhere]",
+                    "max-w-full shrink-0 break-words font-bold leading-[1.2] tracking-tight [overflow-wrap:anywhere]",
                     isHero
-                      ? "line-clamp-3 text-[1.35rem] text-white sm:text-2xl lg:text-[1.65rem]"
-                      : "line-clamp-2 min-h-[3.5rem] text-[1.35rem] text-site-ink sm:min-h-[4rem] sm:text-3xl",
+                      ? "min-h-[4.5rem] line-clamp-3 text-[1.35rem] text-white sm:text-2xl lg:text-[1.65rem]"
+                      : "line-clamp-2 text-[1.35rem] text-site-ink sm:text-3xl",
                   )}
                 >
                   {product.name}
                 </h4>
                 <p
                   className={cn(
-                    "mt-2.5 shrink-0 text-sm sm:text-[15px]",
+                    "shrink-0 text-sm sm:text-[15px]",
                     isHero
-                      ? "line-clamp-4 min-h-[4.5rem] leading-relaxed text-slate-300/95"
-                      : "line-clamp-2 min-h-[3rem] leading-snug text-site-muted",
+                      ? "mt-2.5 line-clamp-4 min-h-[4.5rem] leading-relaxed text-slate-300/95"
+                      : "line-clamp-3 leading-snug text-site-muted",
                   )}
                 >
                   {product.shortDescription}
@@ -259,7 +267,7 @@ export function ProductShowcaseCarousel({
                     <span className="text-slate-100">{heroSpecSummary.mat}</span>
                   </p>
                 ) : (
-                  <div className="mt-3 grid shrink-0 grid-cols-3 gap-2">
+                  <div className="mt-1 grid shrink-0 grid-cols-3 gap-2 sm:mt-2">
                     {specs.map(({ icon: Icon, label, value }) => (
                       <div
                         key={`${label}-${product.slug}`}
@@ -278,7 +286,7 @@ export function ProductShowcaseCarousel({
                   </div>
                 )}
 
-                <div className={cn("shrink-0", isHero ? "mt-5 lg:mt-4" : "mt-auto pt-3")}>
+                <div className={cn("shrink-0", isHero ? "mt-5 lg:mt-4" : "mt-5 border-t border-site-border/60 pt-5")}>
                   <p className={cn("text-xs font-semibold uppercase", isHero ? "text-slate-500" : "text-site-muted")}>
                     {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
                   </p>
