@@ -131,7 +131,7 @@ export function ProductShowcaseCarousel({
         className={cn(
           "relative z-[2] flex shrink-0 items-start justify-between gap-3",
           isHero
-            ? "border-b border-white/[0.08] px-7 py-6"
+            ? "border-b border-white/[0.08] px-7 py-5"
             : "min-h-[72px] border-b border-site-border px-5 py-3.5 sm:px-6 sm:py-4",
         )}
       >
@@ -158,7 +158,7 @@ export function ProductShowcaseCarousel({
       <div
         className={cn(
           "relative z-[2] isolate min-h-0 w-full",
-          isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] overflow-visible lg:min-h-[540px]",
+          isHero ? "min-h-[400px] lg:min-h-[480px]" : "min-h-[520px] overflow-visible lg:min-h-[540px]",
         )}
       >
         <MotionConfig reducedMotion="never">
@@ -187,7 +187,7 @@ export function ProductShowcaseCarousel({
                 className={cn(
                   "relative block min-h-0 w-full overflow-hidden lg:border-r",
                   isHero
-                    ? "shrink-0 h-[300px] sm:h-[340px] lg:h-[min(500px,100%)] lg:min-h-[500px] border-white/[0.06]"
+                    ? "shrink-0 h-[280px] sm:h-[300px] lg:h-[min(400px,100%)] lg:min-h-[400px] border-white/[0.06]"
                     : "h-[280px] shrink-0 sm:h-[300px] lg:h-full lg:min-h-0 lg:shrink lg:self-stretch lg:rounded-l-[calc(0.75rem-1px)] border-site-border/80",
                 )}
               >
@@ -236,7 +236,7 @@ export function ProductShowcaseCarousel({
                 className={cn(
                   "flex min-h-0 min-w-0 flex-col",
                   isHero
-                    ? "px-7 pb-6 pt-6 lg:min-h-[500px] lg:justify-between"
+                    ? "gap-y-2.5 px-7 pb-5 pt-5 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:self-stretch lg:gap-y-3"
                     : "gap-y-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5 lg:h-full lg:min-h-0 lg:gap-y-4 lg:self-stretch lg:py-5",
                 )}
               >
@@ -251,7 +251,7 @@ export function ProductShowcaseCarousel({
                     {catalogBadgeLabel}
                   </div>
                 ) : (
-                  <p className="mb-2 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">
+                  <p className="mb-1 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">
                     {heroRibbonLabel}
                   </p>
                 )}
@@ -259,7 +259,7 @@ export function ProductShowcaseCarousel({
                   className={cn(
                     "max-w-full shrink-0 break-words font-bold leading-[1.2] tracking-tight [overflow-wrap:anywhere]",
                     isHero
-                      ? "min-h-[4.5rem] line-clamp-3 text-[1.35rem] text-white sm:text-2xl lg:text-[1.65rem]"
+                      ? "min-h-0 line-clamp-3 text-[1.35rem] text-white sm:text-2xl lg:text-[1.55rem]"
                       : "line-clamp-2 text-[1.35rem] text-site-ink sm:text-3xl",
                   )}
                 >
@@ -269,7 +269,7 @@ export function ProductShowcaseCarousel({
                   className={cn(
                     "shrink-0 text-sm sm:text-[15px]",
                     isHero
-                      ? "mt-2.5 line-clamp-4 min-h-[4.5rem] leading-relaxed text-slate-300/95"
+                      ? "mt-2 line-clamp-3 leading-snug text-slate-300/95"
                       : "line-clamp-3 leading-snug text-site-muted",
                   )}
                 >
@@ -277,7 +277,7 @@ export function ProductShowcaseCarousel({
                 </p>
 
                 {isHero && heroSpecSummary ? (
-                  <p className="mt-4 min-h-[2.5rem] max-w-full text-[13px] leading-snug text-slate-200 line-clamp-2 [overflow-wrap:anywhere] sm:text-sm">
+                  <p className="mt-3 max-w-full text-[13px] leading-snug text-slate-200 line-clamp-2 [overflow-wrap:anywhere] sm:text-sm">
                     <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
                     <span className="mx-1.5 text-slate-500" aria-hidden>
                       ·
@@ -308,7 +308,7 @@ export function ProductShowcaseCarousel({
                   </div>
                 )}
 
-                <div className={cn("shrink-0", isHero ? "mt-5 lg:mt-4" : "mt-5 border-t border-site-border/60 pt-5")}>
+                <div className={cn("shrink-0", isHero ? "mt-auto border-t border-white/[0.06] pt-4" : "mt-5 border-t border-site-border/60 pt-5")}>
                   <p className={cn("text-xs font-semibold uppercase", isHero ? "text-slate-500" : "text-site-muted")}>
                     {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
                   </p>
@@ -320,7 +320,7 @@ export function ProductShowcaseCarousel({
                   >
                     {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
                   </p>
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <div className={cn("flex flex-col sm:flex-row", isHero ? "mt-3 gap-2.5" : "mt-4 gap-3")}>
                     <Button
                       asChild
                       className={cn(
@@ -354,7 +354,7 @@ export function ProductShowcaseCarousel({
         className={cn(
           "relative z-[2] flex shrink-0 items-center justify-between gap-2",
           isHero
-            ? "border-t border-white/[0.06] bg-black/[0.14] px-7 py-[15px]"
+            ? "min-h-[44px] items-center border-t border-white/[0.06] bg-black/[0.14] px-7 py-3"
             : "gap-3 border-t border-site-border bg-site-bg/95 px-5 py-2.5 sm:px-6",
         )}
       >
