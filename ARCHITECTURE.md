@@ -1,6 +1,6 @@
 # Архитектура проекта MANSVALVE (AS-IS)
 
-Обновлено: 2026-04-27  
+Обновлено: 2026-04-28  
 Аудитория: внешний архитектор / техлид, подключающийся к проекту.
 
 > **Сводка состояния на дату обновления.** Одно приложение Next.js: публичный
@@ -58,6 +58,10 @@ file-based).
 - Framework: `Next.js 16` (App Router, RSC, metadata routes).
 - Runtime/UI: `React 19`, `TypeScript`, `Tailwind CSS v4`.
 - UI: `shadcn/ui`, `radix-ui`, `lucide-react`.
+- Анимации: **`framer-motion`** в зависимостях (точечно: аккордеон FAQ, stagger в
+  **WhyUsClient** / **WhoWeSupplyClient**, опционально **`ScrollReveal`**); **скролл-reveal
+  на главной и смена слайда витрины — на CSS + `IntersectionObserver`** (`CssReveal`,
+  см. §4.1).
 - БД: Postgres, `drizzle-orm`, `postgres` (драйвер), миграции `drizzle-kit`.
 - Auth админки: `jose` (JWT в httpOnly cookie), `bcryptjs`.
 - Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` (GA4/Ads настраиваются в GTM)
@@ -94,7 +98,8 @@ mansvalve/
 │       ├── search/products/       # GET: автодополнение для шапки (публичный)
 │       └── admin/media/**
 ├── components/
-│   ├── sections/*                 # Hero, TrustStrip, FAQ, RequestCTA …
+│   ├── motion/                    # CssReveal (scroll reveal), ScrollReveal (FM, опционально)
+│   ├── sections/*                 # Hero, TrustStrip, FAQ, RequestCTA, ProductShowcaseCarousel …
 │   ├── catalog/*
 │   ├── contacts/QuickRequestForm.tsx
 │   ├── analytics/*                # PageViewTracker, GlobalClickTracker
@@ -137,6 +142,21 @@ Browser
       -> lib/services/*      # server-only там, где помечено
 ```
 
+### 4.1) Публичные анимации (скролл и витрина товаров)
+
+**Принцип:** надёжное появление блоков при скролле и заметная смена слайда карусели
+**не завязаны** на framer-motion `whileInView` для оболочек секций — используются
+**CSS transitions / keyframes** и **`IntersectionObserver`** в клиентском коде.
+
+| Механизм | Файлы / классы |
+|----------|----------------|
+| **Scroll reveal главной** | **`components/motion/CssReveal.tsx`**: обычный `div` + `ref`, однократный observer (`threshold: 0.12`, `rootMargin: 0px 0px -80px 0px`), классы **`reveal-up`** → **`is-visible`**; стили **`.reveal-up` / `.reveal-up.is-visible`** и `prefers-reduced-motion` в **`app/globals.css`**; опциональный каскад через CSS-переменную **`--reveal-delay`**. На **`/`** (`app/(site)/page.tsx`) в **`CssReveal`** обёрнуты: **TrustStrip, Categories, WhyUs, WhoWeSupply, DeliveryCase, HowItWorks, RequestCTA, FAQ** (контент секций без изменений). |
+| **Карусель товара (hero + блок каталога на главной)** | **`components/sections/ProductShowcaseCarousel.tsx`**: при смене **`active`** ключ **`${slug}-${active}`**; на слайде класс **`animate-product-slide`**; **`@keyframes product-slide-reveal`** и правила в **`app/globals.css`** (~450 ms); без `AnimatePresence`. |
+| **framer-motion (точечно)** | **`ScrollReveal.tsx`** — альтернативная обёртка на FM (экспорт из `components/motion/index.ts`); **WhyUsClient / WhoWeSupplyClient** — stagger карточек; **FAQAccordion** — раскрытие. Публичный scroll-reveal секций на главной идёт через **`CssReveal`**, не через FM. |
+| **Hover карточек** | Утилита **`.site-card`** и связанные правила в **`globals.css`**; каталог **`ProductCard`** использует **`site-card`** для единого hover (translate / shadow). |
+
+---
+
 ### Слои
 
 1. **Presentation** — страницы, секции, формы, админ-формы.
@@ -151,7 +171,8 @@ Browser
 
 - `GET /` — лендинг; hero / trust / FAQ / request CTA / meta главной —
   контент из БД при наличии настроенной БД и строк в `content_blocks`, иначе
-  статические дефолты в коде.
+  статические дефолты в коде; крупные секции после hero обёрнуты в **`CssReveal`**
+  (скролл-reveal по §4.1).
 - `GET /catalog` (query `q`, фильтры) — `CatalogShell`; `q` с той же семантикой,
   что и глобальный поиск, плюс `/catalog/category/...`, `/catalog/subcategory/...`,
   `/catalog/[slug]`.

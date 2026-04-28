@@ -140,6 +140,9 @@ export function ProductShowcaseCarousel({
       <div className={cn("relative min-h-0 w-full", isHero ? "min-h-[420px] lg:min-h-[460px]" : "min-h-[520px] lg:min-h-[540px]")}>
         <article
           key={slideKey}
+          data-motion="product-slide"
+          data-slide-active={String(active)}
+          data-slide-key={slideKey}
           className="animate-product-slide absolute inset-0 flex h-full min-h-0 flex-col"
         >
             <div

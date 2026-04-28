@@ -198,11 +198,10 @@
 
 .reveal-up {
   opacity: 0;
-  transform: translateY(36px);
+  transform: translateY(56px);
   transition:
-    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+    opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-up.is-visible {
@@ -216,6 +215,10 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .reveal-up.is-visible {
+    transition-delay: 0s;
   }
 }
 
@@ -233,7 +236,7 @@
 }
 
 .animate-product-slide {
-  animation: product-slide-reveal 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: product-slide-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
