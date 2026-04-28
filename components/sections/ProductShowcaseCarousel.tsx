@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
@@ -47,45 +48,36 @@ export function ProductShowcaseCarousel({
   catalogBadgeLabel = "Часто запрашивают",
 }: ProductShowcaseCarouselProps) {
   const [active, setActive] = useState(0);
-  /** Смена nonce при каждом перелистывании — гарантирует remount и перезапуск CSS animation */
-  const [animationNonce, setAnimationNonce] = useState(0);
+  const reducedMotion = useReducedMotion() === true;
   const product = products[active];
   const image = product ? getProductImage(product) : null;
   const isHero = variant === "hero";
 
-  const bumpSlide = useCallback(() => {
-    setAnimationNonce((n) => n + 1);
-  }, []);
-
   const goTo = useCallback(
     (nextIndex: number) => {
       if (products.length <= 1 || nextIndex === active) return;
-      bumpSlide();
       setActive(nextIndex);
     },
-    [active, products.length, bumpSlide],
+    [active, products.length],
   );
 
   const next = useCallback(() => {
     if (products.length <= 1) return;
-    bumpSlide();
     setActive((a) => (a + 1) % products.length);
-  }, [products.length, bumpSlide]);
+  }, [products.length]);
 
   const prev = useCallback(() => {
     if (products.length <= 1) return;
-    bumpSlide();
     setActive((a) => (a - 1 + products.length) % products.length);
-  }, [products.length, bumpSlide]);
+  }, [products.length]);
 
   useEffect(() => {
     if (products.length <= 1) return;
     const id = window.setInterval(() => {
-      bumpSlide();
       setActive((a) => (a + 1) % products.length);
     }, 6500);
     return () => window.clearInterval(id);
-  }, [products.length, bumpSlide]);
+  }, [products.length]);
 
   const specs = useMemo(() => {
     if (!product) return [];
@@ -109,9 +101,22 @@ export function ProductShowcaseCarousel({
   const hasDirectPrice = product.price != null && !product.priceByRequest;
 
   const slideKey = `${variant}-${active}-${product.slug}`;
-  const slideReactKey = `${variant}-${animationNonce}-${active}-${product.slug}`;
 
   const imgSizes = isHero ? "(max-width: 1024px) 100vw, 720px" : "(max-width: 1024px) 100vw, 760px";
+
+  const slideMotion = reducedMotion
+    ? {
+        initial: false as const,
+        animate: { opacity: 1, x: 0, scale: 1 },
+        exit: { opacity: 0 },
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { opacity: 0, x: 36, scale: 0.985 },
+        animate: { opacity: 1, x: 0, scale: 1 },
+        exit: { opacity: 0, x: -28, scale: 0.985 },
+        transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as const },
+      };
 
   return (
     <div
@@ -154,13 +159,15 @@ export function ProductShowcaseCarousel({
           isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] lg:min-h-[540px]",
         )}
       >
-        <div
-          key={slideReactKey}
-          data-motion="product-slide"
-          data-slide-key={slideKey}
-          data-active-index={active}
-          className="animate-product-slide absolute inset-0 flex h-full min-h-0 flex-col"
-        >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={slideKey}
+            data-motion="product-slide"
+            data-slide-key={slideKey}
+            data-active-index={active}
+            className="absolute inset-0 flex h-full min-h-0 flex-col"
+            {...slideMotion}
+          >
             <div
               className={cn(
                 "grid min-h-0 w-full flex-1 lg:items-stretch",
@@ -332,7 +339,8 @@ export function ProductShowcaseCarousel({
                 </div>
               </div>
             </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <div
