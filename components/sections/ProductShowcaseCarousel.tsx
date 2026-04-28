@@ -3,12 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { getCategoryVisual } from "@/lib/category-visuals";
-import { MOTION_EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type ProductShowcaseCarouselProps = {
@@ -48,7 +46,6 @@ export function ProductShowcaseCarousel({
   heroRibbonLabel = "Витрина",
   catalogBadgeLabel = "Часто запрашивают",
 }: ProductShowcaseCarouselProps) {
-  const reduce = useReducedMotion();
   const [active, setActive] = useState(0);
   const product = products[active];
   const image = product ? getProductImage(product) : null;
@@ -102,17 +99,6 @@ export function ProductShowcaseCarousel({
   const hasDirectPrice = product.price != null && !product.priceByRequest;
 
   const slideKey = `${product.slug}-${active}`;
-  const slideTransition = {
-    duration: reduce ? 0 : 0.55,
-    ease: MOTION_EASE,
-  };
-  const slideInitial = reduce
-    ? { opacity: 1, x: 0, scale: 1 }
-    : { opacity: 0, x: 40, scale: 0.98 };
-  const slideAnimate = { opacity: 1, x: 0, scale: 1 };
-  const slideExit = reduce
-    ? { opacity: 1, x: 0, scale: 1 }
-    : { opacity: 0, x: -40, scale: 0.98 };
 
   const imgSizes = isHero ? "(max-width: 1024px) 100vw, 460px" : "(max-width: 1024px) 100vw, 720px";
 
@@ -152,16 +138,10 @@ export function ProductShowcaseCarousel({
       </div>
 
       <div className={cn("relative min-h-0 w-full", isHero ? "min-h-[420px] lg:min-h-[460px]" : "min-h-[520px] lg:min-h-[540px]")}>
-        <AnimatePresence initial={false} mode="sync">
-          <motion.article
-            key={slideKey}
-            layout={false}
-            initial={slideInitial}
-            animate={slideAnimate}
-            exit={slideExit}
-            transition={slideTransition}
-            className="absolute inset-0 flex h-full min-h-0 flex-col"
-          >
+        <article
+          key={slideKey}
+          className="animate-product-slide absolute inset-0 flex h-full min-h-0 flex-col"
+        >
             <div
               className={cn(
                 "grid min-h-0 flex-1 lg:items-stretch",
@@ -321,8 +301,7 @@ export function ProductShowcaseCarousel({
                 </div>
               </div>
             </div>
-          </motion.article>
-        </AnimatePresence>
+        </article>
       </div>
 
       <div
