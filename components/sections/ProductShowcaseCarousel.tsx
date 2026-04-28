@@ -100,21 +100,19 @@ export function ProductShowcaseCarousel({
 
   const slideKey = `${product.slug}-${active}`;
 
-  const imgSizes = isHero ? "(max-width: 1024px) 100vw, 460px" : "(max-width: 1024px) 100vw, 720px";
+  const imgSizes = isHero ? "(max-width: 1024px) 100vw, 560px" : "(max-width: 1024px) 100vw, 760px";
 
   return (
     <div
       className={cn(
-        "w-full max-w-full overflow-hidden rounded-xl shadow-[0_24px_48px_-28px_rgba(15,27,45,0.35)]",
-        isHero
-          ? "border border-white/10 bg-white/[0.06] shadow-black/25 backdrop-blur-md"
-          : "rounded-lg border border-site-border bg-white shadow-[0_18px_44px_-30px_rgba(15,27,45,0.28)]",
+        "w-full max-w-full",
+        isHero ? "showcase-card-hero rounded-2xl" : "showcase-card-catalog rounded-xl",
       )}
     >
       <div
         className={cn(
-          "flex min-h-[76px] shrink-0 items-start justify-between gap-4 px-5 py-4 sm:px-6",
-          isHero ? "border-b border-white/[0.07]" : "border-b border-site-border",
+          "relative z-[2] flex min-h-[72px] shrink-0 items-start justify-between gap-3 px-5 py-3.5 sm:px-6 sm:py-4",
+          isHero ? "border-b border-white/[0.08]" : "border-b border-site-border",
         )}
       >
         <div className="min-w-0 flex-1">
@@ -137,27 +135,32 @@ export function ProductShowcaseCarousel({
         </div>
       </div>
 
-      <div className={cn("relative min-h-0 w-full", isHero ? "min-h-[420px] lg:min-h-[460px]" : "min-h-[520px] lg:min-h-[540px]")}>
+      <div
+        className={cn(
+          "relative z-[2] min-h-0 w-full",
+          isHero ? "min-h-[460px] lg:min-h-[520px]" : "min-h-[540px] lg:min-h-[560px]",
+        )}
+      >
         <article
           key={slideKey}
           data-motion="product-slide"
           data-slide-active={String(active)}
           data-slide-key={slideKey}
-          className="animate-product-slide absolute inset-0 flex h-full min-h-0 flex-col"
+          className="animate-product-slide motion-reduce:animate-none absolute inset-0 flex h-full min-h-0 flex-col"
         >
             <div
               className={cn(
                 "grid min-h-0 flex-1 lg:items-stretch",
-                isHero ? "lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]" : "lg:grid-cols-[1.22fr_0.78fr]",
+                isHero ? "lg:grid-cols-[minmax(0,1.14fr)_minmax(0,0.86fr)]" : "lg:grid-cols-[1.22fr_0.78fr]",
               )}
             >
               <Link
                 href={`/catalog/${product.slug}`}
                 className={cn(
-                  "relative block w-full shrink-0 overflow-hidden",
+                  "relative block w-full shrink-0 overflow-hidden lg:border-r",
                   isHero
-                    ? "h-[260px] sm:h-[300px] lg:h-[380px] lg:max-h-[380px]"
-                    : "h-[280px] sm:h-[340px] lg:h-[400px] lg:max-h-[400px]",
+                    ? "h-[280px] sm:h-[320px] lg:h-[min(440px,100%)] lg:min-h-[440px] border-white/[0.06]"
+                    : "h-[300px] sm:h-[360px] lg:h-[min(440px,100%)] lg:min-h-[440px] border-site-border/80",
                 )}
               >
                 <Image
@@ -172,8 +175,8 @@ export function ProductShowcaseCarousel({
                 <div className="absolute inset-0 bg-gradient-to-t from-site-deep/65 via-site-deep/5 to-transparent" />
                 <div
                   className={cn(
-                    "absolute bottom-3 left-3 max-w-[min(100%,calc(100%-1.5rem))] rounded-md px-3 py-2 backdrop-blur-sm",
-                    isHero ? "bg-black/35" : "border border-white/20 bg-white/[0.92]",
+                    "absolute bottom-3 left-3 max-w-[min(100%,calc(100%-1.5rem))] rounded-md border px-3 py-2 shadow-sm",
+                    isHero ? "border-white/10 bg-site-deep/85" : "border-site-border/70 bg-white",
                   )}
                 >
                   <p
@@ -197,30 +200,30 @@ export function ProductShowcaseCarousel({
 
               <div
                 className={cn(
-                  "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6",
-                  isHero ? "lg:h-[380px] lg:justify-between" : "lg:h-[400px]",
+                  "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5",
+                  isHero ? "lg:min-h-[440px] lg:justify-between lg:pt-5" : "lg:min-h-[440px]",
                 )}
               >
                 {!isHero ? (
                   <div
                     className={cn(
-                      "mb-4 inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border px-3 py-1 text-xs font-semibold",
-                      "border-site-border bg-site-bg text-site-primary",
+                      "mb-3 inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-semibold",
+                      "border-site-border/90 bg-site-bg text-site-primary",
                     )}
                   >
-                    <Package className="h-4 w-4" aria-hidden />
+                    <Package className="h-3.5 w-3.5" aria-hidden />
                     {catalogBadgeLabel}
                   </div>
                 ) : (
-                  <p className="mb-3 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                  <p className="mb-2 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
                     {heroRibbonLabel}
                   </p>
                 )}
                 <h4
                   className={cn(
-                    "min-h-[4.75rem] max-w-full shrink-0 break-words font-bold leading-snug [overflow-wrap:anywhere]",
+                    "min-h-[4.5rem] max-w-full shrink-0 break-words font-bold leading-[1.2] tracking-tight [overflow-wrap:anywhere]",
                     isHero
-                      ? "line-clamp-3 text-xl text-white sm:text-2xl"
+                      ? "line-clamp-3 text-[1.35rem] text-white sm:text-2xl lg:text-[1.65rem]"
                       : "line-clamp-2 min-h-[3.5rem] text-[1.35rem] text-site-ink sm:min-h-[4rem] sm:text-3xl",
                   )}
                 >
@@ -228,7 +231,7 @@ export function ProductShowcaseCarousel({
                 </h4>
                 <p
                   className={cn(
-                    "mt-3 min-h-[3.25rem] shrink-0 text-sm leading-relaxed sm:text-[15px]",
+                    "mt-2.5 min-h-[3rem] shrink-0 text-sm leading-snug sm:text-[15px]",
                     isHero ? "line-clamp-2 text-slate-300/95" : "line-clamp-2 text-site-muted",
                   )}
                 >
@@ -236,7 +239,7 @@ export function ProductShowcaseCarousel({
                 </p>
 
                 {isHero && heroSpecSummary ? (
-                  <p className="mt-5 min-h-[2.75rem] max-w-full text-[13px] leading-relaxed text-slate-200 line-clamp-2 [overflow-wrap:anywhere] sm:text-sm">
+                  <p className="mt-4 min-h-[2.5rem] max-w-full text-[13px] leading-snug text-slate-200 line-clamp-2 [overflow-wrap:anywhere] sm:text-sm">
                     <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
                     <span className="mx-1.5 text-slate-500" aria-hidden>
                       ·
@@ -248,13 +251,13 @@ export function ProductShowcaseCarousel({
                     <span className="text-slate-100">{heroSpecSummary.mat}</span>
                   </p>
                 ) : (
-                  <div className="mt-4 grid shrink-0 grid-cols-3 gap-2">
+                  <div className="mt-3 grid shrink-0 grid-cols-3 gap-2">
                     {specs.map(({ icon: Icon, label, value }) => (
                       <div
                         key={`${label}-${product.slug}`}
                         className={cn(
-                          "flex min-h-[5.25rem] min-w-0 flex-col rounded-lg border px-2.5 py-2",
-                          "border-site-border bg-site-bg",
+                          "flex min-h-[5rem] min-w-0 flex-col rounded-lg border px-2.5 py-2",
+                          "border-site-border/90 bg-site-bg",
                         )}
                       >
                         <Icon className="mb-1 h-4 w-4 shrink-0 text-site-primary" aria-hidden />
@@ -267,7 +270,7 @@ export function ProductShowcaseCarousel({
                   </div>
                 )}
 
-                <div className={cn("mt-6 shrink-0", isHero ? "mt-8" : "mt-auto pt-4")}>
+                <div className={cn("shrink-0", isHero ? "mt-5 lg:mt-4" : "mt-auto pt-3")}>
                   <p className={cn("text-xs font-semibold uppercase", isHero ? "text-slate-500" : "text-site-muted")}>
                     {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
                   </p>
@@ -309,11 +312,11 @@ export function ProductShowcaseCarousel({
 
       <div
         className={cn(
-          "flex shrink-0 items-center justify-between gap-4 px-5 py-2.5 sm:px-6",
-          isHero ? "border-t border-white/[0.06] bg-black/10" : "border-t border-site-border bg-site-bg py-3",
+          "relative z-[2] flex shrink-0 items-center justify-between gap-3 px-5 py-2 sm:px-6",
+          isHero ? "border-t border-white/[0.07] bg-black/20" : "border-t border-site-border bg-site-bg/95 py-2.5",
         )}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
           {products.map((item, index) => (
             <button
               key={item.slug}
@@ -322,14 +325,14 @@ export function ProductShowcaseCarousel({
               aria-label={`Показать ${item.name}`}
               title={item.name}
               className={cn(
-                "shrink-0 rounded-full transition-all duration-300 ease-out",
+                "shrink-0 rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
                 index === active
                   ? isHero
-                    ? "h-1.5 w-6 bg-white/55"
-                    : "h-2.5 w-8 bg-site-primary"
+                    ? "h-[5px] w-7 bg-white/42"
+                    : "h-[5px] w-7 bg-site-primary/85"
                   : isHero
-                    ? "h-1.5 w-1.5 bg-white/18 hover:bg-white/30"
-                    : "h-2.5 w-2.5 bg-site-border hover:bg-site-primary/45",
+                    ? "h-[5px] w-[5px] bg-white/14 hover:bg-white/26"
+                    : "h-[5px] w-[5px] bg-slate-300/90 hover:bg-site-primary/40",
               )}
             />
           ))}
@@ -339,27 +342,27 @@ export function ProductShowcaseCarousel({
             type="button"
             onClick={prev}
             className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-md transition duration-200 disabled:opacity-45",
+              "inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ease-out disabled:opacity-40 motion-reduce:transition-none",
               isHero
-                ? "border border-white/10 bg-white/[0.06] text-white/75 hover:border-white/18 hover:bg-white/[0.1] hover:text-white"
-                : "border border-site-border bg-white text-site-ink hover:border-site-primary/45 hover:text-site-primary",
+                ? "border border-white/[0.08] bg-white/[0.05] text-white/55 hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
+                : "border border-site-border/80 bg-white text-site-ink/80 hover:border-site-primary/30 hover:bg-site-bg hover:text-site-primary",
             )}
             aria-label="Предыдущий товар"
           >
-            <ArrowLeft className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} />
+            <ArrowLeft className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
           </button>
           <button
             type="button"
             onClick={next}
             className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-md transition duration-200 disabled:opacity-45",
+              "inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ease-out disabled:opacity-40 motion-reduce:transition-none",
               isHero
-                ? "border border-white/10 bg-white/[0.06] text-white/75 hover:border-white/18 hover:bg-white/[0.1] hover:text-white"
-                : "border border-site-border bg-white text-site-ink hover:border-site-primary/45 hover:text-site-primary",
+                ? "border border-white/[0.08] bg-white/[0.05] text-white/55 hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
+                : "border border-site-border/80 bg-white text-site-ink/80 hover:border-site-primary/30 hover:bg-site-bg hover:text-site-primary",
             )}
             aria-label="Следующий товар"
           >
-            <ArrowRight className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} />
+            <ArrowRight className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
           </button>
         </div>
       </div>

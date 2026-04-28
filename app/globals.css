@@ -252,23 +252,92 @@ html[data-motion-css-debug="1"] .reveal-up {
 @keyframes product-slide-reveal {
   from {
     opacity: 0;
-    transform: translateX(24px) scale(0.985);
+    filter: blur(4px);
+    transform: translateX(32px) scale(0.985);
   }
 
   to {
     opacity: 1;
+    filter: blur(0);
     transform: translateX(0) scale(1);
   }
 }
 
 .animate-product-slide {
-  animation: product-slide-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, filter;
+  animation: product-slide-reveal 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-product-slide {
-    animation: none;
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    will-change: auto;
   }
+}
+
+/* Premium depth: hero showcase (no glass blur) */
+.showcase-card-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background:
+    radial-gradient(ellipse 95% 55% at 50% 0%, rgb(255 255 255 / 0.07) 0%, transparent 52%),
+    linear-gradient(168deg, rgb(15 23 42 / 0.97) 0%, rgb(8 12 24 / 0.99) 100%);
+  box-shadow:
+    0 40px 72px -28px rgb(0 0 0 / 0.58),
+    0 16px 40px -32px rgb(15 23 42 / 0.55),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+}
+
+.showcase-card-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  right: 0;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 8%,
+    rgb(255 255 255 / 0.22) 50%,
+    transparent 92%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Premium depth: catalog / «Хиты продаж» */
+.showcase-card-catalog {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-site-border);
+  background:
+    radial-gradient(ellipse 100% 65% at 50% 0%, rgb(59 130 246 / 0.05) 0%, transparent 58%),
+    linear-gradient(180deg, rgb(255 255 255) 0%, rgb(248 250 252) 100%);
+  box-shadow:
+    0 32px 56px -26px rgb(15 27 45 / 0.22),
+    0 12px 28px -18px rgb(15 27 45 / 0.12),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.95);
+}
+
+.showcase-card-catalog::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  right: 0;
+  height: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 10%,
+    rgb(148 163 184 / 0.45) 50%,
+    transparent 90%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* Hero (главная): мягкое появление без JS; уважает prefers-reduced-motion */

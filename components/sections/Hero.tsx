@@ -56,7 +56,7 @@ export async function Hero() {
       />
 
       <div className="site-container relative py-16 sm:py-20 lg:py-24">
-        <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-10 xl:gap-12">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.14fr] lg:items-start lg:gap-10 xl:gap-12">
           <div className="hero-enter-left">
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.08] px-4 py-1.5 text-sm font-semibold text-slate-200 shadow-sm">
               <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
