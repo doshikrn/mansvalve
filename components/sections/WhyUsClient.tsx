@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { staggerContainer, staggerItem, motionTransition, MOTION_EASE } from "@/lib/motion";
+import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
 
 const ICONS = [Clock, ShieldCheck, Wallet, FileCheck2, MapPin, Building2] as const satisfies readonly LucideIcon[];
 
@@ -43,44 +43,49 @@ function Card({
 export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClientProps) {
   const reduce = useReducedMotion();
 
-  const header = (
-    <div className="mb-10 max-w-3xl">
-      <div className="site-eyebrow">{sectionEyebrow}</div>
-      <h2 className="site-heading">{sectionTitle}</h2>
-    </div>
-  );
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: reduce ? 0 : 0.06,
+        delayChildren: reduce ? 0 : 0.05,
+      },
+    },
+  };
 
-  const grid = reduce ? (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((item, index) => (
-        <Card key={`${item.title}-${index}`} {...item} Icon={ICONS[index] ?? Clock} />
-      ))}
-    </div>
-  ) : (
-    <motion.div
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      variants={staggerContainer}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-40px 0px", amount: 0.12 }}
-      transition={{ ...motionTransition.medium, ease: MOTION_EASE }}
-    >
-      {items.map((item, index) => {
-        const Icon = ICONS[index] ?? Clock;
-        return (
-          <motion.div key={`${item.title}-${index}`} variants={staggerItem}>
-            <Card {...item} Icon={Icon} />
-          </motion.div>
-        );
-      })}
-    </motion.div>
-  );
+  const itemVariants = {
+    hidden: { opacity: reduce ? 1 : 0, y: reduce ? 0 : 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduce ? 0 : MOTION_DURATION.medium, ease: MOTION_EASE },
+    },
+  };
 
   return (
     <section className="site-section">
       <div className="site-container">
-        {header}
-        {grid}
+        <div className="mb-10 max-w-3xl">
+          <div className="site-eyebrow">{sectionEyebrow}</div>
+          <h2 className="site-heading">{sectionTitle}</h2>
+        </div>
+
+        <motion.div
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+        >
+          {items.map((item, index) => {
+            const Icon = ICONS[index] ?? Clock;
+            return (
+              <motion.div key={`${item.title}-${index}`} variants={itemVariants}>
+                <Card {...item} Icon={Icon} />
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </div>
     </section>
   );

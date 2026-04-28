@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { fadeUp, motionTransition, MOTION_EASE } from "@/lib/motion";
+import { MOTION_EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type ScrollRevealProps = {
@@ -9,40 +9,29 @@ type ScrollRevealProps = {
   className?: string;
   /** Задержка появления (сек), для каскада секций */
   delay?: number;
-  /**
-   * Отступ «зоны» viewport (когда начинать анимацию). Отрицательные значения —
-   * триггер раньше, пока блок ещё ниже края экрана.
-   */
-  viewportMargin?: string;
 };
 
 /**
- * Появление при скролле: fade + сдвиг на 24px вверх (через variants.fadeUp).
- * `once: true`, уважает `prefers-reduced-motion`.
+ * Появление при скролле: opacity 0 → 1, y 32 → 0, duration 0.6s.
+ * Viewport: once, amount 0.15 (без отрицательного margin — он ужесточал IntersectionObserver).
+ * При prefers-reduced-motion — duration 0, без скрытия контента на первом кадре.
  */
-export function ScrollReveal({
-  children,
-  className,
-  delay = 0,
-  viewportMargin = "-56px 0px -32px 0px",
-}: ScrollRevealProps) {
-  const reduce = useReducedMotion();
-
-  if (reduce) {
-    return <div className={cn(className)}>{children}</div>;
-  }
+export function ScrollReveal({ children, className, delay = 0 }: ScrollRevealProps) {
+  const prefersReducedMotion = useReducedMotion();
+  const duration = prefersReducedMotion ? 0 : 0.6;
 
   return (
     <motion.div
       className={cn(className)}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: viewportMargin, amount: 0.14 }}
-      variants={fadeUp}
+      initial={
+        prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 32 }
+      }
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
       transition={{
-        ...motionTransition.medium,
+        duration,
         ease: MOTION_EASE,
-        delay,
+        delay: prefersReducedMotion ? 0 : delay,
       }}
     >
       {children}

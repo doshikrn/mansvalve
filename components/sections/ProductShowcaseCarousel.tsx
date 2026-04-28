@@ -8,7 +8,7 @@ import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucid
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { getCategoryVisual } from "@/lib/category-visuals";
-import { motionTransition, MOTION_EASE } from "@/lib/motion";
+import { MOTION_EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type ProductShowcaseCarouselProps = {
@@ -101,22 +101,14 @@ export function ProductShowcaseCarousel({
 
   const hasDirectPrice = product.price != null && !product.priceByRequest;
 
-  const slideTransition = reduce
-    ? { duration: 0 }
-    : { ...motionTransition.carousel, ease: MOTION_EASE };
+  const slideTransition = {
+    duration: reduce ? 0 : 0.42,
+    ease: MOTION_EASE,
+  };
 
-  /** Fade + лёгкий сдвиг; при reduced-motion — без изменения положения (только мгновенная смена). */
-  const slideVariants = reduce
-    ? {
-        enter: { opacity: 1, x: 0, scale: 1 },
-        center: { opacity: 1, x: 0, scale: 1 },
-        exit: { opacity: 1, x: 0, scale: 1 },
-      }
-    : {
-        enter: { opacity: 0, x: 12, scale: 0.996 },
-        center: { opacity: 1, x: 0, scale: 1 },
-        exit: { opacity: 0, x: -12, scale: 0.996 },
-      };
+  const slideInitial = reduce ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: 24, scale: 0.98 };
+  const slideAnimate = { opacity: 1, x: 0, scale: 1 };
+  const slideExit = reduce ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: -24, scale: 0.98 };
 
   const imgSizes = isHero ? "(max-width: 1024px) 100vw, 460px" : "(max-width: 1024px) 100vw, 720px";
 
@@ -158,11 +150,10 @@ export function ProductShowcaseCarousel({
       <div className={cn("relative min-h-0 w-full", isHero ? "min-h-[420px] lg:min-h-[460px]" : "min-h-[520px] lg:min-h-[540px]")}>
         <AnimatePresence mode="wait" initial={false}>
           <motion.article
-            key={product.slug}
-            initial={reduce ? false : "enter"}
-            animate={reduce ? undefined : "center"}
-            exit={reduce ? undefined : "exit"}
-            variants={slideVariants}
+            key={`${product.slug}-${active}`}
+            initial={slideInitial}
+            animate={slideAnimate}
+            exit={slideExit}
             transition={slideTransition}
             className="absolute inset-0 flex h-full min-h-0 flex-col"
           >

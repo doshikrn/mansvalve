@@ -23,9 +23,9 @@ export const motionTransition = {
   carousel: { duration: MOTION_DURATION.carousel, ease: MOTION_EASE },
 } as const;
 
-/** Варианты для `variants` (framer-motion) */
+/** Варианты для `variants` (framer-motion), синхронно с ScrollReveal */
 export const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 32 },
   visible: { opacity: 1, y: 0 },
 };
 

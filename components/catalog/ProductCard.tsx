@@ -32,7 +32,7 @@ export function ProductCard({ product }: ProductCardProps) {
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-lg border border-site-border bg-site-card transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-1 hover:border-site-primary/55 hover:shadow-lg hover:shadow-site-deep/15 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100">
+    <article className="group flex flex-col overflow-hidden rounded-lg border border-site-border bg-site-card transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[3px] hover:border-site-primary/55 hover:shadow-xl hover:shadow-site-deep/20 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:hover:shadow-sm">
       {/* Category visual fallback */}
       <Link
         href={detailHref}

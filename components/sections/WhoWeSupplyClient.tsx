@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { staggerContainer, staggerItem, motionTransition, MOTION_EASE } from "@/lib/motion";
+import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
 
 const ICONS = [Building2, Fuel, Factory, Wrench, Droplets, Landmark] as const satisfies readonly LucideIcon[];
 
@@ -47,45 +47,50 @@ export function WhoWeSupplyClient({
 }: WhoWeSupplyClientProps) {
   const reduce = useReducedMotion();
 
-  const header = (
-    <div className="mb-10 max-w-3xl">
-      <div className="site-eyebrow">{sectionEyebrow}</div>
-      <h2 className="site-heading">{sectionTitle}</h2>
-      <p className="site-copy mt-3">{sectionLead}</p>
-    </div>
-  );
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: reduce ? 0 : 0.06,
+        delayChildren: reduce ? 0 : 0.05,
+      },
+    },
+  };
 
-  const list = reduce ? (
-    <ul className="grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 md:gap-5">
-      {segments.map((seg, index) => (
-        <SegmentCard key={`${seg.title}-${index}`} {...seg} Icon={ICONS[index] ?? Building2} />
-      ))}
-    </ul>
-  ) : (
-    <motion.ul
-      className="grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 md:gap-5"
-      variants={staggerContainer}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-40px 0px", amount: 0.1 }}
-      transition={{ ...motionTransition.medium, ease: MOTION_EASE }}
-    >
-      {segments.map((seg, index) => {
-        const Icon = ICONS[index] ?? Building2;
-        return (
-          <motion.li key={`${seg.title}-${index}`} variants={staggerItem} className="min-w-0">
-            <SegmentCard {...seg} Icon={Icon} />
-          </motion.li>
-        );
-      })}
-    </motion.ul>
-  );
+  const itemVariants = {
+    hidden: { opacity: reduce ? 1 : 0, y: reduce ? 0 : 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduce ? 0 : MOTION_DURATION.medium, ease: MOTION_EASE },
+    },
+  };
 
   return (
     <section className="site-section">
       <div className="site-container">
-        {header}
-        {list}
+        <div className="mb-10 max-w-3xl">
+          <div className="site-eyebrow">{sectionEyebrow}</div>
+          <h2 className="site-heading">{sectionTitle}</h2>
+          <p className="site-copy mt-3">{sectionLead}</p>
+        </div>
+
+        <motion.ul
+          className="grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 md:gap-5"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
+        >
+          {segments.map((seg, index) => {
+            const Icon = ICONS[index] ?? Building2;
+            return (
+              <motion.li key={`${seg.title}-${index}`} variants={itemVariants} className="min-w-0">
+                <SegmentCard {...seg} Icon={Icon} />
+              </motion.li>
+            );
+          })}
+        </motion.ul>
       </div>
     </section>
   );
