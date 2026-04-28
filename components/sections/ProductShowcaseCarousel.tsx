@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
@@ -79,6 +79,14 @@ export function ProductShowcaseCarousel({
     return () => window.clearInterval(id);
   }, [products.length]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    const p = products[active];
+    if (!p) return;
+    const sk = `${variant}-${active}-${p.slug}`;
+    console.info("[showcase-motion]", { slideKey: sk, active, reducedMotion });
+  }, [active, variant, products, reducedMotion]);
+
   const specs = useMemo(() => {
     if (!product) return [];
     return [
@@ -104,19 +112,11 @@ export function ProductShowcaseCarousel({
 
   const imgSizes = isHero ? "(max-width: 1024px) 100vw, 720px" : "(max-width: 1024px) 100vw, 760px";
 
-  const slideMotion = reducedMotion
-    ? {
-        initial: false as const,
-        animate: { opacity: 1, x: 0, scale: 1 },
-        exit: { opacity: 0 },
-        transition: { duration: 0 },
-      }
-    : {
-        initial: { opacity: 0, x: 36, scale: 0.985 },
-        animate: { opacity: 1, x: 0, scale: 1 },
-        exit: { opacity: 0, x: -28, scale: 0.985 },
-        transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as const },
-      };
+  /** Не нулевая длительность: при system reduced motion — короче, иначе полноценный вход/выход */
+  const slideTransition = {
+    duration: reducedMotion ? 0.2 : 0.65,
+    ease: [0.22, 1, 0.36, 1] as const,
+  };
 
   return (
     <div
@@ -161,15 +161,19 @@ export function ProductShowcaseCarousel({
           isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] overflow-visible lg:min-h-[540px]",
         )}
       >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={slideKey}
-            data-motion="product-slide"
-            data-slide-key={slideKey}
-            data-active-index={active}
-            className="absolute inset-0 flex h-full min-h-0 flex-col"
-            {...slideMotion}
-          >
+        <MotionConfig reducedMotion="never">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={slideKey}
+              data-motion="product-slide"
+              data-slide-key={slideKey}
+              data-active-index={active}
+              className="absolute inset-0 flex h-full min-h-0 flex-col"
+              initial={{ opacity: 0, x: 56, scale: 0.96 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -56, scale: 0.96 }}
+              transition={slideTransition}
+            >
             <div
               className={cn(
                 "grid min-h-0 w-full flex-1 lg:items-stretch",
@@ -341,8 +345,9 @@ export function ProductShowcaseCarousel({
                 </div>
               </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        </MotionConfig>
       </div>
 
       <div
