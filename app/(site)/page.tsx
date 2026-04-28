@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { CssReveal } from "@/components/motion/CssReveal";
 import { Hero } from "@/components/sections/Hero";
 import { TrustStrip } from "@/components/sections/TrustStrip";
 import { WhyUs } from "@/components/sections/WhyUs";
@@ -40,30 +39,14 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <CssReveal>
-        <TrustStrip />
-      </CssReveal>
-      <CssReveal delay={0.04}>
-        <Categories />
-      </CssReveal>
-      <CssReveal delay={0.06}>
-        <WhyUs />
-      </CssReveal>
-      <CssReveal delay={0.04}>
-        <WhoWeSupply />
-      </CssReveal>
-      <CssReveal delay={0.06}>
-        <DeliveryCase />
-      </CssReveal>
-      <CssReveal delay={0.04}>
-        <HowItWorks />
-      </CssReveal>
-      <CssReveal delay={0.06}>
-        <RequestCTA />
-      </CssReveal>
-      <CssReveal delay={0.04}>
-        <FAQ />
-      </CssReveal>
+      <TrustStrip />
+      <Categories />
+      <WhyUs />
+      <WhoWeSupply />
+      <DeliveryCase />
+      <HowItWorks />
+      <RequestCTA />
+      <FAQ />
     </>
   );
 }

@@ -9,7 +9,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
 
 const ICONS = [Clock, ShieldCheck, Wallet, FileCheck2, MapPin, Building2] as const satisfies readonly LucideIcon[];
@@ -40,28 +40,26 @@ function Card({
   );
 }
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: MOTION_DURATION.medium, ease: MOTION_EASE },
+  },
+};
+
 export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClientProps) {
-  const reduce = useReducedMotion();
-
-  const containerVariants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: reduce ? 0 : 0.06,
-        delayChildren: reduce ? 0 : 0.05,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: reduce ? 1 : 0, y: reduce ? 0 : 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduce ? 0 : MOTION_DURATION.medium, ease: MOTION_EASE },
-    },
-  };
-
   return (
     <section className="site-section">
       <div className="site-container">

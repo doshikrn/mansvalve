@@ -222,6 +222,32 @@
   }
 }
 
+/* Runtime-only: ?motionCssDebug=1 на главной → проверка, что CSS из билда применён */
+@keyframes reveal-debug {
+  from {
+    opacity: 0;
+    transform: translateY(80px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html[data-motion-css-debug="1"] .reveal-up {
+  opacity: 1;
+  animation: reveal-debug 1200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-motion-css-debug="1"] .reveal-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Смена слайда в ProductShowcaseCarousel (только CSS) */
 @keyframes product-slide-reveal {
   from {

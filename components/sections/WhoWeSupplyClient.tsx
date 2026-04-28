@@ -9,7 +9,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
 
 const ICONS = [Building2, Fuel, Factory, Wrench, Droplets, Landmark] as const satisfies readonly LucideIcon[];
@@ -25,7 +25,7 @@ type WhoWeSupplyClientProps = {
 
 function SegmentCard({ title, text, Icon }: WhoSegment & { Icon: LucideIcon }) {
   return (
-    <li className="site-card p-5 sm:p-6">
+    <article className="site-card p-5 sm:p-6">
       <div className="flex gap-4">
         <div className="site-icon">
           <Icon className="h-5 w-5" aria-hidden />
@@ -35,9 +35,28 @@ function SegmentCard({ title, text, Icon }: WhoSegment & { Icon: LucideIcon }) {
           <p className="mt-1.5 text-sm leading-relaxed text-site-muted sm:text-[15px]">{text}</p>
         </div>
       </div>
-    </li>
+    </article>
   );
 }
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: MOTION_DURATION.medium, ease: MOTION_EASE },
+  },
+};
 
 export function WhoWeSupplyClient({
   sectionEyebrow,
@@ -45,27 +64,6 @@ export function WhoWeSupplyClient({
   sectionLead,
   segments,
 }: WhoWeSupplyClientProps) {
-  const reduce = useReducedMotion();
-
-  const containerVariants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: reduce ? 0 : 0.06,
-        delayChildren: reduce ? 0 : 0.05,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: reduce ? 1 : 0, y: reduce ? 0 : 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: reduce ? 0 : MOTION_DURATION.medium, ease: MOTION_EASE },
-    },
-  };
-
   return (
     <section className="site-section">
       <div className="site-container">

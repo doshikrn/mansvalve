@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -14,17 +14,22 @@ type FAQAccordionProps = {
   items: FaqItem[];
 };
 
+const panelVariants = {
+  open: { height: "auto", opacity: 1 },
+  closed: { height: 0, opacity: 0 },
+};
+
+const panelTransition = {
+  duration: MOTION_DURATION.medium,
+  ease: MOTION_EASE,
+};
+
 export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordionProps) {
-  const reduce = useReducedMotion();
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (index: number) => {
     setOpenIndex((prev) => (prev === index ? null : index));
   };
-
-  const contentTransition = reduce
-    ? { duration: 0 }
-    : { duration: MOTION_DURATION.medium, ease: MOTION_EASE };
 
   return (
     <section id="faq" className="site-section">
@@ -64,28 +69,15 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
                   />
                 </button>
 
-                {reduce ? (
-                  isOpen ? (
-                    <div className="border-t border-site-border/80 px-5 pb-5 pt-4 text-sm leading-relaxed text-site-muted">
-                      {a}
-                    </div>
-                  ) : null
-                ) : (
-                  <AnimatePresence initial={false}>
-                    {isOpen ? (
-                      <motion.div
-                        key="content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={contentTransition}
-                        className="overflow-hidden border-t border-site-border/80"
-                      >
-                        <div className="px-5 pb-5 pt-4 text-sm leading-relaxed text-site-muted">{a}</div>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                )}
+                <motion.div
+                  initial={false}
+                  animate={isOpen ? "open" : "closed"}
+                  variants={panelVariants}
+                  transition={panelTransition}
+                  className="overflow-hidden border-t border-site-border/80"
+                >
+                  <div className="px-5 pb-5 pt-4 text-sm leading-relaxed text-site-muted">{a}</div>
+                </motion.div>
               </div>
             );
           })}
