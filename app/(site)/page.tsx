@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { Hero } from "@/components/sections/Hero";
 import { TrustStrip } from "@/components/sections/TrustStrip";
 import { WhyUs } from "@/components/sections/WhyUs";
@@ -39,14 +40,30 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <TrustStrip />
-      <Categories />
-      <WhyUs />
-      <WhoWeSupply />
-      <DeliveryCase />
-      <HowItWorks />
-      <RequestCTA />
-      <FAQ />
+      <ScrollReveal>
+        <TrustStrip />
+      </ScrollReveal>
+      <ScrollReveal delay={0.04}>
+        <Categories />
+      </ScrollReveal>
+      <ScrollReveal delay={0.06}>
+        <WhyUs />
+      </ScrollReveal>
+      <ScrollReveal delay={0.04}>
+        <WhoWeSupply />
+      </ScrollReveal>
+      <ScrollReveal delay={0.06}>
+        <DeliveryCase />
+      </ScrollReveal>
+      <ScrollReveal delay={0.04}>
+        <HowItWorks />
+      </ScrollReveal>
+      <ScrollReveal delay={0.06}>
+        <RequestCTA />
+      </ScrollReveal>
+      <ScrollReveal delay={0.04}>
+        <FAQ />
+      </ScrollReveal>
     </>
   );
 }

@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { getCategoryVisual } from "@/lib/category-visuals";
+import { motionTransition, MOTION_EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type ProductShowcaseCarouselProps = {
@@ -16,9 +18,7 @@ type ProductShowcaseCarouselProps = {
   linkLabel: string;
   linkHref?: string;
   variant?: "hero" | "catalog";
-  /** Подзаголовок слева от карточки (только `variant="hero"`), по умолчанию «Витрина». */
   heroRibbonLabel?: string;
-  /** Бейдж над карточкой (только `variant="catalog"`), по умолчанию «Часто запрашивают». */
   catalogBadgeLabel?: string;
 };
 
@@ -48,9 +48,8 @@ export function ProductShowcaseCarousel({
   heroRibbonLabel = "Витрина",
   catalogBadgeLabel = "Часто запрашивают",
 }: ProductShowcaseCarouselProps) {
+  const reduce = useReducedMotion();
   const [active, setActive] = useState(0);
-  const [isSwitching, setIsSwitching] = useState(false);
-  const switchTimerRef = useRef<number | null>(null);
   const product = products[active];
   const image = product ? getProductImage(product) : null;
   const isHero = variant === "hero";
@@ -58,30 +57,28 @@ export function ProductShowcaseCarousel({
   const goTo = useCallback(
     (nextIndex: number) => {
       if (products.length <= 1 || nextIndex === active) return;
-      if (switchTimerRef.current) window.clearTimeout(switchTimerRef.current);
-
-      setIsSwitching(true);
-      switchTimerRef.current = window.setTimeout(() => {
-        setActive(nextIndex);
-        window.requestAnimationFrame(() => setIsSwitching(false));
-      }, 140);
+      setActive(nextIndex);
     },
     [active, products.length],
   );
 
+  const next = useCallback(() => {
+    if (products.length <= 1) return;
+    setActive((a) => (a + 1) % products.length);
+  }, [products.length]);
+
+  const prev = useCallback(() => {
+    if (products.length <= 1) return;
+    setActive((a) => (a - 1 + products.length) % products.length);
+  }, [products.length]);
+
   useEffect(() => {
     if (products.length <= 1) return;
     const id = window.setInterval(() => {
-      goTo((active + 1) % products.length);
+      setActive((a) => (a + 1) % products.length);
     }, 6500);
     return () => window.clearInterval(id);
-  }, [active, goTo, products.length]);
-
-  useEffect(() => {
-    return () => {
-      if (switchTimerRef.current) window.clearTimeout(switchTimerRef.current);
-    };
-  }, []);
+  }, [products.length]);
 
   const specs = useMemo(() => {
     if (!product) return [];
@@ -103,13 +100,30 @@ export function ProductShowcaseCarousel({
   if (!product || !image) return null;
 
   const hasDirectPrice = product.price != null && !product.priceByRequest;
-  const next = () => goTo((active + 1) % products.length);
-  const prev = () => goTo((active - 1 + products.length) % products.length);
+
+  const slideTransition = reduce
+    ? { duration: 0 }
+    : { ...motionTransition.carousel, ease: MOTION_EASE };
+
+  /** Fade + лёгкий сдвиг; при reduced-motion — без изменения положения (только мгновенная смена). */
+  const slideVariants = reduce
+    ? {
+        enter: { opacity: 1, x: 0, scale: 1 },
+        center: { opacity: 1, x: 0, scale: 1 },
+        exit: { opacity: 1, x: 0, scale: 1 },
+      }
+    : {
+        enter: { opacity: 0, x: 12, scale: 0.996 },
+        center: { opacity: 1, x: 0, scale: 1 },
+        exit: { opacity: 0, x: -12, scale: 0.996 },
+      };
+
+  const imgSizes = isHero ? "(max-width: 1024px) 100vw, 460px" : "(max-width: 1024px) 100vw, 720px";
 
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl shadow-[0_24px_48px_-28px_rgba(15,27,45,0.35)]",
+        "w-full max-w-full overflow-hidden rounded-xl shadow-[0_24px_48px_-28px_rgba(15,27,45,0.35)]",
         isHero
           ? "border border-white/10 bg-white/[0.06] shadow-black/25 backdrop-blur-md"
           : "rounded-lg border border-site-border bg-white shadow-[0_18px_44px_-30px_rgba(15,27,45,0.28)]",
@@ -117,7 +131,7 @@ export function ProductShowcaseCarousel({
     >
       <div
         className={cn(
-          "flex min-h-[76px] items-start justify-between gap-4 px-5 py-4 sm:px-6",
+          "flex min-h-[76px] shrink-0 items-start justify-between gap-4 px-5 py-4 sm:px-6",
           isHero ? "border-b border-white/[0.07]" : "border-b border-site-border",
         )}
       >
@@ -141,177 +155,187 @@ export function ProductShowcaseCarousel({
         </div>
       </div>
 
-      <article
-        className={cn(
-          "transition-all duration-300 ease-out will-change-transform",
-          isHero ? "bg-white/[0.02]" : "",
-          isSwitching ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100",
-        )}
-      >
-        <div
-          className={cn(
-            "grid lg:items-stretch",
-            isHero ? "lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]" : "lg:grid-cols-[1.22fr_0.78fr]",
-          )}
-        >
-          <Link
-            href={`/catalog/${product.slug}`}
-            className={cn(
-              "relative block min-h-[260px] overflow-hidden sm:min-h-[300px]",
-              isHero ? "h-[280px] bg-site-deep sm:h-[320px] lg:h-full lg:min-h-[360px]" : "h-[300px] sm:h-[370px] lg:h-[430px]",
-            )}
+      <div className={cn("relative min-h-0 w-full", isHero ? "min-h-[420px] lg:min-h-[460px]" : "min-h-[520px] lg:min-h-[540px]")}>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.article
+            key={product.slug}
+            initial={reduce ? false : "enter"}
+            animate={reduce ? undefined : "center"}
+            exit={reduce ? undefined : "exit"}
+            variants={slideVariants}
+            transition={slideTransition}
+            className="absolute inset-0 flex h-full min-h-0 flex-col"
           >
-            <Image
-              src={image.src}
-              alt={image.alt}
-              fill
-              quality={100}
-              sizes={isHero ? "(max-width: 1024px) 100vw, 460px" : "(max-width: 1024px) 100vw, 720px"}
-              unoptimized={image.src.startsWith("http://") || image.src.startsWith("https://")}
-              className="object-cover transition duration-500 hover:scale-[1.02] motion-reduce:hover:scale-100"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-site-deep/65 via-site-deep/5 to-transparent" />
             <div
               className={cn(
-                "absolute bottom-3 left-3 max-w-[min(100%,calc(100%-1.5rem))] rounded-md px-3 py-2 backdrop-blur-sm",
-                isHero ? "bg-black/35" : "border border-white/20 bg-white/[0.92]",
+                "grid min-h-0 flex-1 lg:items-stretch",
+                isHero ? "lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]" : "lg:grid-cols-[1.22fr_0.78fr]",
               )}
             >
-              <p
+              <Link
+                href={`/catalog/${product.slug}`}
                 className={cn(
-                  "text-[10px] font-semibold uppercase leading-tight",
-                  isHero ? "text-slate-300" : "text-site-muted",
+                  "relative block w-full shrink-0 overflow-hidden",
+                  isHero
+                    ? "h-[260px] sm:h-[300px] lg:h-[380px] lg:max-h-[380px]"
+                    : "h-[280px] sm:h-[340px] lg:h-[400px] lg:max-h-[400px]",
                 )}
               >
-                {product.categoryName}
-              </p>
-              <p
-                className={cn(
-                  "mt-1 text-sm font-bold leading-snug",
-                  isHero ? "text-white line-clamp-2 [overflow-wrap:anywhere]" : "text-site-ink line-clamp-2",
-                )}
-              >
-                {product.subcategoryName}
-              </p>
-            </div>
-          </Link>
-
-          <div
-            className={cn(
-              "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6",
-              isHero ? "lg:justify-between" : "min-h-[430px]",
-            )}
-          >
-            {!isHero ? (
-              <div
-                className={cn(
-                  "mb-4 inline-flex w-fit items-center gap-2 rounded-lg border px-3 py-1 text-xs font-semibold",
-                  "border-site-border bg-site-bg text-site-primary",
-                )}
-              >
-                <Package className="h-4 w-4" aria-hidden />
-                {catalogBadgeLabel}
-              </div>
-            ) : (
-              <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
-                {heroRibbonLabel}
-              </p>
-            )}
-            <h4
-              className={cn(
-                "break-words font-bold leading-snug [overflow-wrap:anywhere]",
-                isHero
-                  ? "text-pretty text-xl text-white sm:text-2xl line-clamp-3"
-                  : "line-clamp-2 min-h-[3.45rem] overflow-hidden text-[1.45rem] sm:min-h-[3.9rem] sm:text-3xl text-site-ink",
-              )}
-            >
-              {product.name}
-            </h4>
-            <p
-              className={cn(
-                "mt-3 text-sm leading-relaxed sm:text-[15px]",
-                isHero ? "line-clamp-3 text-slate-300/95" : "line-clamp-2 min-h-[3.35rem] overflow-hidden text-site-muted",
-              )}
-            >
-              {product.shortDescription}
-            </p>
-
-            {isHero && heroSpecSummary ? (
-              <p className="mt-5 max-w-full text-[13px] leading-relaxed text-slate-200 [overflow-wrap:anywhere] sm:text-sm">
-                <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
-                <span className="mx-1.5 text-slate-500" aria-hidden>
-                  ·
-                </span>
-                <span className="font-medium text-slate-400">PN</span> {heroSpecSummary.pn}
-                <span className="mx-1.5 text-slate-500" aria-hidden>
-                  ·
-                </span>
-                <span className="text-slate-100">{heroSpecSummary.mat}</span>
-              </p>
-            ) : (
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {specs.map(({ icon: Icon, label, value }) => (
-                  <div
-                    key={`${label}-${value}`}
-                    className={cn(
-                      "min-w-0 rounded-lg border px-2.5 py-2",
-                      "border-site-border bg-site-bg",
-                    )}
-                  >
-                    <Icon className="mb-1 h-4 w-4 text-site-primary" aria-hidden />
-                    <p className="text-[10px] font-semibold uppercase text-site-muted">{label}</p>
-                    <p className="break-words text-sm font-bold leading-snug text-site-ink">{value}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className={cn("mt-6", isHero ? "mt-8" : "mt-auto pt-4")}>
-              <p className={cn("text-xs font-semibold uppercase", isHero ? "text-slate-500" : "text-site-muted")}>
-                {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
-              </p>
-              <p
-                className={cn(
-                  "mt-1 text-2xl font-bold tabular-nums",
-                  isHero ? "text-white" : "truncate text-site-primary",
-                )}
-              >
-                {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
-              </p>
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  quality={100}
+                  sizes={imgSizes}
+                  unoptimized={image.src.startsWith("http://") || image.src.startsWith("https://")}
+                  className="object-cover motion-reduce:transition-none transition-transform duration-500 ease-out hover:scale-[1.02] motion-reduce:hover:scale-100"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-site-deep/65 via-site-deep/5 to-transparent" />
+                <div
                   className={cn(
-                    "site-primary-cta min-h-11 flex-1 px-5 font-semibold",
-                    isHero ? "shadow-lg shadow-black/40" : "",
+                    "absolute bottom-3 left-3 max-w-[min(100%,calc(100%-1.5rem))] rounded-md px-3 py-2 backdrop-blur-sm",
+                    isHero ? "bg-black/35" : "border border-white/20 bg-white/[0.92]",
                   )}
                 >
-                  <Link href={`/catalog/${product.slug}`}>
-                    Подробнее
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                {!isHero ? (
-                  <Link
-                    href={linkHref}
-                    className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-site-border px-5 text-sm font-semibold text-site-ink transition hover:border-site-primary/45 hover:text-site-primary"
+                  <p
+                    className={cn(
+                      "text-[10px] font-semibold uppercase leading-tight",
+                      isHero ? "text-slate-300" : "text-site-muted",
+                    )}
                   >
-                    {linkLabel}
-                  </Link>
-                ) : null}
+                    {product.categoryName}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-1 text-sm font-bold leading-snug",
+                      isHero ? "text-white line-clamp-2 [overflow-wrap:anywhere]" : "text-site-ink line-clamp-2",
+                    )}
+                  >
+                    {product.subcategoryName}
+                  </p>
+                </div>
+              </Link>
+
+              <div
+                className={cn(
+                  "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-5 sm:px-6 sm:pb-6 sm:pt-6",
+                  isHero ? "lg:h-[380px] lg:justify-between" : "lg:h-[400px]",
+                )}
+              >
+                {!isHero ? (
+                  <div
+                    className={cn(
+                      "mb-4 inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border px-3 py-1 text-xs font-semibold",
+                      "border-site-border bg-site-bg text-site-primary",
+                    )}
+                  >
+                    <Package className="h-4 w-4" aria-hidden />
+                    {catalogBadgeLabel}
+                  </div>
+                ) : (
+                  <p className="mb-3 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                    {heroRibbonLabel}
+                  </p>
+                )}
+                <h4
+                  className={cn(
+                    "min-h-[4.75rem] max-w-full shrink-0 break-words font-bold leading-snug [overflow-wrap:anywhere]",
+                    isHero
+                      ? "line-clamp-3 text-xl text-white sm:text-2xl"
+                      : "line-clamp-2 min-h-[3.5rem] text-[1.35rem] text-site-ink sm:min-h-[4rem] sm:text-3xl",
+                  )}
+                >
+                  {product.name}
+                </h4>
+                <p
+                  className={cn(
+                    "mt-3 min-h-[3.25rem] shrink-0 text-sm leading-relaxed sm:text-[15px]",
+                    isHero ? "line-clamp-2 text-slate-300/95" : "line-clamp-2 text-site-muted",
+                  )}
+                >
+                  {product.shortDescription}
+                </p>
+
+                {isHero && heroSpecSummary ? (
+                  <p className="mt-5 min-h-[2.75rem] max-w-full text-[13px] leading-relaxed text-slate-200 line-clamp-2 [overflow-wrap:anywhere] sm:text-sm">
+                    <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
+                    <span className="mx-1.5 text-slate-500" aria-hidden>
+                      ·
+                    </span>
+                    <span className="font-medium text-slate-400">PN</span> {heroSpecSummary.pn}
+                    <span className="mx-1.5 text-slate-500" aria-hidden>
+                      ·
+                    </span>
+                    <span className="text-slate-100">{heroSpecSummary.mat}</span>
+                  </p>
+                ) : (
+                  <div className="mt-4 grid shrink-0 grid-cols-3 gap-2">
+                    {specs.map(({ icon: Icon, label, value }) => (
+                      <div
+                        key={`${label}-${product.slug}`}
+                        className={cn(
+                          "flex min-h-[5.25rem] min-w-0 flex-col rounded-lg border px-2.5 py-2",
+                          "border-site-border bg-site-bg",
+                        )}
+                      >
+                        <Icon className="mb-1 h-4 w-4 shrink-0 text-site-primary" aria-hidden />
+                        <p className="text-[10px] font-semibold uppercase text-site-muted">{label}</p>
+                        <p className="line-clamp-2 break-words text-sm font-bold leading-snug text-site-ink">
+                          {value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className={cn("mt-6 shrink-0", isHero ? "mt-8" : "mt-auto pt-4")}>
+                  <p className={cn("text-xs font-semibold uppercase", isHero ? "text-slate-500" : "text-site-muted")}>
+                    {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-1 text-2xl font-bold tabular-nums",
+                      isHero ? "text-white" : "truncate text-site-primary",
+                    )}
+                  >
+                    {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
+                  </p>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      asChild
+                      className={cn(
+                        "site-primary-cta min-h-11 flex-1 px-5 font-semibold",
+                        isHero ? "shadow-lg shadow-black/40" : "",
+                      )}
+                    >
+                      <Link href={`/catalog/${product.slug}`}>
+                        Подробнее
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    {!isHero ? (
+                      <Link
+                        href={linkHref}
+                        className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-site-border px-5 text-sm font-semibold text-site-ink transition hover:border-site-primary/45 hover:text-site-primary"
+                      >
+                        {linkLabel}
+                      </Link>
+                    ) : null}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </article>
+          </motion.article>
+        </AnimatePresence>
+      </div>
 
       <div
         className={cn(
-          "flex items-center justify-between gap-4 px-5 py-2.5 sm:px-6",
+          "flex shrink-0 items-center justify-between gap-4 px-5 py-2.5 sm:px-6",
           isHero ? "border-t border-white/[0.06] bg-black/10" : "border-t border-site-border bg-site-bg py-3",
         )}
       >
-        <div className="flex items-center gap-1.5">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
           {products.map((item, index) => (
             <button
               key={item.slug}
@@ -320,7 +344,7 @@ export function ProductShowcaseCarousel({
               aria-label={`Показать ${item.name}`}
               title={item.name}
               className={cn(
-                "rounded-full transition-all duration-300",
+                "shrink-0 rounded-full transition-all duration-300 ease-out",
                 index === active
                   ? isHero
                     ? "h-1.5 w-6 bg-white/55"
@@ -332,7 +356,7 @@ export function ProductShowcaseCarousel({
             />
           ))}
         </div>
-        <div className="flex gap-1">
+        <div className="flex shrink-0 gap-1">
           <button
             type="button"
             onClick={prev}
@@ -343,7 +367,6 @@ export function ProductShowcaseCarousel({
                 : "border border-site-border bg-white text-site-ink hover:border-site-primary/45 hover:text-site-primary",
             )}
             aria-label="Предыдущий товар"
-            disabled={isSwitching}
           >
             <ArrowLeft className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} />
           </button>
@@ -357,7 +380,6 @@ export function ProductShowcaseCarousel({
                 : "border border-site-border bg-white text-site-ink hover:border-site-primary/45 hover:text-site-primary",
             )}
             aria-label="Следующий товар"
-            disabled={isSwitching}
           >
             <ArrowRight className="h-3.5 w-3.5 opacity-90" strokeWidth={1.75} />
           </button>

@@ -172,7 +172,7 @@
   }
 
   .site-card {
-    @apply rounded-lg border border-site-border bg-site-card shadow-sm transition-[border-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-site-primary/45 hover:shadow-md hover:shadow-site-deep/10 motion-reduce:hover:translate-y-0;
+    @apply rounded-lg border border-site-border bg-site-card shadow-sm transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-1 hover:border-site-primary/50 hover:shadow-lg hover:shadow-site-deep/15 motion-reduce:hover:translate-y-0 motion-reduce:hover:shadow-sm;
   }
 
   .site-card-quiet {
@@ -188,11 +188,11 @@
   }
 
   .site-link-button {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-site-border bg-site-card px-4 py-2 text-sm font-semibold text-site-ink shadow-sm transition-[border-color,box-shadow,color] duration-200 hover:border-site-primary/55 hover:text-site-primary-hover hover:shadow-md;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-site-border bg-site-card px-4 py-2 text-sm font-semibold text-site-ink shadow-sm transition-[border-color,box-shadow,transform,color] duration-300 ease-out hover:-translate-y-0.5 hover:border-site-primary/55 hover:text-site-primary-hover hover:shadow-md active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100;
   }
 
   .site-primary-cta {
-    @apply rounded-lg !border-site-cta-hover !bg-site-cta !text-white shadow-sm transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:!bg-site-cta-hover hover:shadow-md focus-visible:ring-2 focus-visible:ring-site-cta/45 focus-visible:ring-offset-2 active:translate-y-0 motion-reduce:hover:translate-y-0;
+    @apply rounded-lg !border-site-cta-hover !bg-site-cta !text-white shadow-sm transition-[background-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:!bg-site-cta-hover hover:shadow-lg focus-visible:ring-2 focus-visible:ring-site-cta/45 focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100;
   }
 }
 
