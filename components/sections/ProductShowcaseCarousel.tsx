@@ -98,14 +98,17 @@ export function ProductShowcaseCarousel({
 
   const hasDirectPrice = product.price != null && !product.priceByRequest;
 
-  const slideKey = `${product.slug}-${active}`;
+  /** Стабильный key при смене active: новый <article> → CSS animation запускается снова */
+  const slideKey = `showcase-slide-${active}-${product.slug}`;
 
-  const imgSizes = isHero ? "(max-width: 1024px) 100vw, 560px" : "(max-width: 1024px) 100vw, 760px";
+  const imgSizes = isHero ? "(max-width: 1024px) 100vw, 720px" : "(max-width: 1024px) 100vw, 760px";
 
   return (
     <div
       className={cn(
         "w-full max-w-full",
+        isHero &&
+          "relative z-10 max-lg:mx-0 lg:w-[126%] lg:max-w-none lg:self-start",
         isHero ? "showcase-card-hero rounded-2xl" : "showcase-card-catalog rounded-xl",
       )}
     >
@@ -137,8 +140,8 @@ export function ProductShowcaseCarousel({
 
       <div
         className={cn(
-          "relative z-[2] min-h-0 w-full",
-          isHero ? "min-h-[460px] lg:min-h-[520px]" : "min-h-[540px] lg:min-h-[560px]",
+          "relative z-[2] isolate min-h-0 w-full",
+          isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[540px] lg:min-h-[560px]",
         )}
       >
         <article
@@ -146,12 +149,15 @@ export function ProductShowcaseCarousel({
           data-motion="product-slide"
           data-slide-active={String(active)}
           data-slide-key={slideKey}
+          data-active-index={active}
           className="animate-product-slide motion-reduce:animate-none absolute inset-0 flex h-full min-h-0 flex-col"
         >
             <div
               className={cn(
                 "grid min-h-0 flex-1 lg:items-stretch",
-                isHero ? "lg:grid-cols-[minmax(0,1.14fr)_minmax(0,0.86fr)]" : "lg:grid-cols-[1.22fr_0.78fr]",
+                isHero
+                  ? "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
+                  : "lg:grid-cols-[1.22fr_0.78fr]",
               )}
             >
               <Link
@@ -159,7 +165,7 @@ export function ProductShowcaseCarousel({
                 className={cn(
                   "relative block w-full shrink-0 overflow-hidden lg:border-r",
                   isHero
-                    ? "h-[280px] sm:h-[320px] lg:h-[min(440px,100%)] lg:min-h-[440px] border-white/[0.06]"
+                    ? "h-[300px] sm:h-[340px] lg:h-[min(500px,100%)] lg:min-h-[500px] border-white/[0.06]"
                     : "h-[300px] sm:h-[360px] lg:h-[min(440px,100%)] lg:min-h-[440px] border-site-border/80",
                 )}
               >
@@ -201,7 +207,7 @@ export function ProductShowcaseCarousel({
               <div
                 className={cn(
                   "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5",
-                  isHero ? "lg:min-h-[440px] lg:justify-between lg:pt-5" : "lg:min-h-[440px]",
+                  isHero ? "lg:min-h-[500px] lg:justify-between lg:pt-5" : "lg:min-h-[440px]",
                 )}
               >
                 {!isHero ? (
@@ -231,8 +237,10 @@ export function ProductShowcaseCarousel({
                 </h4>
                 <p
                   className={cn(
-                    "mt-2.5 min-h-[3rem] shrink-0 text-sm leading-snug sm:text-[15px]",
-                    isHero ? "line-clamp-2 text-slate-300/95" : "line-clamp-2 text-site-muted",
+                    "mt-2.5 shrink-0 text-sm sm:text-[15px]",
+                    isHero
+                      ? "line-clamp-4 min-h-[4.5rem] leading-relaxed text-slate-300/95"
+                      : "line-clamp-2 min-h-[3rem] leading-snug text-site-muted",
                   )}
                 >
                   {product.shortDescription}
