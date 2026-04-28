@@ -248,7 +248,7 @@ html[data-motion-css-debug="1"] .reveal-up {
   }
 }
 
-/* Смена слайда в ProductShowcaseCarousel — класс .animate-product-slide на <article> со slide key */
+/* Смена слайда в ProductShowcaseCarousel — класс .animate-product-slide на wrapper слайда (см. компонент) */
 @keyframes product-slide-reveal {
   from {
     opacity: 0;
@@ -281,7 +281,8 @@ html[data-motion-css-debug="1"] .reveal-up {
 /* Premium depth: hero showcase (no glass blur) */
 .showcase-card-hero {
   position: relative;
-  overflow: hidden;
+  /* visible: иначе вход слайда с translateX обрезается — анимация не видна */
+  overflow: visible;
   border: 1px solid rgb(255 255 255 / 0.1);
   background:
     radial-gradient(ellipse 95% 55% at 50% 0%, rgb(255 255 255 / 0.07) 0%, transparent 52%),

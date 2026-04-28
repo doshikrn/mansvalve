@@ -58,10 +58,13 @@ file-based).
 - Framework: `Next.js 16` (App Router, RSC, metadata routes).
 - Runtime/UI: `React 19`, `TypeScript`, `Tailwind CSS v4`.
 - UI: `shadcn/ui`, `radix-ui`, `lucide-react`.
-- Анимации: **`framer-motion`** в зависимостях (точечно: аккордеон FAQ, stagger в
-  **WhyUsClient** / **WhoWeSupplyClient**, опционально **`ScrollReveal`**); **скролл-reveal
-  на главной и смена слайда витрины — на CSS + `IntersectionObserver`** (`CssReveal`,
-  см. §4.1).
+- Анимации: **`framer-motion`** — спокойный B2B scroll-reveal на главной
+  (`whileInView`, токены в **`lib/motion.ts`**, обёртка
+  **`PublicMotionProvider`** / `MotionConfig` в `app/(site)/layout.tsx` для
+  `prefers-reduced-motion`); **карусель витрины** — только **CSS**
+  (`@keyframes product-slide-reveal`, класс **`.animate-product-slide`**), без FM на слайде.
+  Опционально: **`ScrollReveal`**, **`CssReveal`** (легаси-оболочка, на **`/`** не
+  используется), **`MotionRuntimeCheck`**.
 - БД: Postgres, `drizzle-orm`, `postgres` (драйвер), миграции `drizzle-kit`.
 - Auth админки: `jose` (JWT в httpOnly cookie), `bcryptjs`.
 - Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` (GA4/Ads настраиваются в GTM)
@@ -78,7 +81,7 @@ mansvalve/
 │   ├── layout.tsx                 # GTM, JSON-LD, трекеры, шрифты; без Header/Footer
 │   ├── icon.png, apple-icon.png  # фавикон (file convention)
 │   ├── (site)/                    # публичный сайт
-│   │   ├── layout.tsx             # Header (2-ур., поиск) / Footer / Float WA
+│   │   ├── layout.tsx             # PublicMotionProvider + Header / Footer / Float WA
 │   │   ├── page.tsx               # главная (+ generateMetadata из content)
 │   │   ├── about/page.tsx         # + generateMetadata (meta из CMS)
 │   │   ├── contacts/page.tsx      # + generateMetadata (meta из CMS)
@@ -98,7 +101,7 @@ mansvalve/
 │       ├── search/products/       # GET: автодополнение для шапки (публичный)
 │       └── admin/media/**
 ├── components/
-│   ├── motion/                    # CssReveal (scroll reveal), ScrollReveal (FM, опционально)
+│   ├── motion/                    # PublicMotionProvider, MotionRuntimeCheck; CssReveal / ScrollReveal (опц.)
 │   ├── sections/*                 # Hero, TrustStrip, FAQ, RequestCTA, ProductShowcaseCarousel …
 │   ├── catalog/*
 │   ├── contacts/QuickRequestForm.tsx
@@ -109,6 +112,7 @@ mansvalve/
 │   └── ui/*
 ├── lib/
 │   ├── public-catalog/            # единая точка: JSON vs DB для витрины
+│   ├── motion.ts                  # PREMIUM_VIEWPORT, stagger/intro/card variants, MOTION_EASE
 │   ├── site-content/              # ключи, zod-модели, merge, server resolvers
 │   ├── leads/lead-status-public.ts  # только UI/нормализация статуса (без БД)
 │   ├── services/                  # products, categories, leads, content-blocks …
@@ -144,16 +148,18 @@ Browser
 
 ### 4.1) Публичные анимации (скролл и витрина товаров)
 
-**Принцип:** надёжное появление блоков при скролле и заметная смена слайда карусели
-**не завязаны** на framer-motion `whileInView` для оболочек секций — используются
-**CSS transitions / keyframes** и **`IntersectionObserver`** в клиентском коде.
+**Принцип:** секции после hero на **`/`** — **framer-motion** (`whileInView`, один раз
+во viewport, без «параллакса прогресса»); **карусель витрины** — **только CSS**
+(keyframes + смена `key` у слайда), чтобы не смешивать FM и смену товара.
 
 | Механизм | Файлы / классы |
 |----------|----------------|
-| **Scroll reveal главной** | **`components/motion/CssReveal.tsx`**: обычный `div` + `ref`, однократный observer (`threshold: 0.12`, `rootMargin: 0px 0px -80px 0px`), классы **`reveal-up`** → **`is-visible`**; стили **`.reveal-up` / `.reveal-up.is-visible`** и `prefers-reduced-motion` в **`app/globals.css`**; опциональный каскад через CSS-переменную **`--reveal-delay`**. На **`/`** (`app/(site)/page.tsx`) в **`CssReveal`** обёрнуты: **TrustStrip, Categories, WhyUs, WhoWeSupply, DeliveryCase, HowItWorks, RequestCTA, FAQ** (контент секций без изменений). |
-| **Карусель товара (hero + блок каталога на главной)** | **`components/sections/ProductShowcaseCarousel.tsx`**: при смене **`active`** ключ **`${slug}-${active}`**; на слайде класс **`animate-product-slide`**; **`@keyframes product-slide-reveal`** и правила в **`app/globals.css`** (~450 ms); без `AnimatePresence`. |
-| **framer-motion (точечно)** | **`ScrollReveal.tsx`** — альтернативная обёртка на FM (экспорт из `components/motion/index.ts`); **WhyUsClient / WhoWeSupplyClient** — stagger карточек; **FAQAccordion** — раскрытие. Публичный scroll-reveal секций на главной идёт через **`CssReveal`**, не через FM. |
-| **Hover карточек** | Утилита **`.site-card`** и связанные правила в **`globals.css`**; каталог **`ProductCard`** использует **`site-card`** для единого hover (translate / shadow). |
+| **Глобально для FM на сайте** | **`app/(site)/layout.tsx`**: **`PublicMotionProvider`** (`MotionConfig reducedMotion="user"`). **`lib/motion.ts`**: **`PREMIUM_VIEWPORT`**, **`premiumStaggerContainer`**, **`premiumIntroBlock`**, **`premiumCardBlock`**, **`MOTION_EASE`**. |
+| **Scroll reveal главной (секции)** | Серверные оболочки резолвят данные; клиентские обёртки: **`TrustStripClient`**, **`CategoriesClient`**, **`WhyUsClient`**, **`WhoWeSupplyClient`**, **`DeliveryCaseClient`**, **`HowItWorksClient`**, **`RequestCtaClient`**; заголовок FAQ — **`FAQAccordion`** (`motion` только на блоке заголовка). Паттерн: stagger «интро → карточки», **`viewport`** с отрицательным нижним margin / `amount`, **`once: true`**. |
+| **Hero** | **`Hero.tsx`** + **`ProductShowcaseCarousel`** `variant="hero"`; текстовая колонка слева без FM-обёртки для scroll-reveal (вход hero — CSS **`hero-enter-left` / `hero-enter-right`** в **`globals.css`**). |
+| **Карусель товара (hero + «Хиты продаж» на главной)** | **`components/sections/ProductShowcaseCarousel.tsx`** (client): при смене **`active`** ключ **`showcase-slide-${active}-${slug}`** на **`<article>`** — пересоздание узла → заново запускается CSS-animation. Класс **`animate-product-slide`**; **`@keyframes product-slide-reveal`** (opacity, translateX, scale, blur), **700 ms**, **`cubic-bezier(0.22, 1, 0.36, 1)`**, `animation-fill-mode: both` — в **`app/globals.css`**. Визуальная глубина карточек: **`.showcase-card-hero`**, **`.showcase-card-catalog`** (у catalog **`overflow: visible`**, чтобы не резать вход слайда по X). |
+| **Легаси / опционально** | **`components/motion/CssReveal.tsx`** — **`IntersectionObserver`** + классы **`reveal-up`** / **`is-visible`** в **`globals.css`** (на **`/`** не подключён). **`ScrollReveal.tsx`** — FM-обёртка по желанию. |
+| **Hover карточек** | **`.site-card`** и правила в **`globals.css`**; каталог **`ProductCard`**. |
 
 ---
 
@@ -171,8 +177,8 @@ Browser
 
 - `GET /` — лендинг; hero / trust / FAQ / request CTA / meta главной —
   контент из БД при наличии настроенной БД и строк в `content_blocks`, иначе
-  статические дефолты в коде; крупные секции после hero обёрнуты в **`CssReveal`**
-  (скролл-reveal по §4.1).
+  статические дефолты в коде; крупные секции после hero — **FM scroll-reveal**
+  (клиентские `*Client` и заголовок FAQ, см. §4.1).
 - `GET /catalog` (query `q`, фильтры) — `CatalogShell`; `q` с той же семантикой,
   что и глобальный поиск, плюс `/catalog/category/...`, `/catalog/subcategory/...`,
   `/catalog/[slug]`.
@@ -325,8 +331,9 @@ Browser
 
 ### 13.3 Публичное применение контента
 
-- Секции **`Hero`**, **`TrustStrip`**, **`FAQ`**, **`RequestCTA`** — async
-  server components, данные через `resolve*` из `lib/site-content/public.ts`.
+- Секции **`Hero`**, **`TrustStrip`**, **`FAQ`**, **`RequestCTA`** и др. — данные через
+  `resolve*` из **`lib/site-content/public.ts`**; часть рендерится серверной оболочкой +
+  **`*Client`** для motion (см. §4.1).
 - Страницы **`/about`**, **`/contacts`**, **`/`** — `generateMetadata` из
   `resolveHomeMeta` / `resolveAboutMeta` / `resolveContactsMeta` (merge с
   дефолтами в `lib/site-content/models.ts`).

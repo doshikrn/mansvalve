@@ -47,35 +47,45 @@ export function ProductShowcaseCarousel({
   catalogBadgeLabel = "Часто запрашивают",
 }: ProductShowcaseCarouselProps) {
   const [active, setActive] = useState(0);
+  /** Смена nonce при каждом перелистывании — гарантирует remount и перезапуск CSS animation */
+  const [animationNonce, setAnimationNonce] = useState(0);
   const product = products[active];
   const image = product ? getProductImage(product) : null;
   const isHero = variant === "hero";
 
+  const bumpSlide = useCallback(() => {
+    setAnimationNonce((n) => n + 1);
+  }, []);
+
   const goTo = useCallback(
     (nextIndex: number) => {
       if (products.length <= 1 || nextIndex === active) return;
+      bumpSlide();
       setActive(nextIndex);
     },
-    [active, products.length],
+    [active, products.length, bumpSlide],
   );
 
   const next = useCallback(() => {
     if (products.length <= 1) return;
+    bumpSlide();
     setActive((a) => (a + 1) % products.length);
-  }, [products.length]);
+  }, [products.length, bumpSlide]);
 
   const prev = useCallback(() => {
     if (products.length <= 1) return;
+    bumpSlide();
     setActive((a) => (a - 1 + products.length) % products.length);
-  }, [products.length]);
+  }, [products.length, bumpSlide]);
 
   useEffect(() => {
     if (products.length <= 1) return;
     const id = window.setInterval(() => {
+      bumpSlide();
       setActive((a) => (a + 1) % products.length);
     }, 6500);
     return () => window.clearInterval(id);
-  }, [products.length]);
+  }, [products.length, bumpSlide]);
 
   const specs = useMemo(() => {
     if (!product) return [];
@@ -98,8 +108,8 @@ export function ProductShowcaseCarousel({
 
   const hasDirectPrice = product.price != null && !product.priceByRequest;
 
-  /** Стабильный key при смене active: новый <article> → CSS animation запускается снова */
-  const slideKey = `showcase-slide-${active}-${product.slug}`;
+  const slideKey = `${variant}-${active}-${product.slug}`;
+  const slideReactKey = `${variant}-${animationNonce}-${active}-${product.slug}`;
 
   const imgSizes = isHero ? "(max-width: 1024px) 100vw, 720px" : "(max-width: 1024px) 100vw, 760px";
 
@@ -140,17 +150,16 @@ export function ProductShowcaseCarousel({
 
       <div
         className={cn(
-          "relative z-[2] isolate min-h-0 w-full",
+          "relative z-[2] isolate min-h-0 w-full overflow-visible",
           isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] lg:min-h-[540px]",
         )}
       >
-        <article
-          key={slideKey}
+        <div
+          key={slideReactKey}
           data-motion="product-slide"
-          data-slide-active={String(active)}
           data-slide-key={slideKey}
           data-active-index={active}
-          className="animate-product-slide motion-reduce:animate-none absolute inset-0 flex h-full min-h-0 flex-col"
+          className="animate-product-slide absolute inset-0 flex h-full min-h-0 flex-col"
         >
             <div
               className={cn(
@@ -323,7 +332,7 @@ export function ProductShowcaseCarousel({
                 </div>
               </div>
             </div>
-        </article>
+        </div>
       </div>
 
       <div
