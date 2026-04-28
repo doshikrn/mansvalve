@@ -1,6 +1,7 @@
 /** Stable `content_blocks.key` values (locale `ru`). */
 export const SITE_CONTENT_KEYS = {
   homeHero: "site.home.hero",
+  homeProductShowcases: "site.home.productShowcases",
   homeTrustStrip: "site.home.trustStrip",
   homeRequestCta: "site.home.requestCta",
   homeFaq: "site.home.faq",

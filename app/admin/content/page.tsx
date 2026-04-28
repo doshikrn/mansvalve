@@ -16,6 +16,7 @@ import {
   mergeHomeFaq,
   mergeHomeHero,
   mergeHomeMeta,
+  mergeHomeProductShowcases,
   mergeRequestCta,
   mergeTrustStrip,
 } from "@/lib/site-content/models";
@@ -30,6 +31,7 @@ import {
   saveHomeFaqAction,
   saveHomeHeroAction,
   saveHomeMetaAction,
+  saveHomeProductShowcasesAction,
   saveRequestCtaAction,
   saveTrustStripAction,
 } from "./actions";
@@ -64,6 +66,7 @@ export default async function AdminContentPage({
     aboutRow,
     contactsMetaRow,
     contactsRow,
+    productShowcasesRow,
   ] = await Promise.all([
     getContentBlock(SITE_CONTENT_KEYS.homeHero),
     getContentBlock(SITE_CONTENT_KEYS.homeTrustStrip),
@@ -74,6 +77,7 @@ export default async function AdminContentPage({
     getContentBlock(SITE_CONTENT_KEYS.aboutCopy),
     getContentBlock(SITE_CONTENT_KEYS.contactsMeta),
     getContentBlock(SITE_CONTENT_KEYS.contactsCopy),
+    getContentBlock(SITE_CONTENT_KEYS.homeProductShowcases),
   ]);
 
   const hero = mergeHomeHero(heroRow?.data, 0);
@@ -90,6 +94,7 @@ export default async function AdminContentPage({
     city: COMPANY.address.city,
   });
   const contacts = mergeContactsCopy(contactsRow?.data);
+  const productShowcases = mergeHomeProductShowcases(productShowcasesRow?.data);
 
   return (
     <div className="space-y-6">
@@ -166,6 +171,43 @@ export default async function AdminContentPage({
             </p>
             <Button type="submit" size="sm">
               Сохранить герой
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Главная — товарные витрины</CardTitle>
+          <CardDescription>
+            Slug товара берётся из URL карточки каталога. Один slug на строку
+            или через запятую, максимум 12 позиций в каждом списке.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={saveHomeProductShowcasesAction} className="max-w-3xl space-y-4">
+            <div className="space-y-1">
+              <Label htmlFor="heroProductSlugs">Hero — популярные позиции</Label>
+              <Textarea
+                id="heroProductSlugs"
+                name="heroProductSlugs"
+                rows={6}
+                defaultValue={productShowcases.heroProductSlugs.join("\n")}
+                className="font-mono text-xs sm:text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="catalogHitSlugs">Каталог — хиты продаж</Label>
+              <Textarea
+                id="catalogHitSlugs"
+                name="catalogHitSlugs"
+                rows={7}
+                defaultValue={productShowcases.catalogHitSlugs.join("\n")}
+                className="font-mono text-xs sm:text-sm"
+              />
+            </div>
+            <Button type="submit" size="sm">
+              Сохранить витрины товаров
             </Button>
           </form>
         </CardContent>

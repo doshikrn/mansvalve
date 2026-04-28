@@ -34,6 +34,31 @@ export type HomeHeroPersistContent = z.infer<typeof homeHeroPersistSchema>;
 /** Маркетинговая цифра для публичного текста (ссылка «Все {{COUNT}}…» в hero), не равна фактическому числу SKU. */
 export const MARKETING_CATALOG_LINK_COUNT = "700+";
 
+const productSlugListSchema = z.array(z.string().trim().min(1)).min(1).max(12);
+
+export const homeProductShowcasesSchema = z.object({
+  heroProductSlugs: productSlugListSchema,
+  catalogHitSlugs: productSlugListSchema,
+});
+
+export type HomeProductShowcasesContent = z.infer<typeof homeProductShowcasesSchema>;
+
+export const DEFAULT_HOME_PRODUCT_SHOWCASES: HomeProductShowcasesContent = {
+  heroProductSlugs: [
+    "zadvizhka-30ch39r-dn50-pn16",
+    "kran-sharovoy-stal-dn1000-pn25",
+    "zatvor-dn50-pn10",
+    "klapan-chugun-dn200-pn16",
+  ],
+  catalogHitSlugs: [
+    "zadvizhka-30ch39r-dn50-pn16",
+    "kran-sharovoy-stal-dn1000-pn25",
+    "zatvor-dn50-pn10",
+    "klapan-chugun-dn200-pn16",
+    "flanets-stal-dn100-pn16",
+  ],
+};
+
 export const DEFAULT_HOME_HERO: HomeHeroContent = {
   eyebrow: "Промышленная арматура · склад в Алматы",
   h1Line1: "Поставка промышленной арматуры",
@@ -245,6 +270,15 @@ export function mergeHomeHero(dbJson: unknown, productCount: number): HomeHeroCo
     ...base,
     stat2Val: `${productCount} позиций`,
   };
+}
+
+export function mergeHomeProductShowcases(dbJson: unknown): HomeProductShowcasesContent {
+  const merged = shallowMerge(
+    DEFAULT_HOME_PRODUCT_SHOWCASES as unknown as Record<string, unknown>,
+    dbJson,
+  );
+  const parsed = homeProductShowcasesSchema.safeParse(merged);
+  return parsed.success ? parsed.data : DEFAULT_HOME_PRODUCT_SHOWCASES;
 }
 
 export function mergeTrustStrip(dbJson: unknown): TrustStripContent {

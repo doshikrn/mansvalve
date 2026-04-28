@@ -13,6 +13,7 @@ import {
   mergeHomeFaq,
   mergeHomeHero,
   mergeHomeMeta,
+  mergeHomeProductShowcases,
   mergeRequestCta,
   mergeTrustStrip,
   type AboutCopyContent,
@@ -20,6 +21,7 @@ import {
   type HomeFaqContent,
   type HomeHeroContent,
   type HomeMetaContent,
+  type HomeProductShowcasesContent,
   type PageMetaContent,
   type RequestCtaContent,
   type TrustStripContent,
@@ -38,6 +40,11 @@ async function loadData(key: string): Promise<unknown> {
 export async function resolveHomeHero(productCount: number): Promise<HomeHeroContent> {
   const data = await loadData(SITE_CONTENT_KEYS.homeHero);
   return mergeHomeHero(data, productCount);
+}
+
+export async function resolveHomeProductShowcases(): Promise<HomeProductShowcasesContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeProductShowcases);
+  return mergeHomeProductShowcases(data);
 }
 
 export async function resolveTrustStrip(): Promise<TrustStripContent> {

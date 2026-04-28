@@ -12,6 +12,7 @@ import {
   homeFaqSchema,
   homeHeroPersistSchema,
   homeMetaSchema,
+  homeProductShowcasesSchema,
   requestCtaSchema,
   trustStripSchema,
 } from "@/lib/site-content/models";
@@ -19,6 +20,13 @@ import { upsertContentBlock } from "@/lib/services/content-blocks";
 
 function err(msg: string) {
   redirect(`/admin/content?error=${encodeURIComponent(msg)}`);
+}
+
+function parseSlugList(value: FormDataEntryValue | null): string[] {
+  return String(value ?? "")
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 export async function saveHomeHeroAction(formData: FormData) {
@@ -81,6 +89,30 @@ export async function saveTrustStripAction(formData: FormData) {
   });
   revalidatePath("/");
   redirect("/admin/content?saved=trust");
+}
+
+export async function saveHomeProductShowcasesAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const data = {
+    heroProductSlugs: parseSlugList(formData.get("heroProductSlugs")),
+    catalogHitSlugs: parseSlugList(formData.get("catalogHitSlugs")),
+  };
+
+  const parsed = homeProductShowcasesSchema.safeParse(data);
+  if (!parsed.success) {
+    err("Популярные товары: укажите от 1 до 12 slug в каждом списке.");
+  }
+
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeProductShowcases,
+    title: "Главная — популярные товары",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=product-showcases");
 }
 
 export async function saveRequestCtaAction(formData: FormData) {
