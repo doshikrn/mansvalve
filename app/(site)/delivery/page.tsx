@@ -1,64 +1,86 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Check, Package, Truck, FileText, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "@/lib/company";
+import { applyPlaceholders } from "@/lib/site-content/models";
+import { resolveDeliveryPage } from "@/lib/site-content/public";
+import { warnInvalidMediaUrl } from "@/lib/media-url";
 
-const PG_TITLE = "Доставка промышленной арматуры по Казахстану";
+const BULLET_ICONS = [Package, Truck, Clock, FileText] as const;
 
-export const metadata: Metadata = {
-  title: PG_TITLE,
-  description: `Доставка трубопроводной и промышленной арматуры со склада в Алматы и по всему Казахстану транспортными компаниями. Сроки от наличия и региона. ${COMPANY.name}.`,
-  alternates: {
-    canonical: "/delivery",
-  },
-  openGraph: {
-    title: `${PG_TITLE} | ${COMPANY.name}`,
-    description: `Склад в Алматы, отправка ТК по РК. Паспорта и сертификаты в комплекте с поставкой. ${COMPANY.name}.`,
-    url: "/delivery",
-    siteName: COMPANY.name,
-    locale: "ru_KZ",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${PG_TITLE} | ${COMPANY.name}`,
-    description: `Доставка со склада в Алматы и по Казахстану. ${COMPANY.name}.`,
-  },
-};
+function isRemoteMedia(url: string): boolean {
+  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
+}
 
-const BULLETS = [
-  {
-    icon: Package,
-    text: "Отгрузка со склада в Алматы: собираем заказ и передаём в доставку после согласования сроков.",
-  },
-  {
-    icon: Truck,
-    text: "Доставка по Казахстану транспортными компаниями — удобный способ для регионов; терминал и сроки согласовываем под вашу задачу.",
-  },
-  {
-    icon: Clock,
-    text: "Сроки зависят от наличия позиций на складе и региона назначения; при необходимости согласуем поставку под сроки монтажа.",
-  },
-  {
-    icon: FileText,
-    text: "Документы и сертификаты передаются вместе с поставкой — комплект в соответствии с отгружаемой арматурой.",
-  },
-] as const;
+export async function generateMetadata(): Promise<Metadata> {
+  const d = await resolveDeliveryPage();
+  const title = applyPlaceholders(d.metaTitle, COMPANY.name);
+  const description = applyPlaceholders(d.metaDescription, COMPANY.name);
+  const ogDesc = applyPlaceholders(d.ogDescription, COMPANY.name);
+  const twDesc = applyPlaceholders(d.twitterDescription, COMPANY.name);
+  const socialTitle = `${title} | ${COMPANY.name}`;
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: "/delivery",
+    },
+    openGraph: {
+      title: socialTitle,
+      description: ogDesc,
+      url: "/delivery",
+      siteName: COMPANY.name,
+      locale: "ru_KZ",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description: twDesc,
+    },
+  };
+}
 
-export default function DeliveryPage() {
+export default async function DeliveryPage() {
+  const raw = await resolveDeliveryPage();
+  if (raw.pageImageSrc) warnInvalidMediaUrl(raw.pageImageSrc, "DeliveryPage:hero");
+  const d = {
+    ...raw,
+    metaTitle: applyPlaceholders(raw.metaTitle, COMPANY.name),
+    metaDescription: applyPlaceholders(raw.metaDescription, COMPANY.name),
+    ogDescription: applyPlaceholders(raw.ogDescription, COMPANY.name),
+    twitterDescription: applyPlaceholders(raw.twitterDescription, COMPANY.name),
+    lead: applyPlaceholders(raw.lead, COMPANY.name),
+    calloutIntro: applyPlaceholders(raw.calloutIntro, COMPANY.name),
+    footerCheckLine: applyPlaceholders(raw.footerCheckLine, COMPANY.name),
+    bullets: raw.bullets.map((b) => ({
+      text: applyPlaceholders(b.text, COMPANY.name),
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-site-bg">
       <div className="border-b border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
-          <p className="text-sm font-medium text-site-primary">Логистика</p>
+          <p className="text-sm font-medium text-site-primary">{d.eyebrow}</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            {PG_TITLE}
+            {d.h1}
           </h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-600 sm:text-lg">
-            Организуем поставку задвижек, кранов, клапанов и сопутствующей арматуры с удобной для вас
-            схемой: склад в Алматы, отправка в регионы и вся сопутствующая отгрузочная документация.
-          </p>
+          <p className="mt-3 max-w-2xl text-base text-slate-600 sm:text-lg">{d.lead}</p>
+          {d.pageImageSrc ? (
+            <div className="relative mt-8 h-80 w-full overflow-hidden rounded-2xl border border-site-border bg-site-bg">
+              <Image
+                src={d.pageImageSrc}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized={isRemoteMedia(d.pageImageSrc)}
+                sizes="(max-width: 1280px) 100vw, 80rem"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -66,35 +88,38 @@ export default function DeliveryPage() {
         <div className="mb-8 flex items-start gap-2 rounded-lg border border-site-border bg-[#EFF6FF] px-4 py-3 text-sm text-slate-700">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-site-primary" aria-hidden />
           <p>
-            База и отгрузка: <span className="font-medium">г. Алматы</span> — дальнейшая логистика по
-            согласованию.
+            {d.calloutIntro} <span className="font-medium">{d.calloutCityLabel}</span> — дальнейшая
+            логистика по согласованию.
           </p>
         </div>
 
         <ul className="space-y-4">
-          {BULLETS.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex gap-3 text-slate-700">
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-bg text-site-primary ring-1 ring-site-border">
-                <Icon className="h-4 w-4" aria-hidden />
-              </span>
-              <p className="pt-0.5 leading-relaxed">{text}</p>
-            </li>
-          ))}
+          {d.bullets.map(({ text }, idx) => {
+            const Icon = BULLET_ICONS[idx] ?? Package;
+            return (
+              <li key={`${idx}-${text.slice(0, 24)}`} className="flex gap-3 text-slate-700">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-bg text-site-primary ring-1 ring-site-border">
+                  <Icon className="h-4 w-4" aria-hidden />
+                </span>
+                <p className="pt-0.5 leading-relaxed">{text}</p>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Check className="h-4 w-4 text-green-600" aria-hidden />
-            Нужен расчёт и срок? Оставьте заявку — ответим с КП.
+            {d.footerCheckLine}
           </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg" className="bg-site-primary text-white hover:bg-site-primary-hover">
-            <Link href="/#request-section">Получить коммерческое предложение</Link>
+            <Link href="/#request-section">{d.ctaPrimaryLabel}</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <Link href="/contacts">Контакты</Link>
+            <Link href="/contacts">{d.ctaSecondaryLabel}</Link>
           </Button>
         </div>
       </div>

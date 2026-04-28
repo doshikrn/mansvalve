@@ -7,13 +7,20 @@ import { requireAdmin } from "@/lib/auth/current-user";
 import { SITE_CONTENT_KEYS } from "@/lib/site-content/keys";
 import {
   aboutCopySchema,
+  aboutPageSchema,
+  certificatesPageSchema,
   contactsCopySchema,
+  contactsPageSchema,
+  createDefaultPrivacyPage,
+  deliveryPageSchema,
   pageMetaSchema,
   homeFaqSchema,
   homeHeroPersistSchema,
   homeMetaSchema,
   homeProductShowcasesSchema,
+  privacyPageSchema,
   requestCtaSchema,
+  termsPageSchema,
   trustStripSchema,
   headerTopNavSchema,
   homeCategoriesSchema,
@@ -500,6 +507,292 @@ export async function saveFooterTrustBarAction(formData: FormData) {
   });
   revalidatePath("/", "layout");
   redirect("/admin/content?saved=footer-trust");
+}
+
+function splitParagraphs(raw: string): string[] {
+  return raw
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+export async function savePageAboutAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const advantages = [];
+  for (let i = 0; i < 4; i++) {
+    advantages.push({
+      title: String(formData.get(`adv_title_${i}`) ?? "").trim(),
+      description: String(formData.get(`adv_desc_${i}`) ?? "").trim(),
+    });
+  }
+  const b2bCards = [];
+  for (let i = 0; i < 3; i++) {
+    b2bCards.push({
+      title: String(formData.get(`b2b_title_${i}`) ?? "").trim(),
+      text: String(formData.get(`b2b_text_${i}`) ?? "").trim(),
+    });
+  }
+  const certifications = [];
+  for (let i = 0; i < 4; i++) {
+    const label = String(formData.get(`cert_label_${i}`) ?? "").trim();
+    const sub = String(formData.get(`cert_sub_${i}`) ?? "").trim();
+    if (label && sub) certifications.push({ label, sub });
+  }
+  const statSlots: { valueKind: "marketing" | "categories" | "literal"; valueLiteral: string; label: string }[] =
+    [];
+  for (let i = 0; i < 4; i++) {
+    const rawKind = String(formData.get(`stat_kind_${i}`) ?? "").trim();
+    const valueKind =
+      rawKind === "marketing" || rawKind === "categories" || rawKind === "literal"
+        ? rawKind
+        : "literal";
+    statSlots.push({
+      valueKind,
+      valueLiteral: String(formData.get(`stat_lit_${i}`) ?? "").trim(),
+      label: String(formData.get(`stat_lab_${i}`) ?? "").trim(),
+    });
+  }
+
+  if (certifications.length < 1) {
+    err("О компании: укажите хотя бы одну пару «стандарт / подпись».");
+  }
+
+  const data = {
+    metaTitle: String(formData.get("metaTitle") ?? "").trim(),
+    metaDescription: String(formData.get("metaDescription") ?? "").trim(),
+    breadcrumbCurrent: String(formData.get("breadcrumbCurrent") ?? "").trim(),
+    h1Template: String(formData.get("h1Template") ?? "").trim(),
+    whoWeTitle: String(formData.get("whoWeTitle") ?? "").trim(),
+    whatWeSupplyTitle: String(formData.get("whatWeSupplyTitle") ?? "").trim(),
+    catalogLinkLabel: String(formData.get("catalogLinkLabel") ?? "").trim(),
+    whyChooseTitleTemplate: String(formData.get("whyChooseTitleTemplate") ?? "").trim(),
+    advantages,
+    b2bCards,
+    standardsEyebrow: String(formData.get("standardsEyebrow") ?? "").trim(),
+    certifications,
+    statSlots,
+    ctaCatalogLabel: String(formData.get("ctaCatalogLabel") ?? "").trim(),
+    ctaContactsLabel: String(formData.get("ctaContactsLabel") ?? "").trim(),
+    headerImageSrc: String(formData.get("headerImageSrc") ?? "").trim(),
+  };
+
+  const parsed = aboutPageSchema.safeParse(data);
+  if (!parsed.success) {
+    err(parsed.error.issues.map((e) => e.message).join("; "));
+  }
+
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageAbout,
+    title: "Страница — О компании",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+
+  revalidatePath("/about");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-about");
+}
+
+export async function savePageContactsAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const contactCardLabels = [];
+  for (let i = 0; i < 4; i++) {
+    contactCardLabels.push(String(formData.get(`card_lab_${i}`) ?? "").trim());
+  }
+  const requisitesRowLabels = [];
+  for (let i = 0; i < 5; i++) {
+    requisitesRowLabels.push(String(formData.get(`req_lab_${i}`) ?? "").trim());
+  }
+
+  const data = {
+    metaTitle: String(formData.get("metaTitle") ?? "").trim(),
+    metaDescription: String(formData.get("metaDescription") ?? "").trim(),
+    breadcrumbLabel: String(formData.get("breadcrumbLabel") ?? "").trim(),
+    h1: String(formData.get("h1") ?? "").trim(),
+    pageLead: String(formData.get("pageLead") ?? "").trim(),
+    formTitle: String(formData.get("formTitle") ?? "").trim(),
+    formHelper: String(formData.get("formHelper") ?? "").trim(),
+    contactCardLabels,
+    workLine1: String(formData.get("workLine1") ?? "").trim(),
+    workLine2: String(formData.get("workLine2") ?? "").trim(),
+    mapLinkLabel: String(formData.get("mapLinkLabel") ?? "").trim(),
+    whatsAppTitle: String(formData.get("whatsAppTitle") ?? "").trim(),
+    whatsAppSubtitle: String(formData.get("whatsAppSubtitle") ?? "").trim(),
+    mapSectionTitle: String(formData.get("mapSectionTitle") ?? "").trim(),
+    requisitesTitle: String(formData.get("requisitesTitle") ?? "").trim(),
+    requisitesRowLabels,
+    requisitesFooterNote: String(formData.get("requisitesFooterNote") ?? "").trim(),
+    mapPinEyebrow: String(formData.get("mapPinEyebrow") ?? "").trim(),
+    mapCityLineTemplate: String(formData.get("mapCityLineTemplate") ?? "").trim(),
+    mapStreetLineTemplate: String(formData.get("mapStreetLineTemplate") ?? "").trim(),
+    mapOpenLabel: String(formData.get("mapOpenLabel") ?? "").trim(),
+    mapBottomAddressLineTemplate: String(formData.get("mapBottomAddressLineTemplate") ?? "").trim(),
+    mapBottomMapPrefix: String(formData.get("mapBottomMapPrefix") ?? "").trim(),
+    mapBottomMapLinkLabel: String(formData.get("mapBottomMapLinkLabel") ?? "").trim(),
+    mapBackgroundImageSrc: String(formData.get("mapBackgroundImageSrc") ?? "").trim(),
+  };
+
+  const parsed = contactsPageSchema.safeParse(data);
+  if (!parsed.success) err("Контакты (страница): проверьте поля.");
+
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageContacts,
+    title: "Страница — Контакты",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+
+  revalidatePath("/contacts");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-contacts");
+}
+
+export async function savePageDeliveryAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const bullets = [];
+  for (let i = 0; i < 4; i++) {
+    bullets.push({ text: String(formData.get(`bullet_${i}`) ?? "").trim() });
+  }
+  const data = {
+    metaTitle: String(formData.get("metaTitle") ?? "").trim(),
+    metaDescription: String(formData.get("metaDescription") ?? "").trim(),
+    ogDescription: String(formData.get("ogDescription") ?? "").trim(),
+    twitterDescription: String(formData.get("twitterDescription") ?? "").trim(),
+    eyebrow: String(formData.get("eyebrow") ?? "").trim(),
+    h1: String(formData.get("h1") ?? "").trim(),
+    lead: String(formData.get("lead") ?? "").trim(),
+    calloutIntro: String(formData.get("calloutIntro") ?? "").trim(),
+    calloutCityLabel: String(formData.get("calloutCityLabel") ?? "").trim(),
+    bullets,
+    footerCheckLine: String(formData.get("footerCheckLine") ?? "").trim(),
+    ctaPrimaryLabel: String(formData.get("ctaPrimaryLabel") ?? "").trim(),
+    ctaSecondaryLabel: String(formData.get("ctaSecondaryLabel") ?? "").trim(),
+    pageImageSrc: String(formData.get("pageImageSrc") ?? "").trim(),
+  };
+  const parsed = deliveryPageSchema.safeParse(data);
+  if (!parsed.success) err("Доставка: проверьте поля.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageDelivery,
+    title: "Страница — Доставка",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/delivery");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-delivery");
+}
+
+export async function savePageCertificatesAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const data = {
+    metaTitle: String(formData.get("metaTitle") ?? "").trim(),
+    metaDescription: String(formData.get("metaDescription") ?? "").trim(),
+    ogDescription: String(formData.get("ogDescription") ?? "").trim(),
+    twitterDescription: String(formData.get("twitterDescription") ?? "").trim(),
+    breadcrumbLabel: String(formData.get("breadcrumbLabel") ?? "").trim(),
+    h1: String(formData.get("h1") ?? "").trim(),
+    lead: String(formData.get("lead") ?? "").trim(),
+    emptyTitle: String(formData.get("emptyTitle") ?? "").trim(),
+    emptySubtitle: String(formData.get("emptySubtitle") ?? "").trim(),
+    issuedAtLabel: String(formData.get("issuedAtLabel") ?? "").trim(),
+    openDocumentLabel: String(formData.get("openDocumentLabel") ?? "").trim(),
+    headerImageSrc: String(formData.get("headerImageSrc") ?? "").trim(),
+  };
+  const parsed = certificatesPageSchema.safeParse(data);
+  if (!parsed.success) err("Сертификаты: проверьте поля.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageCertificates,
+    title: "Страница — Сертификаты",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/certificates");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-certificates");
+}
+
+export async function savePagePrivacyAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const introParagraphs = splitParagraphs(String(formData.get("introParagraphs") ?? ""));
+  const sections: {
+    heading: string;
+    bodyParagraphs: string[];
+    bullets?: string[];
+  }[] = [];
+  for (let i = 0; i < 24; i++) {
+    const heading = String(formData.get(`sec_h_${i}`) ?? "").trim();
+    if (!heading) continue;
+    const bodyRaw = String(formData.get(`sec_body_${i}`) ?? "");
+    const bodyParagraphs = splitParagraphs(bodyRaw);
+    const bulletsRaw = String(formData.get(`sec_bullets_${i}`) ?? "");
+    const bullets = bulletsRaw
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    sections.push({
+      heading,
+      bodyParagraphs: bodyParagraphs.length ? bodyParagraphs : [""],
+      bullets: bullets.length ? bullets : undefined,
+    });
+  }
+
+  const data = {
+    metaTitle: String(formData.get("metaTitle") ?? "").trim(),
+    metaDescription: String(formData.get("metaDescription") ?? "").trim(),
+    ogDescription: String(formData.get("ogDescription") ?? "").trim(),
+    twitterDescription: String(formData.get("twitterDescription") ?? "").trim(),
+    breadcrumbLabel: String(formData.get("breadcrumbLabel") ?? "").trim(),
+    h1: String(formData.get("h1") ?? "").trim(),
+    subtitleTemplate: String(formData.get("subtitleTemplate") ?? "").trim(),
+    introParagraphs: introParagraphs.length ? introParagraphs : createDefaultPrivacyPage().introParagraphs,
+    sections: sections.length ? sections : createDefaultPrivacyPage().sections,
+    contact: {
+      sectionHeading: String(formData.get("contact_section_heading") ?? "").trim(),
+      intro: String(formData.get("contact_intro") ?? "").trim(),
+      outro: String(formData.get("contact_outro") ?? "").trim(),
+    },
+  };
+
+  const parsed = privacyPageSchema.safeParse(data);
+  if (!parsed.success) {
+    err(parsed.error.issues.map((e) => e.message).join("; "));
+  }
+
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pagePrivacy,
+    title: "Страница — Политика конфиденциальности",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+
+  revalidatePath("/privacy");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-privacy");
+}
+
+export async function savePageTermsAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const data = {
+    metaTitle: String(formData.get("metaTitle") ?? "").trim(),
+    metaDescription: String(formData.get("metaDescription") ?? "").trim(),
+    h1: String(formData.get("h1") ?? "").trim(),
+    introBeforePrivacyLink: String(formData.get("introBeforePrivacyLink") ?? "").trim(),
+    introAfterPrivacyLink: String(formData.get("introAfterPrivacyLink") ?? "").trim(),
+    paragraph2: String(formData.get("paragraph2") ?? "").trim(),
+    contactLine: String(formData.get("contactLine") ?? "").trim(),
+    privacyLinkLabel: String(formData.get("privacyLinkLabel") ?? "").trim(),
+  };
+  const parsed = termsPageSchema.safeParse(data);
+  if (!parsed.success) err("Пользовательское соглашение: проверьте поля.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageTerms,
+    title: "Страница — Пользовательское соглашение",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/terms");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-terms");
 }
 
 export async function saveFooterMainAction(formData: FormData) {

@@ -8,8 +8,12 @@ import { SITE_CONTENT_KEYS } from "./keys";
 import {
   mergeAboutCopy,
   mergeAboutMeta,
+  mergeAboutPage,
+  mergeCertificatesPage,
   mergeContactsCopy,
   mergeContactsMeta,
+  mergeContactsPage,
+  mergeDeliveryPage,
   mergeFooterMain,
   mergeFooterPreCta,
   mergeFooterTrustBar,
@@ -23,10 +27,16 @@ import {
   mergeHomeProductShowcases,
   mergeHomeWhoWeSupply,
   mergeHomeWhyUs,
+  mergePrivacyPage,
   mergeRequestCta,
+  mergeTermsPage,
   mergeTrustStrip,
   type AboutCopyContent,
+  type AboutPageContent,
+  type CertificatesPageContent,
   type ContactsCopyContent,
+  type ContactsPageContent,
+  type DeliveryPageContent,
   type FooterMainContent,
   type FooterPreCtaContent,
   type FooterTrustBarContent,
@@ -41,7 +51,9 @@ import {
   type HomeWhoWeSupplyContent,
   type HomeWhyUsContent,
   type PageMetaContent,
+  type PrivacyPageContent,
   type RequestCtaContent,
+  type TermsPageContent,
   type TrustStripContent,
 } from "./models";
 
@@ -153,4 +165,42 @@ export async function resolveFooterTrustBar(): Promise<FooterTrustBarContent> {
 export async function resolveFooterMain(): Promise<FooterMainContent> {
   const data = await loadData(SITE_CONTENT_KEYS.footerMain);
   return mergeFooterMain(data);
+}
+
+export async function resolveAboutPage(): Promise<AboutPageContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.pageAbout);
+  const legacyMeta = await loadData(SITE_CONTENT_KEYS.aboutMeta);
+  return mergeAboutPage(data, legacyMeta, COMPANY.name);
+}
+
+export async function resolveContactsPage(): Promise<ContactsPageContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.pageContacts);
+  const legacyMeta = await loadData(SITE_CONTENT_KEYS.contactsMeta);
+  const legacyCopy = await loadData(SITE_CONTENT_KEYS.contactsCopy);
+  return mergeContactsPage(data, legacyMeta, legacyCopy, {
+    companyName: COMPANY.name,
+    phoneDisplay: COMPANY.phoneDisplay,
+    email: COMPANY.email,
+    city: COMPANY.address.city,
+  });
+}
+
+export async function resolveDeliveryPage(): Promise<DeliveryPageContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.pageDelivery);
+  return mergeDeliveryPage(data);
+}
+
+export async function resolveCertificatesPage(): Promise<CertificatesPageContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.pageCertificates);
+  return mergeCertificatesPage(data);
+}
+
+export async function resolvePrivacyPage(): Promise<PrivacyPageContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.pagePrivacy);
+  return mergePrivacyPage(data);
+}
+
+export async function resolveTermsPage(): Promise<TermsPageContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.pageTerms);
+  return mergeTermsPage(data);
 }

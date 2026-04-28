@@ -12,8 +12,12 @@ import {
   defaultHomeMeta,
   mergeAboutCopy,
   mergeAboutMeta,
+  mergeAboutPage,
+  mergeCertificatesPage,
   mergeContactsCopy,
   mergeContactsMeta,
+  mergeContactsPage,
+  mergeDeliveryPage,
   mergeFooterMain,
   mergeFooterPreCta,
   mergeFooterTrustBar,
@@ -27,7 +31,9 @@ import {
   mergeHomeProductShowcases,
   mergeHomeWhoWeSupply,
   mergeHomeWhyUs,
+  mergePrivacyPage,
   mergeRequestCta,
+  mergeTermsPage,
   mergeTrustStrip,
 } from "@/lib/site-content/models";
 import { getContentBlock } from "@/lib/services/content-blocks";
@@ -51,6 +57,12 @@ import {
   saveHomeProductShowcasesAction,
   saveHomeWhoWeSupplyAction,
   saveHomeWhyUsAction,
+  savePageAboutAction,
+  savePageCertificatesAction,
+  savePageContactsAction,
+  savePageDeliveryAction,
+  savePagePrivacyAction,
+  savePageTermsAction,
   saveRequestCtaAction,
   saveTrustStripAction,
 } from "./actions";
@@ -68,6 +80,12 @@ const SAVED_LABELS: Record<string, string> = {
   "about-meta": "Описание для поиска («О компании») сохранено",
   contacts: "Тексты страницы контактов сохранены",
   "contacts-meta": "Описание для поиска (контакты) сохранено",
+  "page-about": "Страница «О компании» (полный блок) сохранена",
+  "page-contacts": "Страница «Контакты» (полный блок) сохранена",
+  "page-delivery": "Страница «Доставка» сохранена",
+  "page-certificates": "Страница «Сертификаты» сохранена",
+  "page-privacy": "Страница «Политика» сохранена",
+  "page-terms": "Страница «Условия использования» сохранена",
   "home-why-us": "Блок преимуществ сохранён",
   "home-how-it-works": "Этапы работы сохранены",
   "home-who-we-supply": "Блок «Кому поставляем» сохранён",
@@ -119,6 +137,12 @@ export default async function AdminContentPage({
     footerPreCtaRow,
     footerTrustRow,
     footerMainRow,
+    pageAboutRow,
+    pageContactsRow,
+    pageDeliveryRow,
+    pageCertificatesRow,
+    pagePrivacyRow,
+    pageTermsRow,
   ] = await Promise.all([
     getContentBlock(SITE_CONTENT_KEYS.homeHero),
     getContentBlock(SITE_CONTENT_KEYS.homeTrustStrip),
@@ -139,6 +163,12 @@ export default async function AdminContentPage({
     getContentBlock(SITE_CONTENT_KEYS.footerPreCta),
     getContentBlock(SITE_CONTENT_KEYS.footerTrustBar),
     getContentBlock(SITE_CONTENT_KEYS.footerMain),
+    getContentBlock(SITE_CONTENT_KEYS.pageAbout),
+    getContentBlock(SITE_CONTENT_KEYS.pageContacts),
+    getContentBlock(SITE_CONTENT_KEYS.pageDelivery),
+    getContentBlock(SITE_CONTENT_KEYS.pageCertificates),
+    getContentBlock(SITE_CONTENT_KEYS.pagePrivacy),
+    getContentBlock(SITE_CONTENT_KEYS.pageTerms),
   ]);
 
   const hero = mergeHomeHero(heroRow?.data, 0);
@@ -165,6 +195,23 @@ export default async function AdminContentPage({
   const footerPreCta = mergeFooterPreCta(footerPreCtaRow?.data);
   const footerTrust = mergeFooterTrustBar(footerTrustRow?.data);
   const footerMain = mergeFooterMain(footerMainRow?.data);
+
+  const pageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data, COMPANY.name);
+  const pageContacts = mergeContactsPage(
+    pageContactsRow?.data,
+    contactsMetaRow?.data,
+    contactsRow?.data,
+    {
+      companyName: COMPANY.name,
+      phoneDisplay: COMPANY.phoneDisplay,
+      email: COMPANY.email,
+      city: COMPANY.address.city,
+    },
+  );
+  const pageDelivery = mergeDeliveryPage(pageDeliveryRow?.data);
+  const pageCertificates = mergeCertificatesPage(pageCertificatesRow?.data);
+  const pagePrivacy = mergePrivacyPage(pagePrivacyRow?.data);
+  const pageTerms = mergeTermsPage(pageTermsRow?.data);
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-12">
@@ -702,6 +749,355 @@ export default async function AdminContentPage({
           </form>
         </CardContent>
       </Card>
+      </ContentSection>
+
+      <ContentSection
+        title="Статические страницы (site.page.*)"
+        description="Полные наборы текстов и SEO для публичных страниц. Мета «старых» блоков (например site.meta.about) подмешивается, пока не задано в этих формах. Плейсхолдеры: {{COMPANY}}, {{LEGAL_NAME}}, {{BRAND}}, {{ADDRESS_FULL}}, {{CITY}}, {{STREET}} (по полю)."
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>/about — site.page.about</CardTitle>
+            <CardDescription>
+              SEO, заголовки секций, преимущества (4), карточки B2B (3), чипы стандартов (до 4 строк в форме),
+              статистика (виды значений: marketing / categories / literal).
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={savePageAboutAction} className="max-w-3xl space-y-4">
+              <Field label="Meta title" name="metaTitle" defaultValue={pageAbout.metaTitle} />
+              <div className="space-y-1">
+                <Label htmlFor="about_page_meta_desc">Meta description</Label>
+                <Textarea
+                  id="about_page_meta_desc"
+                  name="metaDescription"
+                  rows={3}
+                  defaultValue={pageAbout.metaDescription}
+                />
+              </div>
+              <Field label="Хлебные крошки (текущая)" name="breadcrumbCurrent" defaultValue={pageAbout.breadcrumbCurrent} />
+              <Field label="H1 шаблон" name="h1Template" defaultValue={pageAbout.h1Template} />
+              <Field label="Заголовок «Кто мы»" name="whoWeTitle" defaultValue={pageAbout.whoWeTitle} />
+              <Field label="Заголовок «Что мы поставляем»" name="whatWeSupplyTitle" defaultValue={pageAbout.whatWeSupplyTitle} />
+              <Field label="Ссылка в каталог" name="catalogLinkLabel" defaultValue={pageAbout.catalogLinkLabel} />
+              <Field
+                label="Заголовок преимуществ (шаблон)"
+                name="whyChooseTitleTemplate"
+                defaultValue={pageAbout.whyChooseTitleTemplate}
+              />
+              <Field label="Eyebrow стандартов" name="standardsEyebrow" defaultValue={pageAbout.standardsEyebrow} />
+              <p className="text-xs text-muted-foreground">Преимущества (4 блока)</p>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="grid gap-2 rounded-lg border border-border p-3">
+                  <Field label={`Заголовок ${i + 1}`} name={`adv_title_${i}`} defaultValue={pageAbout.advantages[i]?.title ?? ""} />
+                  <div className="space-y-1">
+                    <Label>Текст {i + 1}</Label>
+                    <Textarea name={`adv_desc_${i}`} rows={2} defaultValue={pageAbout.advantages[i]?.description ?? ""} />
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground">Карточки B2B (3)</p>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="grid gap-2 rounded-lg border border-border p-3">
+                  <Field label={`Заголовок ${i + 1}`} name={`b2b_title_${i}`} defaultValue={pageAbout.b2bCards[i]?.title ?? ""} />
+                  <div className="space-y-1">
+                    <Label>Текст {i + 1}</Label>
+                    <Textarea name={`b2b_text_${i}`} rows={2} defaultValue={pageAbout.b2bCards[i]?.text ?? ""} />
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground">Чипы сертификатов / стандартов (4 строки)</p>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="grid gap-2 sm:grid-cols-2">
+                  <Field label={`Метка ${i + 1}`} name={`cert_label_${i}`} defaultValue={pageAbout.certifications[i]?.label ?? ""} />
+                  <Field label={`Подпись ${i + 1}`} name={`cert_sub_${i}`} defaultValue={pageAbout.certifications[i]?.sub ?? ""} />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground">
+                Статистика: kind = marketing (700+), categories (число категорий), literal (ручное значение).
+              </p>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-3">
+                  <Field
+                    label={`Слот ${i + 1} kind`}
+                    name={`stat_kind_${i}`}
+                    defaultValue={pageAbout.statSlots[i]?.valueKind ?? "literal"}
+                  />
+                  <Field
+                    label={`Слот ${i + 1} literal`}
+                    name={`stat_lit_${i}`}
+                    defaultValue={pageAbout.statSlots[i]?.valueLiteral ?? ""}
+                  />
+                  <Field label={`Слот ${i + 1} подпись`} name={`stat_lab_${i}`} defaultValue={pageAbout.statSlots[i]?.label ?? ""} />
+                </div>
+              ))}
+              <Field label="Кнопка каталога (низ страницы)" name="ctaCatalogLabel" defaultValue={pageAbout.ctaCatalogLabel} />
+              <Field label="Кнопка контактов" name="ctaContactsLabel" defaultValue={pageAbout.ctaContactsLabel} />
+              <Field label="Изображение в шапке (URL или путь)" name="headerImageSrc" defaultValue={pageAbout.headerImageSrc} />
+              <AdminFormFooter previewHref="/about" saveLabel="Сохранить страницу «О компании»" />
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>/contacts — site.page.contacts</CardTitle>
+            <CardDescription>
+              Объединяется с текстами формы и meta из блоков выше. Подписи реквизитов задаются по строкам.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={savePageContactsAction} className="max-w-3xl space-y-3">
+              <Field label="Meta title" name="metaTitle" defaultValue={pageContacts.metaTitle} />
+              <div className="space-y-1">
+                <Label>Meta description</Label>
+                <Textarea name="metaDescription" rows={3} defaultValue={pageContacts.metaDescription} />
+              </div>
+              <Field label="Хлебные крошки" name="breadcrumbLabel" defaultValue={pageContacts.breadcrumbLabel} />
+              <Field label="H1" name="h1" defaultValue={pageContacts.h1} />
+              <div className="space-y-1">
+                <Label>Лид под заголовком</Label>
+                <Textarea name="pageLead" rows={2} defaultValue={pageContacts.pageLead} />
+              </div>
+              <Field label="Заголовок формы" name="formTitle" defaultValue={pageContacts.formTitle} />
+              <div className="space-y-1">
+                <Label>Подсказка формы</Label>
+                <Textarea name="formHelper" rows={2} defaultValue={pageContacts.formHelper} />
+              </div>
+              <p className="text-xs text-muted-foreground">Подписи карточек (телефон, почта, адрес, время)</p>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Field
+                  key={i}
+                  label={`Карточка ${i + 1}`}
+                  name={`card_lab_${i}`}
+                  defaultValue={pageContacts.contactCardLabels[i] ?? ""}
+                />
+              ))}
+              <Field label="Время — строка 1" name="workLine1" defaultValue={pageContacts.workLine1} />
+              <Field label="Время — строка 2" name="workLine2" defaultValue={pageContacts.workLine2} />
+              <Field label="Подпись ссылки на карту (2GIS)" name="mapLinkLabel" defaultValue={pageContacts.mapLinkLabel} />
+              <Field label="WhatsApp карточка — заголовок" name="whatsAppTitle" defaultValue={pageContacts.whatsAppTitle} />
+              <Field label="WhatsApp карточка — подзаголовок" name="whatsAppSubtitle" defaultValue={pageContacts.whatsAppSubtitle} />
+              <Field label="Заголовок блока карты" name="mapSectionTitle" defaultValue={pageContacts.mapSectionTitle} />
+              <Field label="Eyebrow на карте (офис)" name="mapPinEyebrow" defaultValue={pageContacts.mapPinEyebrow} />
+              <Field label="Шаблон города" name="mapCityLineTemplate" defaultValue={pageContacts.mapCityLineTemplate} />
+              <Field label="Шаблон улицы" name="mapStreetLineTemplate" defaultValue={pageContacts.mapStreetLineTemplate} />
+              <Field label="Кнопка открыть карту" name="mapOpenLabel" defaultValue={pageContacts.mapOpenLabel} />
+              <Field
+                label="Нижний адрес (шаблон)"
+                name="mapBottomAddressLineTemplate"
+                defaultValue={pageContacts.mapBottomAddressLineTemplate}
+              />
+              <Field label="Префикс «Карта:»" name="mapBottomMapPrefix" defaultValue={pageContacts.mapBottomMapPrefix} />
+              <Field label="Текст ссылки 2GIS" name="mapBottomMapLinkLabel" defaultValue={pageContacts.mapBottomMapLinkLabel} />
+              <Field label="Фон блока карты (URL)" name="mapBackgroundImageSrc" defaultValue={pageContacts.mapBackgroundImageSrc} />
+              <Field label="Заголовок реквизитов" name="requisitesTitle" defaultValue={pageContacts.requisitesTitle} />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Field
+                  key={i}
+                  label={`Подпись строки реквизитов ${i + 1}`}
+                  name={`req_lab_${i}`}
+                  defaultValue={pageContacts.requisitesRowLabels[i] ?? ""}
+                />
+              ))}
+              <div className="space-y-1">
+                <Label>Примечание под таблицей</Label>
+                <Textarea name="requisitesFooterNote" rows={2} defaultValue={pageContacts.requisitesFooterNote} />
+              </div>
+              <AdminFormFooter previewHref="/contacts" saveLabel="Сохранить страницу «Контакты»" />
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>/delivery — site.page.delivery</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={savePageDeliveryAction} className="max-w-3xl space-y-3">
+              <Field label="Meta title" name="metaTitle" defaultValue={pageDelivery.metaTitle} />
+              <div className="space-y-1">
+                <Label>Meta description</Label>
+                <Textarea name="metaDescription" rows={3} defaultValue={pageDelivery.metaDescription} />
+              </div>
+              <div className="space-y-1">
+                <Label>Open Graph description</Label>
+                <Textarea name="ogDescription" rows={2} defaultValue={pageDelivery.ogDescription} />
+              </div>
+              <div className="space-y-1">
+                <Label>Twitter description</Label>
+                <Textarea name="twitterDescription" rows={2} defaultValue={pageDelivery.twitterDescription} />
+              </div>
+              <Field label="Eyebrow" name="eyebrow" defaultValue={pageDelivery.eyebrow} />
+              <Field label="H1" name="h1" defaultValue={pageDelivery.h1} />
+              <div className="space-y-1">
+                <Label>Лид</Label>
+                <Textarea name="lead" rows={3} defaultValue={pageDelivery.lead} />
+              </div>
+              <Field label="Коллаут — вступление" name="calloutIntro" defaultValue={pageDelivery.calloutIntro} />
+              <Field label="Коллаут — город (жирным)" name="calloutCityLabel" defaultValue={pageDelivery.calloutCityLabel} />
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-1">
+                  <Label>Буллет {i + 1}</Label>
+                  <Textarea name={`bullet_${i}`} rows={2} defaultValue={pageDelivery.bullets[i]?.text ?? ""} />
+                </div>
+              ))}
+              <Field label="Строка с галочкой" name="footerCheckLine" defaultValue={pageDelivery.footerCheckLine} />
+              <Field label="Кнопка заявки" name="ctaPrimaryLabel" defaultValue={pageDelivery.ctaPrimaryLabel} />
+              <Field label="Кнопка контактов" name="ctaSecondaryLabel" defaultValue={pageDelivery.ctaSecondaryLabel} />
+              <Field label="Изображение на странице (URL)" name="pageImageSrc" defaultValue={pageDelivery.pageImageSrc} />
+              <AdminFormFooter previewHref="/delivery" saveLabel="Сохранить «Доставку»" />
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>/certificates — site.page.certificates</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={savePageCertificatesAction} className="max-w-3xl space-y-3">
+              <Field label="Meta title" name="metaTitle" defaultValue={pageCertificates.metaTitle} />
+              <div className="space-y-1">
+                <Label>Meta description</Label>
+                <Textarea name="metaDescription" rows={3} defaultValue={pageCertificates.metaDescription} />
+              </div>
+              <div className="space-y-1">
+                <Label>OG description</Label>
+                <Textarea name="ogDescription" rows={2} defaultValue={pageCertificates.ogDescription} />
+              </div>
+              <div className="space-y-1">
+                <Label>Twitter description</Label>
+                <Textarea name="twitterDescription" rows={2} defaultValue={pageCertificates.twitterDescription} />
+              </div>
+              <Field label="Хлебные крошки" name="breadcrumbLabel" defaultValue={pageCertificates.breadcrumbLabel} />
+              <Field label="H1" name="h1" defaultValue={pageCertificates.h1} />
+              <div className="space-y-1">
+                <Label>Лид</Label>
+                <Textarea name="lead" rows={2} defaultValue={pageCertificates.lead} />
+              </div>
+              <Field label="Пустое состояние — заголовок" name="emptyTitle" defaultValue={pageCertificates.emptyTitle} />
+              <div className="space-y-1">
+                <Label>Пустое состояние — текст</Label>
+                <Textarea name="emptySubtitle" rows={2} defaultValue={pageCertificates.emptySubtitle} />
+              </div>
+              <Field label="Подпись даты в карточке" name="issuedAtLabel" defaultValue={pageCertificates.issuedAtLabel} />
+              <Field label="Кнопка «Открыть документ»" name="openDocumentLabel" defaultValue={pageCertificates.openDocumentLabel} />
+              <Field label="Изображение в шапке (URL)" name="headerImageSrc" defaultValue={pageCertificates.headerImageSrc} />
+              <AdminFormFooter previewHref="/certificates" saveLabel="Сохранить «Сертификаты»" />
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>/privacy — site.page.privacy</CardTitle>
+            <CardDescription>
+              Вступление — абзацы через пустую строку. Секции: для каждой строки таблицы укажите заголовок; тело — абзацы через
+              пустую строку; маркеры — по одной строке.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={savePagePrivacyAction} className="max-w-3xl space-y-3">
+              <Field label="Meta title" name="metaTitle" defaultValue={pagePrivacy.metaTitle} />
+              <div className="space-y-1">
+                <Label>Meta description</Label>
+                <Textarea name="metaDescription" rows={3} defaultValue={pagePrivacy.metaDescription} />
+              </div>
+              <div className="space-y-1">
+                <Label>OG description</Label>
+                <Textarea name="ogDescription" rows={2} defaultValue={pagePrivacy.ogDescription} />
+              </div>
+              <div className="space-y-1">
+                <Label>Twitter description</Label>
+                <Textarea name="twitterDescription" rows={2} defaultValue={pagePrivacy.twitterDescription} />
+              </div>
+              <Field label="Хлебные крошки" name="breadcrumbLabel" defaultValue={pagePrivacy.breadcrumbLabel} />
+              <Field label="H1" name="h1" defaultValue={pagePrivacy.h1} />
+              <Field label="Подзаголовок (шаблон)" name="subtitleTemplate" defaultValue={pagePrivacy.subtitleTemplate} />
+              <div className="space-y-1">
+                <Label>Вступление (абзацы через пустую строку)</Label>
+                <Textarea
+                  name="introParagraphs"
+                  rows={6}
+                  className="font-mono text-xs sm:text-sm"
+                  defaultValue={pagePrivacy.introParagraphs.join("\n\n")}
+                />
+              </div>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="space-y-2 rounded-lg border border-border p-3">
+                  <Field label={`Секция ${i + 1} — H2`} name={`sec_h_${i}`} defaultValue={pagePrivacy.sections[i]?.heading ?? ""} />
+                  <div className="space-y-1">
+                    <Label>Тело (абзацы через пустую строку)</Label>
+                    <Textarea
+                      name={`sec_body_${i}`}
+                      rows={4}
+                      defaultValue={pagePrivacy.sections[i]?.bodyParagraphs.join("\n\n") ?? ""}
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Список (необязательно, строки)</Label>
+                    <Textarea
+                      name={`sec_bullets_${i}`}
+                      rows={3}
+                      defaultValue={pagePrivacy.sections[i]?.bullets?.join("\n") ?? ""}
+                      className="font-mono text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
+              <Field
+                label="Контакты по данным — заголовок H2"
+                name="contact_section_heading"
+                defaultValue={pagePrivacy.contact.sectionHeading}
+              />
+              <div className="space-y-1">
+                <Label>Вводный абзац контактов</Label>
+                <Textarea name="contact_intro" rows={2} defaultValue={pagePrivacy.contact.intro} />
+              </div>
+              <div className="space-y-1">
+                <Label>Заключительный абзац (адрес)</Label>
+                <Textarea name="contact_outro" rows={2} defaultValue={pagePrivacy.contact.outro} />
+              </div>
+              <AdminFormFooter previewHref="/privacy" saveLabel="Сохранить политику" />
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>/terms — site.page.terms</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={savePageTermsAction} className="max-w-3xl space-y-3">
+              <Field label="Meta title" name="metaTitle" defaultValue={pageTerms.metaTitle} />
+              <div className="space-y-1">
+                <Label>Meta description</Label>
+                <Textarea name="metaDescription" rows={3} defaultValue={pageTerms.metaDescription} />
+              </div>
+              <Field label="H1" name="h1" defaultValue={pageTerms.h1} />
+              <div className="space-y-1">
+                <Label>Абзац 1 — до ссылки на политику</Label>
+                <Textarea name="introBeforePrivacyLink" rows={2} defaultValue={pageTerms.introBeforePrivacyLink} />
+              </div>
+              <Field label="Текст ссылки на /privacy" name="privacyLinkLabel" defaultValue={pageTerms.privacyLinkLabel} />
+              <div className="space-y-1">
+                <Label>Абзац 1 — после ссылки</Label>
+                <Textarea name="introAfterPrivacyLink" rows={2} defaultValue={pageTerms.introAfterPrivacyLink} />
+              </div>
+              <div className="space-y-1">
+                <Label>Второй абзац</Label>
+                <Textarea name="paragraph2" rows={3} defaultValue={pageTerms.paragraph2} />
+              </div>
+              <div className="space-y-1">
+                <Label>Плейсхолдеры контактной строки: {"{{EMAIL}}"}, {"{{PHONE_DISPLAY}}"}, {"{{BRAND}}"}</Label>
+                <Textarea name="contactLine" rows={2} defaultValue={pageTerms.contactLine} />
+              </div>
+              <AdminFormFooter previewHref="/terms" saveLabel="Сохранить условия" />
+            </form>
+          </CardContent>
+        </Card>
       </ContentSection>
 
       <ContentSection

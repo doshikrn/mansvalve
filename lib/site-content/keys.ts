@@ -19,4 +19,10 @@ export const SITE_CONTENT_KEYS = {
   contactsMeta: "site.meta.contacts",
   aboutCopy: "site.about.copy",
   contactsCopy: "site.contacts.copy",
+  pageAbout: "site.page.about",
+  pageContacts: "site.page.contacts",
+  pageDelivery: "site.page.delivery",
+  pageCertificates: "site.page.certificates",
+  pagePrivacy: "site.page.privacy",
+  pageTerms: "site.page.terms",
 } as const;

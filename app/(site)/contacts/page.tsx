@@ -10,27 +10,30 @@ import {
   Building2,
   type LucideIcon,
 } from "lucide-react";
-import { ContactsMapBlock } from "@/components/contacts/ContactsMapBlock";
+import {
+  buildContactsMapLines,
+  ContactsMapBlock,
+} from "@/components/contacts/ContactsMapBlock";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { COMPANY, buildCompanyContactsQuickCardWhatsAppUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
-import { resolveContactsCopy, resolveContactsMeta } from "@/lib/site-content/public";
+import { resolveContactsPage } from "@/lib/site-content/public";
 
 /* ── SEO ──────────────────────────────────────────────────────────── */
 
 export async function generateMetadata(): Promise<Metadata> {
-  const meta = await resolveContactsMeta();
-  const socialTitle = `${meta.title} | ${COMPANY.name}`;
+  const page = await resolveContactsPage();
+  const socialTitle = `${page.metaTitle} | ${COMPANY.name}`;
   return {
-    title: meta.title,
-    description: meta.description,
+    title: page.metaTitle,
+    description: page.metaDescription,
     alternates: {
       canonical: "/contacts",
     },
     openGraph: {
       title: socialTitle,
-      description: meta.description,
+      description: page.metaDescription,
       url: "/contacts",
       siteName: COMPANY.name,
       locale: "ru_KZ",
@@ -39,80 +42,90 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: socialTitle,
-      description: meta.description,
+      description: page.metaDescription,
     },
   };
 }
 
-/* ── Static data ─────────────────────────────────────────────────── */
-
-const CONTACTS: Array<{
-  icon: LucideIcon;
-  label: string;
-  lines: string[];
-  copy?: { value: string; kind: "phone" | "email" };
-  href: string | null;
-  hrefLabel: string | null;
-  external: boolean;
-}> = [
-  {
-    icon: Phone,
-    label: "Телефон / WhatsApp",
-    lines: [COMPANY.phoneDisplay],
-    copy: { value: COMPANY.phoneE164, kind: "phone" },
-    href: null,
-    hrefLabel: null,
-    external: false,
-  },
-  {
-    icon: Mail,
-    label: "Электронная почта",
-    lines: [COMPANY.email],
-    copy: { value: COMPANY.email, kind: "email" },
-    href: null,
-    hrefLabel: null,
-    external: false,
-  },
-  {
-    icon: MapPin,
-    label: "Офис и склад",
-    lines: [`г. ${COMPANY.address.city}`, COMPANY.address.street],
-    href: COMPANY.address.mapUrl,
-    hrefLabel: "Открыть в 2GIS",
-    external: true,
-  },
-  {
-    icon: Clock,
-    label: "Время работы",
-    lines: ["Пн – Пт: 09:00 – 18:00", "Сб – Вс: выходной"],
-    href: null,
-    hrefLabel: null,
-    external: false,
-  },
-];
-
-const REQUISITES = [
-  { label: "Полное наименование", value: COMPANY.legalName },
-  { label: "БИН", value: COMPANY.bankDetails.bin },
-  { label: "Банк", value: COMPANY.bankDetails.bankName },
-  { label: "ИИК", value: COMPANY.bankDetails.iik },
-  { label: "БИК", value: COMPANY.bankDetails.bik },
-] as const;
-
-const WA_URL = buildCompanyContactsQuickCardWhatsAppUrl();
+const CONTACT_ICONS: LucideIcon[] = [Phone, Mail, MapPin, Clock];
 
 /* ── Page ─────────────────────────────────────────────────────────── */
 
 export default async function ContactsPage() {
-  const copy = await resolveContactsCopy();
+  const page = await resolveContactsPage();
+  const WA_URL = buildCompanyContactsQuickCardWhatsAppUrl();
+
+  const mapLines = buildContactsMapLines({
+    cityTemplate: page.mapCityLineTemplate,
+    streetTemplate: page.mapStreetLineTemplate,
+    addressFullTemplate: page.mapBottomAddressLineTemplate,
+    companyName: COMPANY.name,
+    city: COMPANY.address.city,
+    street: COMPANY.address.street,
+    addressFull: COMPANY.address.full,
+    legalName: COMPANY.legalName,
+  });
+
+  const REQUISITES = [
+    { label: page.requisitesRowLabels[0]!, value: COMPANY.legalName },
+    { label: page.requisitesRowLabels[1]!, value: COMPANY.bankDetails.bin },
+    { label: page.requisitesRowLabels[2]!, value: COMPANY.bankDetails.bankName },
+    { label: page.requisitesRowLabels[3]!, value: COMPANY.bankDetails.iik },
+    { label: page.requisitesRowLabels[4]!, value: COMPANY.bankDetails.bik },
+  ] as const;
+
+  const cards: Array<{
+    icon: LucideIcon;
+    label: string;
+    lines: string[];
+    copy?: { value: string; kind: "phone" | "email" };
+    href: string | null;
+    hrefLabel: string | null;
+    external: boolean;
+  }> = [
+    {
+      icon: CONTACT_ICONS[0]!,
+      label: page.contactCardLabels[0]!,
+      lines: [COMPANY.phoneDisplay],
+      copy: { value: COMPANY.phoneE164, kind: "phone" },
+      href: null,
+      hrefLabel: null,
+      external: false,
+    },
+    {
+      icon: CONTACT_ICONS[1]!,
+      label: page.contactCardLabels[1]!,
+      lines: [COMPANY.email],
+      copy: { value: COMPANY.email, kind: "email" },
+      href: null,
+      hrefLabel: null,
+      external: false,
+    },
+    {
+      icon: CONTACT_ICONS[2]!,
+      label: page.contactCardLabels[2]!,
+      lines: [`г. ${COMPANY.address.city}`, COMPANY.address.street],
+      copy: undefined,
+      href: COMPANY.address.mapUrl,
+      hrefLabel: page.mapLinkLabel,
+      external: true,
+    },
+    {
+      icon: CONTACT_ICONS[3]!,
+      label: page.contactCardLabels[3]!,
+      lines: [page.workLine1, page.workLine2],
+      copy: undefined,
+      href: null,
+      hrefLabel: null,
+      external: false,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-site-bg">
-
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div className="border-b border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
-
           {/* Breadcrumbs */}
           <nav aria-label="Хлебные крошки" className="mb-5">
             <ol className="flex items-center gap-1.5 text-sm">
@@ -129,29 +142,28 @@ export default async function ContactsPage() {
               </li>
               <li>
                 <span className="font-medium text-slate-900" aria-current="page">
-                  Контакты
+                  {page.breadcrumbLabel}
                 </span>
               </li>
             </ol>
           </nav>
 
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            Контакты
+            {page.h1}
           </h1>
-          <p className="max-w-xl text-lg text-slate-500">{copy.pageLead}</p>
+          <p className="max-w-xl text-lg text-slate-500">{page.pageLead}</p>
         </div>
       </div>
 
       {/* ── Main: form + contact info ────────────────────────────────── */}
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
         <div className="grid grid-cols-1 gap-14 lg:grid-cols-5 lg:gap-16">
-
           {/* LEFT — request form (3 / 5 columns) */}
           <div className="lg:col-span-3">
             <div className="rounded-2xl border border-site-border bg-site-card p-8 shadow-sm lg:p-10">
               <div className="mb-7">
-                <h2 className="mb-2 text-xl font-bold text-slate-900">{copy.formTitle}</h2>
-                <p className="text-sm text-slate-500">{copy.formHelper}</p>
+                <h2 className="mb-2 text-xl font-bold text-slate-900">{page.formTitle}</h2>
+                <p className="text-sm text-slate-500">{page.formHelper}</p>
               </div>
               <QuickRequestForm source="contacts-page" />
             </div>
@@ -159,8 +171,7 @@ export default async function ContactsPage() {
 
           {/* RIGHT — contact cards (2 / 5 columns) */}
           <div className="flex flex-col gap-4 lg:col-span-2">
-
-            {CONTACTS.map(({ icon: Icon, label, lines, copy, href, hrefLabel, external }) => (
+            {cards.map(({ icon: Icon, label, lines, copy: clip, href, hrefLabel, external }) => (
               <div
                 key={label}
                 className="flex gap-4 rounded-xl border border-site-border bg-site-card p-5 transition-colors hover:border-site-primary/40"
@@ -174,12 +185,12 @@ export default async function ContactsPage() {
                   </p>
                   {lines.map((line) => (
                     <p key={line} className="text-sm font-medium leading-relaxed text-slate-900">
-                      {copy ? (
+                      {clip ? (
                         <CopyToClipboard
                           variant="minimal"
-                          value={copy.value}
+                          value={clip.value}
                           messageForCopyToast={line}
-                          kind={copy.kind}
+                          kind={clip.kind}
                           className="font-medium text-slate-900"
                         >
                           {line}
@@ -189,7 +200,7 @@ export default async function ContactsPage() {
                       )}
                     </p>
                   ))}
-                  {href && hrefLabel && (
+                  {href && hrefLabel ? (
                     <a
                       href={href}
                       target={external ? "_blank" : undefined}
@@ -198,7 +209,7 @@ export default async function ContactsPage() {
                     >
                       {hrefLabel} →
                     </a>
-                  )}
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -214,25 +225,28 @@ export default async function ContactsPage() {
                 <WhatsappIcon className="h-[18px] w-[18px] text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-900">
-                  Написать в WhatsApp
-                </p>
-                <p className="mt-0.5 text-xs text-slate-500">
-                  Отвечаем в течение 15 минут
-                </p>
+                <p className="text-sm font-semibold text-slate-900">{page.whatsAppTitle}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{page.whatsAppSubtitle}</p>
               </div>
             </a>
           </div>
         </div>
       </div>
 
-      {/* ── Как нас найти (статичная визуализация, ссылка на 2GIS) ───── */}
+      {/* ── Как нас найти ───── */}
       <div className="border-t border-site-border bg-site-bg">
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-          <h2 className="mb-6 text-xl font-bold text-slate-900">
-            Как нас найти
-          </h2>
-          <ContactsMapBlock />
+          <h2 className="mb-6 text-xl font-bold text-slate-900">{page.mapSectionTitle}</h2>
+          <ContactsMapBlock
+            backgroundImageSrc={page.mapBackgroundImageSrc}
+            pinEyebrow={page.mapPinEyebrow}
+            cityLine={mapLines.cityLine}
+            streetLine={mapLines.streetLine}
+            openMapLabel={page.mapOpenLabel}
+            bottomAddressLine={mapLines.bottomAddressLine}
+            bottomMapPrefix={page.mapBottomMapPrefix}
+            bottomMapLinkLabel={page.mapBottomMapLinkLabel}
+          />
         </div>
       </div>
 
@@ -243,7 +257,7 @@ export default async function ContactsPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EFF6FF]">
               <FileText size={16} className="text-site-primary" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900">Реквизиты</h2>
+            <h2 className="text-xl font-bold text-slate-900">{page.requisitesTitle}</h2>
           </div>
 
           <div className="overflow-hidden rounded-xl border border-site-border">
@@ -268,7 +282,7 @@ export default async function ContactsPage() {
 
           <p className="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
             <Building2 size={13} />
-            Полные реквизиты для заключения договора предоставляются по запросу.
+            {page.requisitesFooterNote}
           </p>
         </div>
       </div>

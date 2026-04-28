@@ -809,3 +809,533 @@ export function mergeFooterMain(dbJson: unknown): FooterMainContent {
 export function applyYearPlaceholder(text: string, year: number): string {
   return text.replaceAll("{{YEAR}}", String(year));
 }
+
+export function applySiteBrandingPlaceholders(
+  text: string,
+  input: { companyName: string; legalName: string; addressFull: string },
+): string {
+  return applyPlaceholders(text, input.companyName)
+    .replaceAll("{{LEGAL_NAME}}", input.legalName)
+    .replaceAll("{{BRAND}}", input.companyName)
+    .replaceAll("{{ADDRESS_FULL}}", input.addressFull);
+}
+
+/* ── Static pages: site.page.* ──────────────────────────────────── */
+
+const aboutStatValueKindSchema = z.enum(["marketing", "categories", "literal"]);
+
+export const aboutAdvantageItemSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+
+export const aboutB2bCardSchema = z.object({
+  title: z.string(),
+  text: z.string(),
+});
+
+export const aboutCertificationChipSchema = z.object({
+  label: z.string(),
+  sub: z.string(),
+});
+
+export const aboutStatSlotSchema = z.object({
+  valueKind: aboutStatValueKindSchema,
+  /** For `literal` kind; also used as marketing display override when kind is marketing (ignored). */
+  valueLiteral: z.string(),
+  label: z.string(),
+});
+
+export const aboutPageSchema = z.object({
+  metaTitle: z.string(),
+  metaDescription: z.string(),
+  breadcrumbCurrent: z.string(),
+  /** e.g. «О компании {{COMPANY}}» */
+  h1Template: z.string(),
+  whoWeTitle: z.string(),
+  whatWeSupplyTitle: z.string(),
+  catalogLinkLabel: z.string(),
+  /** e.g. «Почему выбирают {{COMPANY}}» */
+  whyChooseTitleTemplate: z.string(),
+  advantages: z.array(aboutAdvantageItemSchema).length(4),
+  b2bCards: z.array(aboutB2bCardSchema).length(3),
+  standardsEyebrow: z.string(),
+  certifications: z.array(aboutCertificationChipSchema).min(1).max(8),
+  statSlots: z.array(aboutStatSlotSchema).length(4),
+  ctaCatalogLabel: z.string(),
+  ctaContactsLabel: z.string(),
+  /** Пусто — без фонового изображения в шапке. */
+  headerImageSrc: z.string(),
+});
+
+export type AboutPageContent = z.infer<typeof aboutPageSchema>;
+
+export function createDefaultAboutPage(companyName: string): AboutPageContent {
+  const meta = defaultAboutMeta(companyName);
+  return {
+    metaTitle: meta.title,
+    metaDescription: meta.description,
+    breadcrumbCurrent: "О компании",
+    h1Template: `О компании {{COMPANY}}`,
+    whoWeTitle: "Кто мы",
+    whatWeSupplyTitle: "Что мы поставляем",
+    catalogLinkLabel: "Открыть каталог",
+    whyChooseTitleTemplate: `Почему выбирают {{COMPANY}}`,
+    advantages: [
+      {
+        title: "Коммерческое предложение за 15 минут",
+        description:
+          "Подбираем арматуру под ваш объект от DN15 до DN1000: цена, срок и спецификация в одном ответе, доставка по Казахстану.",
+      },
+      {
+        title: "Гарантия 100% герметичности",
+        description:
+          "Гидроиспытание каждой единицы перед отгрузкой. При обнаружении дефекта — возврат средств в тот же день.",
+      },
+      {
+        title: "Экономия до 25%",
+        description:
+          "Прямые поставки с заводов-изготовителей и собственный склад в Казахстане — без посредников и скрытых наценок.",
+      },
+      {
+        title: "КП под тендер за 15 минут",
+        description:
+          "Готовим коммерческое предложение и спецификацию с гарантией соответствия ГОСТ, DIN и PN-стандартам.",
+      },
+    ],
+    b2bCards: [
+      {
+        title: "Работаем с юридическими лицами",
+        text: "Заключаем договоры поставки, выставляем счета и накладные, предоставляем полный пакет документов для бухгалтерии и тендерной документации.",
+      },
+      {
+        title: "Доставка по всему Казахстану",
+        text: "Алматы, Астана, Шымкент, Атырау, Актобе и другие города. Доставляем транспортными компаниями и собственным автотранспортом со страхованием груза.",
+      },
+      {
+        title: "Сертифицированная продукция",
+        text: "Каждое изделие сопровождается паспортом качества, сертификатом соответствия и протоколом гидроиспытаний. Стандарты: ГОСТ, DIN, ISO.",
+      },
+    ],
+    standardsEyebrow: "Стандарты и сертификаты",
+    certifications: [
+      { label: "ГОСТ", sub: "Стандарты СНГ" },
+      { label: "DIN", sub: "Немецкий стандарт" },
+      { label: "ISO", sub: "Международный" },
+      { label: "PN 10–64", sub: "Давления" },
+    ],
+    statSlots: [
+      { valueKind: "marketing", valueLiteral: "", label: "позиции в каталоге" },
+      { valueKind: "categories", valueLiteral: "", label: "категорий арматуры" },
+      { valueKind: "literal", valueLiteral: "DN15–DN1000", label: "диапазон диаметров" },
+      { valueKind: "literal", valueLiteral: "15 мин", label: "подготовка КП" },
+    ],
+    ctaCatalogLabel: "Перейти в каталог",
+    ctaContactsLabel: "Связаться с нами",
+    headerImageSrc: "",
+  };
+}
+
+export function mergeAboutPage(
+  dbJson: unknown,
+  legacyMetaJson: unknown,
+  companyName: string,
+): AboutPageContent {
+  const base = createDefaultAboutPage(companyName);
+  const legacyMeta = mergeAboutMeta(legacyMetaJson, companyName);
+  const withLegacy: AboutPageContent = {
+    ...base,
+    metaTitle: legacyMeta.title,
+    metaDescription: legacyMeta.description,
+  };
+  const merged = shallowMerge(withLegacy as unknown as Record<string, unknown>, dbJson);
+  const parsed = aboutPageSchema.safeParse(merged);
+  return parsed.success ? parsed.data : withLegacy;
+}
+
+export const contactsPageSchema = z.object({
+  metaTitle: z.string(),
+  metaDescription: z.string(),
+  breadcrumbLabel: z.string(),
+  h1: z.string(),
+  pageLead: z.string(),
+  formTitle: z.string(),
+  formHelper: z.string(),
+  contactCardLabels: z.array(z.string()).length(4),
+  workLine1: z.string(),
+  workLine2: z.string(),
+  mapLinkLabel: z.string(),
+  whatsAppTitle: z.string(),
+  whatsAppSubtitle: z.string(),
+  mapSectionTitle: z.string(),
+  requisitesTitle: z.string(),
+  requisitesRowLabels: z.array(z.string()).length(5),
+  requisitesFooterNote: z.string(),
+  mapPinEyebrow: z.string(),
+  mapCityLineTemplate: z.string(),
+  mapStreetLineTemplate: z.string(),
+  mapOpenLabel: z.string(),
+  mapBottomAddressLineTemplate: z.string(),
+  mapBottomMapPrefix: z.string(),
+  mapBottomMapLinkLabel: z.string(),
+  mapBackgroundImageSrc: z.string(),
+});
+
+export type ContactsPageContent = z.infer<typeof contactsPageSchema>;
+
+export function createDefaultContactsPage(input: {
+  companyName: string;
+  phoneDisplay: string;
+  email: string;
+  city: string;
+}): ContactsPageContent {
+  const meta = defaultContactsMeta(input);
+  return {
+    metaTitle: meta.title,
+    metaDescription: meta.description,
+    breadcrumbLabel: "Контакты",
+    h1: "Контакты",
+    pageLead: DEFAULT_CONTACTS_COPY.pageLead,
+    formTitle: DEFAULT_CONTACTS_COPY.formTitle,
+    formHelper: DEFAULT_CONTACTS_COPY.formHelper,
+    contactCardLabels: [
+      "Телефон / WhatsApp",
+      "Электронная почта",
+      "Офис и склад",
+      "Время работы",
+    ],
+    workLine1: "Пн – Пт: 09:00 – 18:00",
+    workLine2: "Сб – Вс: выходной",
+    mapLinkLabel: "Открыть в 2GIS",
+    whatsAppTitle: "Написать в WhatsApp",
+    whatsAppSubtitle: "Отвечаем в течение 15 минут",
+    mapSectionTitle: "Как нас найти",
+    requisitesTitle: "Реквизиты",
+    requisitesRowLabels: [
+      "Полное наименование",
+      "БИН",
+      "Банк",
+      "ИИК",
+      "БИК",
+    ],
+    requisitesFooterNote: "Полные реквизиты для заключения договора предоставляются по запросу.",
+    mapPinEyebrow: "Офис и склад",
+    mapCityLineTemplate: "г. {{CITY}}",
+    mapStreetLineTemplate: "{{STREET}}",
+    mapOpenLabel: "Открыть в 2GIS",
+    mapBottomAddressLineTemplate: "{{ADDRESS_FULL}}",
+    mapBottomMapPrefix: "Карта:",
+    mapBottomMapLinkLabel: "2GIS, Алматы",
+    mapBackgroundImageSrc: "",
+  };
+}
+
+export function mergeContactsPage(
+  dbJson: unknown,
+  legacyMetaJson: unknown,
+  legacyCopyJson: unknown,
+  input: { companyName: string; phoneDisplay: string; email: string; city: string },
+): ContactsPageContent {
+  const copy = mergeContactsCopy(legacyCopyJson);
+  const meta = mergeContactsMeta(legacyMetaJson, input);
+  const base = createDefaultContactsPage(input);
+  const withLegacy: ContactsPageContent = {
+    ...base,
+    metaTitle: meta.title,
+    metaDescription: meta.description,
+    pageLead: copy.pageLead,
+    formTitle: copy.formTitle,
+    formHelper: copy.formHelper,
+  };
+  const merged = shallowMerge(withLegacy as unknown as Record<string, unknown>, dbJson);
+  const parsed = contactsPageSchema.safeParse(merged);
+  return parsed.success ? parsed.data : withLegacy;
+}
+
+const deliveryBulletSchema = z.object({
+  text: z.string(),
+});
+
+export const deliveryPageSchema = z.object({
+  metaTitle: z.string(),
+  metaDescription: z.string(),
+  ogDescription: z.string(),
+  twitterDescription: z.string(),
+  eyebrow: z.string(),
+  h1: z.string(),
+  lead: z.string(),
+  calloutIntro: z.string(),
+  calloutCityLabel: z.string(),
+  bullets: z.array(deliveryBulletSchema).length(4),
+  footerCheckLine: z.string(),
+  ctaPrimaryLabel: z.string(),
+  ctaSecondaryLabel: z.string(),
+  /** Необязательное иллюстративное изображение (URL или /images/...). */
+  pageImageSrc: z.string(),
+});
+
+export type DeliveryPageContent = z.infer<typeof deliveryPageSchema>;
+
+export const DEFAULT_DELIVERY_PAGE: DeliveryPageContent = {
+  metaTitle: "Доставка промышленной арматуры по Казахстану",
+  metaDescription:
+    "Доставка трубопроводной и промышленной арматуры со склада в Алматы и по всему Казахстану транспортными компаниями. Сроки от наличия и региона. {{COMPANY}}.",
+  ogDescription:
+    "Склад в Алматы, отправка ТК по РК. Паспорта и сертификаты в комплекте с поставкой. {{COMPANY}}.",
+  twitterDescription: "Доставка со склада в Алматы и по Казахстану. {{COMPANY}}.",
+  eyebrow: "Логистика",
+  h1: "Доставка промышленной арматуры по Казахстану",
+  lead:
+    "Организуем поставку задвижек, кранов, клапанов и сопутствующей арматуры с удобной для вас схемой: склад в Алматы, отправка в регионы и вся сопутствующая отгрузочная документация.",
+  calloutIntro: "База и отгрузка:",
+  calloutCityLabel: "г. Алматы",
+  bullets: [
+    {
+      text: "Отгрузка со склада в Алматы: собираем заказ и передаём в доставку после согласования сроков.",
+    },
+    {
+      text: "Доставка по Казахстану транспортными компаниями — удобный способ для регионов; терминал и сроки согласовываем под вашу задачу.",
+    },
+    {
+      text: "Сроки зависят от наличия позиций на складе и региона назначения; при необходимости согласуем поставку под сроки монтажа.",
+    },
+    {
+      text: "Документы и сертификаты передаются вместе с поставкой — комплект в соответствии с отгружаемой арматурой.",
+    },
+  ],
+  footerCheckLine: "Нужен расчёт и срок? Оставьте заявку — ответим с КП.",
+  ctaPrimaryLabel: "Получить коммерческое предложение",
+  ctaSecondaryLabel: "Контакты",
+  pageImageSrc: "",
+};
+
+export function mergeDeliveryPage(dbJson: unknown): DeliveryPageContent {
+  const merged = shallowMerge(
+    DEFAULT_DELIVERY_PAGE as unknown as Record<string, unknown>,
+    dbJson,
+  );
+  const parsed = deliveryPageSchema.safeParse(merged);
+  return parsed.success ? parsed.data : DEFAULT_DELIVERY_PAGE;
+}
+
+export const certificatesPageSchema = z.object({
+  metaTitle: z.string(),
+  metaDescription: z.string(),
+  ogDescription: z.string(),
+  twitterDescription: z.string(),
+  breadcrumbLabel: z.string(),
+  h1: z.string(),
+  lead: z.string(),
+  emptyTitle: z.string(),
+  emptySubtitle: z.string(),
+  issuedAtLabel: z.string(),
+  openDocumentLabel: z.string(),
+  /** Опциональное изображение в шапке страницы. */
+  headerImageSrc: z.string(),
+});
+
+export type CertificatesPageContent = z.infer<typeof certificatesPageSchema>;
+
+export const DEFAULT_CERTIFICATES_PAGE: CertificatesPageContent = {
+  metaTitle: "Сертификаты соответствия ГОСТ, DIN, ISO — документация на арматуру",
+  metaDescription:
+    "Сертификаты и паспорта качества на трубопроводную арматуру {{COMPANY}}: задвижки, краны, клапаны, затворы. Подтверждение стандартов, комплект документов к поставке по Казахстану.",
+  ogDescription:
+    "Документы и сертификаты ГОСТ/DIN/ISO на поставляемую промышленную арматуру. {{COMPANY}}, Казахстан.",
+  twitterDescription:
+    "Сертификаты и документация на арматуру: ГОСТ, DIN, ISO. {{COMPANY}} — поставки по РК.",
+  breadcrumbLabel: "Сертификаты",
+  h1: "Сертификаты",
+  lead: "Подтверждающие документы и сертификаты на поставляемую продукцию.",
+  emptyTitle: "Сертификаты скоро появятся",
+  emptySubtitle: "Мы обновляем раздел документами и подтверждающими материалами.",
+  issuedAtLabel: "Дата документа:",
+  openDocumentLabel: "Открыть документ",
+  headerImageSrc: "",
+};
+
+export function mergeCertificatesPage(dbJson: unknown): CertificatesPageContent {
+  const merged = shallowMerge(
+    DEFAULT_CERTIFICATES_PAGE as unknown as Record<string, unknown>,
+    dbJson,
+  );
+  const parsed = certificatesPageSchema.safeParse(merged);
+  return parsed.success ? parsed.data : DEFAULT_CERTIFICATES_PAGE;
+}
+
+export const privacyArticleSectionSchema = z.object({
+  heading: z.string(),
+  bodyParagraphs: z.array(z.string()),
+  bullets: z.array(z.string()).optional(),
+});
+
+export type PrivacyArticleSection = z.infer<typeof privacyArticleSectionSchema>;
+
+export const privacyContactBlockSchema = z.object({
+  sectionHeading: z.string(),
+  intro: z.string(),
+  outro: z.string(),
+});
+
+export const privacyPageSchema = z.object({
+  metaTitle: z.string(),
+  metaDescription: z.string(),
+  ogDescription: z.string(),
+  twitterDescription: z.string(),
+  breadcrumbLabel: z.string(),
+  h1: z.string(),
+  subtitleTemplate: z.string(),
+  introParagraphs: z.array(z.string()).min(1),
+  sections: z.array(privacyArticleSectionSchema).min(1).max(24),
+  contact: privacyContactBlockSchema,
+});
+
+export type PrivacyPageContent = z.infer<typeof privacyPageSchema>;
+
+export function createDefaultPrivacyPage(): PrivacyPageContent {
+  return {
+    metaTitle: "Политика конфиденциальности — обработка персональных данных",
+    metaDescription:
+      "Политика обработки персональных данных: заявки, cookie, аналитика, Telegram, хранение лидов, контакты по вопросам данных.",
+    ogDescription: "Как обрабатываются данные на сайте: формы, UTM, хранение заявок, Telegram.",
+    twitterDescription: "Обработка персональных данных посетителей и B2B-заявок.",
+    breadcrumbLabel: "Политика конфиденциальности",
+    h1: "Политика конфиденциальности",
+    subtitleTemplate: "{{LEGAL_NAME}} ({{BRAND}})",
+    introParagraphs: [
+      "Настоящий документ описывает, какие данные мы обрабатываем при посещении сайта и оставлении заявок в контексте B2B‑сотрудничества. Цель — информировать, без лишних юридических усложнений. По вопросам обработки данных обращайтесь по реквизитам в конце страницы.",
+    ],
+    sections: [
+      {
+        heading: "Кто обрабатывает данные",
+        bodyParagraphs: [
+          "Оператор: {{LEGAL_NAME}}, торговая марка {{BRAND}}. Адрес: {{ADDRESS_FULL}}.",
+        ],
+      },
+      {
+        heading: "Данные из форм заявок",
+        bodyParagraphs: [
+          "Через формы на сайте вы можете передать:",
+          "Кроме того, в заявку автоматически добавляется служебная информация: с какой страницы и с какой меткой источника отправлен запрос, идентификаторы рекламы (см. ниже), а также (на сервере) технические данные для защиты от злоупотреблений.",
+        ],
+        bullets: [
+          "имя или наименование организации (обязательно);",
+          "номер телефона (обязательно);",
+          "текст комментария к заявке (по желанию);",
+          "контекст по каталогу: название товара, категория, подкатегория, если форма открыта со страницы товара или раздела каталога.",
+        ],
+      },
+      {
+        heading: "Атрибуция, UTM и click ID",
+        bodyParagraphs: [
+          "Мы фиксируем сведения о переходе для оценки эффективности маркетинга:",
+          "Первичное срабатывание (first touch): часть таких сведений сохраняется в браузере (см. раздел о хранилищах) на ограниченный срок и дублируется в заявке как «первый контакт», чтобы сопоставить визит и конверсию.",
+        ],
+        bullets: [
+          "маркетинговые UTM‑метки из адреса страницы (utm_source, utm_medium, utm_campaign, utm_term, utm_content), если они присутствуют в URL;",
+          "идентификаторы кликов рекламных систем (например, gclid, yclid, fbclid), если присутствуют в URL;",
+          "реферер (адрес предыдущей страницы), если его передаёт браузер.",
+        ],
+      },
+      {
+        heading: "Аналитика и логи",
+        bodyParagraphs: [
+          "На сайте подключён типовой веб‑аналитика (в т.ч. через теги Google/менеджер тегов, если настроен). События: просмотры страниц, взаимодействие с карточками товаров и формами, скролл, отдельные события воронки. Для сессий используется идентификатор в sessionStorage (ключ вида аналитической сессии) — хранится только в течение сессии браузера.",
+          "Сервисы третьих сторон (например, Google) могут использовать cookie и схожие механизмы по своим правилам. Вы можете ограничить cookie в настройках браузера; часть функций сайта при этом может работать иначе.",
+        ],
+      },
+      {
+        heading: "localStorage, sessionStorage",
+        bodyParagraphs: [
+          "В localStorage храним данные о первом зафиксированном маркетинговом визите (UTM, click ID, реферер) и сроке их жизни — обычно до 90 дней, чтобы не раздувать сроки отслеживания. В sessionStorage — идентификатор аналитической сессии для событий на одном визите. Это не HTTP‑cookie, а локальное хранилище в браузере; по смыслу близко к хранению идентификаторов на устройстве. Данные можно очистить в настройках браузера.",
+        ],
+      },
+      {
+        heading: "IP‑адрес и User‑Agent",
+        bodyParagraphs: [
+          "При отправке заявки сервер может зафиксировать IP‑адрес и сокращённый User‑Agent (тип клиента) для защиты от злоупотреблений (ограничение частоты запросов) и в составе лида во внутренней админке. IP не используем для несвязанной с обслуживанием заявки рекламы.",
+        ],
+      },
+      {
+        heading: "Доставка в Telegram",
+        bodyParagraphs: [
+          "Содержимое заявки, включая контакты, контекст каталога и атрибуцию, направляется в мессенджер Telegram (сервис Telegram FZ‑LLC и связанных лиц) в настроенный чат/канал сотрудников компании. Обработка выполняется для оперативной обработки лида. Мы ожидаем, что доступ к чату имеют уполномоченные сотрудники. У Telegram действуют отдельные условия и политика конфиденциальности сервиса.",
+        ],
+      },
+      {
+        heading: "Хранение в системе (лиды)",
+        bodyParagraphs: [
+          "Копия заявки с теми же сведениями (в т.ч. отметки доставки в Telegram) сохраняется во внутренней базе данных и доступна сотрудникам с учётной записью через закрытую админ‑панель — для ведения переговоров, статусов сделок и обратной связи с вами. Срок хранения обоснован деловой необходимостью; при отсутствии такой необходимости данные не используем.",
+        ],
+      },
+      {
+        heading: "Цель обработки",
+        bodyParagraphs: [
+          "Обеспечение коммуникации с потенциальными и действующими контрагентами (обработка запросов, КП, договорная работа), улучшение работы сайта и маркетинга, а также защита от автоматизированного спама.",
+        ],
+      },
+    ],
+    contact: {
+      sectionHeading: "Как с нами связаться по данным",
+      intro:
+        "Если нужно уточнить, что хранится по заявке, задать вопрос о данных или связаться в рамках B2B:",
+      outro: "Юр. и почтовый адрес: {{ADDRESS_FULL}}.",
+    },
+  };
+}
+
+export function mergePrivacyPage(dbJson: unknown): PrivacyPageContent {
+  const defaults = createDefaultPrivacyPage();
+  const merged = shallowMerge(defaults as unknown as Record<string, unknown>, dbJson);
+  const parsed = privacyPageSchema.safeParse(merged);
+  return parsed.success ? parsed.data : defaults;
+}
+
+export const termsPageSchema = z.object({
+  metaTitle: z.string(),
+  metaDescription: z.string(),
+  h1: z.string(),
+  /** Текст до ссылки на политику конфиденциальности; поддерживает {{BRAND}}. */
+  introBeforePrivacyLink: z.string(),
+  /** Текст после ссылки на политику. */
+  introAfterPrivacyLink: z.string(),
+  paragraph2: z.string(),
+  /** Контактная строка; {{EMAIL}}, {{PHONE_DISPLAY}}, {{BRAND}}. */
+  contactLine: z.string(),
+  /** Подпись ссылки на /privacy */
+  privacyLinkLabel: z.string(),
+});
+
+export type TermsPageContent = z.infer<typeof termsPageSchema>;
+
+export const DEFAULT_TERMS_PAGE: TermsPageContent = {
+  metaTitle: "Пользовательское соглашение",
+  metaDescription:
+    "Условия использования сайта: общие положения, интеллектуальная собственность, ограничение ответственности.",
+  h1: "Пользовательское соглашение",
+  introBeforePrivacyLink: "Используя сайт {{BRAND}}, вы подтверждаете ознакомление с ",
+  introAfterPrivacyLink: " и правилами обработки персональных данных.",
+  paragraph2:
+    "Материалы сайта носят информационный характер. Коммерческие условия, комплектность и сроки поставки фиксируются в договоре и коммерческом предложении.",
+  contactLine:
+    "По вопросам условий сотрудничества: {{EMAIL}}, {{PHONE_DISPLAY}}.",
+  privacyLinkLabel: "политикой конфиденциальности",
+};
+
+export function mergeTermsPage(dbJson: unknown): TermsPageContent {
+  const merged = shallowMerge(
+    DEFAULT_TERMS_PAGE as unknown as Record<string, unknown>,
+    dbJson,
+  );
+  const parsed = termsPageSchema.safeParse(merged);
+  return parsed.success ? parsed.data : DEFAULT_TERMS_PAGE;
+}
+
+export function resolveAboutStatDisplayValue(
+  slot: AboutPageContent["statSlots"][number],
+  counts: { marketingDisplay: string; categories: number },
+): string {
+  if (slot.valueKind === "marketing") return counts.marketingDisplay;
+  if (slot.valueKind === "categories") return String(counts.categories);
+  return slot.valueLiteral;
+}
