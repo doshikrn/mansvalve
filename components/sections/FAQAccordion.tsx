@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
+import { MOTION_DURATION, MOTION_EASE, PREMIUM_VIEWPORT, premiumIntroBlock } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type FaqItem = { q: string; a: string };
@@ -34,10 +34,16 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
   return (
     <section id="faq" className="site-section">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <div className="mb-10">
+        <motion.div
+          className="mb-10"
+          variants={premiumIntroBlock}
+          initial="hidden"
+          whileInView="visible"
+          viewport={PREMIUM_VIEWPORT}
+        >
           <div className="site-eyebrow">{sectionEyebrow}</div>
           <h2 className="site-heading">{sectionTitle}</h2>
-        </div>
+        </motion.div>
 
         <div className="space-y-3">
           {items.map(({ q, a }, i) => {

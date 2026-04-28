@@ -57,3 +57,41 @@ export const staggerItem = {
     transition: { duration: MOTION_DURATION.medium, ease: MOTION_EASE },
   },
 };
+
+/** Спокойный scroll-reveal (B2B): один раз во viewport, без раннего срабатывания */
+export const PREMIUM_VIEWPORT = {
+  once: true,
+  amount: 0.3,
+  margin: "0px 0px -12% 0px",
+} as const;
+
+/** Родитель секции: заголовок → затем stagger карточек */
+export const premiumStaggerContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.12,
+    },
+  },
+};
+
+/** Первый блок (eyebrow / заголовок / лид) */
+export const premiumIntroBlock = {
+  hidden: { opacity: 0, y: 48 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.9, ease: MOTION_EASE },
+  },
+};
+
+/** Карточка / шаг / элемент сетки */
+export const premiumCardBlock = {
+  hidden: { opacity: 0, y: 48 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease: MOTION_EASE },
+  },
+};

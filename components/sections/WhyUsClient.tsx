@@ -10,7 +10,12 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
+import {
+  PREMIUM_VIEWPORT,
+  premiumCardBlock,
+  premiumIntroBlock,
+  premiumStaggerContainer,
+} from "@/lib/motion";
 
 const ICONS = [Clock, ShieldCheck, Wallet, FileCheck2, MapPin, Building2] as const satisfies readonly LucideIcon[];
 
@@ -40,45 +45,26 @@ function Card({
   );
 }
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: MOTION_DURATION.medium, ease: MOTION_EASE },
-  },
-};
-
 export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClientProps) {
   return (
     <section className="site-section">
       <div className="site-container">
-        <div className="mb-10 max-w-3xl">
-          <div className="site-eyebrow">{sectionEyebrow}</div>
-          <h2 className="site-heading">{sectionTitle}</h2>
-        </div>
-
         <motion.div
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          variants={containerVariants}
+          variants={premiumStaggerContainer}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={PREMIUM_VIEWPORT}
         >
+          <motion.div variants={premiumIntroBlock} className="col-span-full mb-10 max-w-3xl">
+            <div className="site-eyebrow">{sectionEyebrow}</div>
+            <h2 className="site-heading">{sectionTitle}</h2>
+          </motion.div>
+
           {items.map((item, index) => {
             const Icon = ICONS[index] ?? Clock;
             return (
-              <motion.div key={`${item.title}-${index}`} variants={itemVariants}>
+              <motion.div key={`${item.title}-${index}`} variants={premiumCardBlock}>
                 <Card {...item} Icon={Icon} />
               </motion.div>
             );

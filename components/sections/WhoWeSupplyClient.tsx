@@ -10,7 +10,12 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { MOTION_DURATION, MOTION_EASE } from "@/lib/motion";
+import {
+  PREMIUM_VIEWPORT,
+  premiumCardBlock,
+  premiumIntroBlock,
+  premiumStaggerContainer,
+} from "@/lib/motion";
 
 const ICONS = [Building2, Fuel, Factory, Wrench, Droplets, Landmark] as const satisfies readonly LucideIcon[];
 
@@ -39,25 +44,6 @@ function SegmentCard({ title, text, Icon }: WhoSegment & { Icon: LucideIcon }) {
   );
 }
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: MOTION_DURATION.medium, ease: MOTION_EASE },
-  },
-};
-
 export function WhoWeSupplyClient({
   sectionEyebrow,
   sectionTitle,
@@ -67,28 +53,28 @@ export function WhoWeSupplyClient({
   return (
     <section className="site-section">
       <div className="site-container">
-        <div className="mb-10 max-w-3xl">
-          <div className="site-eyebrow">{sectionEyebrow}</div>
-          <h2 className="site-heading">{sectionTitle}</h2>
-          <p className="site-copy mt-3">{sectionLead}</p>
-        </div>
-
-        <motion.ul
+        <motion.div
           className="grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 md:gap-5"
-          variants={containerVariants}
+          variants={premiumStaggerContainer}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
+          viewport={PREMIUM_VIEWPORT}
         >
+          <motion.div variants={premiumIntroBlock} className="col-span-full mb-10 max-w-3xl md:col-span-2">
+            <div className="site-eyebrow">{sectionEyebrow}</div>
+            <h2 className="site-heading">{sectionTitle}</h2>
+            <p className="site-copy mt-3">{sectionLead}</p>
+          </motion.div>
+
           {segments.map((seg, index) => {
             const Icon = ICONS[index] ?? Building2;
             return (
-              <motion.li key={`${seg.title}-${index}`} variants={itemVariants} className="min-w-0">
+              <motion.div key={`${seg.title}-${index}`} variants={premiumCardBlock} className="min-w-0">
                 <SegmentCard {...seg} Icon={Icon} />
-              </motion.li>
+              </motion.div>
             );
           })}
-        </motion.ul>
+        </motion.div>
       </div>
     </section>
   );
