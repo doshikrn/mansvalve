@@ -129,8 +129,10 @@ export function ProductShowcaseCarousel({
     >
       <div
         className={cn(
-          "relative z-[2] flex min-h-[72px] shrink-0 items-start justify-between gap-3 px-5 py-3.5 sm:px-6 sm:py-4",
-          isHero ? "border-b border-white/[0.08]" : "border-b border-site-border",
+          "relative z-[2] flex shrink-0 items-start justify-between gap-3",
+          isHero
+            ? "border-b border-white/[0.08] px-7 py-6"
+            : "min-h-[72px] border-b border-site-border px-5 py-3.5 sm:px-6 sm:py-4",
         )}
       >
         <div className="min-w-0 flex-1">
@@ -144,7 +146,7 @@ export function ProductShowcaseCarousel({
           </p>
           <h3
             className={cn(
-              "mt-1.5 text-lg font-bold leading-snug sm:text-xl",
+              "mt-1 text-lg font-bold leading-snug sm:text-xl",
               isHero ? "text-pretty text-white" : "text-site-ink line-clamp-2",
             )}
           >
@@ -155,8 +157,8 @@ export function ProductShowcaseCarousel({
 
       <div
         className={cn(
-          "relative z-[2] isolate min-h-0 w-full overflow-visible",
-          isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] lg:min-h-[540px]",
+          "relative z-[2] isolate min-h-0 w-full",
+          isHero ? "min-h-[480px] lg:min-h-[580px]" : "min-h-[520px] overflow-visible lg:min-h-[540px]",
         )}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -228,10 +230,10 @@ export function ProductShowcaseCarousel({
 
               <div
                 className={cn(
-                  "flex min-h-0 min-w-0 flex-col px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5",
+                  "flex min-h-0 min-w-0 flex-col",
                   isHero
-                    ? "lg:min-h-[500px] lg:justify-between lg:pt-5"
-                    : "gap-y-3 lg:h-full lg:min-h-0 lg:gap-y-4 lg:self-stretch lg:py-5",
+                    ? "px-7 pb-6 pt-6 lg:min-h-[500px] lg:justify-between"
+                    : "gap-y-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5 lg:h-full lg:min-h-0 lg:gap-y-4 lg:self-stretch lg:py-5",
                 )}
               >
                 {!isHero ? (
@@ -245,7 +247,7 @@ export function ProductShowcaseCarousel({
                     {catalogBadgeLabel}
                   </div>
                 ) : (
-                  <p className="mb-2 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
+                  <p className="mb-2 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">
                     {heroRibbonLabel}
                   </p>
                 )}
@@ -345,11 +347,18 @@ export function ProductShowcaseCarousel({
 
       <div
         className={cn(
-          "relative z-[2] flex shrink-0 items-center justify-between gap-3 px-5 py-2 sm:px-6",
-          isHero ? "border-t border-white/[0.07] bg-black/20" : "border-t border-site-border bg-site-bg/95 py-2.5",
+          "relative z-[2] flex shrink-0 items-center justify-between gap-2",
+          isHero
+            ? "border-t border-white/[0.06] bg-black/[0.14] px-7 py-[15px]"
+            : "gap-3 border-t border-site-border bg-site-bg/95 px-5 py-2.5 sm:px-6",
         )}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto",
+            !isHero && "pb-0.5",
+          )}
+        >
           {products.map((item, index) => (
             <button
               key={item.slug}
