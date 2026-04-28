@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { MotionRuntimeDiagnostic } from "@/components/motion/MotionRuntimeDiagnostic";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
 import { Hero } from "@/components/sections/Hero";
 import { TrustStrip } from "@/components/sections/TrustStrip";
@@ -41,7 +40,6 @@ export default function HomePage() {
   return (
     <>
       <Hero />
-      <MotionRuntimeDiagnostic />
       <ScrollReveal>
         <TrustStrip />
       </ScrollReveal>
