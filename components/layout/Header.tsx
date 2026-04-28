@@ -15,14 +15,15 @@ import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { HeaderCategoryBar } from "@/components/layout/HeaderCategoryBar";
 import { MainHeader } from "@/components/layout/MainHeader";
-import { TopBar, TOP_BAR_LINKS } from "@/components/layout/TopBar";
+import { TopBar, type TopBarLink } from "@/components/layout/TopBar";
 import type { HeaderCategoryLink } from "@/components/layout/header-types";
 
 export type HeaderProps = {
   categoryLinks?: HeaderCategoryLink[];
+  topBarLinks: readonly TopBarLink[];
 };
 
-export function Header({ categoryLinks = [] }: HeaderProps) {
+export function Header({ categoryLinks = [], topBarLinks }: HeaderProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -54,7 +55,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
 
   return (
     <header className="relative w-full bg-site-card shadow-sm shadow-site-deep/5">
-      <TopBar />
+      <TopBar links={topBarLinks} />
       <MainHeader
         onSearchSubmit={goToCatalog}
         onOpenMobileSearch={() => {
@@ -102,7 +103,7 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
             >
               Каталог
             </Link>
-            {TOP_BAR_LINKS.map((link) => (
+            {topBarLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -112,13 +113,6 @@ export function Header({ categoryLinks = [] }: HeaderProps) {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/delivery"
-              onClick={() => setMobileOpen(false)}
-              className="block rounded-md px-3 py-2.5 text-sm font-medium text-site-muted hover:bg-site-bg"
-            >
-              Доставка
-            </Link>
             <div className="my-1 border-t border-site-border" />
             <p className="px-3 pt-1 text-[10px] font-medium uppercase text-site-muted">Для заявок:</p>
             <div className="px-3 py-1.5 text-sm">

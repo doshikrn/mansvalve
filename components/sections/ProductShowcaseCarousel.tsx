@@ -16,6 +16,10 @@ type ProductShowcaseCarouselProps = {
   linkLabel: string;
   linkHref?: string;
   variant?: "hero" | "catalog";
+  /** Подзаголовок слева от карточки (только `variant="hero"`), по умолчанию «Витрина». */
+  heroRibbonLabel?: string;
+  /** Бейдж над карточкой (только `variant="catalog"`), по умолчанию «Часто запрашивают». */
+  catalogBadgeLabel?: string;
 };
 
 function formatPrice(price: number): string {
@@ -41,6 +45,8 @@ export function ProductShowcaseCarousel({
   linkLabel,
   linkHref = "/catalog",
   variant = "hero",
+  heroRibbonLabel = "Витрина",
+  catalogBadgeLabel = "Часто запрашивают",
 }: ProductShowcaseCarouselProps) {
   const [active, setActive] = useState(0);
   const [isSwitching, setIsSwitching] = useState(false);
@@ -204,11 +210,11 @@ export function ProductShowcaseCarousel({
                 )}
               >
                 <Package className="h-4 w-4" aria-hidden />
-                Часто запрашивают
+                {catalogBadgeLabel}
               </div>
             ) : (
               <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400">
-                Витрина
+                {heroRibbonLabel}
               </p>
             )}
             <h4

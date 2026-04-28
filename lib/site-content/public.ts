@@ -10,18 +10,36 @@ import {
   mergeAboutMeta,
   mergeContactsCopy,
   mergeContactsMeta,
+  mergeFooterMain,
+  mergeFooterPreCta,
+  mergeFooterTrustBar,
+  mergeHeaderTopNav,
+  mergeHomeCategories,
+  mergeHomeDeliveryCase,
   mergeHomeFaq,
   mergeHomeHero,
+  mergeHomeHowItWorks,
   mergeHomeMeta,
   mergeHomeProductShowcases,
+  mergeHomeWhoWeSupply,
+  mergeHomeWhyUs,
   mergeRequestCta,
   mergeTrustStrip,
   type AboutCopyContent,
   type ContactsCopyContent,
+  type FooterMainContent,
+  type FooterPreCtaContent,
+  type FooterTrustBarContent,
+  type HeaderTopNavContent,
+  type HomeCategoriesContent,
+  type HomeDeliveryCaseContent,
   type HomeFaqContent,
   type HomeHeroContent,
+  type HomeHowItWorksContent,
   type HomeMetaContent,
   type HomeProductShowcasesContent,
+  type HomeWhoWeSupplyContent,
+  type HomeWhyUsContent,
   type PageMetaContent,
   type RequestCtaContent,
   type TrustStripContent,
@@ -90,4 +108,49 @@ export async function resolveContactsMeta(): Promise<PageMetaContent> {
     email: COMPANY.email,
     city: COMPANY.address.city,
   });
+}
+
+export async function resolveHeaderTopNav(): Promise<HeaderTopNavContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.headerTopNav);
+  return mergeHeaderTopNav(data);
+}
+
+export async function resolveHomeCategories(): Promise<HomeCategoriesContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeCategories);
+  return mergeHomeCategories(data);
+}
+
+export async function resolveHomeWhyUs(): Promise<HomeWhyUsContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeWhyUs);
+  return mergeHomeWhyUs(data);
+}
+
+export async function resolveHomeHowItWorks(): Promise<HomeHowItWorksContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeHowItWorks);
+  return mergeHomeHowItWorks(data);
+}
+
+export async function resolveHomeWhoWeSupply(): Promise<HomeWhoWeSupplyContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeWhoWeSupply);
+  return mergeHomeWhoWeSupply(data);
+}
+
+export async function resolveHomeDeliveryCase(): Promise<HomeDeliveryCaseContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeDeliveryCase);
+  return mergeHomeDeliveryCase(data);
+}
+
+export async function resolveFooterPreCta(): Promise<FooterPreCtaContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.footerPreCta);
+  return mergeFooterPreCta(data);
+}
+
+export async function resolveFooterTrustBar(): Promise<FooterTrustBarContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.footerTrustBar);
+  return mergeFooterTrustBar(data);
+}
+
+export async function resolveFooterMain(): Promise<FooterMainContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.footerMain);
+  return mergeFooterMain(data);
 }

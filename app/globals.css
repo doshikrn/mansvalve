@@ -249,3 +249,30 @@
 .site-primary-cta:hover {
   background-color: var(--color-site-cta-hover) !important;
 }
+
+/* ── Admin panel (scoped; layout wraps authenticated /admin in .admin-app) ── */
+.admin-app {
+  background-color: #f4f7fb;
+  color: #0f172a;
+}
+
+.admin-app [data-slot="card"] {
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.admin-app input:not([type="checkbox"]):not([type="radio"]),
+.admin-app select,
+.admin-app textarea {
+  border-color: #e2e8f0;
+}
+
+.admin-app input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-app select:focus,
+.admin-app textarea:focus {
+  border-color: rgb(29 78 216 / 0.45);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(29 78 216 / 0.15);
+}

@@ -7,11 +7,6 @@ import { pickProductsBySlugs } from "@/lib/product-showcase";
 import { resolveHomeHero, resolveHomeProductShowcases } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
-const HERO_KP_WHATSAPP_MESSAGE =
-  "Здравствуйте! Хочу получить КП по промышленной запорной арматуре.";
-
-const HERO_MARKETING_POSITIONS_LABEL = "700+ позиций";
-
 export async function Hero() {
   const [prods, showcaseContent] = await Promise.all([
     getPublicCatalogProducts(),
@@ -22,7 +17,7 @@ export async function Hero() {
 
   const stats = [
     { val: heroContent.stat1Val, label: heroContent.stat1Label },
-    { val: HERO_MARKETING_POSITIONS_LABEL, label: heroContent.stat2Label },
+    { val: heroContent.stat2MarketingVal, label: heroContent.stat2Label },
     { val: heroContent.stat3Val, label: heroContent.stat3Label },
   ];
 
@@ -84,7 +79,7 @@ export async function Hero() {
                 className="site-primary-cta h-auto min-h-[3.5rem] px-8 py-[0.875rem] text-base font-semibold tracking-tight sm:min-h-[3.625rem] sm:text-lg"
               >
                 <a
-                  href={buildCompanyWhatsAppUrl(HERO_KP_WHATSAPP_MESSAGE)}
+                  href={buildCompanyWhatsAppUrl(heroContent.kpWhatsAppMessage)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center"
@@ -152,6 +147,7 @@ export async function Hero() {
               linkLabel="Каталог"
               linkHref="/catalog"
               variant="hero"
+              heroRibbonLabel={heroContent.heroShowcaseRibbonLabel}
             />
           </div>
         </div>

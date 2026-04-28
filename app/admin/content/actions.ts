@@ -15,6 +15,15 @@ import {
   homeProductShowcasesSchema,
   requestCtaSchema,
   trustStripSchema,
+  headerTopNavSchema,
+  homeCategoriesSchema,
+  homeWhyUsSchema,
+  homeHowItWorksSchema,
+  homeWhoWeSupplySchema,
+  homeDeliveryCaseSchema,
+  footerPreCtaSchema,
+  footerTrustBarSchema,
+  footerMainSchema,
 } from "@/lib/site-content/models";
 import { upsertContentBlock } from "@/lib/services/content-blocks";
 
@@ -50,11 +59,14 @@ export async function saveHomeHeroAction(formData: FormData) {
     stat1Val: String(formData.get("stat1Val") ?? "").trim(),
     stat1Label: String(formData.get("stat1Label") ?? "").trim(),
     stat2Label: String(formData.get("stat2Label") ?? "").trim(),
+    stat2MarketingVal: String(formData.get("stat2MarketingVal") ?? "").trim(),
     stat3Val: String(formData.get("stat3Val") ?? "").trim(),
     stat3Label: String(formData.get("stat3Label") ?? "").trim(),
     featuredEyebrow: String(formData.get("featuredEyebrow") ?? "").trim(),
     featuredTitle: String(formData.get("featuredTitle") ?? "").trim(),
     featuredLinkTemplate: String(formData.get("featuredLinkTemplate") ?? "").trim(),
+    kpWhatsAppMessage: String(formData.get("kpWhatsAppMessage") ?? "").trim(),
+    heroShowcaseRibbonLabel: String(formData.get("heroShowcaseRibbonLabel") ?? "").trim(),
   };
 
   const parsed = homeHeroPersistSchema.safeParse(data);
@@ -262,4 +274,263 @@ export async function saveContactsMetaAction(formData: FormData) {
   });
   revalidatePath("/contacts");
   redirect("/admin/content?saved=contacts-meta");
+}
+
+function parsePipeLinkLines(raw: string): { label: string; href: string }[] {
+  const out: { label: string; href: string }[] = [];
+  for (const line of raw.split(/\r?\n/)) {
+    const t = line.trim();
+    if (!t) continue;
+    const pipe = t.indexOf("|");
+    if (pipe < 1) continue;
+    const label = t.slice(0, pipe).trim();
+    const href = t.slice(pipe + 1).trim();
+    if (label && href) out.push({ label, href });
+  }
+  return out;
+}
+
+export async function saveHeaderTopNavAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const links = parsePipeLinkLines(String(formData.get("links") ?? ""));
+  const parsed = headerTopNavSchema.safeParse({ links });
+  if (!parsed.success) err("Шапка: строки вида «Подпись|/путь», минимум одна.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.headerTopNav,
+    title: "Шапка — верхнее меню",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/", "layout");
+  redirect("/admin/content?saved=header-nav");
+}
+
+export async function saveHomeCategoriesAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const data = {
+    sectionEyebrow: String(formData.get("sectionEyebrow") ?? "").trim(),
+    sectionTitle: String(formData.get("sectionTitle") ?? "").trim(),
+    sectionLead: String(formData.get("sectionLead") ?? "").trim(),
+    sectionCtaLabel: String(formData.get("sectionCtaLabel") ?? "").trim(),
+    sectionCtaHref: String(formData.get("sectionCtaHref") ?? "").trim(),
+    carouselEyebrow: String(formData.get("carouselEyebrow") ?? "").trim(),
+    carouselTitle: String(formData.get("carouselTitle") ?? "").trim(),
+    carouselLinkLabel: String(formData.get("carouselLinkLabel") ?? "").trim(),
+    carouselLinkHref: String(formData.get("carouselLinkHref") ?? "").trim(),
+    carouselBadgeLabel: String(formData.get("carouselBadgeLabel") ?? "").trim(),
+  };
+  const parsed = homeCategoriesSchema.safeParse(data);
+  if (!parsed.success) err("Главная — блок каталога: проверьте поля.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeCategories,
+    title: "Главная — хиты каталога",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  redirect("/admin/content?saved=home-categories");
+}
+
+export async function saveHomeWhyUsAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const items: { metric: string; title: string; desc: string }[] = [];
+  for (let i = 0; i < 8; i++) {
+    const metric = String(formData.get(`metric_${i}`) ?? "").trim();
+    const title = String(formData.get(`title_${i}`) ?? "").trim();
+    const desc = String(formData.get(`desc_${i}`) ?? "").trim();
+    if (metric && title && desc) items.push({ metric, title, desc });
+  }
+  const data = {
+    sectionEyebrow: String(formData.get("sectionEyebrow") ?? "").trim(),
+    sectionTitle: String(formData.get("sectionTitle") ?? "").trim(),
+    items,
+  };
+  const parsed = homeWhyUsSchema.safeParse(data);
+  if (!parsed.success) err("Преимущества: нужен хотя бы один полный блок (метрика, заголовок, текст).");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeWhyUs,
+    title: "Главная — преимущества",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  redirect("/admin/content?saved=home-why-us");
+}
+
+export async function saveHomeHowItWorksAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const steps: { num: string; title: string; desc: string }[] = [];
+  for (let i = 0; i < 8; i++) {
+    const num = String(formData.get(`step_num_${i}`) ?? "").trim();
+    const title = String(formData.get(`step_title_${i}`) ?? "").trim();
+    const desc = String(formData.get(`step_desc_${i}`) ?? "").trim();
+    if (num && title && desc) steps.push({ num, title, desc });
+  }
+  const data = {
+    sectionEyebrow: String(formData.get("sectionEyebrow") ?? "").trim(),
+    sectionTitle: String(formData.get("sectionTitle") ?? "").trim(),
+    steps,
+  };
+  const parsed = homeHowItWorksSchema.safeParse(data);
+  if (!parsed.success) err("«Как мы работаем»: нужен хотя бы один шаг.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeHowItWorks,
+    title: "Главная — как мы работаем",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  redirect("/admin/content?saved=home-how-it-works");
+}
+
+export async function saveHomeWhoWeSupplyAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const segments: { title: string; text: string }[] = [];
+  for (let i = 0; i < 8; i++) {
+    const title = String(formData.get(`seg_title_${i}`) ?? "").trim();
+    const text = String(formData.get(`seg_text_${i}`) ?? "").trim();
+    if (title && text) segments.push({ title, text });
+  }
+  const data = {
+    sectionEyebrow: String(formData.get("sectionEyebrow") ?? "").trim(),
+    sectionTitle: String(formData.get("sectionTitle") ?? "").trim(),
+    sectionLead: String(formData.get("sectionLead") ?? "").trim(),
+    segments,
+  };
+  const parsed = homeWhoWeSupplySchema.safeParse(data);
+  if (!parsed.success) err("«Кому поставляем»: нужен хотя бы один сегмент.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeWhoWeSupply,
+    title: "Главная — кому поставляем",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  redirect("/admin/content?saved=home-who-we-supply");
+}
+
+export async function saveHomeDeliveryCaseAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const cases: {
+    title: string;
+    text: string;
+    positions: string;
+    term: string;
+    termLabel: string;
+    object: string;
+    result: string;
+  }[] = [];
+  for (let i = 0; i < 12; i++) {
+    const title = String(formData.get(`case_title_${i}`) ?? "").trim();
+    if (!title) continue;
+    cases.push({
+      title,
+      text: String(formData.get(`case_text_${i}`) ?? "").trim(),
+      positions: String(formData.get(`case_positions_${i}`) ?? "").trim(),
+      term: String(formData.get(`case_term_${i}`) ?? "").trim(),
+      termLabel: String(formData.get(`case_termLabel_${i}`) ?? "").trim(),
+      object: String(formData.get(`case_object_${i}`) ?? "").trim(),
+      result: String(formData.get(`case_result_${i}`) ?? "").trim(),
+    });
+  }
+  const data = {
+    sectionEyebrow: String(formData.get("sectionEyebrow") ?? "").trim(),
+    sectionTitle: String(formData.get("sectionTitle") ?? "").trim(),
+    sectionLead: String(formData.get("sectionLead") ?? "").trim(),
+    kitMetaLabel: String(formData.get("kitMetaLabel") ?? "").trim(),
+    objectMetaLabel: String(formData.get("objectMetaLabel") ?? "").trim(),
+    resultPrefix: String(formData.get("resultPrefix") ?? "").trim(),
+    summaryCasesValue: String(formData.get("summaryCasesValue") ?? "").trim(),
+    summaryCasesLabel: String(formData.get("summaryCasesLabel") ?? "").trim(),
+    summaryDaysValue: String(formData.get("summaryDaysValue") ?? "").trim(),
+    summaryDaysLabel: String(formData.get("summaryDaysLabel") ?? "").trim(),
+    summaryUnitsValue: String(formData.get("summaryUnitsValue") ?? "").trim(),
+    summaryUnitsLabel: String(formData.get("summaryUnitsLabel") ?? "").trim(),
+    cases,
+  };
+  const parsed = homeDeliveryCaseSchema.safeParse(data);
+  if (!parsed.success) err("Кейсы: нужен хотя бы один кейс с заголовком.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeDeliveryCase,
+    title: "Главная — кейсы",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  redirect("/admin/content?saved=home-delivery-case");
+}
+
+export async function saveFooterPreCtaAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const data = {
+    title: String(formData.get("title") ?? "").trim(),
+    subtitle: String(formData.get("subtitle") ?? "").trim(),
+    whatsappPrimary: String(formData.get("whatsappPrimary") ?? "").trim(),
+    whatsappSecondary: String(formData.get("whatsappSecondary") ?? "").trim(),
+    emailPrimary: String(formData.get("emailPrimary") ?? "").trim(),
+    emailSecondary: String(formData.get("emailSecondary") ?? "").trim(),
+    kpWhatsAppMessage: String(formData.get("kpWhatsAppMessage") ?? "").trim(),
+  };
+  const parsed = footerPreCtaSchema.safeParse(data);
+  if (!parsed.success) err("Footer — pre-CTA: проверьте поля.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.footerPreCta,
+    title: "Подвал — призыв перед футером",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/", "layout");
+  redirect("/admin/content?saved=footer-pre-cta");
+}
+
+export async function saveFooterTrustBarAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const raw = String(formData.get("items") ?? "");
+  const items = raw
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const parsed = footerTrustBarSchema.safeParse({ items });
+  if (!parsed.success) err("Footer — полоса доверия: нужна хотя бы одна строка.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.footerTrustBar,
+    title: "Подвал — полоса доверия",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/", "layout");
+  redirect("/admin/content?saved=footer-trust");
+}
+
+export async function saveFooterMainAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const catalogLinks = parsePipeLinkLines(String(formData.get("catalogLinks") ?? ""));
+  const companyLinks = parsePipeLinkLines(String(formData.get("companyLinks") ?? ""));
+  const data = {
+    brandTagline: String(formData.get("brandTagline") ?? "").trim(),
+    brandLogoSrc: String(formData.get("brandLogoSrc") ?? "").trim(),
+    legalNameLine: String(formData.get("legalNameLine") ?? "").trim(),
+    addressLine: String(formData.get("addressLine") ?? "").trim(),
+    workHoursLine: String(formData.get("workHoursLine") ?? "").trim(),
+    catalogHeading: String(formData.get("catalogHeading") ?? "").trim(),
+    companyHeading: String(formData.get("companyHeading") ?? "").trim(),
+    contactHeading: String(formData.get("contactHeading") ?? "").trim(),
+    whatsappButtonLabel: String(formData.get("whatsappButtonLabel") ?? "").trim(),
+    bottomCopyright: String(formData.get("bottomCopyright") ?? "").trim(),
+    bottomTagline: String(formData.get("bottomTagline") ?? "").trim(),
+    termsLabel: String(formData.get("termsLabel") ?? "").trim(),
+    privacyLabel: String(formData.get("privacyLabel") ?? "").trim(),
+    catalogLinks,
+    companyLinks,
+  };
+  const parsed = footerMainSchema.safeParse(data);
+  if (!parsed.success) err("Подвал — основной блок: проверьте ссылки (формат «Подпись|/путь»).");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.footerMain,
+    title: "Подвал — основной блок",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/", "layout");
+  redirect("/admin/content?saved=footer-main");
 }

@@ -80,11 +80,11 @@ export default async function AdminProductsPage({
         </Button>
       </form>
 
-      <div className="rounded-xl border border-border bg-background">
+      <div className="rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr className="border-b border-[#E2E8F0] text-left text-xs font-medium uppercase tracking-wide text-slate-500">
                 <th className="px-4 py-2 font-medium">Название</th>
                 <th className="px-4 py-2 font-medium">Категория</th>
                 <th className="px-4 py-2 font-medium">DN/PN</th>
@@ -106,7 +106,10 @@ export default async function AdminProductsPage({
                 </tr>
               ) : (
                 items.map((p) => (
-                  <tr key={p.id} className="border-b border-border last:border-0">
+                  <tr
+                    key={p.id}
+                    className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
+                  >
                     <td className="px-4 py-2">
                       <Link
                         href={`/admin/products/${p.id}`}

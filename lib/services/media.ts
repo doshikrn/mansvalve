@@ -74,6 +74,14 @@ export function resolvePublicMediaUrl(
   return fallback;
 }
 
+export async function countMediaAssets(): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(mediaAssetsTable);
+  return rows[0]?.value ?? 0;
+}
+
 export async function createMediaAsset(
   payload: NewMediaAsset,
 ): Promise<MediaAsset> {

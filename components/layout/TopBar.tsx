@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { COMPANY, COMPANY_TELEGRAM_PUBLIC_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
@@ -8,12 +6,7 @@ import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { cn } from "@/lib/utils";
 
-export const TOP_BAR_LINKS = [
-  { label: "О компании", href: "/about" },
-  { label: "Сертификаты", href: "/certificates" },
-  { label: "Доставка", href: "/delivery" },
-  { label: "Контакты", href: "/contacts" },
-] as const;
+export type TopBarLink = { label: string; href: string };
 
 function NavDot() {
   return (
@@ -23,7 +16,7 @@ function NavDot() {
   );
 }
 
-export function TopBar() {
+export function TopBar({ links }: { links: readonly TopBarLink[] }) {
   return (
     <div className="border-b border-site-border bg-site-surface text-site-muted">
       <div className="mx-auto flex min-h-10 max-w-[1320px] items-center justify-between gap-3 px-5 sm:min-h-11 sm:px-7 lg:px-10">
@@ -31,7 +24,7 @@ export function TopBar() {
           className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[14px] font-medium leading-snug sm:flex sm:gap-3 sm:text-[15px] lg:text-base [&::-webkit-scrollbar]:h-0"
           aria-label="Служебная навигация"
         >
-          {TOP_BAR_LINKS.map((item, i) => (
+          {links.map((item, i) => (
             <span key={item.href} className="inline-flex shrink-0 items-center gap-2 sm:gap-3">
               {i > 0 ? <NavDot /> : null}
               <Link

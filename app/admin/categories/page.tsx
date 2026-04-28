@@ -37,12 +37,16 @@ export default async function AdminCategoriesPage() {
         </Button>
       </div>
 
-      <div className="rounded-xl border border-border bg-background">
+      <p id="podkategorii" className="scroll-mt-24 text-sm text-slate-600">
+        Подкатегории добавляются и редактируются внутри карточки категории — кнопка «Изменить» в строке.
+      </p>
+
+      <div className="rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="px-4 py-2 font-medium">Порядок</th>
-              <th className="px-4 py-2 font-medium">Категория</th>
+            <tr className="border-b border-[#E2E8F0] text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+              <th className="px-4 py-2">Порядок</th>
+              <th className="px-4 py-2">Категория</th>
               <th className="px-4 py-2 font-medium">Slug</th>
               <th className="px-4 py-2 font-medium">Статус</th>
               <th className="px-4 py-2 font-medium">Подкатегории</th>
@@ -58,7 +62,10 @@ export default async function AdminCategoriesPage() {
               </tr>
             ) : (
               categories.map((c) => (
-                <tr key={c.id} className="border-b border-border last:border-0">
+                <tr
+                  key={c.id}
+                  className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
+                >
                   <td className="px-4 py-2 tabular-nums text-muted-foreground">{c.sortOrder}</td>
                   <td className="px-4 py-2 font-medium">{c.name}</td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">{c.slug}</td>
