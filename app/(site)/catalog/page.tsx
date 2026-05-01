@@ -4,18 +4,19 @@ import { ChevronRight } from "lucide-react";
 
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { COMPANY } from "@/lib/company";
+import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { buildCollectionPageJsonLd } from "@/lib/structured-data";
 import {
   getPublicCatalogCategories,
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
+import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 
 /* ── SEO ──────────────────────────────────────────────────────────── */
 
-const CATALOG_TITLE = "Каталог трубопроводной арматуры в Казахстане";
+const CATALOG_TITLE = "Каталог промышленной арматуры";
 const CATALOG_DESCRIPTION =
-  "Онлайн-каталог промышленной арматуры для B2B: задвижки, краны, клапаны, затворы, электроприводы, крепёж. Фильтры по DN, PN, резьбе, материалу, типу соединения. КП, доставка по РК, склады в Алматы.";
+  "Задвижки, затворы дисковые, краны шаровые, клапаны обратные, компенсаторы, фланцы и электроприводы. Подбор по типу товара, DN, PN, марке и материалу.";
 
 export const metadata: Metadata = {
   title: CATALOG_TITLE,
@@ -24,16 +25,16 @@ export const metadata: Metadata = {
     canonical: "/catalog",
   },
   openGraph: {
-    title: `${CATALOG_TITLE} | ${COMPANY.name}`,
+    title: `${CATALOG_TITLE} | ${COMPANY_BRAND_SEO}`,
     description: CATALOG_DESCRIPTION,
     url: "/catalog",
-    siteName: COMPANY.name,
+    siteName: COMPANY_BRAND_SEO,
     locale: "ru_KZ",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${CATALOG_TITLE} | ${COMPANY.name}`,
+    title: `${CATALOG_TITLE} | ${COMPANY_BRAND_SEO}`,
     description: CATALOG_DESCRIPTION,
   },
 };
@@ -50,6 +51,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     getPublicCatalogProducts(),
     getPublicCatalogCategories(),
   ]);
+  const orderedCategories = getOrderedCatalogCategories(categories);
   const collectionPageJsonLd = buildCollectionPageJsonLd({
     name: CATALOG_TITLE,
     description: CATALOG_DESCRIPTION,
@@ -88,7 +90,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
             {CATALOG_TITLE}
           </h1>
           <p className="mt-2 text-lg text-slate-500">
-            {products.length} позиций · {categories.length} категорий · DN15–DN1000
+            {products.length} позиций · {orderedCategories.length} категорий · DN15-DN1000
           </p>
         </div>
       </div>
@@ -97,7 +99,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <CatalogShell
           products={products}
-          categories={categories}
+          categories={orderedCategories}
           searchParams={params}
         />
       </div>

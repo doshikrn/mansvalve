@@ -6,6 +6,15 @@ import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildCatalogItemListJsonLd } from "@/lib/structured-data";
 import { isFuzzyCatalogMatch } from "@/lib/search/fuzzy";
+import {
+  CONNECTION_FILTER_OPTIONS,
+  CONTROL_FILTER_OPTIONS,
+  DN_FILTER_OPTIONS,
+  MATERIAL_FILTER_OPTIONS,
+  MODEL_FILTER_OPTIONS,
+  PN_FILTER_OPTIONS,
+  getOrderedCatalogCategories,
+} from "@/lib/catalog-seo";
 import type {
   PublicCatalogCategory,
   PublicCatalogProduct as Product,
@@ -19,6 +28,7 @@ export interface CatalogSearchParams {
   subcategory?: string;
   dn?: string;
   pn?: string;
+  model?: string;
   thread?: string;
   material?: string;
   connectionType?: string;
@@ -60,6 +70,10 @@ function applySecondaryFilters(pool: Product[], params: CatalogSearchParams): Pr
     const pn = parseInt(params.pn, 10);
     if (!isNaN(pn)) result = result.filter((p) => p.pn === pn);
   }
+  if (params.model) {
+    const model = params.model.trim().toLowerCase();
+    result = result.filter((p) => p.model.toLowerCase() === model);
+  }
   if (params.thread) {
     result = result.filter((p) => p.thread === params.thread);
   }
@@ -80,6 +94,7 @@ function applySecondaryFilters(pool: Product[], params: CatalogSearchParams): Pr
         p.material,
         p.connectionType,
         p.controlType,
+        p.model,
         p.categoryName,
         p.subcategoryName,
         p.shortDescription,
@@ -107,8 +122,9 @@ export function CatalogShell({
   lockedCategoryId,
   lockedSubcategoryId,
 }: CatalogShellProps) {
+  const orderedCategories = getOrderedCatalogCategories(categories);
   const subcategoryById = new Map(
-    categories.flatMap((category) =>
+    orderedCategories.flatMap((category) =>
       category.subcategories.map((sub) => [sub.id, { ...sub, category }] as const),
     ),
   );
@@ -119,7 +135,7 @@ export function CatalogShell({
   const effectiveLockedCategoryId = lockedCategoryId ?? lockedSubcategory?.parentCategory;
 
   const lockedCategory = effectiveLockedCategoryId
-    ? categories.find((category) => category.id === effectiveLockedCategoryId)
+    ? orderedCategories.find((category) => category.id === effectiveLockedCategoryId)
     : undefined;
 
   const basePath = lockedSubcategory
@@ -157,6 +173,9 @@ export function CatalogShell({
   const pnOptions = [
     ...new Set(pool.map((p) => p.pn).filter((v): v is number => v != null)),
   ].sort((a, b) => a - b);
+  const modelOptions = [
+    ...new Set(pool.map((p) => p.model).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b, "ru"));
   const materialOptions = [...new Set(pool.map((p) => p.material).filter(Boolean))].sort();
   const threadOptions = [...new Set(pool.map((p) => p.thread).filter(Boolean) as string[])].sort(
     (a, b) => {
@@ -193,6 +212,7 @@ export function CatalogShell({
     subcategory: lockedSubcategoryId ? undefined : searchParams.subcategory,
     dn: searchParams.dn,
     pn: searchParams.pn,
+    model: searchParams.model,
     thread: searchParams.thread,
     material: searchParams.material,
     connectionType: searchParams.connectionType,
@@ -209,14 +229,15 @@ export function CatalogShell({
       )}
       <Suspense>
         <CatalogFilters
-          categories={categories}
+          categories={orderedCategories}
           subcategoryOptions={subcategoryOptions}
-          dnOptions={dnOptions}
-          pnOptions={pnOptions}
+          modelOptions={mergeTextOptions(MODEL_FILTER_OPTIONS, modelOptions)}
+          dnOptions={mergeNumberOptions(DN_FILTER_OPTIONS, dnOptions)}
+          pnOptions={mergeNumberOptions(PN_FILTER_OPTIONS, pnOptions)}
           threadOptions={threadOptions}
-          materialOptions={materialOptions}
-          connectionTypeOptions={connectionTypeOptions}
-          controlTypeOptions={controlTypeOptions}
+          materialOptions={mergeTextOptions(MATERIAL_FILTER_OPTIONS, materialOptions)}
+          connectionTypeOptions={mergeTextOptions(CONNECTION_FILTER_OPTIONS, connectionTypeOptions)}
+          controlTypeOptions={mergeTextOptions(CONTROL_FILTER_OPTIONS, controlTypeOptions)}
           showCategoryTabs={!effectiveLockedCategoryId}
           showSubcategoryFilter={!lockedSubcategoryId}
           showThreadFilter={threadOptions.length > 0}
@@ -234,4 +255,32 @@ export function CatalogShell({
       </Suspense>
     </div>
   );
+}
+
+function mergeNumberOptions(
+  preferred: readonly number[],
+  available: number[],
+): number[] {
+  const seen = new Set<number>();
+  return [...preferred, ...available].filter((value) => {
+    if (seen.has(value)) return false;
+    seen.add(value);
+    return true;
+  });
+}
+
+function mergeTextOptions(
+  preferred: Array<{ value: string; label: string }>,
+  available: string[],
+): Array<{ value: string; label: string }> {
+  const seen = new Set<string>();
+  return [
+    ...preferred,
+    ...available.map((value) => ({ value, label: value })),
+  ].filter((option) => {
+    const key = option.value.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }

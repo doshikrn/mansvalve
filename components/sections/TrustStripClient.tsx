@@ -7,7 +7,7 @@ export function TrustStripClient({ children }: { children: React.ReactNode }) {
   return (
     <motion.section
       aria-label="О компании"
-      className="border-b border-white/[0.06] bg-transparent py-5 sm:py-6"
+      className="site-section-tight border-b border-white/[0.06] bg-[#081428]"
       variants={premiumIntroBlock}
       initial="hidden"
       whileInView="visible"

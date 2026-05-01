@@ -7,6 +7,7 @@ import {
   getProductsByCategory as jsonGetProductsByCategory,
   getProductsBySubcategory as jsonGetProductsBySubcategory,
 } from "@/lib/catalog-data";
+import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 
 import type {
   PublicCatalogAdapter,
@@ -43,7 +44,7 @@ function toPublicProduct(
 
 export const jsonCatalogAdapter: PublicCatalogAdapter = {
   async getCategories() {
-    return jsonCategories.map(toPublicCategory);
+    return getOrderedCatalogCategories(jsonCategories.map(toPublicCategory));
   },
 
   async getProducts() {

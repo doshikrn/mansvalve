@@ -16,7 +16,7 @@ export function RequestCtaClient({ title, subtitle, footerHint }: RequestCtaClie
   return (
     <motion.section
       id="request-section"
-      className="relative z-[1] -mt-px scroll-mt-20 overflow-hidden border-t border-site-deep bg-site-deep py-16 sm:scroll-mt-24 sm:py-20 md:scroll-mt-32"
+      className="relative z-[1] scroll-mt-20 overflow-hidden border-t border-site-deep bg-site-deep py-16 sm:scroll-mt-24 sm:py-20 md:scroll-mt-32"
       variants={premiumIntroBlock}
       initial="hidden"
       whileInView="visible"

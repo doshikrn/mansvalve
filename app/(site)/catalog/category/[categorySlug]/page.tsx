@@ -19,8 +19,13 @@ import {
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { COMPANY } from "@/lib/company";
+import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { getCategoryVisual } from "@/lib/category-visuals";
+import {
+  getCategoryQuickLinks,
+  getCategorySeo,
+  getOrderedCatalogCategories,
+} from "@/lib/catalog-seo";
 import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -47,11 +52,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!category) return { title: "Категория не найдена" };
 
   const productCount = (await getPublicProductsByCategory(category.id)).length;
+  const seoPreset = getCategorySeo(category);
   const customMeta = await resolveCategorySeoMetaDescription(categorySlug);
   const description =
-    customMeta?.trim() || buildCategoryPageDescription(category, productCount);
+    seoPreset?.description ||
+    customMeta?.trim() ||
+    buildCategoryPageDescription(category, productCount);
 
-  const title = `${category.name} — промышленная арматура, Казахстан`;
+  const title = seoPreset?.title || `${category.name} — каталог арматуры`;
 
   const canonicalPath = `/catalog/category/${category.slug}`;
 
@@ -62,16 +70,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: canonicalPath,
     },
     openGraph: {
-      title: `${title} | ${COMPANY.name}`,
+      title,
       description,
       url: canonicalPath,
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | ${COMPANY.name}`,
+      title,
       description,
     },
   };
@@ -98,18 +106,22 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       resolveCategorySeoMetaDescription(categorySlug),
     ]);
   const metaDescription =
+    getCategorySeo(category)?.description ||
     metaDescriptionOverride?.trim() ||
     buildCategoryPageDescription(category, categoryProducts.length);
+  const h1 = getCategorySeo(category)?.h1 ?? category.name;
+  const displayCategories = getOrderedCatalogCategories(allCategories);
   const subcategoryCounts = categoryProducts.reduce((acc, product) => {
     acc.set(product.subcategory, (acc.get(product.subcategory) ?? 0) + 1);
     return acc;
   }, new Map<string, number>());
   const breadcrumbJsonLd = buildCategoryBreadcrumbJsonLd(category);
   const categoryVisual = getCategoryVisual(category.id);
+  const quickLinks = getCategoryQuickLinks(category.id);
   const heroSrc = heroImageUrl ?? categoryVisual.imageSrc;
   const heroAlt = categoryVisual.imageAlt;
   const collectionPageJsonLd = buildCollectionPageJsonLd({
-    name: category.name,
+    name: h1,
     description: metaDescription,
     path: `/catalog/category/${category.slug}`,
   });
@@ -148,14 +160,14 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               </li>
               <li>
                 <span className="font-medium text-slate-900" aria-current="page">
-                  {category.name}
+                  {h1}
                 </span>
               </li>
             </ol>
           </nav>
 
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            {category.name}
+            {h1}
           </h1>
           <p className="mt-2 text-lg text-slate-500">
             {categoryProducts.length}{" "}
@@ -178,9 +190,20 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           </div>
 
           {/* Subcategory links */}
-          {category.subcategories.length > 0 && (
+          {(quickLinks.length > 0 || category.subcategories.length > 0) && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {category.subcategories.map((sub) => (
+              {quickLinks.length > 0 ? (
+                quickLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center gap-2 rounded-full border border-site-border bg-site-bg px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-site-primary hover:bg-[#EFF6FF] hover:text-site-primary-hover"
+                  >
+                    {link.label}
+                  </Link>
+                ))
+              ) : (
+                category.subcategories.map((sub) => (
                 <Link
                   key={sub.id}
                   href={`/catalog/subcategory/${sub.slug}`}
@@ -191,7 +214,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                     {subcategoryCounts.get(sub.id) ?? 0}
                   </span>
                 </Link>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
@@ -236,7 +260,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <CatalogShell
           products={allProducts}
-          categories={allCategories}
+          categories={displayCategories}
           searchParams={resolvedSearch}
           lockedCategoryId={category.id}
         />

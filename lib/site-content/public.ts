@@ -1,6 +1,6 @@
 import "server-only";
 
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_BRAND_SEO } from "@/lib/company";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { getContentBlock } from "@/lib/services/content-blocks";
 
@@ -94,7 +94,7 @@ export async function resolveHomeFaq(): Promise<HomeFaqContent> {
 
 export async function resolveHomeMeta(): Promise<HomeMetaContent> {
   const data = await loadData(SITE_CONTENT_KEYS.homeMeta);
-  return mergeHomeMeta(data, COMPANY.name);
+  return mergeHomeMeta(data);
 }
 
 export async function resolveAboutCopy(): Promise<AboutCopyContent> {
@@ -104,7 +104,7 @@ export async function resolveAboutCopy(): Promise<AboutCopyContent> {
 
 export async function resolveAboutMeta(): Promise<PageMetaContent> {
   const data = await loadData(SITE_CONTENT_KEYS.aboutMeta);
-  return mergeAboutMeta(data, COMPANY.name);
+  return mergeAboutMeta(data, COMPANY_BRAND_SEO);
 }
 
 export async function resolveContactsCopy(): Promise<ContactsCopyContent> {
@@ -115,7 +115,7 @@ export async function resolveContactsCopy(): Promise<ContactsCopyContent> {
 export async function resolveContactsMeta(): Promise<PageMetaContent> {
   const data = await loadData(SITE_CONTENT_KEYS.contactsMeta);
   return mergeContactsMeta(data, {
-    companyName: COMPANY.name,
+    companyName: COMPANY_BRAND_SEO,
     phoneDisplay: COMPANY.phoneDisplay,
     email: COMPANY.email,
     city: COMPANY.address.city,
@@ -170,7 +170,7 @@ export async function resolveFooterMain(): Promise<FooterMainContent> {
 export async function resolveAboutPage(): Promise<AboutPageContent> {
   const data = await loadData(SITE_CONTENT_KEYS.pageAbout);
   const legacyMeta = await loadData(SITE_CONTENT_KEYS.aboutMeta);
-  return mergeAboutPage(data, legacyMeta, COMPANY.name);
+  return mergeAboutPage(data, legacyMeta);
 }
 
 export async function resolveContactsPage(): Promise<ContactsPageContent> {

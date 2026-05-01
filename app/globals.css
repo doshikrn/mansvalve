@@ -55,8 +55,9 @@
   --color-site-muted: #526173;
   --color-site-deep: #0b1220;
   --color-site-deep-soft: #141c2c;
-  /* Главная: единый тёмный фон зоны hero→хиты→преимущества + узкий fade к свету (без «тумана») */
+  /* Главная: единый тёмный фон зоны hero→хиты→преимущества + узкий fade к свету */
   --home-flow-dark: #081428;
+  --home-flow-light: #f4f7fb;
   /* Primary: база UI (кнопки-вторичные, иконки, ссылки) */
   --color-site-primary: #2f6bff;
   --color-site-primary-hover: #2563eb;
@@ -159,31 +160,35 @@
   }
 }
 
-/*
- * Главная — тёмный блок: сплошной фон, без длинного градиента поверх контента.
- * Схлопывание margin дочерних секций уводим в BFC, чтобы не «просвечивал» белый body.
- */
-.home-flow-strip-dark,
-.home-why-us-dark {
+.home-dark-zone {
   display: flow-root;
-  background-color: #081428;
+  background-color: var(--home-flow-dark);
 }
 
-/*
- * Узкий переход dark → светлый фон сайта (только между секциями, не над карточками).
- * Два сплошных цвета (#081428 → #F4F7FB как --color-site-bg), без серых стопов и без rgba-«тумана».
- */
 .home-flow-from-dark-band {
   display: block;
-  height: clamp(60px, 4vw, 80px);
-  max-height: 80px;
+  height: clamp(18px, 1.4vw, 24px);
+  max-height: 24px;
   flex-shrink: 0;
-  background: linear-gradient(to bottom, #081428 0%, #f4f7fb 100%);
+  background: linear-gradient(to bottom, #081428 0%, #1b2b46 45%, var(--home-flow-light) 100%);
+}
+
+.home-light-zone {
+  background-color: var(--home-flow-light);
+  border-top: 1px solid rgb(47 107 255 / 0.1);
 }
 
 @layer components {
   .site-section {
-    @apply bg-site-bg py-16 sm:py-20;
+    @apply bg-site-bg py-14 sm:py-16 lg:py-20;
+  }
+
+  .site-section-tight {
+    @apply py-10 sm:py-12 lg:py-14;
+  }
+
+  .site-section-dark {
+    @apply bg-transparent py-10 sm:py-12 lg:py-14;
   }
 
   .site-container {
@@ -307,7 +312,7 @@ html[data-motion-css-debug="1"] .reveal-up {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow:
-    0 24px 70px rgb(2 6 23 / 0.28),
+    0 18px 42px -24px rgb(2 6 23 / 0.34),
     inset 0 1px 0 rgb(255 255 255 / 0.04);
 }
 

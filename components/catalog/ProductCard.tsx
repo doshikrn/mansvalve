@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
 import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
+import { buildProductCatalogName, getCatalogCategoryLabel } from "@/lib/catalog-seo";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -22,11 +23,13 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const detailHref = `/catalog/${product.slug}`;
+  const productName = buildProductCatalogName(product);
+  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
   const visual = getCategoryVisual(product.category);
   const imageSrc = product.primaryImageUrl || visual.imageSrc;
   const imageAlt =
     product.primaryImageAlt ||
-    `${product.categoryName} — ${product.name}` ||
+    `${categoryLabel} — ${productName}` ||
     visual.imageAlt;
   const isRemoteImage = imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
@@ -51,7 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/10 to-transparent" />
         <span className="absolute bottom-2 left-2 rounded-md bg-site-card px-2 py-0.5 text-[11px] font-medium text-site-muted">
-          {product.categoryName}
+          {categoryLabel}
         </span>
       </Link>
 
@@ -82,6 +85,11 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.material}
             </span>
           )}
+          {product.model && (
+            <span className="rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
+              {product.model}
+            </span>
+          )}
         </div>
 
         {/* Product name */}
@@ -89,8 +97,15 @@ export function ProductCard({ product }: ProductCardProps) {
           href={detailHref}
           className="mb-1.5 block text-sm font-semibold leading-snug text-site-ink transition-colors line-clamp-2 hover:text-site-primary-hover"
         >
-          {product.name}
+          {productName}
         </Link>
+
+        <dl className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-site-muted">
+          <SpecItem label="Марка" value={product.model} />
+          <SpecItem label="Соединение" value={product.connectionType} />
+          <SpecItem label="Управление" value={product.controlType} />
+          <SpecItem label="Статус" value="В наличии / под заказ" />
+        </dl>
 
         {/* Description */}
         <p className="mb-3 text-xs text-site-muted leading-relaxed line-clamp-2 flex-1">
@@ -113,8 +128,8 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* CTA buttons */}
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
-            <Link href={detailHref}>
-              Подробнее
+            <Link href={`${detailHref}#request-section`}>
+              Получить КП
               <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -124,7 +139,7 @@ export function ProductCard({ product }: ProductCardProps) {
             asChild
           >
             <a
-              href={buildCompanyProductInquiryWhatsAppUrl(product.name, {
+              href={buildCompanyProductInquiryWhatsAppUrl(productName, {
                 dn: product.dn,
                 pn: product.pn,
               })}
@@ -138,5 +153,22 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
     </article>
+  );
+}
+
+function SpecItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | undefined;
+}) {
+  if (!value || value === "Не указано" || value === "Не указан") return null;
+
+  return (
+    <div className="min-w-0">
+      <dt className="text-slate-400">{label}</dt>
+      <dd className="truncate font-medium text-site-ink">{value}</dd>
+    </div>
   );
 }

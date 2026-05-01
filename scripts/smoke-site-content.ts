@@ -9,7 +9,6 @@ import { resolve } from "node:path";
 
 config({ path: resolve(process.cwd(), ".env.local") });
 
-import { COMPANY } from "../lib/company";
 import {
   DEFAULT_TRUST_STRIP,
   mergeAboutCopy,
@@ -35,8 +34,8 @@ function main() {
   const faq = mergeHomeFaq(undefined);
   assert(faq.items.length >= 1, "faq default items");
 
-  const meta = mergeHomeMeta(undefined, COMPANY.name);
-  assert(meta.ogTitle.includes(COMPANY.name), "meta default title");
+  const meta = mergeHomeMeta(undefined);
+  assert(meta.ogTitle.includes("MANSVALVE"), "meta default title");
 
   const about = mergeAboutCopy(undefined);
   assert(about.overviewParagraphs.length >= 1, "about default");

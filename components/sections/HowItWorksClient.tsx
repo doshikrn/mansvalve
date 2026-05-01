@@ -53,7 +53,7 @@ export function HowItWorksClient({ sectionEyebrow, sectionTitle, steps }: HowItW
           whileInView="visible"
           viewport={{ ...PREMIUM_VIEWPORT, amount: 0.28 }}
         >
-          <div className="absolute left-[8%] right-[8%] top-7 hidden h-px bg-site-border lg:block" />
+          <div className="absolute left-[8%] right-[8%] top-7 hidden h-px bg-gradient-to-r from-site-primary/15 via-site-primary/40 to-site-primary/15 lg:block" />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {steps.map((step, index) => {
@@ -61,8 +61,9 @@ export function HowItWorksClient({ sectionEyebrow, sectionTitle, steps }: HowItW
               return (
                 <motion.div key={step.num} variants={premiumCardBlock}>
                   <div className="site-card relative flex h-full flex-col p-5 lg:min-h-[220px]">
+                    <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-site-primary/0 via-site-primary/55 to-site-primary/0" />
                     <div
-                      className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full border border-site-primary/40 bg-site-primary/12 text-site-primary shadow-sm"
+                      className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full border border-site-primary/35 bg-site-primary/10 text-site-primary shadow-sm"
                       aria-label="Стандартный этап"
                       title="Стандартный этап"
                     >

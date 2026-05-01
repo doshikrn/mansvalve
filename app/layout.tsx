@@ -7,7 +7,7 @@ import { ToasterClient } from "@/components/providers/ToasterClient";
 import { GlobalClickTracker } from "@/components/analytics/GlobalClickTracker";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { COMPANY } from "@/lib/company";
+import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-data";
 
@@ -19,24 +19,29 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteBaseUrl()),
-  /** Tab / bookmarks: PNG via file convention (`app/icon.png`) — без битого ICO. */
+  applicationName: "MANSVALVE GROUP",
   icons: {
-    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon-32.png",
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   title: {
-    default: `${COMPANY.name} — трубопроводная арматура, задвижки, краны, клапаны в Казахстане`,
-    template: `%s | ${COMPANY.name}`,
+    default: "MANSVALVE GROUP — промышленная трубопроводная арматура в Казахстане",
+    template: `%s | ${COMPANY_BRAND_SEO}`,
   },
   description:
-    "B2B поставки трубопроводной арматуры по Казахстану: задвижки, краны, клапаны, затворы DN15–DN1000. КП за 15 минут, ГОСТ/DIN/ISO, склад в Алматы, доставка по РК.",
+    "MANSVALVE GROUP поставляет промышленную трубопроводную арматуру, инженерное оборудование и комплектующие для предприятий, строительных объектов, ТЭЦ, водоканалов, нефтегазового сектора и государственных закупок. Работаем с B2B-клиентами по всему Казахстану. Подготовим коммерческое предложение за 15 минут в рабочее время.",
   keywords:
-    "задвижки, краны шаровые, затворы, клапаны, промышленная арматура, Казахстан, ГОСТ, DN, PN",
+    "задвижки, краны шаровые, затворы, клапаны, фланцы, промышленная арматура, Казахстан, ГОСТ, DIN, ISO, DN, PN",
   openGraph: {
-    title: `${COMPANY.name} — трубопроводная арматура в Казахстане`,
+    title: "MANSVALVE GROUP — промышленная трубопроводная арматура в Казахстане",
     description:
-      "B2B поставки трубопроводной арматуры: задвижки, краны, клапаны, затворы. КП за 15 минут, сертификаты ГОСТ/DIN/ISO, доставка по РК.",
-    siteName: COMPANY.name,
+      "MANSVALVE GROUP поставляет промышленную трубопроводную арматуру, инженерное оборудование и комплектующие для предприятий, строительных объектов, ТЭЦ, водоканалов, нефтегазового сектора и государственных закупок. Работаем с B2B-клиентами по всему Казахстану. Подготовим коммерческое предложение за 15 минут в рабочее время.",
+    siteName: COMPANY_BRAND_SEO,
     locale: "ru_KZ",
     type: "website",
   },

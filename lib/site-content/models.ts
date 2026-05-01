@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { COMPANY_BRAND_SEO } from "@/lib/company";
+
 const faqItemSchema = z.object({
   q: z.string(),
   a: z.string(),
@@ -165,11 +167,11 @@ export const homeMetaSchema = z.object({
 
 export type HomeMetaContent = z.infer<typeof homeMetaSchema>;
 
-export function defaultHomeMeta(companyName: string): HomeMetaContent {
+export function defaultHomeMeta(): HomeMetaContent {
   return {
-    ogTitle: `${companyName} — трубопроводная арматура, задвижки, краны, клапаны в Казахстане`,
+    ogTitle: "MANSVALVE Group — трубопроводная арматура в Казахстане",
     ogDescription:
-      "B2B поставки промышленной трубопроводной арматуры по Казахстану: задвижки, шаровые краны, затворы, клапаны DN15–DN1000. КП за 15 минут, ГОСТ/DIN/ISO, склад в Алматы.",
+      "Поставка задвижек, шаровых кранов, затворов, клапанов и фланцев DN15–DN1000. Подбор, КП и доставка по Казахстану. ГОСТ, DIN, ISO.",
   };
 }
 
@@ -182,9 +184,9 @@ export type PageMetaContent = z.infer<typeof pageMetaSchema>;
 
 export function defaultAboutMeta(companyName: string): PageMetaContent {
   return {
-    title: "О компании — B2B поставщик трубопроводной арматуры",
+    title: `О компании — ${companyName}`,
     description:
-      `${companyName} — надёжный B2B партнёр по поставкам трубопроводной арматуры в Казахстан: задвижки, краны, клапаны, затворы. Прямые контракты, склад в Алматы, гидроиспытания, документы для тендера, доставка по РК.`,
+      `B2B-поставки арматуры в Казахстане: задвижки, краны, клапаны, затворы. Склад в Алматы, документы для тендера, доставка по РК. ${companyName}.`,
   };
 }
 
@@ -195,9 +197,9 @@ export function defaultContactsMeta(input: {
   city: string;
 }): PageMetaContent {
   return {
-    title: "Контакты — заявка, коммерческое предложение и доставка",
+    title: `Контакты — ${input.companyName}`,
     description:
-      `Контакты ${input.companyName} в Казахстане: ${input.phoneDisplay}, ${input.email}. Офис и склад в ${input.city}. Заявка на КП, консультация инженера, поставка арматуры по договору. КП в течение 15 минут в рабочее время.`,
+      `${input.phoneDisplay}, ${input.email}. Офис и склад: ${input.city}. Заявка на КП и консультация инженера. КП за 15 минут в рабочее время.`,
   };
 }
 
@@ -308,8 +310,8 @@ export function mergeHomeFaq(dbJson: unknown): HomeFaqContent {
   return parsed.success ? parsed.data : DEFAULT_HOME_FAQ;
 }
 
-export function mergeHomeMeta(dbJson: unknown, companyName: string): HomeMetaContent {
-  const defaults = defaultHomeMeta(companyName);
+export function mergeHomeMeta(dbJson: unknown): HomeMetaContent {
+  const defaults = defaultHomeMeta();
   const merged = shallowMerge(defaults as unknown as Record<string, unknown>, dbJson);
   const parsed = homeMetaSchema.safeParse(merged);
   return parsed.success ? parsed.data : defaults;
@@ -866,12 +868,13 @@ export const aboutPageSchema = z.object({
   ctaContactsLabel: z.string(),
   /** Пусто — без фонового изображения в шапке. */
   headerImageSrc: z.string(),
+  heroGalleryImageSrcs: z.array(z.string()).max(5),
 });
 
 export type AboutPageContent = z.infer<typeof aboutPageSchema>;
 
-export function createDefaultAboutPage(companyName: string): AboutPageContent {
-  const meta = defaultAboutMeta(companyName);
+export function createDefaultAboutPage(): AboutPageContent {
+  const meta = defaultAboutMeta(COMPANY_BRAND_SEO);
   return {
     metaTitle: meta.title,
     metaDescription: meta.description,
@@ -933,16 +936,16 @@ export function createDefaultAboutPage(companyName: string): AboutPageContent {
     ctaCatalogLabel: "Перейти в каталог",
     ctaContactsLabel: "Связаться с нами",
     headerImageSrc: "",
+    heroGalleryImageSrcs: [],
   };
 }
 
 export function mergeAboutPage(
   dbJson: unknown,
   legacyMetaJson: unknown,
-  companyName: string,
 ): AboutPageContent {
-  const base = createDefaultAboutPage(companyName);
-  const legacyMeta = mergeAboutMeta(legacyMetaJson, companyName);
+  const base = createDefaultAboutPage();
+  const legacyMeta = mergeAboutMeta(legacyMetaJson, COMPANY_BRAND_SEO);
   const withLegacy: AboutPageContent = {
     ...base,
     metaTitle: legacyMeta.title,
@@ -989,7 +992,7 @@ export function createDefaultContactsPage(input: {
   email: string;
   city: string;
 }): ContactsPageContent {
-  const meta = defaultContactsMeta(input);
+  const meta = defaultContactsMeta({ ...input, companyName: COMPANY_BRAND_SEO });
   return {
     metaTitle: meta.title,
     metaDescription: meta.description,
@@ -1037,7 +1040,7 @@ export function mergeContactsPage(
   input: { companyName: string; phoneDisplay: string; email: string; city: string },
 ): ContactsPageContent {
   const copy = mergeContactsCopy(legacyCopyJson);
-  const meta = mergeContactsMeta(legacyMetaJson, input);
+  const meta = mergeContactsMeta(legacyMetaJson, { ...input, companyName: COMPANY_BRAND_SEO });
   const base = createDefaultContactsPage(input);
   const withLegacy: ContactsPageContent = {
     ...base,

@@ -175,7 +175,7 @@ export default async function AdminContentPage({
   const trust = mergeTrustStrip(trustRow?.data);
   const rcta = mergeRequestCta(rctaRow?.data);
   const faq = mergeHomeFaq(faqRow?.data);
-  const meta = mergeHomeMeta(metaRow?.data, COMPANY.name);
+  const meta = mergeHomeMeta(metaRow?.data);
   const aboutMeta = mergeAboutMeta(aboutMetaRow?.data, COMPANY.name);
   const about = mergeAboutCopy(aboutRow?.data);
   const contactsMeta = mergeContactsMeta(contactsMetaRow?.data, {
@@ -196,7 +196,7 @@ export default async function AdminContentPage({
   const footerTrust = mergeFooterTrustBar(footerTrustRow?.data);
   const footerMain = mergeFooterMain(footerMainRow?.data);
 
-  const pageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data, COMPANY.name);
+  const pageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data);
   const pageContacts = mergeContactsPage(
     pageContactsRow?.data,
     contactsMetaRow?.data,
@@ -617,7 +617,7 @@ export default async function AdminContentPage({
             </div>
             <p className="text-xs text-muted-foreground">
               По умолчанию (без БД):{" "}
-              <code className="rounded bg-muted px-1">{defaultHomeMeta(COMPANY.name).ogTitle}</code>
+              <code className="rounded bg-muted px-1">{defaultHomeMeta().ogTitle}</code>
             </p>
             <AdminFormFooter previewHref="/" saveLabel="Сохранить описание для поиска" />
           </form>

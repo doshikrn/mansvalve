@@ -25,15 +25,18 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 
+type SelectOption = { value: string; label: string };
+
 interface CatalogFiltersProps {
   categories: Category[];
   subcategoryOptions: Array<{ id: string; name: string }>;
   dnOptions: number[];
   pnOptions: number[];
+  modelOptions: SelectOption[];
   threadOptions: string[];
-  materialOptions: string[];
-  connectionTypeOptions: string[];
-  controlTypeOptions: string[];
+  materialOptions: SelectOption[];
+  connectionTypeOptions: SelectOption[];
+  controlTypeOptions: SelectOption[];
   showCategoryTabs?: boolean;
   showSubcategoryFilter?: boolean;
   showThreadFilter?: boolean;
@@ -69,10 +72,11 @@ type FilterFormContentProps = {
   subcategoryOptions: Array<{ id: string; name: string }>;
   dnOptions: number[];
   pnOptions: number[];
+  modelOptions: SelectOption[];
   threadOptions: string[];
-  materialOptions: string[];
-  connectionTypeOptions: string[];
-  controlTypeOptions: string[];
+  materialOptions: SelectOption[];
+  connectionTypeOptions: SelectOption[];
+  controlTypeOptions: SelectOption[];
   showCategoryTabs: boolean;
   showSubcategoryFilter: boolean;
   showThreadFilter: boolean;
@@ -86,6 +90,7 @@ type FilterFormContentProps = {
   categoryQuery: string;
   activeDn: string;
   activePn: string;
+  activeModel: string;
   activeThread: string;
   activeMaterial: string;
   activeConnectionType: string;
@@ -102,6 +107,7 @@ function FilterFormContent({
   subcategoryOptions,
   dnOptions,
   pnOptions,
+  modelOptions,
   threadOptions,
   materialOptions,
   connectionTypeOptions,
@@ -118,6 +124,7 @@ function FilterFormContent({
   activeSubcategory,
   activeDn,
   activePn,
+  activeModel,
   activeThread,
   activeMaterial,
   activeConnectionType,
@@ -173,7 +180,7 @@ function FilterFormContent({
             type="search"
             value={searchInput}
             onChange={(e) => onSearchInputChange(e.target.value)}
-            placeholder="Название, DN, резьба…"
+            placeholder="Название, DN, PN, марка"
             autoComplete="off"
             className="h-10 w-full rounded-lg border border-site-border bg-site-card pl-9 pr-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-site-primary focus:ring-2 focus:ring-site-primary/15 focus:outline-none"
             aria-label="Поиск по каталогу"
@@ -261,6 +268,15 @@ function FilterFormContent({
           </div>
         </FilterSection>
       )}
+
+      <FilterSection title="Марка / модель">
+        <FilterSelectMenu
+          aria-label="Марка или модель"
+          value={activeModel}
+          onChange={(v) => setParam("model", v)}
+          options={modelOptions}
+        />
+      </FilterSection>
 
       {showSubcategoryFilter && (
         <FilterSection title="Подкатегория">
@@ -355,7 +371,7 @@ function FilterFormContent({
           aria-label="Материал"
           value={activeMaterial}
           onChange={(v) => setParam("material", v)}
-          options={materialOptions.map((m) => ({ value: m, label: m }))}
+          options={materialOptions}
         />
       </FilterSection>
 
@@ -375,7 +391,7 @@ function FilterFormContent({
           aria-label="Тип соединения"
           value={activeConnectionType}
           onChange={(v) => setParam("connectionType", v)}
-          options={connectionTypeOptions.map((t) => ({ value: t, label: t }))}
+          options={connectionTypeOptions}
         />
       </FilterSection>
 
@@ -384,7 +400,7 @@ function FilterFormContent({
           aria-label="Тип управления"
           value={activeControlType}
           onChange={(v) => setParam("controlType", v)}
-          options={controlTypeOptions.map((t) => ({ value: t, label: t }))}
+          options={controlTypeOptions}
         />
       </FilterSection>
     </div>
@@ -451,6 +467,7 @@ function buildFilterChipItems(
   const sub = searchParams.get("subcategory") ?? "";
   const dn = searchParams.get("dn") ?? "";
   const pn = searchParams.get("pn") ?? "";
+  const model = searchParams.get("model") ?? "";
   const material = searchParams.get("material") ?? "";
   const thread = searchParams.get("thread") ?? "";
   const connectionType = searchParams.get("connectionType") ?? "";
@@ -474,6 +491,7 @@ function buildFilterChipItems(
   }
   if (dn) out.push({ key: `dn-${dn}`, paramKey: "dn", label: `DN${dn}` });
   if (pn) out.push({ key: `pn-${pn}`, paramKey: "pn", label: `PN${pn}` });
+  if (model) out.push({ key: `model-${model}`, paramKey: "model", label: `Марка: ${model}` });
   if (material) {
     out.push({ key: `m-${material}`, paramKey: "material", label: `Материал: ${material}` });
   }
@@ -528,6 +546,7 @@ export function CatalogFilters({
   subcategoryOptions,
   dnOptions,
   pnOptions,
+  modelOptions,
   threadOptions,
   materialOptions,
   connectionTypeOptions,
@@ -549,6 +568,7 @@ export function CatalogFilters({
   const activeDn = searchParams.get("dn") ?? "";
   const activePn = searchParams.get("pn") ?? "";
   const activeThread = searchParams.get("thread") ?? "";
+  const activeModel = searchParams.get("model") ?? "";
   const activeMaterial = searchParams.get("material") ?? "";
   const activeSubcategory = searchParams.get("subcategory") ?? "";
   const activeConnectionType = searchParams.get("connectionType") ?? "";
@@ -563,6 +583,7 @@ export function CatalogFilters({
       activeDn ||
       activePn ||
       activeThread ||
+      activeModel ||
       activeMaterial ||
       activeConnectionType ||
       activeControlType ||
@@ -678,6 +699,7 @@ export function CatalogFilters({
     subcategoryOptions,
     dnOptions,
     pnOptions,
+    modelOptions,
     threadOptions,
     materialOptions,
     connectionTypeOptions,
@@ -692,6 +714,7 @@ export function CatalogFilters({
     activeSubcategory,
     activeDn,
     activePn,
+    activeModel,
     activeThread,
     activeMaterial,
     activeConnectionType,

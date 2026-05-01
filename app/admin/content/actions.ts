@@ -573,7 +573,18 @@ export async function savePageAboutAction(formData: FormData) {
     statSlots,
     ctaCatalogLabel: String(formData.get("ctaCatalogLabel") ?? "").trim(),
     ctaContactsLabel: String(formData.get("ctaContactsLabel") ?? "").trim(),
-    headerImageSrc: String(formData.get("headerImageSrc") ?? "").trim(),
+    headerImageSrc:
+      `${String(formData.get("headerImageSrc") ?? "").trim()}\n${String(formData.get("heroGalleryImageSrcs") ?? "").trim()}`
+        .split(/\r?\n|,/)
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .slice(0, 5)[0] ?? "",
+    heroGalleryImageSrcs: `${String(formData.get("headerImageSrc") ?? "").trim()}\n${String(formData.get("heroGalleryImageSrcs") ?? "").trim()}`
+      .split(/\r?\n|,/)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, 5)
+      .slice(1),
   };
 
   const parsed = aboutPageSchema.safeParse(data);

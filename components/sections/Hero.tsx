@@ -24,7 +24,7 @@ export async function Hero() {
   const statIcons = [Clock, Package, MapPin] as const;
 
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.06] bg-transparent">
+    <section className="relative overflow-hidden border-b border-white/[0.06] bg-[#081428]">
       <div
         className="pointer-events-none absolute -left-[20%] top-0 h-full w-[70%] bg-gradient-to-r from-[rgb(47_107_255_/_.08)] via-transparent to-transparent"
         aria-hidden
@@ -41,7 +41,7 @@ export async function Hero() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.05)_45%,rgba(255,255,255,0.08)_100%)] lg:block"
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.04)_100%)] lg:block"
         aria-hidden
       />
       <div
@@ -66,7 +66,7 @@ export async function Hero() {
               <span className="text-site-cta">{heroContent.h1Highlight}</span>
             </h1>
 
-            <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-300 sm:text-[17px]">
+            <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-200 sm:text-[17px]">
               {heroContent.subhead}
             </p>
 
@@ -103,7 +103,7 @@ export async function Hero() {
               {heroContent.trustPoints.map((point, i) => (
                 <span
                   key={`${i}-${point.slice(0, 12)}`}
-                  className="rounded-lg border border-white/12 bg-white/[0.07] px-3 py-1 text-xs font-semibold text-slate-200 shadow-sm"
+                  className="rounded-lg border border-white/18 bg-white/[0.09] px-3 py-1 text-xs font-semibold text-slate-100 shadow-sm"
                 >
                   {point}
                 </span>
@@ -127,7 +127,7 @@ export async function Hero() {
                       <div className="text-2xl font-bold tabular-nums tracking-tight text-white sm:text-[1.65rem] lg:text-[1.75rem]">
                         {s.val}
                       </div>
-                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-white/[0.62] sm:text-[11px]">
+                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-white/[0.75] sm:text-[11px]">
                         {s.label}
                       </div>
                     </div>

@@ -33,6 +33,8 @@ export function buildOrganizationJsonLd(): Record<string, unknown> {
     name: COMPANY.name,
     legalName: COMPANY.legalName,
     url: toAbsoluteUrl("/"),
+    logo: toAbsoluteUrl("/icon.png"),
+    image: toAbsoluteUrl("/icon.png"),
     email: COMPANY.email,
     telephone: COMPANY.phoneE164,
     address: {

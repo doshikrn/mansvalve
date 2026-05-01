@@ -10,6 +10,7 @@ import {
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
+import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 
 import type {
   PublicCatalogAdapter,
@@ -79,12 +80,14 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
     bucket.set(subcategory.categorySlug, arr);
   }
 
-  return categories.map((category) => ({
-    id: category.slug,
-    name: category.name,
-    slug: category.slug,
-    subcategories: bucket.get(category.slug) ?? [],
-  }));
+  return getOrderedCatalogCategories(
+    categories.map((category) => ({
+      id: category.slug,
+      name: category.name,
+      slug: category.slug,
+      subcategories: bucket.get(category.slug) ?? [],
+    })),
+  );
 }
 
 async function fetchProductRows(): Promise<ProductRow[]> {

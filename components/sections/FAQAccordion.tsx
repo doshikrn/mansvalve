@@ -11,6 +11,8 @@ export type FaqItem = { q: string; a: string };
 type FAQAccordionProps = {
   sectionEyebrow: string;
   sectionTitle: string;
+  sectionDescription?: string;
+  footerLine?: string;
   items: FaqItem[];
 };
 
@@ -24,7 +26,13 @@ const panelTransition = {
   ease: MOTION_EASE,
 };
 
-export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordionProps) {
+export function FAQAccordion({
+  sectionEyebrow,
+  sectionTitle,
+  sectionDescription,
+  footerLine,
+  items,
+}: FAQAccordionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (index: number) => {
@@ -43,6 +51,11 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
         >
           <div className="site-eyebrow">{sectionEyebrow}</div>
           <h2 className="site-heading">{sectionTitle}</h2>
+          {sectionDescription ? (
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-site-muted">
+              {sectionDescription}
+            </p>
+          ) : null}
         </motion.div>
 
         <div className="space-y-3">
@@ -52,8 +65,8 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
               <div
                 key={`faq-${i}`}
                 className={cn(
-                  "site-card-quiet overflow-hidden rounded-lg border border-site-border bg-site-card shadow-sm transition-[box-shadow,border-color] duration-300 ease-out",
-                  isOpen && "border-site-primary/35 shadow-md",
+                  "site-card-quiet overflow-hidden rounded-lg border border-site-border bg-site-card shadow-sm transition-[box-shadow,border-color,background-color] duration-300 ease-out",
+                  isOpen && "border-site-primary/35 bg-[#fafdff] shadow-md",
                 )}
                 data-open={isOpen}
               >
@@ -67,12 +80,12 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
                   )}
                 >
                   <span className="inline-flex min-w-0 items-center gap-2.5">
-                    <span className={cn("inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
+                    <span className={cn("inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
                       <HelpCircle className="h-4 w-4" aria-hidden />
                     </span>
                     <span>{q}</span>
                   </span>
-                  <span className={cn("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
+                  <span className={cn("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform duration-300 ease-out",
@@ -95,6 +108,7 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
             );
           })}
         </div>
+        {footerLine ? <p className="mt-6 text-sm font-semibold text-site-ink">{footerLine}</p> : null}
       </div>
     </section>
   );

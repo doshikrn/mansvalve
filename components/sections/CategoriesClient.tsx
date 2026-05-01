@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { ProductShowcaseCarousel } from "@/components/sections/ProductShowcaseCarousel";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
@@ -31,7 +29,7 @@ type CategoriesClientProps = {
 
 export function CategoriesClient({ products, copy }: CategoriesClientProps) {
   return (
-    <section className="relative mt-6 mb-10 overflow-hidden bg-transparent px-0 sm:mt-8 sm:mb-12">
+    <section className="site-section-dark relative overflow-hidden bg-[#081428] px-0">
       <div className="site-container relative">
         <motion.div
           className="flex flex-col"
@@ -42,7 +40,7 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
         >
           <motion.div
             variants={premiumIntroBlock}
-            className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between"
+            className="mb-6 flex flex-col gap-4 sm:mb-8"
           >
             <div className="min-w-0">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#2F6BFF]">
@@ -55,12 +53,6 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
                 {copy.sectionLead}
               </p>
             </div>
-            <Link
-              href={copy.sectionCtaHref}
-              className="inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-[#2F6BFF]/40 bg-[#2F6BFF]/12 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/55 hover:bg-[#2F6BFF]/20 hover:shadow-[0_0_28px_rgb(47_107_255_/_.22)] active:scale-[0.98] sm:self-auto"
-            >
-              {copy.sectionCtaLabel} <ArrowRight className="h-4 w-4" />
-            </Link>
           </motion.div>
 
           <motion.div
@@ -77,6 +69,7 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
               linkHref={copy.carouselLinkHref}
               variant="catalog"
               catalogBadgeLabel={copy.carouselBadgeLabel}
+              showCatalogButton={false}
             />
           </motion.div>
         </motion.div>

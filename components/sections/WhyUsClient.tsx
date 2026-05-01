@@ -47,7 +47,7 @@ function Card({
 
 export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClientProps) {
   return (
-    <section className="relative bg-transparent pb-14 pt-6 sm:pb-16 sm:pt-8">
+    <section className="site-section-dark relative bg-[#081428]">
       <div className="site-container">
         <motion.div
           className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3"

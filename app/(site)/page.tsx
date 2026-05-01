@@ -8,29 +8,33 @@ import { FAQ } from "@/components/sections/FAQ";
 import { RequestCTA } from "@/components/sections/RequestCTA";
 import { WhoWeSupply } from "@/components/sections/WhoWeSupply";
 import { DeliveryCase } from "@/components/sections/DeliveryCase";
-import { COMPANY } from "@/lib/company";
+import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { resolveHomeMeta } from "@/lib/site-content/public";
 
+const HOME_SEO_TITLE = "MANSVALVE GROUP — промышленная трубопроводная арматура в Казахстане";
+const HOME_SEO_DESCRIPTION =
+  "MANSVALVE GROUP поставляет промышленную трубопроводную арматуру, инженерное оборудование и комплектующие для предприятий, строительных объектов, ТЭЦ, водоканалов, нефтегазового сектора и государственных закупок. Работаем с B2B-клиентами по всему Казахстану. Подготовим коммерческое предложение за 15 минут в рабочее время.";
+
 export async function generateMetadata(): Promise<Metadata> {
-  const meta = await resolveHomeMeta();
+  await resolveHomeMeta();
   return {
-    title: meta.ogTitle,
-    description: meta.ogDescription,
+    title: HOME_SEO_TITLE,
+    description: HOME_SEO_DESCRIPTION,
     alternates: {
       canonical: "/",
     },
     openGraph: {
-      title: meta.ogTitle,
-      description: meta.ogDescription,
+      title: HOME_SEO_TITLE,
+      description: HOME_SEO_DESCRIPTION,
       url: "/",
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       type: "website",
       locale: "ru_KZ",
     },
     twitter: {
       card: "summary_large_image",
-      title: meta.ogTitle,
-      description: meta.ogDescription,
+      title: HOME_SEO_TITLE,
+      description: HOME_SEO_DESCRIPTION,
     },
   };
 }
@@ -38,21 +42,20 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function HomePage() {
   return (
     <>
-      {/* Тёмный поток: см. .home-flow-strip-dark / .home-why-us-dark — переход к свету только в .home-flow-from-dark-band */}
-      <div className="home-flow-strip-dark">
+      <div className="home-dark-zone">
         <Hero />
         <TrustStrip />
         <Categories />
-      </div>
-      <div className="home-why-us-dark">
         <WhyUs />
+        <div className="home-flow-from-dark-band" aria-hidden />
       </div>
-      <div className="home-flow-from-dark-band" aria-hidden />
-      <WhoWeSupply />
-      <DeliveryCase />
-      <HowItWorks />
-      <RequestCTA />
-      <FAQ />
+      <main className="home-light-zone">
+        <WhoWeSupply />
+        <DeliveryCase />
+        <HowItWorks />
+        <RequestCTA />
+        <FAQ />
+      </main>
     </>
   );
 }

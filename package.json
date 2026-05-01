@@ -15,7 +15,8 @@
     "admin:create": "tsx scripts/db/create-admin.ts",
     "catalog:parity-check": "tsx scripts/catalog-parity-check.ts",
     "seo:audit": "tsx scripts/seo-audit.ts",
-    "build:icons": "node scripts/build-app-icons.mjs"
+    "build:icons": "node scripts/build-app-icons.mjs",
+    "generate:icons": "node scripts/generate-brand-icons.mjs"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.19",
@@ -52,6 +53,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
+    "to-ico": "^1.1.5",
     "tsx": "^4.21.0",
     "typescript": "^5"
   }

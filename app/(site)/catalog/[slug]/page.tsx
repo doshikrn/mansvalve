@@ -27,7 +27,12 @@ import {
   type PublicCatalogProduct,
 } from "@/lib/public-catalog";
 import { buildProductBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/structured-data";
-import { COMPANY, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
+import { COMPANY_BRAND_SEO, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
+import {
+  buildProductCatalogName,
+  buildProductMetaDescription,
+  getCatalogCategoryLabel,
+} from "@/lib/catalog-seo";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -53,45 +58,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Товар не найден" };
   }
 
-  const specs = [
-    product.dn != null ? `DN${product.dn}` : null,
-    product.pn != null ? `PN${product.pn}` : null,
-    product.material || null,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  const priceHint =
-    product.price && !product.priceByRequest
-      ? `Цена: ${formatPrice(product.price)}.`
-      : "Цена по запросу.";
-
-  const standard = product.specs["Стандарт"] ?? "";
+  const productName = buildProductCatalogName(product);
   const canonicalPath = `/catalog/${product.slug}`;
-  const ogTitle = `${product.name} | ${COMPANY.name}`;
-  const longDescription = `${product.categoryName} ${product.name}. ${specs}. ${standard ? standard + ". " : ""}${priceHint} Поставки по Казахстану. КП: ${COMPANY.phoneDisplay}.`;
-  const ogDescription =
-    product.shortDescription?.trim() ||
-    `${product.name} — купить в РК, запросить КП. ${product.categoryName}. ${specs || "Параметры в карточке"}.`;
+  const pageTitle = `Купить ${productName} в Казахстане | ${COMPANY_BRAND_SEO}`;
+  const metaDescription = buildProductMetaDescription(productName);
 
   return {
-    title: `${product.name} — купить в Казахстане, КП и доставка`,
-    description: longDescription,
+    title: pageTitle,
+    description: metaDescription,
     alternates: {
       canonical: canonicalPath,
     },
     openGraph: {
-      title: ogTitle,
-      description: ogDescription,
+      title: pageTitle,
+      description: metaDescription,
       type: "website",
       url: canonicalPath,
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
     },
     twitter: {
       card: "summary_large_image",
-      title: ogTitle,
-      description: ogDescription,
+      title: pageTitle,
+      description: metaDescription,
     },
   };
 }
@@ -176,7 +165,9 @@ export default async function ProductPage({ params }: PageProps) {
     4,
   );
   const specsEntries = Object.entries(product.specs);
-  const waUrl = buildCompanyProductInquiryWhatsAppUrl(product.name, {
+  const productName = buildProductCatalogName(product);
+  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
+  const waUrl = buildCompanyProductInquiryWhatsAppUrl(productName, {
     dn: product.dn,
     pn: product.pn,
   });
@@ -197,7 +188,7 @@ export default async function ProductPage({ params }: PageProps) {
   const heroImageAlt =
     product.primaryImageAlt ||
     product.images?.[0]?.alt ||
-    `${product.categoryName} — ${product.name}`;
+    `${categoryLabel} — ${productName}`;
   const heroImageRemote =
     heroImageSrc.startsWith("http://") || heroImageSrc.startsWith("https://");
   warnInvalidMediaUrl(heroImageSrc, `ProductPage.hero:${product.slug}`);
@@ -253,7 +244,7 @@ export default async function ProductPage({ params }: PageProps) {
                   href={`/catalog/category/${category?.slug ?? product.category}`}
                   className="hover:text-slate-900 transition-colors"
                 >
-                  {product.categoryName}
+                  {categoryLabel}
                 </Link>
               </li>
               <li aria-hidden="true">
@@ -261,7 +252,7 @@ export default async function ProductPage({ params }: PageProps) {
               </li>
               <li>
                 <span className="font-medium text-slate-900 line-clamp-1">
-                  {product.name}
+                  {productName}
                 </span>
               </li>
             </ol>
@@ -286,7 +277,7 @@ export default async function ProductPage({ params }: PageProps) {
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
             <span className="absolute bottom-4 left-4 rounded-md border border-white/20 bg-slate-900/60 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
-              {product.categoryName}
+              {categoryLabel}
             </span>
           </div>
 
@@ -295,7 +286,7 @@ export default async function ProductPage({ params }: PageProps) {
             {/* Category + subcategory label */}
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-site-primary">
-                {product.categoryName}
+                {categoryLabel}
               </span>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
                 {product.subcategoryName}
@@ -304,7 +295,7 @@ export default async function ProductPage({ params }: PageProps) {
 
             {/* Product title */}
             <h1 className="mb-4 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
-              {product.name}
+              {productName}
             </h1>
 
             {/* Spec chips */}
@@ -569,9 +560,9 @@ export default async function ProductPage({ params }: PageProps) {
               variant="dark"
               source={`product-${product.slug}`}
               productContext={{
-                productName: product.name,
+                productName,
                 productSlug: product.slug,
-                productCategory: product.categoryName,
+                productCategory: categoryLabel,
                 productSubcategory: product.subcategoryName,
               }}
             />

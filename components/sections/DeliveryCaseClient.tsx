@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarRange, CheckCircle2, MapPin, Package } from "lucide-react";
+import { CalendarRange, CheckCircle2, Factory, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import {
   PREMIUM_VIEWPORT,
@@ -105,21 +105,19 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
           viewport={{ ...PREMIUM_VIEWPORT, amount: 0.28 }}
         >
           {content.cases.map((c, index) => (
-            <motion.li
-              key={`${c.title}-${index}`}
-              variants={premiumCardBlock}
-              className="site-card overflow-hidden p-0"
-            >
+            <motion.li key={`${c.title}-${index}`} variants={premiumCardBlock} className="site-card overflow-hidden p-0">
               <div className="grid h-full grid-rows-[auto_1fr_auto]">
-                <div className="flex items-start gap-4 border-b border-site-border bg-site-bg px-5 py-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-site-primary text-sm font-bold text-white shadow-[0_10px_20px_-12px_rgba(47,107,255,0.7)]">
+                <div className="relative flex items-start gap-4 border-b border-site-border bg-site-bg px-5 py-4">
+                  <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-site-primary/0 via-site-primary/55 to-site-primary/0" />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-site-primary/25 bg-site-primary text-sm font-bold text-white shadow-[0_10px_20px_-12px_rgba(47,107,255,0.7)]">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold uppercase text-site-muted">{c.object}</p>
                     <h3 className="mt-1 text-base font-bold leading-snug text-site-ink sm:text-lg">{c.title}</h3>
                   </div>
-                  <span className="ml-auto shrink-0 rounded-md border border-site-primary/20 bg-site-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-site-primary">
+                  <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-md border border-site-primary/20 bg-site-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-site-primary">
+                    <CheckCircle2 className="h-3 w-3" aria-hidden />
                     Завершено
                   </span>
                 </div>
@@ -130,7 +128,7 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
                   <div className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:[grid-template-columns:minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                     <MetaPill icon={Package} label={content.kitMetaLabel} value={c.positions} />
                     <MetaPill icon={CalendarRange} label={c.termLabel} value={c.term} />
-                    <MetaPill icon={MapPin} label={content.objectMetaLabel} value={c.object} />
+                    <MetaPill icon={Factory} label={content.objectMetaLabel} value={c.object} />
                   </div>
                 </div>
 

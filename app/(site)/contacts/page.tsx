@@ -16,7 +16,7 @@ import {
 } from "@/components/contacts/ContactsMapBlock";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
-import { COMPANY, buildCompanyContactsQuickCardWhatsAppUrl } from "@/lib/company";
+import { COMPANY, COMPANY_BRAND_SEO, buildCompanyContactsQuickCardWhatsAppUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { resolveContactsPage } from "@/lib/site-content/public";
 
@@ -24,7 +24,6 @@ import { resolveContactsPage } from "@/lib/site-content/public";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await resolveContactsPage();
-  const socialTitle = `${page.metaTitle} | ${COMPANY.name}`;
   return {
     title: page.metaTitle,
     description: page.metaDescription,
@@ -32,22 +31,31 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: "/contacts",
     },
     openGraph: {
-      title: socialTitle,
+      title: page.metaTitle,
       description: page.metaDescription,
       url: "/contacts",
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: socialTitle,
+      title: page.metaTitle,
       description: page.metaDescription,
     },
   };
 }
 
 const CONTACT_ICONS: LucideIcon[] = [Phone, Mail, MapPin, Clock];
+const CONTACTS_LEAD =
+  "Работаем с B2B-клиентами по всему Казахстану, обеспечивая надежные поставки промышленной арматуры и инженерного оборудования. Подготовим коммерческое предложение с ценой, сроками и условиями поставки в течение 15 минут в рабочее время.";
+const WORK_DIRECTIONS = [
+  "Государственные закупки",
+  "Промышленные предприятия",
+  "Строительные компании",
+  "ТЭЦ и теплосети",
+  "Водоканалы и коммунальный сектор",
+] as const;
 
 /* ── Page ─────────────────────────────────────────────────────────── */
 
@@ -113,7 +121,7 @@ export default async function ContactsPage() {
     {
       icon: CONTACT_ICONS[3]!,
       label: page.contactCardLabels[3]!,
-      lines: [page.workLine1, page.workLine2],
+      lines: ["Пн–Пт: 09:00–18:00", "Сб–Вс: по согласованию"],
       copy: undefined,
       href: null,
       hrefLabel: null,
@@ -151,7 +159,7 @@ export default async function ContactsPage() {
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             {page.h1}
           </h1>
-          <p className="max-w-xl text-lg text-slate-500">{page.pageLead}</p>
+          <p className="max-w-3xl text-lg text-slate-500">{CONTACTS_LEAD}</p>
         </div>
       </div>
 
@@ -229,6 +237,19 @@ export default async function ContactsPage() {
                 <p className="mt-0.5 text-xs text-slate-500">{page.whatsAppSubtitle}</p>
               </div>
             </a>
+
+            <div className="rounded-xl border border-site-border bg-site-card p-5">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                Направления работы
+              </p>
+              <ul className="space-y-2">
+                {WORK_DIRECTIONS.map((item) => (
+                  <li key={item} className="text-sm font-medium text-slate-900">
+                    ✔️ {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -283,6 +304,9 @@ export default async function ContactsPage() {
           <p className="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
             <Building2 size={13} />
             {page.requisitesFooterNote}
+          </p>
+          <p className="mt-4 text-sm font-semibold text-slate-900">
+            MANSVALVE GROUP — быстрый ответ, точные сроки, надежные поставки.
           </p>
         </div>
       </div>

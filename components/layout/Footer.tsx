@@ -107,19 +107,20 @@ export async function Footer() {
 
       <section className="border-b border-site-border bg-site-surface" aria-label="Преимущества компании">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-5 lg:gap-6">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5 lg:gap-4">
             {trustBar.items.map((text, i) => {
               const Icon = TRUST_ICONS[i] ?? Shield;
               return (
                 <li
                   key={`${text}-${i}`}
                   className={
-                    i > 0
-                      ? "flex gap-3 pt-4 sm:pt-0 lg:border-l lg:border-site-border lg:pl-5 lg:pt-0"
-                      : "flex gap-3"
+                    "relative flex gap-3 rounded-lg border border-site-border/80 bg-white px-3.5 py-3 shadow-[0_8px_18px_-16px_rgba(15,27,45,0.35)] lg:pl-4"
                   }
                 >
-                  <Icon className="mt-0.5 h-5 w-5 shrink-0 text-site-primary" strokeWidth={1.75} aria-hidden />
+                  <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-lg bg-gradient-to-r from-site-primary/0 via-site-primary/45 to-site-primary/0" />
+                  <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-site-primary/20 bg-site-primary/10">
+                    <Icon className="h-4 w-4 text-site-primary" strokeWidth={1.75} aria-hidden />
+                  </span>
                   <p className="text-xs leading-snug text-site-muted sm:text-[13px]">{text}</p>
                 </li>
               );
