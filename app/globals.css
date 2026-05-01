@@ -46,8 +46,8 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* Публичный сайт MANSVALVE — B2B: графит + оранжевый CTA + steel + технический зелёный */
-  --color-site-bg: #f8fafc;
+  /* Публичный сайт MANSVALVE — B2B: primary (синий) + accent (оранжевый CTA) */
+  --color-site-bg: #f4f7fb;
   --color-site-surface: #f1f5f9;
   --color-site-card: #ffffff;
   --color-site-border: #d8e1eb;
@@ -55,14 +55,18 @@
   --color-site-muted: #526173;
   --color-site-deep: #0b1220;
   --color-site-deep-soft: #141c2c;
-  /* Холодный акцент доверия (вторичные кнопки, подписи, иконки) */
+  /* Главная: единый тёмный фон зоны hero→хиты→преимущества + узкий fade к свету (без «тумана») */
+  --home-flow-dark: #081428;
+  /* Primary: база UI (кнопки-вторичные, иконки, ссылки) */
   --color-site-primary: #2f6bff;
   --color-site-primary-hover: #2563eb;
   --color-site-steel: #2f6bff;
   --color-site-steel-glow: rgb(47 107 255 / 0.22);
-  /* Метрики / статусы */
-  --color-site-tech: #3faf7a;
-  --color-site-tech-dark: #2e8b57;
+  /* Мягкий голубой для иконок/метрик на тёмном фоне (hero и т.п.) */
+  --color-site-soft-blue: #8bb4ff;
+  /* Доп. оттенок для метрик на тёмных карточках (ранее «tech» — без зелёного) */
+  --color-site-tech: #8bb4ff;
+  --color-site-tech-dark: #5b8cff;
   --color-site-cta: #ea580c;
   --color-site-cta-hover: #c2410c;
   --color-site-whatsapp: #25d366;
@@ -155,9 +159,26 @@
   }
 }
 
-/* Главная: плавный фон Hero → Хиты → Преимущества (без резких светлых вставок) */
-.home-flow-strip {
-  background: linear-gradient(to bottom, #0b1220 0%, #0f1a2e 40%, #0f1a2e 60%, #0b1220 100%);
+/*
+ * Главная — тёмный блок: сплошной фон, без длинного градиента поверх контента.
+ * Схлопывание margin дочерних секций уводим в BFC, чтобы не «просвечивал» белый body.
+ */
+.home-flow-strip-dark,
+.home-why-us-dark {
+  display: flow-root;
+  background-color: #081428;
+}
+
+/*
+ * Узкий переход dark → светлый фон сайта (только между секциями, не над карточками).
+ * Два сплошных цвета (#081428 → #F4F7FB как --color-site-bg), без серых стопов и без rgba-«тумана».
+ */
+.home-flow-from-dark-band {
+  display: block;
+  height: clamp(60px, 4vw, 80px);
+  max-height: 80px;
+  flex-shrink: 0;
+  background: linear-gradient(to bottom, #081428 0%, #f4f7fb 100%);
 }
 
 @layer components {
@@ -275,19 +296,19 @@ html[data-motion-css-debug="1"] .reveal-up {
     inset 0 1px 0 0 rgb(255 255 255 / 0.06);
 }
 
-/* «Хиты продаж»: тёмное стекло, глубина, акцент сверху */
+/* «Хиты продаж»: тёмное стекло, мягкая глубина без «приклеенной» карточки */
 .showcase-card-catalog {
   position: relative;
   overflow: visible;
-  border: 1px solid rgb(255 255 255 / 0.05);
-  border-top: 2px solid rgb(255 120 40 / 0.4);
+  border: 1px solid rgb(255 255 255 / 0.04);
+  border-top: 2px solid rgb(255 120 40 / 0.28);
   border-radius: 0.75rem;
   background: rgb(255 255 255 / 0.02);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow:
-    0 10px 40px rgb(0 0 0 / 0.4),
-    inset 0 1px 0 rgb(255 255 255 / 0.05);
+    0 24px 70px rgb(2 6 23 / 0.28),
+    inset 0 1px 0 rgb(255 255 255 / 0.04);
 }
 
 /* Hero (главная): мягкое появление без JS; уважает prefers-reduced-motion */

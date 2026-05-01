@@ -38,12 +38,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function HomePage() {
   return (
     <>
-      <div className="home-flow-strip">
+      {/* Тёмный поток: см. .home-flow-strip-dark / .home-why-us-dark — переход к свету только в .home-flow-from-dark-band */}
+      <div className="home-flow-strip-dark">
         <Hero />
         <TrustStrip />
         <Categories />
+      </div>
+      <div className="home-why-us-dark">
         <WhyUs />
       </div>
+      <div className="home-flow-from-dark-band" aria-hidden />
       <WhoWeSupply />
       <DeliveryCase />
       <HowItWorks />

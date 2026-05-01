@@ -11,11 +11,13 @@ import {
 
 function MetaPill({ icon: Icon, label, value }: { icon: typeof Package; label: string; value: string }) {
   return (
-    <div className="flex min-w-0 items-start gap-2 border-t border-site-border pt-3 sm:items-center sm:gap-2.5">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-site-primary sm:mt-0" aria-hidden strokeWidth={1.8} />
+    <div className="flex min-w-0 items-start gap-2.5 rounded-lg border border-site-border bg-site-bg px-3 py-2.5 sm:items-center">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-site-primary/25 bg-site-primary/10">
+        <Icon className="h-3.5 w-3.5 text-site-primary" aria-hidden strokeWidth={1.9} />
+      </span>
       <div className="min-w-0 text-xs sm:text-sm">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-site-muted">{label}</p>
-        <p className="font-semibold text-site-ink">{value}</p>
+        <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-site-muted">{label}</p>
+        <p className="break-words font-semibold leading-snug text-site-ink [overflow-wrap:anywhere]">{value}</p>
       </div>
     </div>
   );
@@ -78,7 +80,7 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
               </h2>
               <p className="site-copy mt-3">{content.sectionLead}</p>
             </div>
-            <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-site-border bg-site-card text-center shadow-sm lg:min-w-[360px]">
+            <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-site-border bg-site-card text-center shadow-[0_14px_28px_-20px_rgba(15,27,45,0.35)] lg:min-w-[360px]">
               <div className="border-r border-site-border px-3 py-3">
                 <p className="text-lg font-bold text-site-ink">{content.summaryCasesValue}</p>
                 <p className="text-[10px] font-semibold uppercase text-site-muted">{content.summaryCasesLabel}</p>
@@ -110,19 +112,22 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
             >
               <div className="grid h-full grid-rows-[auto_1fr_auto]">
                 <div className="flex items-start gap-4 border-b border-site-border bg-site-bg px-5 py-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-site-primary text-sm font-bold text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-site-primary text-sm font-bold text-white shadow-[0_10px_20px_-12px_rgba(47,107,255,0.7)]">
                     {String(index + 1).padStart(2, "0")}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold uppercase text-site-muted">{c.object}</p>
                     <h3 className="mt-1 text-base font-bold leading-snug text-site-ink sm:text-lg">{c.title}</h3>
                   </div>
+                  <span className="ml-auto shrink-0 rounded-md border border-site-primary/20 bg-site-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-site-primary">
+                    Завершено
+                  </span>
                 </div>
 
                 <div className="px-5 py-4">
                   <p className="text-sm leading-relaxed text-site-muted sm:text-[15px]">{c.text}</p>
 
-                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div className="mt-5 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:[grid-template-columns:minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
                     <MetaPill icon={Package} label={content.kitMetaLabel} value={c.positions} />
                     <MetaPill icon={CalendarRange} label={c.termLabel} value={c.term} />
                     <MetaPill icon={MapPin} label={content.objectMetaLabel} value={c.object} />
@@ -130,7 +135,9 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
                 </div>
 
                 <div className="flex gap-3 border-t border-site-border bg-white px-5 py-4">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-site-primary" aria-hidden strokeWidth={1.8} />
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-site-primary/10">
+                    <CheckCircle2 className="h-4 w-4 text-site-primary" aria-hidden strokeWidth={2} />
+                  </span>
                   <p className="text-sm font-medium leading-relaxed text-site-ink">
                     <span className="font-bold text-site-ink">{content.resultPrefix} </span>
                     {c.result}

@@ -31,7 +31,7 @@ type CategoriesClientProps = {
 
 export function CategoriesClient({ products, copy }: CategoriesClientProps) {
   return (
-    <section className="relative mt-[60px] mb-[80px] overflow-hidden bg-transparent px-0">
+    <section className="relative mt-6 mb-10 overflow-hidden bg-transparent px-0 sm:mt-8 sm:mb-12">
       <div className="site-container relative">
         <motion.div
           className="flex flex-col"
@@ -42,7 +42,7 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
         >
           <motion.div
             variants={premiumIntroBlock}
-            className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between"
+            className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between"
           >
             <div className="min-w-0">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#2F6BFF]">

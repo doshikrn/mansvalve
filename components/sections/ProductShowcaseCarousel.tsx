@@ -283,7 +283,14 @@ export function ProductShowcaseCarousel({
                       >
                         <Icon className="mb-1 h-4 w-4 shrink-0 text-site-cta" aria-hidden />
                         <p className="text-[10px] font-semibold uppercase text-slate-500">{label}</p>
-                        <p className="line-clamp-2 break-words text-sm font-bold leading-snug text-slate-100">
+                        <p
+                          className={cn(
+                            "text-sm font-bold leading-snug text-slate-100",
+                            label === "Материал"
+                              ? "line-clamp-3 whitespace-normal break-words [overflow-wrap:anywhere]"
+                              : "line-clamp-2 break-words",
+                          )}
+                        >
                           {value}
                         </p>
                       </div>
@@ -330,7 +337,14 @@ export function ProductShowcaseCarousel({
                       >
                         <Icon className="mb-1 h-4 w-4 shrink-0 text-[#2F6BFF]" aria-hidden />
                         <p className="text-[10px] font-semibold uppercase text-slate-500">{label}</p>
-                        <p className="line-clamp-2 break-words text-sm font-bold leading-snug text-slate-100">
+                        <p
+                          className={cn(
+                            "text-sm font-bold leading-snug text-slate-100",
+                            label === "Материал"
+                              ? "line-clamp-3 whitespace-normal break-words [overflow-wrap:anywhere]"
+                              : "line-clamp-2 break-words",
+                          )}
+                        >
                           {value}
                         </p>
                       </div>
@@ -392,12 +406,8 @@ export function ProductShowcaseCarousel({
               className={cn(
                 "shrink-0 rounded-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
                 index === active
-                  ? isHero
-                    ? "h-[5px] w-7 bg-white/42"
-                    : "h-[5px] w-7 bg-site-cta/90"
-                  : isHero
-                    ? "h-[5px] w-[5px] bg-white/14 hover:bg-white/26"
-                    : "h-[5px] w-[5px] bg-white/20 hover:bg-white/35",
+                  ? "h-[6px] w-8 origin-center scale-y-110 bg-site-cta shadow-[0_0_14px_rgb(234_88_12_/_.42)] motion-reduce:scale-y-100 motion-reduce:shadow-none"
+                  : "h-[5px] w-[5px] origin-center bg-white/25 hover:bg-white/38",
               )}
             />
           ))}

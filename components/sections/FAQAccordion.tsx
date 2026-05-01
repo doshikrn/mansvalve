@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, HelpCircle } from "lucide-react";
 import { MOTION_DURATION, MOTION_EASE, PREMIUM_VIEWPORT, premiumIntroBlock } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -66,13 +66,20 @@ export function FAQAccordion({ sectionEyebrow, sectionTitle, items }: FAQAccordi
                     isOpen && "text-site-primary",
                   )}
                 >
-                  {q}
-                  <ChevronDown
-                    className={cn(
-                      "h-5 w-5 shrink-0 text-site-muted transition-transform duration-300 ease-out",
-                      isOpen && "rotate-180 text-site-primary",
-                    )}
-                  />
+                  <span className="inline-flex min-w-0 items-center gap-2.5">
+                    <span className={cn("inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
+                      <HelpCircle className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span>{q}</span>
+                  </span>
+                  <span className={cn("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform duration-300 ease-out",
+                        isOpen && "rotate-180",
+                      )}
+                    />
+                  </span>
                 </button>
 
                 <motion.div

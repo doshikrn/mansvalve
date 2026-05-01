@@ -1,7 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import {
+  Check,
+  ClipboardList,
+  FileSpreadsheet,
+  FileText,
+  PackageCheck,
+  Truck,
+} from "lucide-react";
 import { PREMIUM_VIEWPORT, premiumCardBlock, premiumIntroBlock } from "@/lib/motion";
 
 export type HowItWorksStep = { num: string; title: string; desc: string };
@@ -21,6 +28,8 @@ const stepsStagger = {
     },
   },
 };
+
+const STEP_ICONS = [ClipboardList, FileSpreadsheet, FileText, PackageCheck, Truck] as const;
 
 export function HowItWorksClient({ sectionEyebrow, sectionTitle, steps }: HowItWorksClientProps) {
   return (
@@ -44,27 +53,35 @@ export function HowItWorksClient({ sectionEyebrow, sectionTitle, steps }: HowItW
           whileInView="visible"
           viewport={{ ...PREMIUM_VIEWPORT, amount: 0.28 }}
         >
-          <div className="absolute left-0 right-0 top-7 hidden h-px bg-site-border lg:block" />
+          <div className="absolute left-[8%] right-[8%] top-7 hidden h-px bg-site-border lg:block" />
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {steps.map((step) => (
-              <motion.div key={step.num} variants={premiumCardBlock}>
-                <div className="site-card relative flex flex-col p-5 lg:min-h-[190px]">
-                  <div
-                    className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full border border-site-tech/40 bg-site-tech/12 text-site-tech shadow-sm"
-                    aria-label="Стандартный этап — выполняем в каждом заказе"
-                    title="Стандартный этап — выполняем в каждом заказе"
-                  >
-                    <Check className="size-4" strokeWidth={2.75} aria-hidden />
+            {steps.map((step, index) => {
+              const Icon = STEP_ICONS[index] ?? ClipboardList;
+              return (
+                <motion.div key={step.num} variants={premiumCardBlock}>
+                  <div className="site-card relative flex h-full flex-col p-5 lg:min-h-[220px]">
+                    <div
+                      className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full border border-site-primary/40 bg-site-primary/12 text-site-primary shadow-sm"
+                      aria-label="Стандартный этап"
+                      title="Стандартный этап"
+                    >
+                      <Check className="size-4" strokeWidth={2.75} aria-hidden />
+                    </div>
+
+                    <div className="relative z-10 mb-4 flex h-14 w-14 items-center justify-center rounded-lg border border-site-primary/30 bg-site-card text-lg font-bold text-site-primary shadow-sm">
+                      {step.num}
+                    </div>
+                    <span className="mb-3 inline-flex w-fit items-center gap-1.5 rounded-md border border-site-primary/20 bg-site-primary/8 px-2.5 py-1 text-[11px] font-semibold text-site-primary">
+                      <Icon className="h-3.5 w-3.5" aria-hidden />
+                      Этап
+                    </span>
+                    <h3 className="mb-2 text-sm font-bold uppercase text-site-ink sm:text-base">{step.title}</h3>
+                    <p className="text-sm leading-relaxed text-site-muted">{step.desc}</p>
                   </div>
-                  <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-lg border border-site-primary/30 bg-site-card text-lg font-bold text-site-primary shadow-sm">
-                    {step.num}
-                  </div>
-                  <h3 className="mb-2 text-sm font-bold uppercase text-site-ink sm:text-base">{step.title}</h3>
-                  <p className="text-sm leading-relaxed text-site-muted">{step.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>

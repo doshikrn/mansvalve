@@ -10,11 +10,11 @@ export async function TrustStrip() {
 
   return (
     <TrustStripClient>
-      <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-slate-400 sm:text-base">
+      <p className="mx-auto max-w-3xl text-center text-sm leading-relaxed text-slate-300 sm:text-base">
         {idx >= 0 ? (
           <>
             {text.slice(0, idx)}
-            <span className="font-semibold uppercase text-slate-100">{COMPANY.name}</span>
+            <span className="font-semibold uppercase text-white">{COMPANY.name}</span>
             {text.slice(idx + COMPANY.name.length)}
           </>
         ) : (

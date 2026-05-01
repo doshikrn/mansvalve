@@ -1,8 +1,9 @@
 "use client";
 
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
-import { COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import { COMPANY, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { motion } from "framer-motion";
+import { FileText, ShieldCheck, TimerReset } from "lucide-react";
 import { PREMIUM_VIEWPORT, premiumIntroBlock } from "@/lib/motion";
 
 type RequestCtaClientProps = {
@@ -15,7 +16,7 @@ export function RequestCtaClient({ title, subtitle, footerHint }: RequestCtaClie
   return (
     <motion.section
       id="request-section"
-      className="relative scroll-mt-20 overflow-hidden bg-site-deep py-16 sm:scroll-mt-24 sm:py-20 md:scroll-mt-32"
+      className="relative z-[1] -mt-px scroll-mt-20 overflow-hidden border-t border-site-deep bg-site-deep py-16 sm:scroll-mt-24 sm:py-20 md:scroll-mt-32"
       variants={premiumIntroBlock}
       initial="hidden"
       whileInView="visible"
@@ -36,7 +37,18 @@ export function RequestCtaClient({ title, subtitle, footerHint }: RequestCtaClie
         <h2 className="mb-3 text-3xl font-bold text-white sm:text-4xl">{title}</h2>
         <p className="mb-8 text-base text-white/90 sm:text-lg">{subtitle}</p>
 
-        <div className="mx-auto max-w-lg rounded-lg border border-white/10 bg-white/[0.06] p-5 text-left shadow-[0_24px_48px_-28px_rgba(0,0,0,0.7)] sm:p-6">
+        <div className="mx-auto mb-5 flex max-w-lg flex-wrap justify-center gap-2 text-xs">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-white/12 bg-white/[0.06] px-2.5 py-1 text-white/85">
+            <TimerReset className="h-3.5 w-3.5 text-site-cta" aria-hidden />
+            КП за 15 минут
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-white/12 bg-white/[0.06] px-2.5 py-1 text-white/85">
+            <ShieldCheck className="h-3.5 w-3.5 text-site-primary" aria-hidden />
+            НДС и документы
+          </span>
+        </div>
+
+        <div className="mx-auto max-w-lg rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.05)_100%)] p-5 text-left shadow-[0_30px_60px_-34px_rgba(0,0,0,0.8)] sm:p-6">
           <QuickRequestForm variant="dark" source="homepage-request-cta" />
         </div>
 
@@ -49,6 +61,14 @@ export function RequestCtaClient({ title, subtitle, footerHint }: RequestCtaClie
             className="font-semibold text-site-whatsapp underline underline-offset-2 hover:text-site-whatsapp-hover hover:no-underline"
           >
             WhatsApp
+          </a>
+          <span className="mx-2 text-white/40">·</span>
+          <a
+            href={`mailto:${COMPANY.email}`}
+            className="inline-flex items-center gap-1 font-semibold text-site-soft-blue underline underline-offset-2 hover:text-white hover:no-underline"
+          >
+            <FileText className="h-3.5 w-3.5" aria-hidden />
+            Email
           </a>
         </p>
       </div>

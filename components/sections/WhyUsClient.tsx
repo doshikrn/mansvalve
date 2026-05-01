@@ -34,12 +34,12 @@ function Card({
   Icon,
 }: WhyUsItem & { Icon: LucideIcon }) {
   return (
-    <div className="group rounded-lg border border-white/[0.08] bg-white/[0.04] p-6 shadow-[0_10px_40px_-12px_rgb(0_0_0_/_0.45)] backdrop-blur-sm transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[2px] hover:border-white/15 hover:bg-white/[0.06] hover:shadow-[0_16px_48px_-16px_rgb(0_0_0_/_0.55)] motion-reduce:hover:translate-y-0">
-      <div className="site-icon mb-4 h-12 w-12 border border-white/5 bg-site-primary/15 transition-colors group-hover:bg-site-primary group-hover:text-white">
+    <div className="group flex h-full flex-col rounded-lg border border-white/[0.12] bg-slate-950/45 p-6 shadow-[0_12px_48px_-20px_rgb(0_0_0_/_0.5)] backdrop-blur-sm transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[2px] hover:border-white/18 hover:bg-slate-950/55 hover:shadow-[0_18px_56px_-24px_rgb(0_0_0_/_0.55)] motion-reduce:hover:translate-y-0">
+      <div className="site-icon mb-4 h-12 w-12 shrink-0 border border-white/5 bg-site-primary/15 transition-colors group-hover:bg-site-primary group-hover:text-white">
         <Icon className="h-6 w-6" />
       </div>
-      <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-site-tech">{metric}</p>
-      <h3 className="mb-1 text-base font-bold text-slate-50 sm:text-[17px]">{title}</h3>
+      <p className="mb-2 shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-site-tech">{metric}</p>
+      <h3 className="mb-1 shrink-0 text-base font-bold text-slate-50 sm:text-[17px]">{title}</h3>
       <p className="text-sm leading-snug text-slate-400">{desc}</p>
     </div>
   );
@@ -47,16 +47,16 @@ function Card({
 
 export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClientProps) {
   return (
-    <section className="relative bg-transparent pb-16 pt-8 sm:pb-20 sm:pt-10">
+    <section className="relative bg-transparent pb-14 pt-6 sm:pb-16 sm:pt-8">
       <div className="site-container">
         <motion.div
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3"
           variants={premiumStaggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={PREMIUM_VIEWPORT}
         >
-          <motion.div variants={premiumIntroBlock} className="col-span-full mb-10 max-w-3xl">
+          <motion.div variants={premiumIntroBlock} className="col-span-full mb-8 max-w-3xl">
             <div className="site-eyebrow text-[#2F6BFF]">{sectionEyebrow}</div>
             <h2 className="site-heading text-white">{sectionTitle}</h2>
           </motion.div>
@@ -64,7 +64,7 @@ export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClient
           {items.map((item, index) => {
             const Icon = ICONS[index] ?? Clock;
             return (
-              <motion.div key={`${item.title}-${index}`} variants={premiumCardBlock}>
+              <motion.div key={`${item.title}-${index}`} variants={premiumCardBlock} className="h-full min-h-0">
                 <Card {...item} Icon={Icon} />
               </motion.div>
             );

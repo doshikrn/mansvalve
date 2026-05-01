@@ -26,11 +26,7 @@ export async function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-white/[0.06] bg-transparent">
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/[0.15]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -left-[20%] top-0 h-full w-[70%] bg-gradient-to-r from-[rgb(180_83_9_/_.072)] via-transparent to-transparent"
+        className="pointer-events-none absolute -left-[20%] top-0 h-full w-[70%] bg-gradient-to-r from-[rgb(47_107_255_/_.08)] via-transparent to-transparent"
         aria-hidden
       />
       <div
@@ -49,7 +45,7 @@ export async function Hero() {
         aria-hidden
       />
       <div
-        className="absolute inset-0 opacity-[0.08]"
+        className="absolute inset-0 opacity-[0.05]"
         style={{
           backgroundImage:
             "linear-gradient(rgba(226,232,240,0.32) 1px, transparent 1px), linear-gradient(90deg, rgba(226,232,240,0.32) 1px, transparent 1px)",
@@ -57,12 +53,7 @@ export async function Hero() {
         }}
         aria-hidden
       />
-      <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.5)_0%,transparent_34%,rgba(2,6,23,0.62)_100%)]"
-        aria-hidden
-      />
-
-      <div className="site-container relative py-16 sm:py-20 lg:py-24">
+      <div className="site-container relative py-14 sm:py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.14fr] lg:items-start lg:gap-8 xl:gap-10">
           <div className="hero-enter-left">
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-[#2F6BFF]/25 bg-[#2F6BFF]/10 px-4 py-1.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-colors duration-300 hover:border-[#2F6BFF]/35">
@@ -128,15 +119,15 @@ export async function Hero() {
                     className="flex gap-3 rounded-lg transition-colors duration-200 ease-out hover:bg-white/[0.05] motion-reduce:hover:bg-transparent sm:flex-1 sm:px-6 first:sm:pl-0 last:sm:pr-0"
                   >
                     <Icon
-                      className="mt-1 h-5 w-5 shrink-0 text-site-cta"
+                      className="mt-1 h-5 w-5 shrink-0 text-site-soft-blue"
                       strokeWidth={1.75}
                       aria-hidden
                     />
                     <div className="min-w-0">
-                      <div className="text-2xl font-bold tabular-nums tracking-tight text-site-tech sm:text-[1.65rem] lg:text-[1.75rem]">
+                      <div className="text-2xl font-bold tabular-nums tracking-tight text-white sm:text-[1.65rem] lg:text-[1.75rem]">
                         {s.val}
                       </div>
-                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-slate-400 sm:text-[11px]">
+                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-white/[0.62] sm:text-[11px]">
                         {s.label}
                       </div>
                     </div>
