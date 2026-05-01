@@ -15,13 +15,24 @@ export function RequestCtaClient({ title, subtitle, footerHint }: RequestCtaClie
   return (
     <motion.section
       id="request-section"
-      className="scroll-mt-20 bg-site-deep py-16 sm:scroll-mt-24 sm:py-20 md:scroll-mt-32"
+      className="relative scroll-mt-20 overflow-hidden bg-site-deep py-16 sm:scroll-mt-24 sm:py-20 md:scroll-mt-32"
       variants={premiumIntroBlock}
       initial="hidden"
       whileInView="visible"
       viewport={PREMIUM_VIEWPORT}
     >
-      <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#141C2C] via-[#0B1220] to-[#10192e]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-24 top-1/2 h-[380px] w-[380px] -translate-y-1/2 rounded-full opacity-[0.18]"
+        style={{
+          background: "radial-gradient(circle, #2F6BFF 0%, transparent 70%)",
+        }}
+        aria-hidden
+      />
+      <div className="relative mx-auto max-w-2xl px-4 text-center sm:px-6">
         <h2 className="mb-3 text-3xl font-bold text-white sm:text-4xl">{title}</h2>
         <p className="mb-8 text-base text-white/90 sm:text-lg">{subtitle}</p>
 

@@ -38,7 +38,7 @@ function Card({
       <div className="site-icon mb-4 h-12 w-12">
         <Icon className="h-6 w-6" />
       </div>
-      <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-site-primary">{metric}</p>
+      <p className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-site-tech">{metric}</p>
       <h3 className="mb-1 text-base font-bold text-site-ink sm:text-[17px]">{title}</h3>
       <p className="text-sm leading-snug text-site-muted">{desc}</p>
     </div>

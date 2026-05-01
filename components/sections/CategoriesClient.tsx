@@ -32,8 +32,12 @@ type CategoriesClientProps = {
 
 export function CategoriesClient({ products, copy }: CategoriesClientProps) {
   return (
-    <section className="site-section">
-      <div className="site-container">
+    <section className="relative overflow-hidden bg-[#0B1220] py-16 sm:py-20">
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#141C2C] via-[#0B1220] to-[#080c14]"
+        aria-hidden
+      />
+      <div className="site-container relative">
         <motion.div
           className="flex flex-col"
           variants={premiumStaggerContainer}
@@ -46,11 +50,20 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
             className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between"
           >
             <div className="min-w-0">
-              <p className="site-eyebrow">{copy.sectionEyebrow}</p>
-              <h2 className="site-heading mt-2">{copy.sectionTitle}</h2>
-              <p className="site-copy mt-2 max-w-[760px]">{copy.sectionLead}</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#2F6BFF]">
+                {copy.sectionEyebrow}
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+                {copy.sectionTitle}
+              </h2>
+              <p className="mt-2 max-w-[760px] text-base leading-relaxed text-slate-400 sm:text-lg">
+                {copy.sectionLead}
+              </p>
             </div>
-            <Link href={copy.sectionCtaHref} className="site-link-button self-start sm:self-auto">
+            <Link
+              href={copy.sectionCtaHref}
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-lg border border-[#2F6BFF]/40 bg-[#2F6BFF]/12 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/55 hover:bg-[#2F6BFF]/20 hover:shadow-[0_0_28px_rgb(47_107_255_/_.22)] active:scale-[0.98] sm:self-auto"
+            >
               {copy.sectionCtaLabel} <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>

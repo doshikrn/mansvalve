@@ -26,15 +26,22 @@ export async function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-site-deep bg-site-deep">
       <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(15,27,45,0.98)_0%,rgba(18,40,67,0.98)_48%,rgba(21,49,80,0.95)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#141C2C] via-[#0B1220] to-[#060a10]"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_78%_70%_at_-12%_18%,rgba(29,78,216,0.42)_0%,rgba(29,78,216,0.14)_42%,transparent_70%)]"
+        className="pointer-events-none absolute -left-[20%] top-0 h-full w-[70%] bg-gradient-to-r from-[rgb(180_83_9_/_.072)] via-transparent to-transparent"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(234,88,12,0.12)_0%,rgba(234,88,12,0.035)_36%,transparent_62%)]"
+        className="pointer-events-none absolute -right-32 top-1/2 h-[min(120%,900px)] w-[min(100vw,720px)] -translate-y-1/2 rounded-full opacity-[0.20]"
+        style={{
+          background: "radial-gradient(circle at center, #2F6BFF 0%, transparent 68%)",
+        }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(234,88,12,0.08)_0%,rgba(234,88,12,0.02)_36%,transparent_62%)]"
         aria-hidden
       />
       <div
@@ -58,14 +65,14 @@ export async function Hero() {
       <div className="site-container relative py-16 sm:py-20 lg:py-24">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.14fr] lg:items-start lg:gap-8 xl:gap-10">
           <div className="hero-enter-left">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.08] px-4 py-1.5 text-sm font-semibold text-slate-200 shadow-sm">
-              <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
+            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-[#2F6BFF]/25 bg-[#2F6BFF]/10 px-4 py-1.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-colors duration-300 hover:border-[#2F6BFF]/35">
+              <MapPin className="h-4 w-4 shrink-0 text-[#2F6BFF]" />
               {heroContent.eyebrow}
             </div>
 
             <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[56px]">
               {heroContent.h1Line1}{" "}
-              <span className="text-[#bfdbfe]">{heroContent.h1Highlight}</span>
+              <span className="text-site-cta">{heroContent.h1Highlight}</span>
             </h1>
 
             <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-300 sm:text-[17px]">
@@ -94,9 +101,9 @@ export async function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 prefetch={false}
-                className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-white/15 bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-slate-200 shadow-sm transition-colors hover:border-white/30 hover:bg-white/[0.12] hover:text-white sm:self-center"
+                className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-[#2F6BFF]/35 bg-[#2F6BFF]/10 px-4 py-2.5 text-sm font-semibold text-slate-100 shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/50 hover:bg-[#2F6BFF]/18 hover:text-white hover:shadow-[0_0_24px_rgb(47_107_255_/_.22)] sm:self-center"
               >
-                <FileText className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-white" />
+                <FileText className="h-4 w-4 shrink-0 text-[#2F6BFF] transition-colors group-hover:text-white" />
                 <span>{heroContent.secondaryCta}</span>
               </Link>
             </div>
@@ -126,7 +133,7 @@ export async function Hero() {
                       aria-hidden
                     />
                     <div className="min-w-0">
-                      <div className="text-2xl font-bold tabular-nums tracking-tight text-white sm:text-[1.65rem] lg:text-[1.75rem]">
+                      <div className="text-2xl font-bold tabular-nums tracking-tight text-site-tech sm:text-[1.65rem] lg:text-[1.75rem]">
                         {s.val}
                       </div>
                       <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-slate-400 sm:text-[11px]">

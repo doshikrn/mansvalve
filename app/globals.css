@@ -46,17 +46,23 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* Публичный сайт MANSVALVE — единая B2B-палитра */
-  --color-site-bg: #f3f6fa;
-  --color-site-surface: #e9eef5;
+  /* Публичный сайт MANSVALVE — B2B: графит + оранжевый CTA + steel + технический зелёный */
+  --color-site-bg: #f8fafc;
+  --color-site-surface: #f1f5f9;
   --color-site-card: #ffffff;
   --color-site-border: #d8e1eb;
   --color-site-ink: #0f172a;
   --color-site-muted: #526173;
-  --color-site-deep: #0f1b2d;
-  --color-site-deep-soft: #152740;
-  --color-site-primary: #1f5f99;
-  --color-site-primary-hover: #174a78;
+  --color-site-deep: #0b1220;
+  --color-site-deep-soft: #141c2c;
+  /* Холодный акцент доверия (вторичные кнопки, подписи, иконки) */
+  --color-site-primary: #2f6bff;
+  --color-site-primary-hover: #2563eb;
+  --color-site-steel: #2f6bff;
+  --color-site-steel-glow: rgb(47 107 255 / 0.22);
+  /* Метрики / статусы */
+  --color-site-tech: #3faf7a;
+  --color-site-tech-dark: #2e8b57;
   --color-site-cta: #ea580c;
   --color-site-cta-hover: #c2410c;
   --color-site-whatsapp: #25d366;
@@ -172,7 +178,7 @@
   }
 
   .site-card {
-    @apply rounded-lg border border-site-border bg-site-card shadow-sm transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[3px] hover:border-site-primary/55 hover:shadow-xl hover:shadow-site-deep/20 motion-reduce:hover:translate-y-0 motion-reduce:hover:shadow-sm;
+    @apply rounded-lg border border-site-border bg-site-card shadow-sm transition-[border-color,box-shadow,transform,background-color] duration-300 ease-out hover:-translate-y-[3px] hover:border-site-primary/35 hover:bg-[#fffefb] hover:shadow-[0_8px_40px_-12px_rgb(47_107_255_/_.18)] motion-reduce:hover:translate-y-0 motion-reduce:hover:shadow-sm;
   }
 
   .site-card-quiet {
@@ -192,7 +198,7 @@
   }
 
   .site-primary-cta {
-    @apply rounded-lg !border-site-cta-hover !bg-site-cta !text-white shadow-md transition-[background-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[3px] hover:!bg-site-cta-hover hover:shadow-xl focus-visible:ring-2 focus-visible:ring-site-cta/45 focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:hover:shadow-md;
+    @apply rounded-lg !border-site-cta-hover !bg-site-cta !text-white shadow-md transition-[background-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[3px] hover:!bg-site-cta-hover hover:shadow-[0_0_28px_rgb(234_88_12_/_.35)] hover:shadow-xl focus-visible:ring-2 focus-visible:ring-site-cta/45 focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:hover:shadow-md;
   }
 }
 
@@ -254,7 +260,7 @@ html[data-motion-css-debug="1"] .reveal-up {
 .showcase-card-hero {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.1);
+  border: 1px solid rgb(47 107 255 / 0.14);
   background:
     radial-gradient(ellipse 95% 55% at 50% 0%, rgb(255 255 255 / 0.07) 0%, transparent 52%),
     linear-gradient(168deg, rgb(15 23 42 / 0.97) 0%, rgb(8 12 24 / 0.99) 100%);
@@ -269,13 +275,13 @@ html[data-motion-css-debug="1"] .reveal-up {
   position: relative;
   /* visible: иначе translateX при входе слайда обрезается overflow hidden и анимация не видна */
   overflow: visible;
-  border: 1px solid var(--color-site-border);
+  border: 1px solid rgb(47 107 255 / 0.12);
   background:
-    radial-gradient(ellipse 100% 65% at 50% 0%, rgb(59 130 246 / 0.05) 0%, transparent 58%),
+    radial-gradient(ellipse 100% 65% at 50% 0%, rgb(47 107 255 / 0.06) 0%, transparent 58%),
     linear-gradient(180deg, rgb(255 255 255) 0%, rgb(248 250 252) 100%);
   box-shadow:
-    0 32px 56px -26px rgb(15 27 45 / 0.22),
-    0 12px 28px -18px rgb(15 27 45 / 0.12),
+    0 32px 56px -26px rgb(15 27 45 / 0.18),
+    0 12px 28px -18px rgb(15 27 45 / 0.1),
     inset 0 1px 0 0 rgb(255 255 255 / 0.95);
 }
 
@@ -348,6 +354,19 @@ html[data-motion-css-debug="1"] .reveal-up {
 
 .site-primary-cta:hover {
   background-color: var(--color-site-cta-hover) !important;
+}
+
+/* Градиентные разделители вместо плоского серого */
+@utility divider-gradient {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(47 107 255 / 0.12) 20%,
+    rgb(47 107 255 / 0.22) 50%,
+    rgb(47 107 255 / 0.12) 80%,
+    transparent 100%
+  );
 }
 
 /* ── Admin panel (scoped; layout wraps authenticated /admin in .admin-app) ── */

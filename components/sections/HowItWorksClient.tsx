@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 import { PREMIUM_VIEWPORT, premiumCardBlock, premiumIntroBlock } from "@/lib/motion";
 
 export type HowItWorksStep = { num: string; title: string; desc: string };
@@ -49,6 +50,13 @@ export function HowItWorksClient({ sectionEyebrow, sectionTitle, steps }: HowItW
             {steps.map((step) => (
               <motion.div key={step.num} variants={premiumCardBlock}>
                 <div className="site-card relative flex flex-col p-5 lg:min-h-[190px]">
+                  <div
+                    className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full border border-site-tech/40 bg-site-tech/12 text-site-tech shadow-sm"
+                    aria-label="Стандартный этап — выполняем в каждом заказе"
+                    title="Стандартный этап — выполняем в каждом заказе"
+                  >
+                    <Check className="size-4" strokeWidth={2.75} aria-hidden />
+                  </div>
                   <div className="relative z-10 mb-5 flex h-14 w-14 items-center justify-center rounded-lg border border-site-primary/30 bg-site-card text-lg font-bold text-site-primary shadow-sm">
                     {step.num}
                   </div>

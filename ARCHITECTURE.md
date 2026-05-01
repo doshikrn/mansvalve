@@ -1,6 +1,6 @@
 # Архитектура проекта MANSVALVE (AS-IS)
 
-Обновлено: 2026-04-28  
+Обновлено: 2026-04-28 (витрина / FM-карусель / hero layout — актуально)  
 Аудитория: внешний архитектор / техлид, подключающийся к проекту.
 
 > **Сводка состояния на дату обновления.** Одно приложение Next.js: публичный
@@ -58,13 +58,18 @@ file-based).
 - Framework: `Next.js 16` (App Router, RSC, metadata routes).
 - Runtime/UI: `React 19`, `TypeScript`, `Tailwind CSS v4`.
 - UI: `shadcn/ui`, `radix-ui`, `lucide-react`.
-- Анимации: **`framer-motion`** — спокойный B2B scroll-reveal на главной
-  (`whileInView`, токены в **`lib/motion.ts`**, обёртка
-  **`PublicMotionProvider`** / `MotionConfig` в `app/(site)/layout.tsx` для
-  `prefers-reduced-motion`); **карусель витрины** — только **CSS**
-  (`@keyframes product-slide-reveal`, класс **`.animate-product-slide`**), без FM на слайде.
-  Опционально: **`ScrollReveal`**, **`CssReveal`** (легаси-оболочка, на **`/`** не
-  используется), **`MotionRuntimeCheck`**.
+- Анимации: **`framer-motion`** — (1) спокойный B2B scroll-reveal секций на главной
+  (`whileInView`, токены в **`lib/motion.ts`**); (2) **карусель витрины**
+  **`ProductShowcaseCarousel`**: **`AnimatePresence`** + **`motion.div`**, ключ
+  слайда **`${variant}-${active}-${slug}`**; внутри карусели
+  **`MotionConfig reducedMotion="never"`** — иначе глобальный
+  **`PublicMotionProvider`** (`reducedMotion="user"`) обнулял бы переходы при
+  `prefers-reduced-motion`; длительность смены слайда задаётся вручную
+  (**`useReducedMotion`**: ~0,2s vs ~0,65s). **CSS keyframes для слайдера не
+  используются.**
+  Глобально: **`PublicMotionProvider`** в **`app/(site)/layout.tsx`**. Опционально:
+  **`ScrollReveal`**, **`CssReveal`** (легаси, на **`/`** не используется),
+  **`MotionRuntimeCheck`**, dev-лог **`[showcase-motion]`** в `NODE_ENV=development`.
 - БД: Postgres, `drizzle-orm`, `postgres` (драйвер), миграции `drizzle-kit`.
 - Auth админки: `jose` (JWT в httpOnly cookie), `bcryptjs`.
 - Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` (GA4/Ads настраиваются в GTM)
@@ -149,16 +154,16 @@ Browser
 ### 4.1) Публичные анимации (скролл и витрина товаров)
 
 **Принцип:** секции после hero на **`/`** — **framer-motion** (`whileInView`, один раз
-во viewport, без «параллакса прогресса»); **карусель витрины** — **только CSS**
-(keyframes + смена `key` у слайда), чтобы не смешивать FM и смену товара.
+во viewport); **карусель витрины** — тоже **framer-motion** (отдельное дерево с
+**`MotionConfig reducedMotion="never"`**), без CSS-keyframes на слайде.
 
 | Механизм | Файлы / классы |
 |----------|----------------|
 | **Глобально для FM на сайте** | **`app/(site)/layout.tsx`**: **`PublicMotionProvider`** (`MotionConfig reducedMotion="user"`). **`lib/motion.ts`**: **`PREMIUM_VIEWPORT`**, **`premiumStaggerContainer`**, **`premiumIntroBlock`**, **`premiumCardBlock`**, **`MOTION_EASE`**. |
 | **Scroll reveal главной (секции)** | Серверные оболочки резолвят данные; клиентские обёртки: **`TrustStripClient`**, **`CategoriesClient`**, **`WhyUsClient`**, **`WhoWeSupplyClient`**, **`DeliveryCaseClient`**, **`HowItWorksClient`**, **`RequestCtaClient`**; заголовок FAQ — **`FAQAccordion`** (`motion` только на блоке заголовка). Паттерн: stagger «интро → карточки», **`viewport`** с отрицательным нижним margin / `amount`, **`once: true`**. |
-| **Hero** | **`Hero.tsx`** + **`ProductShowcaseCarousel`** `variant="hero"`; текстовая колонка слева без FM-обёртки для scroll-reveal (вход hero — CSS **`hero-enter-left` / `hero-enter-right`** в **`globals.css`**). |
-| **Карусель товара (hero + «Хиты продаж» на главной)** | **`components/sections/ProductShowcaseCarousel.tsx`** (client): при смене **`active`** ключ **`showcase-slide-${active}-${slug}`** на **`<article>`** — пересоздание узла → заново запускается CSS-animation. Класс **`animate-product-slide`**; **`@keyframes product-slide-reveal`** (opacity, translateX, scale, blur), **700 ms**, **`cubic-bezier(0.22, 1, 0.36, 1)`**, `animation-fill-mode: both` — в **`app/globals.css`**. Визуальная глубина карточек: **`.showcase-card-hero`**, **`.showcase-card-catalog`** (у catalog **`overflow: visible`**, чтобы не резать вход слайда по X). |
-| **Легаси / опционально** | **`components/motion/CssReveal.tsx`** — **`IntersectionObserver`** + классы **`reveal-up`** / **`is-visible`** в **`globals.css`** (на **`/`** не подключён). **`ScrollReveal.tsx`** — FM-обёртка по желанию. |
+| **Hero (сетка + витрина)** | **`Hero.tsx`**: двухколоночный grid **`lg:items-start`**, правая колонка витрины **`self-start`** (без сдвига вниз), витрина **`ProductShowcaseCarousel`** `variant="hero"`. Вход колонок — CSS **`hero-enter-left` / `hero-enter-right`** в **`globals.css`**. |
+| **Карусель товара (hero + «Хиты продаж»)** | **`ProductShowcaseCarousel.tsx`**: **`AnimatePresence mode="wait"`**; **`motion.div`** с **`key={slideKey}`** (`slideKey` — строка из **`variant`**, **`active`**, **`product.slug`**); **`initial` / `animate` / `exit`** (opacity, x, scale); обёртка **`MotionConfig reducedMotion="never"`**; длительность перехода короче при **`useReducedMotion === true`**. Стили: **`.showcase-card-hero`** (`overflow: hidden`), **`.showcase-card-catalog`** (`overflow: visible`). **CSS-keyframes слайдера в `globals.css` не используются.** |
+| **Легаси / опционально** | **`components/motion/CssReveal.tsx`**, классы **`reveal-up`** в **`globals.css`** (на **`/`** не подключены). **`ScrollReveal.tsx`**. |
 | **Hover карточек** | **`.site-card`** и правила в **`globals.css`**; каталог **`ProductCard`**. |
 
 ---

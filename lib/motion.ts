@@ -58,11 +58,12 @@ export const staggerItem = {
   },
 };
 
-/** Спокойный scroll-reveal (B2B): один раз во viewport, без раннего срабатывания */
+/** Спокойный scroll-reveal (B2B): один раз во viewport */
 export const PREMIUM_VIEWPORT = {
   once: true,
-  amount: 0.3,
-  margin: "0px 0px -12% 0px",
+  /** Ниже порог + без отрицательного margin — иначе блоки могут долго оставаться opacity:0 до скролла */
+  amount: 0.15,
+  margin: "0px",
 } as const;
 
 /** Родитель секции: заголовок → затем stagger карточек */
