@@ -48,12 +48,12 @@ export function MainHeader({
                   className="h-full w-full object-contain object-center"
                 />
               </span>
-              <span className="hidden min-w-0 flex-col justify-center leading-none lg:flex">
-                <span className="font-bold uppercase tracking-[0.08em] text-site-primary xl:text-[15px]">
+              <span className="min-w-0 flex flex-col justify-center leading-none lg:flex">
+                <span className="truncate text-[12px] font-bold uppercase tracking-[0.08em] text-site-primary sm:text-[13px] xl:text-[15px]">
                   {brandPrimary}
                 </span>
                 {brandSecondary ? (
-                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-site-muted xl:text-xs">
+                  <span className="mt-0.5 truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-site-muted sm:text-[11px] xl:text-xs">
                     {brandSecondary}
                   </span>
                 ) : null}
