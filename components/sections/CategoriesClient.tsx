@@ -7,7 +7,6 @@ import { ProductShowcaseCarousel } from "@/components/sections/ProductShowcaseCa
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import {
   PREMIUM_VIEWPORT,
-  premiumCardBlock,
   premiumIntroBlock,
   premiumStaggerContainer,
 } from "@/lib/motion";
@@ -32,11 +31,7 @@ type CategoriesClientProps = {
 
 export function CategoriesClient({ products, copy }: CategoriesClientProps) {
   return (
-    <section className="relative overflow-hidden bg-[#0B1220] py-16 sm:py-20">
-      <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#141C2C] via-[#0B1220] to-[#080c14]"
-        aria-hidden
-      />
+    <section className="relative mt-[60px] mb-[80px] overflow-hidden bg-transparent px-0">
       <div className="site-container relative">
         <motion.div
           className="flex flex-col"
@@ -68,7 +63,12 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
             </Link>
           </motion.div>
 
-          <motion.div variants={premiumCardBlock}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
             <ProductShowcaseCarousel
               products={products}
               eyebrow={copy.carouselEyebrow}

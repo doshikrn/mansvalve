@@ -112,11 +112,23 @@ export function ProductShowcaseCarousel({
 
   const imgSizes = isHero ? "(max-width: 1024px) 100vw, 720px" : "(max-width: 1024px) 100vw, 760px";
 
+  const flowEase = [0.22, 1, 0.36, 1] as const;
+
   /** Не нулевая длительность: при system reduced motion — короче, иначе полноценный вход/выход */
   const slideTransition = {
-    duration: reducedMotion ? 0.2 : 0.65,
-    ease: [0.22, 1, 0.36, 1] as const,
+    duration: reducedMotion ? 0.2 : isHero ? 0.65 : 0.6,
+    ease: flowEase,
   };
+
+  const slideInitial = isHero
+    ? { opacity: 0, x: 56, scale: 0.96 }
+    : { opacity: 0, x: 40 };
+  const slideAnimate = isHero
+    ? { opacity: 1, x: 0, scale: 1 }
+    : { opacity: 1, x: 0 };
+  const slideExit = isHero
+    ? { opacity: 0, x: -56, scale: 0.96 }
+    : { opacity: 0, x: -30 };
 
   return (
     <div
@@ -132,14 +144,14 @@ export function ProductShowcaseCarousel({
           "relative z-[2] flex shrink-0 items-start justify-between gap-3",
           isHero
             ? "border-b border-white/[0.08] px-7 py-5"
-            : "min-h-[72px] border-b border-site-border px-5 py-3.5 sm:px-6 sm:py-4",
+            : "min-h-[72px] border-b border-white/[0.08] px-5 py-3.5 sm:px-6 sm:py-4",
         )}
       >
         <div className="min-w-0 flex-1">
           <p
             className={cn(
               "text-[11px] font-semibold uppercase tracking-[0.14em]",
-              isHero ? "text-site-cta/95" : "text-site-primary",
+              isHero ? "text-site-cta/95" : "text-site-cta/90",
             )}
           >
             {eyebrow}
@@ -147,7 +159,7 @@ export function ProductShowcaseCarousel({
           <h3
             className={cn(
               "mt-1 text-lg font-bold leading-snug sm:text-xl",
-              isHero ? "text-pretty text-white" : "text-site-ink line-clamp-2",
+              isHero ? "text-pretty text-white" : "text-pretty text-white line-clamp-2",
             )}
           >
             {title}
@@ -158,7 +170,7 @@ export function ProductShowcaseCarousel({
       <div
         className={cn(
           "relative z-[2] isolate min-h-0 w-full",
-          isHero ? "min-h-[400px] lg:min-h-[480px]" : "min-h-[520px] overflow-visible lg:min-h-[540px]",
+          isHero ? "min-h-[400px] lg:min-h-[480px]" : "min-h-[480px] overflow-visible lg:min-h-[460px]",
         )}
       >
         <MotionConfig reducedMotion="never">
@@ -169,9 +181,9 @@ export function ProductShowcaseCarousel({
               data-slide-key={slideKey}
               data-active-index={active}
               className="absolute inset-0 flex h-full min-h-0 flex-col"
-              initial={{ opacity: 0, x: 56, scale: 0.96 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -56, scale: 0.96 }}
+              initial={slideInitial}
+              animate={slideAnimate}
+              exit={slideExit}
               transition={slideTransition}
             >
             <div
@@ -179,7 +191,7 @@ export function ProductShowcaseCarousel({
                 "grid min-h-0 w-full flex-1 lg:items-stretch",
                 isHero
                   ? "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
-                  : "lg:h-full lg:min-h-0 lg:grid-cols-[1.22fr_0.78fr]",
+                  : "min-h-[420px] lg:min-h-[440px] lg:[grid-template-columns:60%_40%]",
               )}
             >
               <Link
@@ -188,7 +200,7 @@ export function ProductShowcaseCarousel({
                   "relative block min-h-0 w-full overflow-hidden lg:border-r",
                   isHero
                     ? "shrink-0 h-[280px] sm:h-[300px] lg:h-[min(400px,100%)] lg:min-h-[400px] border-white/[0.06]"
-                    : "h-[280px] shrink-0 sm:h-[300px] lg:h-full lg:min-h-0 lg:shrink lg:self-stretch lg:rounded-l-[calc(0.75rem-1px)] border-site-border/80",
+                    : "h-[280px] shrink-0 border-white/[0.06] sm:h-[300px] lg:h-full lg:min-h-[440px] lg:max-h-none lg:self-stretch lg:rounded-l-[calc(0.75rem-1px)]",
                 )}
               >
                 <Image
@@ -210,13 +222,13 @@ export function ProductShowcaseCarousel({
                 <div
                   className={cn(
                     "absolute bottom-3 left-3 max-w-[min(100%,calc(100%-1.5rem))] rounded-md border px-3 py-2 shadow-sm",
-                    isHero ? "border-white/10 bg-site-deep/85" : "border-site-border/70 bg-white",
+                    isHero ? "border-white/10 bg-site-deep/85" : "border-white/15 bg-black/55",
                   )}
                 >
                   <p
                     className={cn(
                       "text-[10px] font-semibold uppercase leading-tight",
-                      isHero ? "text-slate-300" : "text-site-muted",
+                      isHero ? "text-slate-300" : "text-slate-400",
                     )}
                   >
                     {product.categoryName}
@@ -224,7 +236,7 @@ export function ProductShowcaseCarousel({
                   <p
                     className={cn(
                       "mt-1 text-sm font-bold leading-snug",
-                      isHero ? "text-white line-clamp-2 [overflow-wrap:anywhere]" : "text-site-ink line-clamp-2",
+                      isHero ? "text-white line-clamp-2 [overflow-wrap:anywhere]" : "text-white line-clamp-2",
                     )}
                   >
                     {product.subcategoryName}
@@ -232,51 +244,25 @@ export function ProductShowcaseCarousel({
                 </div>
               </Link>
 
+              {isHero ? (
               <div
                 className={cn(
-                  "flex min-h-0 min-w-0 flex-col",
-                  isHero
-                    ? "gap-y-2.5 px-7 pb-5 pt-5 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:self-stretch lg:gap-y-3"
-                    : "gap-y-3 px-5 pb-5 pt-4 sm:px-6 sm:pb-5 sm:pt-5 lg:h-full lg:min-h-0 lg:gap-y-4 lg:self-stretch lg:py-5",
+                  "flex min-h-0 min-w-0 flex-col gap-y-2.5 px-7 pb-5 pt-5 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:self-stretch lg:gap-y-3",
                 )}
               >
-                {!isHero ? (
-                  <div
-                    className={cn(
-                      "inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1 text-xs font-semibold",
-                      "border-site-border/90 bg-site-bg text-site-primary",
-                    )}
-                  >
-                    <Package className="h-3.5 w-3.5" aria-hidden />
-                    {catalogBadgeLabel}
-                  </div>
-                ) : (
-                  <p className="mb-1 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">
-                    {heroRibbonLabel}
-                  </p>
-                )}
+                <p className="mb-1 shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">
+                  {heroRibbonLabel}
+                </p>
                 <h4
-                  className={cn(
-                    "max-w-full shrink-0 break-words font-bold leading-[1.2] tracking-tight [overflow-wrap:anywhere]",
-                    isHero
-                      ? "min-h-0 line-clamp-3 text-[1.35rem] text-white sm:text-2xl lg:text-[1.55rem]"
-                      : "line-clamp-2 text-[1.35rem] text-site-ink sm:text-3xl",
-                  )}
+                  className="max-w-full min-h-0 shrink-0 break-words text-[1.35rem] font-bold leading-[1.2] tracking-tight text-white line-clamp-3 [overflow-wrap:anywhere] sm:text-2xl lg:text-[1.55rem]"
                 >
                   {product.name}
                 </h4>
-                <p
-                  className={cn(
-                    "shrink-0 text-sm sm:text-[15px]",
-                    isHero
-                      ? "mt-2 line-clamp-3 leading-snug text-slate-300/95"
-                      : "line-clamp-3 leading-snug text-site-muted",
-                  )}
-                >
+                <p className="mt-2 shrink-0 text-sm leading-snug text-slate-300/95 line-clamp-3 sm:text-[15px]">
                   {product.shortDescription}
                 </p>
 
-                {isHero && heroSpecSummary ? (
+                {heroSpecSummary ? (
                   <p className="mt-3 max-w-full text-[13px] leading-snug text-slate-200 line-clamp-2 [overflow-wrap:anywhere] sm:text-sm">
                     <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
                     <span className="mx-1.5 text-slate-500" aria-hidden>
@@ -289,18 +275,15 @@ export function ProductShowcaseCarousel({
                     <span className="text-slate-100">{heroSpecSummary.mat}</span>
                   </p>
                 ) : (
-                  <div className="mt-1 grid shrink-0 grid-cols-3 gap-2 sm:mt-2">
+                  <div className="mt-2 grid shrink-0 grid-cols-3 gap-2">
                     {specs.map(({ icon: Icon, label, value }) => (
                       <div
-                        key={`${label}-${product.slug}`}
-                        className={cn(
-                          "flex min-h-[5rem] min-w-0 flex-col rounded-lg border px-2.5 py-2",
-                          "border-site-border/90 bg-site-bg",
-                        )}
+                        key={`${label}-${product.slug}-hero`}
+                        className="flex min-h-[5rem] min-w-0 flex-col rounded-lg border border-white/[0.1] bg-white/[0.05] px-2.5 py-2"
                       >
-                        <Icon className="mb-1 h-4 w-4 shrink-0 text-site-primary" aria-hidden />
-                        <p className="text-[10px] font-semibold uppercase text-site-muted">{label}</p>
-                        <p className="line-clamp-2 break-words text-sm font-bold leading-snug text-site-ink">
+                        <Icon className="mb-1 h-4 w-4 shrink-0 text-site-cta" aria-hidden />
+                        <p className="text-[10px] font-semibold uppercase text-slate-500">{label}</p>
+                        <p className="line-clamp-2 break-words text-sm font-bold leading-snug text-slate-100">
                           {value}
                         </p>
                       </div>
@@ -308,42 +291,77 @@ export function ProductShowcaseCarousel({
                   </div>
                 )}
 
-                <div className={cn("shrink-0", isHero ? "mt-auto border-t border-white/[0.06] pt-4" : "mt-5 border-t border-site-border/60 pt-5")}>
-                  <p className={cn("text-xs font-semibold uppercase", isHero ? "text-slate-500" : "text-site-muted")}>
+                <div className="mt-auto shrink-0 border-t border-white/[0.06] pt-4">
+                  <p className="text-xs font-semibold uppercase text-slate-500">
                     {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
                   </p>
-                  <p
-                    className={cn(
-                      "mt-1 text-2xl font-bold tabular-nums",
-                      isHero ? "text-white" : "truncate text-site-primary",
-                    )}
-                  >
+                  <p className="mt-1 text-2xl font-bold tabular-nums text-white">
                     {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
                   </p>
-                  <div className={cn("flex flex-col sm:flex-row", isHero ? "mt-3 gap-2.5" : "mt-4 gap-3")}>
-                    <Button
-                      asChild
-                      className={cn(
-                        "site-primary-cta min-h-11 flex-1 px-5 font-semibold",
-                        isHero ? "shadow-lg shadow-black/40" : "",
-                      )}
-                    >
+                  <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
+                    <Button asChild className="site-primary-cta min-h-11 flex-1 px-5 font-semibold shadow-lg shadow-black/40">
                       <Link href={`/catalog/${product.slug}`}>
                         Подробнее
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
-                    {!isHero ? (
-                      <Link
-                        href={linkHref}
-                        className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-site-border px-5 text-sm font-semibold text-site-ink transition hover:border-site-primary/45 hover:text-site-primary"
-                      >
-                        {linkLabel}
-                      </Link>
-                    ) : null}
                   </div>
                 </div>
               </div>
+              ) : (
+              <div className="flex h-full min-h-0 min-w-0 flex-col justify-between px-5 pb-5 pt-4 sm:px-6 lg:min-h-[440px] lg:py-6">
+                <div className="flex min-h-0 flex-col gap-3">
+                  <div className="inline-flex w-fit shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-[#2F6BFF]">
+                    <Package className="h-3.5 w-3.5" aria-hidden />
+                    {catalogBadgeLabel}
+                  </div>
+                  <h4 className="max-w-full shrink-0 break-words text-[1.35rem] font-bold leading-[1.2] tracking-tight text-white line-clamp-2 [overflow-wrap:anywhere] sm:text-3xl">
+                    {product.name}
+                  </h4>
+                  <p className="shrink-0 text-sm leading-snug text-slate-400 line-clamp-3 sm:text-[15px]">
+                    {product.shortDescription}
+                  </p>
+
+                  <div className="grid shrink-0 grid-cols-3 gap-2 pt-1">
+                    {specs.map(({ icon: Icon, label, value }) => (
+                      <div
+                        key={`${label}-${product.slug}`}
+                        className="flex min-h-[5rem] min-w-0 flex-col rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-2"
+                      >
+                        <Icon className="mb-1 h-4 w-4 shrink-0 text-[#2F6BFF]" aria-hidden />
+                        <p className="text-[10px] font-semibold uppercase text-slate-500">{label}</p>
+                        <p className="line-clamp-2 break-words text-sm font-bold leading-snug text-slate-100">
+                          {value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-auto shrink-0 border-t border-white/10 pt-5">
+                  <p className="text-xs font-semibold uppercase text-slate-500">
+                    {hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}
+                  </p>
+                  <p className="mt-1 truncate text-2xl font-bold tabular-nums text-[#2F6BFF]">
+                    {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
+                  </p>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild className="site-primary-cta min-h-11 flex-1 px-5 font-semibold">
+                      <Link href={`/catalog/${product.slug}`}>
+                        Подробнее
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Link
+                      href={linkHref}
+                      className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06] px-5 text-sm font-semibold text-slate-100 transition hover:border-[#2F6BFF]/45 hover:text-white"
+                    >
+                      {linkLabel}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+              )}
             </div>
             </motion.div>
           </AnimatePresence>
@@ -355,7 +373,7 @@ export function ProductShowcaseCarousel({
           "relative z-[2] flex shrink-0 items-center justify-between gap-2",
           isHero
             ? "min-h-[44px] items-center border-t border-white/[0.06] bg-black/[0.14] px-7 py-3"
-            : "gap-3 border-t border-site-border bg-site-bg/95 px-5 py-2.5 sm:px-6",
+            : "gap-3 border-t border-white/[0.08] bg-black/30 px-5 py-2.5 backdrop-blur-sm sm:px-6",
         )}
       >
         <div
@@ -376,10 +394,10 @@ export function ProductShowcaseCarousel({
                 index === active
                   ? isHero
                     ? "h-[5px] w-7 bg-white/42"
-                    : "h-[5px] w-7 bg-site-primary/85"
+                    : "h-[5px] w-7 bg-site-cta/90"
                   : isHero
                     ? "h-[5px] w-[5px] bg-white/14 hover:bg-white/26"
-                    : "h-[5px] w-[5px] bg-slate-300/90 hover:bg-site-primary/40",
+                    : "h-[5px] w-[5px] bg-white/20 hover:bg-white/35",
               )}
             />
           ))}
@@ -392,7 +410,7 @@ export function ProductShowcaseCarousel({
               "inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ease-out disabled:opacity-40 motion-reduce:transition-none",
               isHero
                 ? "border border-white/[0.08] bg-white/[0.05] text-white/55 hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
-                : "border border-site-border/80 bg-white text-site-ink/80 hover:border-site-primary/30 hover:bg-site-bg hover:text-site-primary",
+                : "border border-white/[0.12] bg-white/[0.06] text-slate-200 hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white",
             )}
             aria-label="Предыдущий товар"
           >
@@ -405,7 +423,7 @@ export function ProductShowcaseCarousel({
               "inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ease-out disabled:opacity-40 motion-reduce:transition-none",
               isHero
                 ? "border border-white/[0.08] bg-white/[0.05] text-white/55 hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
-                : "border border-site-border/80 bg-white text-site-ink/80 hover:border-site-primary/30 hover:bg-site-bg hover:text-site-primary",
+                : "border border-white/[0.12] bg-white/[0.06] text-slate-200 hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white",
             )}
             aria-label="Следующий товар"
           >

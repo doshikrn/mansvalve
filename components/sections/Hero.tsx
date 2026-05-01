@@ -24,9 +24,9 @@ export async function Hero() {
   const statIcons = [Clock, Package, MapPin] as const;
 
   return (
-    <section className="relative overflow-hidden border-b border-site-deep bg-site-deep">
+    <section className="relative overflow-hidden border-b border-white/[0.06] bg-transparent">
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#141C2C] via-[#0B1220] to-[#060a10]"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/[0.15]"
         aria-hidden
       />
       <div

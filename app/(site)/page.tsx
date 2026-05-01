@@ -38,10 +38,12 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function HomePage() {
   return (
     <>
-      <Hero />
-      <TrustStrip />
-      <Categories />
-      <WhyUs />
+      <div className="home-flow-strip">
+        <Hero />
+        <TrustStrip />
+        <Categories />
+        <WhyUs />
+      </div>
       <WhoWeSupply />
       <DeliveryCase />
       <HowItWorks />
