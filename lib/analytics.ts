@@ -1,3 +1,5 @@
+import { GA_CONFIGURED, GA_MEASUREMENT_ID, GTM_CONFIGURED } from "@/lib/analytics-config";
+
 type AnalyticsValue = string | number | boolean | null | undefined;
 
 export type AnalyticsPayload = Record<string, AnalyticsValue>;
@@ -12,6 +14,11 @@ export interface PageAnalyticsContext {
 declare global {
   interface Window {
     dataLayer?: Array<Record<string, unknown>>;
+    gtag?: (
+      command: "config" | "event" | "js",
+      targetIdOrEventName: string | Date,
+      config?: Record<string, unknown>,
+    ) => void;
   }
 }
 
@@ -59,8 +66,6 @@ export function getPageAnalyticsContext(pathname?: string): PageAnalyticsContext
   };
 }
 
-const GTM_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_GTM_ID?.trim());
-
 /**
  * Base fields for every dataLayer event (URL-derived). Callers may override with
  * a more specific `product_slug` / `category` (e.g. from product form context).
@@ -80,12 +85,12 @@ function getDefaultDataLayerContext(): AnalyticsPayload {
 }
 
 /**
- * Pushes a single custom event to `dataLayer` for GTM (GA4, Ads, remarketing
- * are configured in GTM only—no direct gtag/GA scripts here, to avoid duplicate hits).
+ * Pushes a single custom event to analytics transports.
+ * GTM receives dataLayer events; direct GA4 receives the same events through gtag.
  */
 export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
   if (typeof window === "undefined") return;
-  if (!GTM_CONFIGURED) return;
+  if (!GTM_CONFIGURED && !GA_CONFIGURED) return;
 
   const defaults = getDefaultDataLayerContext();
   const merged: AnalyticsPayload = { ...defaults, ...payload };
@@ -99,10 +104,18 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
   window.setTimeout(() => {
     try {
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
-        event: eventName,
-        ...analyticsPayload,
-      });
+      if (GTM_CONFIGURED) {
+        window.dataLayer.push({
+          event: eventName,
+          ...analyticsPayload,
+        });
+      }
+      if (GA_CONFIGURED && typeof window.gtag === "function") {
+        window.gtag("event", eventName, {
+          ...analyticsPayload,
+          send_to: GA_MEASUREMENT_ID,
+        });
+      }
     } catch {
       // Ignore analytics transport errors.
     }

@@ -7,6 +7,7 @@ import { ToasterClient } from "@/components/providers/ToasterClient";
 import { GlobalClickTracker } from "@/components/analytics/GlobalClickTracker";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { GA_MEASUREMENT_ID, GTM_ID, GA_CONFIGURED, GTM_CONFIGURED } from "@/lib/analytics-config";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-data";
@@ -65,21 +66,30 @@ export default function RootLayout({
 }>) {
   const organizationJsonLd = buildOrganizationJsonLd();
   const webSiteJsonLd = buildWebSiteJsonLd();
-  const gtmId = process.env.NEXT_PUBLIC_GTM_ID?.trim();
-  const hasGtm = Boolean(gtmId);
 
   return (
     <html lang="ru" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        {hasGtm && (
-          <Script id="gtm-bootstrap" strategy="afterInteractive">
-            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtmId}');`}
+        {GA_CONFIGURED && (
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+        )}
+        {GA_CONFIGURED && (
+          <Script id="ga4-bootstrap" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false});`}
           </Script>
         )}
-        {hasGtm && (
+        {GTM_CONFIGURED && (
+          <Script id="gtm-bootstrap" strategy="afterInteractive">
+            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`}
+          </Script>
+        )}
+        {GTM_CONFIGURED && (
           <noscript>
             <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
               height="0"
               width="0"
               style={{ display: "none", visibility: "hidden" }}
