@@ -119,7 +119,7 @@ export default async function AboutPage() {
         description={overviewParagraphs[0] ?? applyPlaceholders(aboutCopy.headerLead, COMPANY.name)}
         heroImages={heroImages}
       />
-      <AboutIntro title="MANSVALVE GROUP" paragraphs={overviewParagraphs} />
+      <AboutIntro title="MANSVALVE GROUP" paragraphs={overviewParagraphs.slice(1)} />
       <AboutIndustries />
       <AboutCategories
         title="Основные направления поставок"
