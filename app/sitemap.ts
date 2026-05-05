@@ -5,6 +5,7 @@ import {
   getPublicCatalogCategories,
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
+import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
 
 const STATIC_ROUTES = [
   "/",
@@ -19,6 +20,15 @@ const STATIC_ROUTES = [
 
 function absoluteUrl(baseUrl: string, path: string): string {
   return new URL(path, `${baseUrl}/`).toString();
+}
+
+function uniqueSitemapEntries(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.url)) return false;
+    seen.add(entry.url);
+    return true;
+  });
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -52,6 +62,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   );
 
+  const landingPages: MetadataRoute.Sitemap = CATALOG_LANDING_PAGES.map((page) => ({
+    url: absoluteUrl(baseUrl, `/${page.categorySlug}/${page.slug}`),
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.85,
+  }));
+
   const productPages: MetadataRoute.Sitemap = products.map((product) => ({
     url: absoluteUrl(baseUrl, `/catalog/${product.slug}`),
     lastModified,
@@ -59,5 +76,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...categoryPages, ...subcategoryPages, ...productPages];
+  return uniqueSitemapEntries([
+    ...staticPages,
+    ...landingPages,
+    ...categoryPages,
+    ...subcategoryPages,
+    ...productPages,
+  ]);
 }

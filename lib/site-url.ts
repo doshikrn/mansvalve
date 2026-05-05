@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = "http://localhost:3000";
+const DEFAULT_BASE_URL = "https://mansvalve-group.kz";
 
 function normalizeBaseUrl(value: string | undefined): string | null {
   if (!value) return null;
