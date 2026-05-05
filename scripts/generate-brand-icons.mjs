@@ -1,7 +1,8 @@
 /**
- * Генерирует public/favicon.ico, public/icon.png, public/apple-icon.png
- * из фирменного знака `public/images/mansvalve-brand-mark.png` (как в Header).
- * Если PNG ещё нет в репозитории — используется `scripts/brand/mansvalve-favicon.svg`.
+ * Генерирует public/favicon.ico, favicon PNG, icon.png и apple-icon.png.
+ * Favicon делается из упрощённого знака без текста: он читается на 16px и
+ * не превращается в чёрный фрагмент в Google.
+ * Большие app icons остаются из полного фирменного знака как в Header.
  *
  * Запуск: npm run generate:icons
  */
@@ -18,11 +19,15 @@ const publicDir = join(root, "public");
 const brandMarkPng = join(root, "public/images/mansvalve-brand-mark.png");
 const fallbackSvg = join(root, "scripts/brand/mansvalve-favicon.svg");
 
-async function resizePng(buf, sizePx) {
+async function resizePng(
+  buf,
+  sizePx,
+  background = { r: 255, g: 255, b: 255, alpha: 1 },
+) {
   return sharp(buf)
     .resize(sizePx, sizePx, {
       fit: "contain",
-      background: { r: 255, g: 255, b: 255, alpha: 1 },
+      background,
       position: "center",
     })
     .png()
@@ -44,23 +49,27 @@ async function loadRasterSource() {
 async function main() {
   await mkdir(join(publicDir, "images"), { recursive: true });
 
-  const { buf: raster, label } = await loadRasterSource();
+  const { buf: brandRaster, label } = await loadRasterSource();
+  const faviconSvg = await readFile(fallbackSvg);
+  const faviconRaster = await sharp(faviconSvg, { density: 384 }).png().toBuffer();
+  const transparent = { r: 255, g: 255, b: 255, alpha: 0 };
 
-  const icon512 = await resizePng(raster, 512);
-  const apple180 = await resizePng(raster, 180);
-  const fav48 = await resizePng(raster, 48);
-  const fav32 = await resizePng(raster, 32);
-  const fav16 = await resizePng(raster, 16);
+  const icon512 = await resizePng(brandRaster, 512);
+  const apple180 = await resizePng(brandRaster, 180);
+  const fav48 = await resizePng(faviconRaster, 48, transparent);
+  const fav32 = await resizePng(faviconRaster, 32, transparent);
+  const fav16 = await resizePng(faviconRaster, 16, transparent);
 
   await writeFile(join(publicDir, "icon.png"), icon512);
   await writeFile(join(publicDir, "apple-icon.png"), apple180);
+  await writeFile(join(publicDir, "favicon.svg"), faviconSvg);
   await writeFile(join(publicDir, "favicon-32.png"), fav32);
   await writeFile(join(publicDir, "favicon-16.png"), fav16);
   /** Один кадр 48×48 в ICO + отдельные слои 16/32 — стабильнее парсинга во вкладке */
   await writeFile(join(publicDir, "favicon.ico"), await toIco([fav16, fav32, fav48]));
 
   console.log(
-    `Wrote public/favicon.ico, favicon-16.png, favicon-32.png, icon.png, apple-icon.png (source: ${label})`,
+    `Wrote public/favicon.ico, favicon.svg, favicon-16.png, favicon-32.png, icon.png, apple-icon.png (app icon source: ${label})`,
   );
 }
 
