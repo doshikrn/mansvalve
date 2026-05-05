@@ -3,5 +3,11 @@ import { WhyUsClient } from "@/components/sections/WhyUsClient";
 
 export async function WhyUs() {
   const data = await resolveHomeWhyUs();
-  return <WhyUsClient {...data} />;
+  return (
+    <WhyUsClient
+      {...data}
+      sectionEyebrow="Наши преимущества"
+      sectionTitle="Почему нам доверяют подрядчики, ТЭЦ, нефтегазовые компании и промышленные предприятия"
+    />
+  );
 }

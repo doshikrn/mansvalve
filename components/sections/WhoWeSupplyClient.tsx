@@ -72,7 +72,7 @@ export function WhoWeSupplyClient({
         >
           <motion.div variants={premiumIntroBlock} className="col-span-full mb-10 max-w-3xl md:col-span-2">
             <div className="site-eyebrow">{sectionEyebrow}</div>
-            <h2 className="site-heading">{sectionTitle}</h2>
+            {sectionTitle ? <h2 className="site-heading">{sectionTitle}</h2> : null}
             <p className="site-copy mt-3">{sectionLead}</p>
           </motion.div>
 

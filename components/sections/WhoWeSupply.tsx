@@ -3,5 +3,12 @@ import { WhoWeSupplyClient } from "@/components/sections/WhoWeSupplyClient";
 
 export async function WhoWeSupply() {
   const data = await resolveHomeWhoWeSupply();
-  return <WhoWeSupplyClient {...data} />;
+  return (
+    <WhoWeSupplyClient
+      {...data}
+      sectionEyebrow="Наши клиенты"
+      sectionTitle=""
+      sectionLead="Работаем в сегментах B2B и B2G, обеспечивая поставки для предприятий, подрядчиков и государственных организаций по всему Казахстану."
+    />
+  );
 }

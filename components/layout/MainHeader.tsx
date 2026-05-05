@@ -32,7 +32,7 @@ export function MainHeader({
           <div className="flex items-center justify-between gap-3 lg:block lg:justify-self-start">
             <Link
               href="/"
-              className="flex min-w-0 shrink-0 items-center gap-2.5 sm:gap-3 lg:min-w-[180px] lg:max-w-[220px] lg:gap-3"
+              className="hidden min-w-0 shrink-0 items-center gap-2.5 sm:flex sm:gap-3 lg:min-w-[180px] lg:max-w-[220px] lg:gap-3"
               aria-label={`${COMPANY.name} — на главную`}
             >
               <span className="relative block h-12 w-12 shrink-0 overflow-hidden sm:h-14 sm:w-14 lg:h-[72px] lg:w-[72px] xl:h-[84px] xl:w-[84px]">

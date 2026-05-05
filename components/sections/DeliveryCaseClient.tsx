@@ -100,7 +100,7 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
         <motion.ul
           className="grid list-none gap-4 p-0 lg:grid-cols-2"
           variants={casesStagger}
-          initial="hidden"
+          initial="visible"
           whileInView="visible"
           viewport={{ ...PREMIUM_VIEWPORT, amount: 0.28 }}
         >
