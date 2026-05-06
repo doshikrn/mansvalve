@@ -42,7 +42,7 @@ import {
 } from "@/lib/site-content/models";
 import { getContentBlock } from "@/lib/services/content-blocks";
 import { COMPANY } from "@/lib/company";
-import { listRecentMediaAssets } from "@/lib/services/media";
+import { listRecentImageMediaAssets } from "@/lib/services/media";
 
 import {
   saveAboutCopyAction,
@@ -188,7 +188,7 @@ export default async function AdminContentPage({
     getContentBlock(SITE_CONTENT_KEYS.pageCertificates),
     getContentBlock(SITE_CONTENT_KEYS.pagePrivacy),
     getContentBlock(SITE_CONTENT_KEYS.pageTerms),
-    listRecentMediaAssets(80),
+    listRecentImageMediaAssets(80),
   ]);
 
   const hero = mergeHomeHero(heroRow?.data, 0);

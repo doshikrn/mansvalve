@@ -218,6 +218,22 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
   }));
 }
 
+export async function listRecentImageMediaAssets(limit = 80): Promise<MediaAsset[]> {
+  const db = getDb();
+
+  const rows = await db
+    .select()
+    .from(mediaAssetsTable)
+    .where(sql`${mediaAssetsTable.mimeType} like 'image/%'`)
+    .orderBy(desc(mediaAssetsTable.createdAt))
+    .limit(limit);
+
+  return rows.map((row) => ({
+    ...row,
+    url: resolvePublicMediaUrl(row.url, row.storageKey, row.driver),
+  }));
+}
+
 export async function getMediaAssetsByIds(ids: string[]): Promise<MediaAsset[]> {
   if (!ids.length) return [];
   const db = getDb();
