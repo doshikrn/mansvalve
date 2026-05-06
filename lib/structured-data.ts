@@ -226,9 +226,27 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
     name: product.name,
     description: product.shortDescription,
     sku: product.id,
+    mpn: product.model || product.id,
+    brand: {
+      "@type": "Brand",
+      name: COMPANY.name,
+    },
     category: product.categoryName,
     material: product.material,
     url: toAbsoluteUrl(`/catalog/${product.slug}`),
+  }
+
+  const imageCandidates = [
+    product.primaryImageUrl,
+    ...(product.images ?? []).map((image) => image.url),
+  ].filter((url): url is string => Boolean(url))
+
+  if (imageCandidates.length > 0) {
+    result.image = Array.from(new Set(imageCandidates)).map((url) =>
+      url.startsWith("http://") || url.startsWith("https://")
+        ? url
+        : toAbsoluteUrl(url),
+    )
   }
 
   if (additionalProperty.length > 0) {
@@ -241,6 +259,47 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
       priceCurrency: "KZT",
       price: String(product.price),
       url: toAbsoluteUrl(`/catalog/${product.slug}`),
+      availability: "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
+      eligibleRegion: {
+        "@type": "Country",
+        name: "KZ",
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "KZ",
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 1,
+            maxValue: 3,
+            unitCode: "DAY",
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 1,
+            maxValue: 10,
+            unitCode: "DAY",
+          },
+        },
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "KZT",
+        },
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "KZ",
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 14,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/ReturnShippingFees",
+      },
       seller: {
         "@type": "Organization",
         name: COMPANY.name,
