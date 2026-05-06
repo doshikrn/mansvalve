@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Award,
   Building2,
@@ -31,19 +30,19 @@ const PRIMARY: Item[] = [
 
 const CATALOG: Item[] = [
   { href: "/admin/products", label: "Товары", icon: Package },
-  { href: "/admin/categories", label: "Категории", icon: FolderTree },
-  { href: "/admin/categories#podkategorii", label: "Подкатегории", icon: Layers },
+  { href: "/admin/categories?view=categories", label: "Категории", icon: FolderTree },
+  { href: "/admin/categories?view=subcategories", label: "Подкатегории", icon: Layers },
   { href: "/admin/certificates", label: "Сертификаты", icon: Award },
 ];
 
 const CONTENT: Item[] = [
-  { href: "/admin/content#home", label: "Главная", icon: Home },
-  { href: "/admin/content#about", label: "О компании", icon: Building2 },
-  { href: "/admin/content#contacts", label: "Контакты", icon: FileText },
-  { href: "/admin/content#delivery", label: "Доставка", icon: Truck },
-  { href: "/admin/content#certificates-page", label: "Страница сертификатов", icon: ShieldCheck },
-  { href: "/admin/content#legal", label: "Политика и условия", icon: FileCheck },
-  { href: "/admin/content#footer", label: "Подвал", icon: Layers },
+  { href: "/admin/content?section=home", label: "Главная", icon: Home },
+  { href: "/admin/content?section=about", label: "О компании", icon: Building2 },
+  { href: "/admin/content?section=contacts", label: "Контакты", icon: FileText },
+  { href: "/admin/content?section=delivery", label: "Доставка", icon: Truck },
+  { href: "/admin/content?section=certificates-page", label: "Страница сертификатов", icon: ShieldCheck },
+  { href: "/admin/content?section=legal", label: "Политика и условия", icon: FileCheck },
+  { href: "/admin/content?section=footer", label: "Подвал", icon: Layers },
 ];
 
 const MORE: Item[] = [
@@ -51,21 +50,39 @@ const MORE: Item[] = [
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];
 
-function isActive(pathname: string, href: string, currentHash: string): boolean {
-  if (href === "/admin") return pathname === "/admin";
-  const pathOnly = href.split("#")[0] ?? href;
-  const hash = href.includes("#") ? `#${href.split("#")[1] ?? ""}` : "";
-  if (hash) {
-    return pathname === pathOnly && currentHash === hash;
-  }
-  if (pathOnly === "/admin/categories" && pathname.startsWith("/admin/categories")) {
-    return true;
-  }
-  return pathname === pathOnly || pathname.startsWith(`${pathOnly}/`);
+function splitHref(href: string): { path: string; query: URLSearchParams } {
+  const [path, queryString = ""] = href.split("?");
+  return { path: path ?? href, query: new URLSearchParams(queryString) };
 }
 
-function NavRow({ item, pathname, currentHash }: { item: Item; pathname: string; currentHash: string }) {
-  const active = isActive(pathname, item.href, currentHash);
+function isActive(pathname: string, href: string, currentSearchParams: URLSearchParams): boolean {
+  if (href === "/admin") return pathname === "/admin";
+  const { path, query } = splitHref(href);
+  const section = query.get("section");
+  const view = query.get("view");
+
+  if (section) {
+    return pathname === path && currentSearchParams.get("section") === section;
+  }
+  if (view) {
+    return pathname === path && (currentSearchParams.get("view") ?? "categories") === view;
+  }
+  if (path === "/admin/categories" && pathname.startsWith("/admin/categories")) {
+    return true;
+  }
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+function NavRow({
+  item,
+  pathname,
+  currentSearchParams,
+}: {
+  item: Item;
+  pathname: string;
+  currentSearchParams: URLSearchParams;
+}) {
+  const active = isActive(pathname, item.href, currentSearchParams);
   const Icon = item.icon;
   return (
     <Link
@@ -87,12 +104,12 @@ function NavGroup({
   title,
   items,
   pathname,
-  currentHash,
+  currentSearchParams,
 }: {
   title: string;
   items: Item[];
   pathname: string;
-  currentHash: string;
+  currentSearchParams: URLSearchParams;
 }) {
   return (
     <div className="pt-4 first:pt-0">
@@ -100,7 +117,7 @@ function NavGroup({
       <ul className="space-y-0.5">
         {items.map((item) => (
           <li key={item.href + item.label}>
-            <NavRow item={item} pathname={pathname} currentHash={currentHash} />
+            <NavRow item={item} pathname={pathname} currentSearchParams={currentSearchParams} />
           </li>
         ))}
       </ul>
@@ -110,14 +127,7 @@ function NavGroup({
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const [currentHash, setCurrentHash] = useState("");
-
-  useEffect(() => {
-    const syncHash = () => setCurrentHash(window.location.hash);
-    syncHash();
-    window.addEventListener("hashchange", syncHash);
-    return () => window.removeEventListener("hashchange", syncHash);
-  }, []);
+  const currentSearchParams = useSearchParams();
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-[#E2E8F0] bg-white">
@@ -130,10 +140,10 @@ export function AdminSidebar() {
         </span>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Разделы админки">
-        <NavGroup title="Разделы" items={PRIMARY} pathname={pathname} currentHash={currentHash} />
-        <NavGroup title="Каталог" items={CATALOG} pathname={pathname} currentHash={currentHash} />
-        <NavGroup title="Страницы сайта" items={CONTENT} pathname={pathname} currentHash={currentHash} />
-        <NavGroup title="Медиа и настройки" items={MORE} pathname={pathname} currentHash={currentHash} />
+        <NavGroup title="Разделы" items={PRIMARY} pathname={pathname} currentSearchParams={currentSearchParams} />
+        <NavGroup title="Каталог" items={CATALOG} pathname={pathname} currentSearchParams={currentSearchParams} />
+        <NavGroup title="Страницы сайта" items={CONTENT} pathname={pathname} currentSearchParams={currentSearchParams} />
+        <NavGroup title="Медиа и настройки" items={MORE} pathname={pathname} currentSearchParams={currentSearchParams} />
       </nav>
       <div className="border-t border-[#E2E8F0] px-4 py-3">
         <Link

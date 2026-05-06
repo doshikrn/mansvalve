@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminSectionScroller } from "@/components/admin/AdminSectionScroller";
 import { AdminFormFooter } from "@/components/admin/AdminFormFooter";
 import { ContentSection } from "@/components/admin/ContentSection";
 import { MediaUrlField, type MediaUrlOption } from "@/components/admin/MediaUrlField";
@@ -100,15 +101,17 @@ const SAVED_LABELS: Record<string, string> = {
 };
 
 const CONTENT_NAV = [
-  { href: "#header", title: "Шапка", description: "Верхнее меню сайта" },
-  { href: "#home", title: "Главная", description: "Баннер, блоки, SEO" },
-  { href: "#about", title: "О компании", description: "Тексты и страница /about" },
-  { href: "#contacts", title: "Контакты", description: "Форма, карта, реквизиты" },
-  { href: "#delivery", title: "Доставка", description: "Страница /delivery" },
-  { href: "#certificates-page", title: "Сертификаты", description: "Страница и обложка" },
-  { href: "#legal", title: "Документы", description: "Политика и условия" },
-  { href: "#footer", title: "Подвал", description: "Логотип, ссылки, контакты" },
+  { id: "header", title: "Шапка", description: "Верхнее меню сайта" },
+  { id: "home", title: "Главная", description: "Баннер, блоки, SEO" },
+  { id: "about", title: "О компании", description: "Тексты и страница /about" },
+  { id: "contacts", title: "Контакты", description: "Форма, карта, реквизиты" },
+  { id: "delivery", title: "Доставка", description: "Страница /delivery" },
+  { id: "certificates-page", title: "Сертификаты", description: "Страница и обложка" },
+  { id: "legal", title: "Документы", description: "Политика и условия" },
+  { id: "footer", title: "Подвал", description: "Логотип, ссылки, контакты" },
 ] as const;
+
+const CONTENT_SECTION_IDS = CONTENT_NAV.map((item) => item.id);
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -240,6 +243,7 @@ export default async function AdminContentPage({
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-12">
+      <AdminSectionScroller allowedIds={CONTENT_SECTION_IDS} />
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Контент сайта</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
@@ -277,14 +281,14 @@ export default async function AdminContentPage({
         </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {CONTENT_NAV.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
+            <Link
+              key={item.id}
+              href={`/admin/content?section=${item.id}`}
               className="rounded-lg border border-[#E2E8F0] bg-slate-50 px-3 py-2.5 transition hover:border-blue-200 hover:bg-blue-50"
             >
               <span className="block text-sm font-semibold text-slate-900">{item.title}</span>
               <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">{item.description}</span>
-            </a>
+            </Link>
           ))}
         </div>
       </section>
