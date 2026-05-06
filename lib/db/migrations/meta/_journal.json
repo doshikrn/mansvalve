@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1714562287000,
+      "tag": "0003_product_document_media",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1714978942000,
+      "tag": "0004_certificate_document_media",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778075400000,
+      "tag": "0005_ensure_certificate_document_media",
+      "breakpoints": true
+    }
+  ]
+}
