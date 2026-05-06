@@ -295,6 +295,10 @@ export const certificates = pgTable(
     mediaAssetId: uuid("media_asset_id")
       .notNull()
       .references(() => mediaAssets.id, { onDelete: "restrict" }),
+    documentMediaId: uuid("document_media_id").references(
+      () => mediaAssets.id,
+      { onDelete: "restrict" },
+    ),
     issuedAt: timestamp("issued_at", { withTimezone: true }),
     sortOrder: integer("sort_order").notNull().default(0),
     isActive: boolean("is_active").notNull().default(true),
@@ -309,6 +313,7 @@ export const certificates = pgTable(
     index("certificates_is_active_idx").on(table.isActive),
     index("certificates_sort_order_idx").on(table.sortOrder),
     index("certificates_media_asset_idx").on(table.mediaAssetId),
+    index("certificates_document_media_idx").on(table.documentMediaId),
   ],
 );
 

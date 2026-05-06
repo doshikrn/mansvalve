@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import { getDb } from "@/lib/db/client";
 import {
@@ -9,6 +10,8 @@ import {
   type NewCertificate,
 } from "@/lib/db/schema";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
+
+const documentMediaAssetsTable = alias(mediaAssetsTable, "document_media_assets");
 
 export type CertificateListItem = {
   id: number;
@@ -23,6 +26,10 @@ export type CertificateListItem = {
   mediaUrl: string;
   mediaAlt: string | null;
   mediaMimeType: string;
+  documentMediaAssetId: string | null;
+  documentUrl: string;
+  documentAlt: string | null;
+  documentMimeType: string;
 };
 
 export type CertificateWritePayload = Omit<
@@ -34,8 +41,10 @@ function mapRow(
   row: {
     certificate: typeof certificatesTable.$inferSelect;
     media: typeof mediaAssetsTable.$inferSelect;
+    document: typeof mediaAssetsTable.$inferSelect | null;
   },
 ): CertificateListItem {
+  const document = row.document ?? row.media;
   return {
     ...row.certificate,
     mediaUrl: resolvePublicMediaUrl(
@@ -45,6 +54,14 @@ function mapRow(
     ),
     mediaAlt: row.media.alt,
     mediaMimeType: row.media.mimeType,
+    documentMediaAssetId: row.certificate.documentMediaId,
+    documentUrl: resolvePublicMediaUrl(
+      document.url,
+      document.storageKey,
+      document.driver,
+    ),
+    documentAlt: document.alt,
+    documentMimeType: document.mimeType,
   };
 }
 
@@ -54,9 +71,14 @@ export async function listPublicActiveCertificates(): Promise<CertificateListIte
     .select({
       certificate: certificatesTable,
       media: mediaAssetsTable,
+      document: documentMediaAssetsTable,
     })
     .from(certificatesTable)
     .innerJoin(mediaAssetsTable, eq(mediaAssetsTable.id, certificatesTable.mediaAssetId))
+    .leftJoin(
+      documentMediaAssetsTable,
+      eq(documentMediaAssetsTable.id, certificatesTable.documentMediaId),
+    )
     .where(eq(certificatesTable.isActive, true))
     .orderBy(
       asc(certificatesTable.sortOrder),
@@ -64,7 +86,13 @@ export async function listPublicActiveCertificates(): Promise<CertificateListIte
       desc(certificatesTable.id),
     );
 
-  return rows.map(mapRow);
+  return rows.map((row) =>
+    mapRow({
+      certificate: row.certificate,
+      media: row.media,
+      document: normalizeDocumentRow(row.document),
+    }),
+  );
 }
 
 export async function listAdminCertificates(): Promise<CertificateListItem[]> {
@@ -73,16 +101,27 @@ export async function listAdminCertificates(): Promise<CertificateListItem[]> {
     .select({
       certificate: certificatesTable,
       media: mediaAssetsTable,
+      document: documentMediaAssetsTable,
     })
     .from(certificatesTable)
     .innerJoin(mediaAssetsTable, eq(mediaAssetsTable.id, certificatesTable.mediaAssetId))
+    .leftJoin(
+      documentMediaAssetsTable,
+      eq(documentMediaAssetsTable.id, certificatesTable.documentMediaId),
+    )
     .orderBy(
       asc(certificatesTable.sortOrder),
       desc(certificatesTable.updatedAt),
       desc(certificatesTable.id),
     );
 
-  return rows.map(mapRow);
+  return rows.map((row) =>
+    mapRow({
+      certificate: row.certificate,
+      media: row.media,
+      document: normalizeDocumentRow(row.document),
+    }),
+  );
 }
 
 export async function getCertificateById(
@@ -93,14 +132,32 @@ export async function getCertificateById(
     .select({
       certificate: certificatesTable,
       media: mediaAssetsTable,
+      document: documentMediaAssetsTable,
     })
     .from(certificatesTable)
     .innerJoin(mediaAssetsTable, eq(mediaAssetsTable.id, certificatesTable.mediaAssetId))
+    .leftJoin(
+      documentMediaAssetsTable,
+      eq(documentMediaAssetsTable.id, certificatesTable.documentMediaId),
+    )
     .where(eq(certificatesTable.id, id))
     .limit(1);
 
   if (!rows.length) return null;
-  return mapRow(rows[0]);
+  return mapRow({
+    certificate: rows[0].certificate,
+    media: rows[0].media,
+    document: normalizeDocumentRow(rows[0].document),
+  });
+}
+
+function normalizeDocumentRow(
+  document: typeof mediaAssetsTable.$inferSelect | null,
+): typeof mediaAssetsTable.$inferSelect | null {
+  if (!document) {
+    return null;
+  }
+  return document;
 }
 
 export async function createCertificate(payload: CertificateWritePayload): Promise<number> {

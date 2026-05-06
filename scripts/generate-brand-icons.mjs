@@ -1,8 +1,8 @@
 /**
  * Генерирует public/favicon.ico, favicon PNG, icon.png и apple-icon.png.
- * Favicon делается из упрощённого знака без текста: он читается на 16px и
- * не превращается в чёрный фрагмент в Google.
- * Большие app icons остаются из полного фирменного знака как в Header.
+ * Все favicon/app icons генерируются из одного фирменного знака, чтобы
+ * Google Search Console, вкладка браузера и выдача не показывали разные
+ * маленькие значки после кэширования.
  *
  * Запуск: npm run generate:icons
  */
@@ -119,15 +119,17 @@ async function main() {
   await mkdir(join(publicDir, "images"), { recursive: true });
 
   const { buf: brandRaster, label } = await loadRasterSource();
-  const faviconSvg = await readFile(fallbackSvg);
-  const faviconRaster = await sharp(faviconSvg, { density: 384 }).png().toBuffer();
-  const transparent = { r: 255, g: 255, b: 255, alpha: 0 };
+  const faviconRaster = brandRaster;
+  const white = { r: 255, g: 255, b: 255, alpha: 1 };
+  const faviconSvg = Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Mansvalve"><rect width="512" height="512" fill="#ffffff"/><image href="data:image/png;base64,${brandRaster.toString("base64")}" width="512" height="512" preserveAspectRatio="xMidYMid meet"/></svg>`,
+  );
 
   const icon512 = await resizePng(brandRaster, 512);
   const apple180 = await resizePng(brandRaster, 180);
-  const fav48 = await resizePng(faviconRaster, 48, transparent);
-  const fav32 = await resizePng(faviconRaster, 32, transparent);
-  const fav16 = await resizePng(faviconRaster, 16, transparent);
+  const fav48 = await resizePng(faviconRaster, 48, white);
+  const fav32 = await resizePng(faviconRaster, 32, white);
+  const fav16 = await resizePng(faviconRaster, 16, white);
 
   await writeFile(join(publicDir, "icon.png"), icon512);
   await writeFile(join(publicDir, "apple-icon.png"), apple180);

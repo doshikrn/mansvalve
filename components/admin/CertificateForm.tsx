@@ -48,9 +48,23 @@ export function CertificateForm({ action, mediaLibrary, certificate }: Props) {
           alt: certificate.mediaAlt ?? "",
           isPrimary: true,
           sortOrder: 0,
+          mimeType: certificate.mediaMimeType,
         },
       ]
     : [];
+  const initialDocumentSelected: SelectedMediaItem[] =
+    certificate?.documentMediaAssetId
+      ? [
+          {
+            mediaId: certificate.documentMediaAssetId,
+            url: certificate.documentUrl,
+            alt: certificate.documentAlt ?? "",
+            isPrimary: true,
+            sortOrder: 0,
+            mimeType: certificate.documentMimeType,
+          },
+        ]
+      : [];
 
   return (
     <form action={runAction} className="space-y-6">
@@ -108,19 +122,41 @@ export function CertificateForm({ action, mediaLibrary, certificate }: Props) {
 
       <section className="space-y-2">
         <MediaUpload
-          title="Файл/превью сертификата"
+          title="Превью сертификата"
           initialLibrary={mediaLibrary}
           initialSelected={initialSelected}
-          hiddenInputName="mediaPayload"
+          hiddenInputName="previewMediaPayload"
           uploadFolder="certificates"
+          accept="image"
           allowAttach
           attachOnUpload
+          multiple={false}
         />
         <p className="text-xs text-muted-foreground">
-          Используется первое (основное) прикреплённое изображение/документ.
+          Изображение используется на публичной странице как карточка сертификата.
         </p>
-        {state.fieldErrors?.mediaPayload ? (
-          <p className="text-xs text-destructive">{state.fieldErrors.mediaPayload}</p>
+        {state.fieldErrors?.previewMediaPayload ? (
+          <p className="text-xs text-destructive">{state.fieldErrors.previewMediaPayload}</p>
+        ) : null}
+      </section>
+
+      <section className="space-y-2">
+        <MediaUpload
+          title="PDF-файл сертификата"
+          initialLibrary={mediaLibrary}
+          initialSelected={initialDocumentSelected}
+          hiddenInputName="documentMediaPayload"
+          uploadFolder="certificates"
+          accept="document"
+          allowAttach
+          attachOnUpload
+          multiple={false}
+        />
+        <p className="text-xs text-muted-foreground">
+          Этот файл открывается по кнопке на публичной странице. Для старых сертификатов без PDF будет открываться превью.
+        </p>
+        {state.fieldErrors?.documentMediaPayload ? (
+          <p className="text-xs text-destructive">{state.fieldErrors.documentMediaPayload}</p>
         ) : null}
       </section>
 

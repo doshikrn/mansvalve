@@ -1,403 +1,839 @@
-# Архитектура проекта MANSVALVE (AS-IS)
+# Архитектура проекта MANSVALVE GROUP
 
-Обновлено: 2026-04-28 (витрина / FM-карусель / hero layout — актуально)  
-Аудитория: внешний архитектор / техлид, подключающийся к проекту.
+Обновлено: 2026-05-06  
+Статус: AS-IS, актуально по текущему коду проекта.  
+Аудитория: владелец проекта, техлид, разработчик, подрядчик по SEO/Ads.
 
-> **Сводка состояния на дату обновления.** Одно приложение Next.js: публичный
-> сайт (`app/(site)/*`) и админка (`app/admin/*`). Postgres + Drizzle для
-> товаров, категорий, медиа, заявок и **контент-блоков** (`content_blocks`).
-> Публичный каталог читается через **`lib/public-catalog`** с переключателем
-> **`PUBLIC_CATALOG_SOURCE`** (`json` по умолчанию | `db`). Редактирование
-> контента и **SEO-мета** (главная, about, contacts) — **`/admin/content`**
-> (без page-builder): `content_blocks` + на публичных страницах — резолверы
-> **`lib/site-content/public.ts`** **merge** с дефолтами из
-> `lib/site-content/models.ts` (без БД, без строки, при невалидном JSON —
-> дефолты; с частичной записью в БД — дозаполнение полей). Страница
-> **политики конфиденциальности** — `/privacy` (текст в репо, `COMPANY` из
-> `lib/company.ts`). Заявки: Telegram + строка в `leads`. Клиентские
-> компоненты админки **не** импортируют `lib/services/leads.ts` (там
-> `server-only`); подписи статусов и `normalizeLeadStatus` вынесены в
-> **`lib/leads/lead-status-public.ts`**.
+## 1. Назначение
 
-**Публичный поиск и бренд:** шапка вызывает **`GET /api/search/products`**
-(роут `app/api/search/products/route.ts`) — на сервере
-**`searchPublicProducts`** в `lib/search/product-search.ts` (тот же пул
-публичных товаров, DTO `lib/search/product-search-dto.ts`). Листинг
-`/catalog?q=…` в **`components/catalog/CatalogShell`** дополняет совпадения
-fuzzy-логикой `lib/search/fuzzy.ts` (согласовано по смыслу с поисковым
-хейстеком). Статика логотипа: **`public/images/mansvalve-brand-mark.png`**. Иконки
-вкладки: **`app/icon.png`**, `app/apple-icon.png` (см. [file conventions: metadata / app icons](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/app-icons));
-в `app/layout.tsx` **не** дублируется `metadata.icons` — достаточно
-file-based).
+`MANSVALVE GROUP` — B2B-сайт поставщика промышленной трубопроводной арматуры в Казахстане.
 
-## 1) Назначение системы
+Система объединяет:
 
-`MANSVALVE` — B2B-сайт поставщика промышленной арматуры для Казахстана.
+- публичный сайт с маркетинговыми страницами, каталогом, SEO-посадочными и формами заявок;
+- каталог товаров с фильтрами по типу товара, DN, PN, марке, материалу, соединению и управлению;
+- SEO-инфраструктуру: metadata, JSON-LD, `sitemap.xml`, `robots.txt`, favicon/app icons;
+- аналитику GA4/GTM и событийный трекинг;
+- админ-панель для товаров, категорий, медиа, заявок, сертификатов и контент-блоков;
+- интеграции с Telegram, Postgres/Drizzle, local/Supabase storage.
 
-Текущее состояние:
+## 2. Стек
 
-- маркетинговый сайт (landing + доверительные блоки + CTA), часть текстов
-  и **мета-описаний** главной, about, contacts **опционально** из БД
-  (`content_blocks`); **шапка** — двухуровневый B2B-образец: служебная
-  панель (серый фон, быстрые ссылки) + основная зона: логотип, **поиск по
-  каталогу** с подсказками (`/api/search/products`) и CTA-контакты;
-- каталог с фильтрами, пагинацией, страницами категорий/подкатегорий и
-  карточками товаров — источник данных **JSON или БД** (флаг);
-- серверный API для приёма заявок (`POST /api/request`) — Telegram +
-  best-effort запись в `leads`;
-- базовая web-аналитика: bootstrap GTM в `app/layout.tsx` при
-  `NEXT_PUBLIC_GTM_ID`, события в `dataLayer` из `lib/analytics.ts`
-  и клиентских трекеров (`PageViewTracker`, `GlobalClickTracker`, форма,
-  `CatalogFilters`); при **отсутствии** `NEXT_PUBLIC_GTM_ID` скрипт GTM
-  не грузится, `trackEvent` — no-op. SEO: metadata, JSON-LD, `sitemap`/`robots`.
-- **админ-панель**: товары, категории/подкатегории, медиа, заявки, контент
-  сайта, JWT-сессия.
+- Framework: Next.js 16 App Router.
+- UI: React 19, TypeScript strict, Tailwind CSS v4.
+- Components: shadcn/ui, Radix UI, lucide-react.
+- Motion: framer-motion.
+- DB: Postgres, Drizzle ORM, postgres driver.
+- Auth: JWT в httpOnly cookie, jose, bcryptjs.
+- Validation: zod.
+- Analytics: GA4 `G-K08PEJC569`, optional GTM через `NEXT_PUBLIC_GTM_ID`.
+- Media: local storage или Supabase storage.
+- Catalog source: JSON или DB через единый public adapter.
 
-## 2) Технологический стек
+## 3. Слои
 
-- Framework: `Next.js 16` (App Router, RSC, metadata routes).
-- Runtime/UI: `React 19`, `TypeScript`, `Tailwind CSS v4`.
-- UI: `shadcn/ui`, `radix-ui`, `lucide-react`.
-- Анимации: **`framer-motion`** — (1) спокойный B2B scroll-reveal секций на главной
-  (`whileInView`, токены в **`lib/motion.ts`**); (2) **карусель витрины**
-  **`ProductShowcaseCarousel`**: **`AnimatePresence`** + **`motion.div`**, ключ
-  слайда **`${variant}-${active}-${slug}`**; внутри карусели
-  **`MotionConfig reducedMotion="never"`** — иначе глобальный
-  **`PublicMotionProvider`** (`reducedMotion="user"`) обнулял бы переходы при
-  `prefers-reduced-motion`; длительность смены слайда задаётся вручную
-  (**`useReducedMotion`**: ~0,2s vs ~0,65s). **CSS keyframes для слайдера не
-  используются.**
-  Глобально: **`PublicMotionProvider`** в **`app/(site)/layout.tsx`**. Опционально:
-  **`ScrollReveal`**, **`CssReveal`** (легаси, на **`/`** не используется),
-  **`MotionRuntimeCheck`**, dev-лог **`[showcase-motion]`** в `NODE_ENV=development`.
-- БД: Postgres, `drizzle-orm`, `postgres` (драйвер), миграции `drizzle-kit`.
-- Auth админки: `jose` (JWT в httpOnly cookie), `bcryptjs`.
-- Аналитика: GTM при `NEXT_PUBLIC_GTM_ID` → `dataLayer` (GA4/Ads настраиваются в GTM)
-  (см. `lib/analytics.ts`).
-- Линтинг: `ESLint` (`eslint-config-next`).
-- Подключены точечно: `@supabase/supabase-js` (драйвер медиа Supabase),
-  `zod` для валидации.
+```text
+app/
+  routes, layouts, metadata, server actions, API routes
 
-## 3) Физическая структура проекта (упрощённо)
+components/
+  UI-компоненты, секции, формы, layout, catalog widgets, admin UI
+
+lib/
+  бизнес-логика, данные, адаптеры, services, search, SEO config, analytics
+
+data/
+  JSON-источник каталога
+
+public/
+  изображения, favicon, app icons, category visuals
+
+scripts/
+  генерация иконок, импорт/миграции/seed/smoke scripts
+```
+
+Правило проекта: UI не содержит бизнес-данные каталога и SEO-конфиги. Данные и правила вынесены в `lib/*`, UI получает готовые типизированные props.
+
+## 4. Физическая структура
 
 ```text
 mansvalve/
 ├── app/
-│   ├── layout.tsx                 # GTM, JSON-LD, трекеры, шрифты; без Header/Footer
-│   ├── icon.png, apple-icon.png  # фавикон (file convention)
-│   ├── (site)/                    # публичный сайт
-│   │   ├── layout.tsx             # PublicMotionProvider + Header / Footer / Float WA
-│   │   ├── page.tsx               # главная (+ generateMetadata из content)
-│   │   ├── about/page.tsx         # + generateMetadata (meta из CMS)
-│   │   ├── contacts/page.tsx      # + generateMetadata (meta из CMS)
-│   │   ├── privacy/page.tsx       # политика конфиденциальности
-│   │   └── catalog/**
+│   ├── layout.tsx
+│   ├── robots.ts
+│   ├── sitemap.ts
+│   ├── globals.css
+│   ├── (site)/
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── about/page.tsx
+│   │   ├── contacts/page.tsx
+│   │   ├── certificates/page.tsx
+│   │   ├── delivery/page.tsx
+│   │   ├── privacy/page.tsx
+│   │   ├── terms/page.tsx
+│   │   ├── catalog/
+│   │   │   ├── page.tsx
+│   │   │   ├── [slug]/page.tsx
+│   │   │   ├── category/[categorySlug]/page.tsx
+│   │   │   └── subcategory/[subcategorySlug]/page.tsx
+│   │   └── [categorySlug]/[landingSlug]/page.tsx
 │   ├── admin/
 │   │   ├── layout.tsx
+│   │   ├── page.tsx
 │   │   ├── login/
-│   │   ├── products/**            # CRUD товаров
-│   │   ├── categories/**          # CRUD категорий и подкатегорий (+ SEO)
-│   │   ├── media/                 # загрузка и список медиа
-│   │   ├── leads/**               # список, деталка, правка статуса/заметки
-│   │   ├── content/               # правка site content (content_blocks)
-│   │   └── ...
+│   │   ├── products/
+│   │   ├── categories/
+│   │   ├── certificates/
+│   │   ├── content/
+│   │   ├── leads/
+│   │   ├── media/
+│   │   └── settings/
 │   └── api/
-│       ├── request/route.ts       # заявки
-│       ├── search/products/       # GET: автодополнение для шапки (публичный)
+│       ├── request/route.ts
+│       ├── search/products/route.ts
 │       └── admin/media/**
 ├── components/
-│   ├── motion/                    # PublicMotionProvider, MotionRuntimeCheck; CssReveal / ScrollReveal (опц.)
-│   ├── sections/*                 # Hero, TrustStrip, FAQ, RequestCTA, ProductShowcaseCarousel …
-│   ├── catalog/*
-│   ├── contacts/QuickRequestForm.tsx
-│   ├── analytics/*                # PageViewTracker, GlobalClickTracker
-│   ├── admin/*                    # LeadEditForm, ProductForm, …
-│   ├── layout/*                   # Header, Footer, FloatingWhatsApp
-│   ├── search/CatalogSearchPanel  # bar + подсказки, modal (моб./поиск-иконка)
-│   └── ui/*
+│   ├── admin/
+│   ├── analytics/
+│   ├── catalog/
+│   ├── contacts/
+│   ├── icons/
+│   ├── layout/
+│   ├── motion/
+│   ├── providers/
+│   ├── search/
+│   ├── sections/
+│   ├── seo/
+│   └── ui/
 ├── lib/
-│   ├── public-catalog/            # единая точка: JSON vs DB для витрины
-│   ├── motion.ts                  # PREMIUM_VIEWPORT, stagger/intro/card variants, MOTION_EASE
-│   ├── site-content/              # ключи, zod-модели, merge, server resolvers
-│   ├── leads/lead-status-public.ts  # только UI/нормализация статуса (без БД)
-│   ├── services/                  # products, categories, leads, content-blocks …
-│   ├── db/                        # schema, client, migrations
-│   ├── auth/*
-│   ├── storage/*
-│   ├── company.ts                 # реквизиты, tel/mail, wa.me, опц. публ. Telegram URL
-│   ├── search/                    # product-search API + fuzzy, DTO
-│   ├── analytics.ts               # trackEvent → dataLayer (GTM-флаг)
-│   └── …
+│   ├── auth/
+│   ├── db/
+│   ├── leads/
+│   ├── public-catalog/
+│   ├── search/
+│   ├── services/
+│   ├── site-content/
+│   ├── storage/
+│   ├── analytics.ts
+│   ├── analytics-config.ts
+│   ├── catalog-data.ts
+│   ├── catalog-seo.ts
+│   ├── category-content.ts
+│   ├── category-visuals.ts
+│   ├── company.ts
+│   ├── media-image.ts
+│   ├── media-url.ts
+│   ├── motion.ts
+│   ├── product-showcase.ts
+│   ├── site-url.ts
+│   ├── structured-data.ts
+│   └── utils.ts
+├── data/
+│   ├── catalog-products.json
+│   └── catalog-overrides.json
+├── public/
+│   ├── favicon.ico
+│   ├── favicon.svg
+│   ├── favicon-16.png
+│   ├── favicon-32.png
+│   ├── favicon-48.png
+│   ├── icon.png
+│   ├── apple-icon.png
+│   ├── images/
+│   └── category/product images
+├── scripts/
+│   ├── generate-brand-icons.mjs
+│   ├── build-app-icons.mjs
+│   ├── smoke-site-content.ts
+│   └── db/
+├── proxy.ts
 ├── next.config.ts
-├── public/images/                # бренд (логотип) и публичные картинки
-├── data/catalog-products.json     # источник при PUBLIC_CATALOG_SOURCE=json
-├── proxy.ts                       # guard /admin/*
 ├── drizzle.config.ts
-├── scripts/db/*
-├── scripts/smoke-site-content.ts  # merge-only smoke (без поднятия БД в tsx)
+├── package.json
 └── ARCHITECTURE.md
 ```
 
-## 4) Логическая архитектура
+## 5. Runtime layout
 
-```text
-Browser
-  -> Next.js App Router
-      -> app/(site)/*  (RSC + часть секций async + resolve* из lib/site-content)
-      -> app/admin/*   (RSC + server actions; клиент только там, где нужен)
-      -> app/api/request  -> validate -> persistLeadSafely -> Telegram
-      -> app/api/search/products  -> searchPublicProducts (клиент: шапка, карточки)
-      -> lib/public-catalog  -> JSON файл или Drizzle-запросы
-      -> lib/services/*      # server-only там, где помечено
+### Root layout
+
+Файл: `app/layout.tsx`
+
+Отвечает за:
+
+- global metadata и favicon/app icons;
+- `metadataBase` через `getSiteBaseUrl()`;
+- Inter font;
+- GA4 `gtag.js`;
+- optional GTM bootstrap;
+- global JSON-LD `Organization` и `WebSite`;
+- глобальные клиентские трекеры;
+- toaster.
+
+Важное решение: `send_page_view: false` для GA4. Page views отправляет собственный `PageViewTracker`, чтобы корректно учитывать App Router transitions и не получать дубли.
+
+### Public site layout
+
+Файл: `app/(site)/layout.tsx`
+
+Отвечает за:
+
+- public chrome: header, footer, floating WhatsApp;
+- `PublicMotionProvider`;
+- separation от admin layout.
+
+### Admin layout
+
+Файл: `app/admin/layout.tsx`
+
+Отвечает за:
+
+- admin sidebar/header;
+- guard через server auth;
+- изоляцию админки от публичного header/footer.
+
+## 6. Публичные маршруты
+
+| Route | Назначение |
+|---|---|
+| `/` | Главная B2B-страница |
+| `/about` | О компании |
+| `/contacts` | Контакты, карта, форма |
+| `/certificates` | Сертификаты |
+| `/delivery` | Доставка |
+| `/privacy` | Политика конфиденциальности |
+| `/terms` | Пользовательские условия |
+| `/catalog` | Общий каталог с фильтрами |
+| `/catalog/[slug]` | Карточка товара |
+| `/catalog/category/[categorySlug]` | Категория каталога |
+| `/catalog/subcategory/[subcategorySlug]` | Подкатегория каталога |
+| `/[categorySlug]/[landingSlug]` | SEO landing pages для коммерческих запросов |
+| `/robots.txt` | Metadata route `app/robots.ts` |
+| `/sitemap.xml` | Metadata route `app/sitemap.ts` |
+
+## 7. SEO landing pages
+
+Файл маршрута: `app/(site)/[categorySlug]/[landingSlug]/page.tsx`  
+Конфиг: `lib/catalog-seo.ts`
+
+Сейчас поддерживаются:
+
+- `/zadvizhki/30ch6br`
+- `/zadvizhki/30s41nzh`
+- `/zadvizhki/s-elektroprivodom`
+- `/zatvory/mezhflantsevye`
+- `/flancy/ru16`
+
+Каждая landing page описана как typed config:
+
+```ts
+interface CatalogLandingPage {
+  categorySlug: string;
+  slug: string;
+  title: string;
+  description: string;
+  h1: string;
+  filters: {
+    categoryId: string;
+    subcategoryId?: string;
+    model?: string;
+    pn?: number;
+    material?: string;
+    connectionType?: string;
+    controlType?: string;
+    q?: string;
+  };
+}
 ```
 
-### 4.1) Публичные анимации (скролл и витрина товаров)
+Страница использует `CatalogShell` с locked category/subcategory и search params из landing config.
 
-**Принцип:** секции после hero на **`/`** — **framer-motion** (`whileInView`, один раз
-во viewport); **карусель витрины** — тоже **framer-motion** (отдельное дерево с
-**`MotionConfig reducedMotion="never"`**), без CSS-keyframes на слайде.
+## 8. Каталог
 
-| Механизм | Файлы / классы |
-|----------|----------------|
-| **Глобально для FM на сайте** | **`app/(site)/layout.tsx`**: **`PublicMotionProvider`** (`MotionConfig reducedMotion="user"`). **`lib/motion.ts`**: **`PREMIUM_VIEWPORT`**, **`premiumStaggerContainer`**, **`premiumIntroBlock`**, **`premiumCardBlock`**, **`MOTION_EASE`**. |
-| **Scroll reveal главной (секции)** | Серверные оболочки резолвят данные; клиентские обёртки: **`TrustStripClient`**, **`CategoriesClient`**, **`WhyUsClient`**, **`WhoWeSupplyClient`**, **`DeliveryCaseClient`**, **`HowItWorksClient`**, **`RequestCtaClient`**; заголовок FAQ — **`FAQAccordion`** (`motion` только на блоке заголовка). Паттерн: stagger «интро → карточки», **`viewport`** с отрицательным нижним margin / `amount`, **`once: true`**. |
-| **Hero (сетка + витрина)** | **`Hero.tsx`**: двухколоночный grid **`lg:items-start`**, правая колонка витрины **`self-start`** (без сдвига вниз), витрина **`ProductShowcaseCarousel`** `variant="hero"`. Вход колонок — CSS **`hero-enter-left` / `hero-enter-right`** в **`globals.css`**. |
-| **Карусель товара (hero + «Хиты продаж»)** | **`ProductShowcaseCarousel.tsx`**: **`AnimatePresence mode="wait"`**; **`motion.div`** с **`key={slideKey}`** (`slideKey` — строка из **`variant`**, **`active`**, **`product.slug`**); **`initial` / `animate` / `exit`** (opacity, x, scale); обёртка **`MotionConfig reducedMotion="never"`**; длительность перехода короче при **`useReducedMotion === true`**. Стили: **`.showcase-card-hero`** (`overflow: hidden`), **`.showcase-card-catalog`** (`overflow: visible`). **CSS-keyframes слайдера в `globals.css` не используются.** |
-| **Легаси / опционально** | **`components/motion/CssReveal.tsx`**, классы **`reveal-up`** в **`globals.css`** (на **`/`** не подключены). **`ScrollReveal.tsx`**. |
-| **Hover карточек** | **`.site-card`** и правила в **`globals.css`**; каталог **`ProductCard`**. |
+### Ключевые файлы
 
----
+- `components/catalog/CatalogShell.tsx` — server-side orchestration: фильтрация, пагинация, JSON-LD item list.
+- `components/catalog/CatalogFilters.tsx` — client UI фильтров, URL state, debounce search.
+- `components/catalog/ProductGrid.tsx` — список товаров.
+- `components/catalog/ProductCard.tsx` — карточка товара.
+- `components/catalog/FilterSelectMenu.tsx` — dropdown/mobile sheet для select-фильтров.
+- `components/catalog/Pagination.tsx` — пагинация с query preservation.
+- `lib/catalog-seo.ts` — SEO/taxonomy/filter constants, product title builder, landing pages.
+- `lib/public-catalog/*` — единый adapter для JSON/DB.
+- `lib/search/*` — поиск, fuzzy, DTO.
 
-### Слои
+### Фильтры
 
-1. **Presentation** — страницы, секции, формы, админ-формы.
-2. **Application** — server actions, оркестрация каталога, `revalidatePath`.
-3. **Domain / public read** — `lib/site-content/models` (дефолты + merge),
-   типы каталога из `public-catalog`.
-4. **Integration** — Telegram, GTM, опционально Supabase Storage, Postgres.
+Фильтр каталога построен в порядке:
 
-## 5) Маршруты и точки входа (основные)
+1. Поиск товара.
+2. Категория.
+3. Марка / модель.
+4. Подкатегория, если route не locked на подкатегорию.
+5. DN.
+6. PN.
+7. Материал.
+8. Резьба, если есть в пуле.
+9. Тип соединения.
+10. Тип управления.
 
-**Публичные**
+URL query параметры:
 
-- `GET /` — лендинг; hero / trust / FAQ / request CTA / meta главной —
-  контент из БД при наличии настроенной БД и строк в `content_blocks`, иначе
-  статические дефолты в коде; крупные секции после hero — **FM scroll-reveal**
-  (клиентские `*Client` и заголовок FAQ, см. §4.1).
-- `GET /catalog` (query `q`, фильтры) — `CatalogShell`; `q` с той же семантикой,
-  что и глобальный поиск, плюс `/catalog/category/...`, `/catalog/subcategory/...`,
-  `/catalog/[slug]`.
-- `GET /api/search/products?q&limit` — **публичный** JSON (автодополнение, без
-  секрета; не путать с `TELEGRAM_*` для заявок).
-- `GET /about`, `/contacts` — тексты и **metadata** (title/description) из
-  `content_blocks` через `resolveAboutCopy` / `resolveContactsCopy` и
-  `resolveAboutMeta` / `resolveContactsMeta` + merge с дефолтами.
-- `GET /privacy` — политика конфиденциальности (статический контент + `COMPANY`).
-- `POST /api/request` — заявка.
-- `GET /robots.txt`, `GET /sitemap.xml`.
+```text
+q
+category
+subcategory
+model
+dn
+pn
+thread
+material
+connectionType
+controlType
+page
+```
 
-**Админка** (за `proxy.ts` + `requireAdmin`)
+### SEO-названия товаров
 
-- `/admin/login`, `/admin`, `/admin/products`, `/admin/categories`, …
-- **`/admin/content`** — формы по секциям (hero, trust, FAQ, CTA, meta главной,
-  **meta about / meta contacts**, тексты about и contacts).
+Формирование: `buildProductCatalogName(product)` в `lib/catalog-seo.ts`.
 
-## 6) Модель данных
+Формат:
 
-### Каталог (витрина)
+```text
+[Тип товара] [материал] [марка] DN__ PN__ [соединение]
+```
 
-- При **`PUBLIC_CATALOG_SOURCE=json`** (по умолчанию): чтение из
-  `data/catalog-products.json` (+ хелперы совместимости).
-- При **`db`**: чтение нормализованных сущностей из Postgres (категории,
-  подкатегории, товары) через сервисный слой, используемый из
-  `lib/public-catalog`.
+Используется:
 
-### Таблицы админки / сайта (Drizzle, см. `lib/db/schema.ts`)
+- в карточках каталога;
+- в product page H1;
+- в WhatsApp inquiry text;
+- в product metadata.
 
-Ключевые сущности: `admin_users`, `categories`, `subcategories`, `products`,
-`product_specs`, `product_images`, `media_assets`, **`leads`**,
-**`content_blocks`** (ключ + `locale` + `jsonb` payload), `company_settings`,
-`audit_log`.
+### Product SEO
 
-### Контент сайта (`content_blocks`)
+Файл: `app/(site)/catalog/[slug]/page.tsx`
 
-- Стабильные ключи — `lib/site-content/keys.ts` (например `site.home.hero`,
-  `site.meta.home`, **`site.meta.about`**, **`site.meta.contacts`**, `site.about.copy`,
-  `site.contacts.copy`, …).
-- Схемы и значения по умолчанию — `lib/site-content/models.ts` (zod + merge).
-- Публичное чтение — **`lib/site-content/public.ts`** (`resolveHomeHero`,
-  `resolveHomeMeta`, `resolveAboutMeta`, `resolveContactsMeta`, `resolveTrustStrip`,
-  …): если `DATABASE_URL` не задан или запись отсутствует / невалидна —
-  используются дефолты (**публичный сайт без БД не ломается**); при частичном
-  JSON в БД — **shallow merge** с дефолтами.
+Title:
 
-## 7) Основные потоки
+```text
+Купить [название товара] в Казахстане | MANSVALVE GROUP
+```
 
-1. **Рендер и SEO** — `generateMetadata` на `/`, `/about`, `/contacts` из
-   `resolveHomeMeta()`, `resolveAboutMeta()`, `resolveContactsMeta()` (при
-   непустом `SITE_URL` — корректные absolute URL через `metadataBase`).
-2. **Каталог** — единый вход `getPublicCatalogCategories` /
-   `getPublicCatalogProducts`; **поиск** — `CatalogSearchPanel` (шапка) +
-   `trackEvent("catalog_search", { source: "header-bar" | "header-modal", … })`
-   при GTM, `/catalog` с fuzzy.
-3. **Заявки** — как раньше по UX, плюс запись в `leads` и обновление полей
-   Telegram-доставки.
-4. **Аналитика** — `trackEvent` пушит в `dataLayer` только при заданном
-   **`NEXT_PUBLIC_GTM_ID`** (иначе no-op). GA4/Ads не подключаются в коде — только
-   GTM. Трекинг кликов `tel:` / WhatsApp, просмотры страниц, форма, каталог — в
-   прежних компонентах.
-5. **Редактирование контента/мета** — `/admin/content` → server action →
-   `upsertContentBlock` → `revalidatePath` для `/`, `/about`, `/contacts` и
-   т.д.
+Description:
 
-## 8) Интеграции и окружение
+```text
+[Название товара] с поставкой по Казахстану. Работаем с НДС, предоставляем сертификаты, паспорт изделия и гарантию. КП за 15 минут.
+```
 
-**Публичный сайт и сборка**
+H1:
 
-- `SITE_URL`, `NEXT_PUBLIC_GTM_ID`, `NEXT_PUBLIC_TELEGRAM_URL` (опция: ссылка в
-  панели шапки, не путать с `TELEGRAM_*` в заявках), `TELEGRAM_BOT_TOKEN`,
-  `TELEGRAM_CHAT_ID` (полный перечень и чеклисты выката — `README.md`).
+```text
+[Название товара]
+```
 
-**БД и админка**
+### Category SEO
 
-- `DATABASE_URL` — если пусто: публичный контент из дефолтов; админ-разделы,
-  завязанные на БД, показывают сообщение о не настроенной БД.
-- `ADMIN_SESSION_SECRET`, опционально `ADMIN_SESSION_TTL_HOURS`,
-  `ADMIN_BOOTSTRAP_*` для первичного пользователя.
+Категорийные SEO overrides находятся в `CATEGORY_SEO` в `lib/catalog-seo.ts`.
 
-**Каталог**
+Для `zadvizhki`:
 
-- `PUBLIC_CATALOG_SOURCE` = `json` | `db` (устаревшее имя: `PUBLIC_CATALOG_FROM_DB=true`
-  также переключает на БД, если явный `PUBLIC_CATALOG_SOURCE` не задан).
+- title: `Задвижки купить в Казахстане — чугунные и стальные | MANSVALVE GROUP`
+- description: `Промышленные задвижки DN50-DN1000, PN16-PN64...`
+- h1: `Задвижки промышленные в Казахстане`
 
-**Медиа**
+### Быстрые ссылки категорий
 
-- `MEDIA_DRIVER`, `MEDIA_PUBLIC_BASE_URL`, при Supabase — ключи проекта.
+`CATEGORY_QUICK_LINKS` в `lib/catalog-seo.ts`.
 
-## 9) Нефункциональные характеристики
+Для `zadvizhki` есть ссылки на:
 
-- **Сборка**: `next build` должен проходить без импорта `server-only` /
-  `postgres` в клиентский бандл публичных/клиентских форм (см. раздел 13.4).
-- **`next.config.ts`**: `poweredByHeader: false` (прочие детали деплоя — `README.md`).
-- **Деградация**: отсутствие БД не отключает маркетинговый сайт за счёт
-  fallback-контента и JSON-каталога.
-- **Rate limit** заявок по-прежнему in-memory (ограничение для горизонтального
-  масштаба).
+- все задвижки;
+- чугунные;
+- стальные;
+- с обрезиненным клином;
+- с электроприводом;
+- PN16, PN25, PN40, PN64.
 
-## 10) Актуальные архитектурные ограничения
+## 9. Источник каталога
 
-1. Тексты части marketing-секций (**WhyUs, HowItWorks, DeliveryCase, WhoWeSupply**,
-   **Footer**) пока **не** в `content_blocks` (в отличие от home/about/contacts
-   copy+meta, hero, FAQ, trust strip, request CTA, meta главной).
-2. Rate limiter заявок — процесс-local.
-3. Нет распределённого CI/e2e в репозитории (рекомендуется как следующий шаг
-   качества).
-4. Excel → каталог: по-прежнему цепочка через JSON-генерацию и импорт в БД, без
-  прямого «живого» Excel-pipeline на проде.
+Публичный каталог читается только через `lib/public-catalog`.
 
-## 11) Приоритеты следующего этапа (TO-BE, кратко)
+```text
+getPublicCatalogCategories()
+getPublicCatalogProducts()
+getPublicProductBySlug()
+getPublicCategoryBySlug()
+getPublicSubcategoryBySlug()
+getPublicProductsByCategory()
+getPublicProductsBySubcategory()
+```
 
-1. Расширить CMS-покрытие (футер, оставшиеся секции лендинга) — по продукту.
-2. Redis/edge KV для rate limiting и кэшей при необходимости.
-3. CI: `lint`, `tsc`, `build`, smoke-сценарии.
-4. ADR по хранению контента и каталога.
+Source selection:
 
-## 12) Быстрый технический чек-лист
+- `PUBLIC_CATALOG_SOURCE=json` — `data/catalog-products.json`;
+- `PUBLIC_CATALOG_SOURCE=db` — Postgres через Drizzle;
+- legacy `PUBLIC_CATALOG_FROM_DB=true` тоже поддерживается.
 
-- Dev: `npm run dev`
-- Build: `npm run build`
-- Lint: `npm run lint`
-- Миграции: `npm run db:generate && npm run db:migrate`
-- Админ: `npm run admin:create`
-- Импорт каталога в БД: `npm run db:import-catalog`
-- Smoke merge контента (без обязательной БД в процессе):  
-  `npx tsx scripts/smoke-site-content.ts`
+JSON adapter:
 
-## 13) Админ-панель и данные (актуализация)
+- `lib/public-catalog/json-adapter.ts`
+- `lib/catalog-data.ts`
 
-### 13.1 Концепция
+DB adapter:
 
-- Префикс `/admin/*`, отдельный layout, JWT в httpOnly cookie, guard в
-  `proxy.ts` + `requireAdmin()` в RSC/actions.
-- Публичный сайт в `app/(site)/*` не смешивается с layout админки.
+- `lib/public-catalog/db-adapter.ts`
+- `lib/db/schema.ts`
 
-### 13.2 Реализованные возможности админки
+Public types:
 
-- **Товары** — полный CRUD, server actions, zod.
-- **Категории и подкатегории** — CRUD, SEO-поля, связь с публичными
-  страницами категорий (где предусмотрено кодом).
-- **Медиа** — загрузка, драйвер `local` / `supabase`, таблица `media_assets`.
-- **Заявки** — список с фильтрами, детальная карточка, смена статуса и
-  внутренней заметки через **`updateLeadAction`**; отображение legacy-статусов
-  `won`/`lost` как «Завершена» через **`normalizeLeadStatus`**.
-- **Контент сайта** — `/admin/content`: hero, trust strip, request CTA, FAQ,
-  **meta главной (OG)**, **meta about / meta contacts (title, description)**,
-  тексты about и contacts; хранение в **`content_blocks`**.
+- `lib/public-catalog/types.ts`
 
-### 13.3 Публичное применение контента
+## 10. Поиск
 
-- Секции **`Hero`**, **`TrustStrip`**, **`FAQ`**, **`RequestCTA`** и др. — данные через
-  `resolve*` из **`lib/site-content/public.ts`**; часть рендерится серверной оболочкой +
-  **`*Client`** для motion (см. §4.1).
-- Страницы **`/about`**, **`/contacts`**, **`/`** — `generateMetadata` из
-  `resolveHomeMeta` / `resolveAboutMeta` / `resolveContactsMeta` (merge с
-  дефолтами в `lib/site-content/models.ts`).
-- **`/privacy`** — статическая публичная страница; ссылка в **Footer**;
-  не редактируется из `/admin/content`.
-- Сервис **`lib/services/content-blocks.ts`** — `getContentBlock`,
-  `upsertContentBlock`, опционально список по префиксу.
+### Header search
 
-### 13.4 Разделение client / server (важно для сборки)
+Компонент: `components/search/CatalogSearchPanel.tsx`  
+API: `app/api/search/products/route.ts`  
+Server search: `lib/search/product-search.ts`  
+DTO: `lib/search/product-search-dto.ts`
 
-- **`lib/services/leads.ts`** помечен **`server-only`** и содержит Drizzle.
-- Клиентский **`LeadEditForm`** и любые будущие клиентские модули **не должны**
-  импортировать этот файл.
-- Общие безопасные для клиента вещи (подписи статусов, нормализация enum для
-  UI) лежат в **`lib/leads/lead-status-public.ts`** без `server-only` и без
-  доступа к БД.
+Используется для:
 
-### 13.5 `lib/company.ts` и внешние CTA
+- desktop header search bar;
+- mobile search modal;
+- перехода на `/catalog?q=...`;
+- перехода в карточку товара по подсказке.
 
-- Единая точка **реквизитов**, `tel:`, e-mail, **`wa.me`** (номер в виде
-  цифр, query `text` с `encodeURIComponent` в `buildCompanyWhatsAppUrl`),
-  при необходимости **публичной ссылки Telegram**:
-  `COMPANY_TELEGRAM_PUBLIC_HREF` (из `NEXT_PUBLIC_TELEGRAM_URL`), не смешивать
-  с `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` для `POST /api/request`.
-- Хелперы для **каталога** (запрос по товару) и **контактов** — в том же
-  файле, чтобы ссылки на WhatsApp не дублировались. Визуальные CTA: плавающий
-  виджет **`FloatingWhatsApp`**, плюс иконки/телефон в служебной панели шапки
-  и блок «для заявок» / «оплата и доставка» в основной — без дублирования
-  лишнего «ряда контактов» с теми же цифрами.
+### Catalog search
 
-### 13.5.1 Публичная шапка и поиск
+`CatalogShell` фильтрует текущий пул товаров по:
 
-- **`Header`** (client) — `components/layout/Header.tsx`: `lg+` в центре
-  `CatalogSearchPanel` (`variant: headerBar`), `Enter` / «Найти» ведут на
-  `/catalog?q=...`, клик по подсказке — `/catalog/[slug]`. Ниже `lg` — иконка
-  поиска (overlay `variant: modal`) + выезжающий блок с навигацией и
-  заявками/контактами.
-- **`/api/search/products`** — `app/api/search/products/route.ts`, тот же пул
-  публичных товаров, что и витрина, без PII.
+- name;
+- material;
+- connectionType;
+- controlType;
+- model;
+- categoryName;
+- subcategoryName;
+- shortDescription;
+- DN/PN в формате `dn100`, `pn16` и числом;
+- thread.
 
-### 13.6 Поток заявки (без изменения смысла)
+Fuzzy: `lib/search/fuzzy.ts`.
 
-`QuickRequestForm` → `POST /api/request` → валидация / rate limit / honeypot
-→ **`persistLeadSafely`** → Telegram → **`updateLeadDelivery`**.
+## 11. Формы и заявки
 
-### 13.7 Миграция каталога «JSON → БД»
+### Quick request form
 
-- Импорт: `npm run db:import-catalog`.
-- Переключение витрины: **`PUBLIC_CATALOG_SOURCE`** / legacy-флаг
-  **`PUBLIC_CATALOG_FROM_DB`**.
+Компонент: `components/contacts/QuickRequestForm.tsx`  
+API: `app/api/request/route.ts`
 
-### 13.8 Таблица `content_blocks` и `company_settings`
+Поток:
 
-- Редактируемый маркетинговый контент слайса CMS хранится в **`content_blocks`**
-  (JSON по ключу).
-- **`company_settings`** в схеме есть; текущий слайс контента опирается на
-  `content_blocks`, не на singleton настройки компании.
+```text
+QuickRequestForm
+  -> POST /api/request
+  -> validation / honeypot / rate limit
+  -> persistLeadSafely
+  -> Telegram delivery
+  -> updateLeadDelivery
+```
 
----
+Lead services:
 
-Документ отражает текущее состояние (AS-IS) на дату в шапке и может
-использоваться как отправная точка для проектирования TO-BE архитектуры.
+- `lib/services/leads.ts` — server-only, DB operations;
+- `lib/leads/lead-status-public.ts` — client-safe labels/normalization.
+
+Важное правило: client components не импортируют `lib/services/leads.ts`.
+
+## 12. Admin
+
+Admin routes находятся в `app/admin`.
+
+### Auth
+
+- `proxy.ts` защищает `/admin/*`;
+- `lib/auth/session.ts` — JWT session;
+- `lib/auth/current-user.ts` — текущий admin;
+- `lib/auth/password.ts` — bcrypt;
+- cookie httpOnly.
+
+### Разделы
+
+| Раздел | Файлы |
+|---|---|
+| Login | `app/admin/login/*` |
+| Dashboard | `app/admin/page.tsx` |
+| Products | `app/admin/products/*`, `components/admin/ProductForm.tsx` |
+| Categories | `app/admin/categories/*`, `CategorySeoFields.tsx` |
+| Certificates | `app/admin/certificates/*`, `CertificateForm.tsx` |
+| Leads | `app/admin/leads/*`, `LeadEditForm.tsx` |
+| Media | `app/admin/media/page.tsx`, API `app/api/admin/media/*` |
+| Content | `app/admin/content/*`, `ContentSection.tsx` |
+| Settings | `app/admin/settings/page.tsx` |
+
+### Server actions
+
+Server actions лежат рядом с admin routes:
+
+- `app/admin/products/actions.ts`
+- `app/admin/categories/actions.ts`
+- `app/admin/certificates/actions.ts`
+- `app/admin/leads/actions.ts`
+- `app/admin/content/actions.ts`
+- `app/admin/login/actions.ts`
+
+## 13. Content blocks
+
+Модель редактируемого контента:
+
+- keys: `lib/site-content/keys.ts`;
+- models/defaults/zod: `lib/site-content/models.ts`;
+- public resolvers: `lib/site-content/public.ts`;
+- DB service: `lib/services/content-blocks.ts`;
+- admin editor: `app/admin/content/page.tsx`.
+
+Принцип:
+
+```text
+DB content_blocks JSON payload
+  -> zod parse
+  -> merge with defaults
+  -> public page props / metadata
+```
+
+Если БД не настроена или payload невалидный, публичный сайт использует defaults и не падает.
+
+## 14. Media and storage
+
+Services:
+
+- `lib/services/media.ts`
+- `lib/storage/index.ts`
+- `lib/storage/local-driver.ts`
+- `lib/storage/supabase-driver.ts`
+- `lib/storage/types.ts`
+- `lib/media-url.ts`
+- `lib/media-image.ts`
+
+Drivers:
+
+- local filesystem;
+- Supabase storage.
+
+Media admin API:
+
+- `app/api/admin/media/route.ts`
+- `app/api/admin/media/[id]/route.ts`
+
+## 15. SEO infrastructure
+
+### Metadata
+
+Root metadata: `app/layout.tsx`.  
+Page metadata: `generateMetadata` в page files.
+
+Используется:
+
+- title templates;
+- canonical URLs;
+- description;
+- OpenGraph;
+- Twitter cards;
+- favicon/app icons.
+
+### JSON-LD
+
+Component: `components/seo/JsonLd.tsx`  
+Builders: `lib/structured-data.ts`
+
+Типы:
+
+- Organization;
+- WebSite;
+- CollectionPage;
+- breadcrumbs;
+- product;
+- item list.
+
+### Sitemap
+
+Файл-генератор: `app/sitemap.ts`  
+Публичный URL: `/sitemap.xml`
+
+В sitemap входят:
+
+- static pages;
+- SEO landing pages;
+- catalog category pages;
+- catalog subcategory pages;
+- product pages.
+
+Дедупликация URL: `uniqueSitemapEntries()`.
+
+Base URL: `lib/site-url.ts`, default `https://mansvalve-group.kz`.
+
+### Robots
+
+Файл-генератор: `app/robots.ts`  
+Публичный URL: `/robots.txt`
+
+Правила:
+
+- allow `/`;
+- disallow `/admin/`;
+- disallow `/api/`;
+- disallow query duplicates `/*?*`;
+- Googlebot-Image открыт для изображений и favicon assets;
+- sitemap указан как `https://mansvalve-group.kz/sitemap.xml`;
+- host: `mansvalve-group.kz`.
+
+### Favicon and app icons
+
+Source small mark: `scripts/brand/mansvalve-favicon.svg`.  
+Generator: `scripts/generate-brand-icons.mjs`.
+
+Generated public files:
+
+- `public/favicon.ico`
+- `public/favicon.svg`
+- `public/favicon-16.png`
+- `public/favicon-32.png`
+- `public/favicon-48.png`
+- `public/icon.png`
+- `public/apple-icon.png`
+
+Решение: для вкладки браузера metadata сначала отдаёт PNG `48/32/16`, затем SVG/ICO. `.ico` сохраняется как fallback для Google/старых клиентов.
+
+## 16. Analytics
+
+Config: `lib/analytics-config.ts`
+
+```ts
+GA_MEASUREMENT_ID = NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-K08PEJC569"
+GTM_ID = NEXT_PUBLIC_GTM_ID || ""
+```
+
+Transport:
+
+- GA4 direct via `gtag.js`;
+- optional GTM via `dataLayer`;
+- custom events через `trackEvent()`.
+
+Files:
+
+- `app/layout.tsx` — loads GA4/GTM scripts;
+- `lib/analytics.ts` — `trackEvent`, payload normalization, session/event IDs;
+- `components/analytics/PageViewTracker.tsx` — page_view, engagement, scroll depth, funnel steps;
+- `components/analytics/GlobalClickTracker.tsx` — tel/WhatsApp/etc click tracking;
+- catalog/search/forms call `trackEvent`.
+
+Important:
+
+- `send_page_view: false` in GA config;
+- page views отправляются `PageViewTracker`;
+- if GTM absent, GA4 still works;
+- if GA4 absent but GTM present, dataLayer still works.
+
+## 17. Company config
+
+File: `lib/company.ts`
+
+Contains:
+
+- brand name;
+- phone/email/address;
+- WhatsApp URL builders;
+- product inquiry text builders;
+- optional public Telegram URL;
+- SEO brand constants.
+
+Rule: CTA links should use helpers from this file, not duplicate raw phone/WhatsApp URLs in UI.
+
+## 18. Motion
+
+Files:
+
+- `lib/motion.ts`
+- `components/motion/PublicMotionProvider.tsx`
+- `components/motion/ScrollReveal.tsx`
+- `components/motion/CssReveal.tsx`
+- `components/motion/MotionRuntimeCheck.tsx`
+- section client wrappers in `components/sections/*Client.tsx`
+- `components/sections/ProductShowcaseCarousel.tsx`
+
+Pattern:
+
+- Server Components resolve data;
+- Client wrappers apply framer-motion only where needed;
+- `PublicMotionProvider` respects reduced motion globally;
+- product carousel explicitly controls reduced-motion behavior.
+
+## 19. Database
+
+Schema: `lib/db/schema.ts`  
+Client/core:
+
+- `lib/db/client.ts`
+- `lib/db/drizzle-core.ts`
+
+Main tables include:
+
+- admin users;
+- categories;
+- subcategories;
+- products;
+- product specs;
+- product images;
+- media assets;
+- certificates;
+- leads;
+- content blocks;
+- company settings;
+- audit log.
+
+Migrations:
+
+- `lib/db/migrations/*`
+- commands in `package.json`.
+
+## 20. Scripts
+
+Important scripts:
+
+```text
+npm run dev
+npm run build
+npm run lint
+npm run catalog:rebuild
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+npm run db:import-catalog
+npm run admin:create
+npm run catalog:parity-check
+npm run seo:audit
+npm run build:icons
+npm run generate:icons
+```
+
+Script files:
+
+- `scripts/generate-brand-icons.mjs` — current favicon/app icons generator;
+- `scripts/build-app-icons.mjs` — legacy/auxiliary icon builder;
+- `scripts/smoke-site-content.ts`;
+- `scripts/db/*`;
+- `scripts/rebuild_catalog.py`.
+
+## 21. Environment variables
+
+Core:
+
+```text
+SITE_URL
+DATABASE_URL
+PUBLIC_CATALOG_SOURCE
+PUBLIC_CATALOG_FROM_DB
+ADMIN_SESSION_SECRET
+ADMIN_SESSION_TTL_HOURS
+NEXT_PUBLIC_GA_MEASUREMENT_ID
+NEXT_PUBLIC_GTM_ID
+NEXT_PUBLIC_TELEGRAM_URL
+TELEGRAM_BOT_TOKEN
+TELEGRAM_CHAT_ID
+MEDIA_DRIVER
+MEDIA_PUBLIC_BASE_URL
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_STORAGE_BUCKET
+```
+
+Defaults:
+
+- `SITE_URL` fallback: `https://mansvalve-group.kz`;
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` fallback: `G-K08PEJC569`;
+- catalog fallback: JSON.
+
+## 22. Build and quality
+
+Expected checks:
+
+```text
+npm.cmd run lint
+npm.cmd run build
+```
+
+Current known build warnings:
+
+- Turbopack may warn about workspace root if multiple lockfiles exist.
+- Turbopack may warn about NFT tracing through `next.config.ts -> lib/storage/local-driver.ts`.
+
+These warnings do not currently fail production build.
+
+## 23. Architectural rules for future work
+
+1. Prefer Server Components by default.
+2. Client Components only for interaction, browser APIs, state, tracking, forms, dropdowns, animation.
+3. Keep catalog/SEO data in `lib/catalog-seo.ts` or public catalog adapters, not in UI.
+4. Do not import server-only services into client components.
+5. Use `lib/company.ts` for CTA/contact links.
+6. Use `lib/public-catalog` as the only public catalog read entry.
+7. Keep new admin mutations as server actions near their route.
+8. Validate form/API input with zod.
+9. Keep URL/canonical/sitemap changes in metadata routes/config, not hardcoded in components.
+10. Regenerate icons through `npm run generate:icons`, do not manually edit generated PNG/ICO.
+
+## 24. High-level request flow
+
+```text
+User browser
+  -> Next.js route
+    -> Server Component fetches data from lib/public-catalog / site-content / services
+    -> UI components render
+    -> Client components handle filters/search/forms/tracking
+    -> API routes/server actions validate and call services
+    -> DB/storage/Telegram/analytics integrations
+```
+
+## 25. Catalog request flow
+
+```text
+/catalog or landing/category route
+  -> getPublicCatalogProducts()
+  -> getPublicCatalogCategories()
+  -> CatalogShell
+    -> lock category/subcategory if route requires
+    -> compute filter options
+    -> apply query filters
+    -> paginate
+    -> emit ItemList JSON-LD
+    -> CatalogFilters + ProductGrid
+```
+
+## 26. Lead request flow
+
+```text
+QuickRequestForm
+  -> /api/request
+    -> validate payload
+    -> rate limit / honeypot
+    -> create lead
+    -> send Telegram notification
+    -> update delivery status
+    -> return success/error
+```
+
+## 27. SEO publishing flow
+
+```text
+Code/config update
+  -> generateMetadata / sitemap / robots / JsonLd
+  -> npm run build
+  -> deploy
+  -> Search Console: inspect main URLs and request indexing
+```
+
+For favicon specifically: index the page, not `/favicon.ico`; favicon just must be crawlable and linked from page metadata.
+

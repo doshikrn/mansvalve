@@ -52,15 +52,16 @@ export default async function AdminMediaPage({
       <header>
         <h1 className="text-xl font-semibold tracking-tight">Медиа</h1>
         <p className="text-sm text-muted-foreground">
-          Центральная библиотека изображений для товаров и контентных блоков.
+          Центральная библиотека изображений и документов для товаров, сертификатов и контентных блоков.
           Всего файлов: {media.total}.
         </p>
       </header>
 
       <MediaUpload
-        title="Библиотека изображений"
+        title="Библиотека медиафайлов"
         initialLibrary={library}
         uploadFolder="content"
+        accept="all"
         allowDelete
       />
 

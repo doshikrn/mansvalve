@@ -46,8 +46,8 @@ export type CertificateFormState = {
   fieldErrors?: Record<string, string>;
 };
 
-function parseCertificateMedia(formData: FormData): string | null {
-  const raw = formData.get("mediaPayload");
+function parseCertificateMedia(formData: FormData, fieldName: string): string | null {
+  const raw = formData.get(fieldName);
   if (typeof raw !== "string" || !raw.trim()) return null;
 
   let parsed: unknown;
@@ -77,14 +77,15 @@ function parseForm(formData: FormData):
     return { ok: false, error: "Проверьте форму.", fieldErrors };
   }
 
-  const mediaAssetId = parseCertificateMedia(formData);
+  const mediaAssetId = parseCertificateMedia(formData, "previewMediaPayload");
   if (!mediaAssetId) {
     return {
       ok: false,
-      error: "Выберите сертификат в медиабиблиотеке (или загрузите новый).",
-      fieldErrors: { mediaPayload: "Файл сертификата обязателен." },
+      error: "Выберите превью сертификата в медиабиблиотеке (или загрузите новое).",
+      fieldErrors: { previewMediaPayload: "Превью сертификата обязательно." },
     };
   }
+  const documentMediaId = parseCertificateMedia(formData, "documentMediaPayload");
 
   return {
     ok: true,
@@ -92,6 +93,7 @@ function parseForm(formData: FormData):
       title: parsed.data.title,
       description: parsed.data.description || null,
       mediaAssetId,
+      documentMediaId,
       issuedAt: parsed.data.issuedAt,
       sortOrder: parsed.data.sortOrder,
       isActive: parsed.data.isActive,

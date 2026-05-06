@@ -78,7 +78,10 @@ export default async function AdminCertificatesPage() {
                     </td>
                     <td className="px-4 py-2">
                       <p className="font-medium">{certificate.title}</p>
-                      <p className="text-xs text-muted-foreground">ID {certificate.id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        ID {certificate.id} ·{" "}
+                        {certificate.documentMediaAssetId ? "PDF/документ прикреплён" : "открывается превью"}
+                      </p>
                     </td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">
                       {certificate.issuedAt

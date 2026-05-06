@@ -195,7 +195,7 @@ export default async function CertificatesPage() {
                   <div className="p-3">
                     <p className="line-clamp-2 text-sm font-semibold text-site-ink">{certificate.title}</p>
                     <Button asChild variant="ghost" className="mt-2 h-8 px-0 text-site-primary hover:text-site-primary-hover">
-                      <a href={certificate.mediaUrl} target="_blank" rel="noopener noreferrer">
+                      <a href={certificate.documentUrl} target="_blank" rel="noopener noreferrer">
                         {cms.openDocumentLabel}
                         <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                       </a>

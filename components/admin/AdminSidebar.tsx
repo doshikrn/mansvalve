@@ -1,17 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Award,
+  Building2,
+  FileCheck,
   FileText,
   FolderTree,
+  Home,
   ImageIcon,
   Inbox,
   LayoutDashboard,
   Layers,
   Package,
   Settings,
+  ShieldCheck,
+  Truck,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -27,29 +33,39 @@ const CATALOG: Item[] = [
   { href: "/admin/products", label: "Товары", icon: Package },
   { href: "/admin/categories", label: "Категории", icon: FolderTree },
   { href: "/admin/categories#podkategorii", label: "Подкатегории", icon: Layers },
+  { href: "/admin/certificates", label: "Сертификаты", icon: Award },
 ];
 
 const CONTENT: Item[] = [
-  { href: "/admin/content", label: "Контент сайта", icon: FileText },
-  { href: "/admin/media", label: "Медиа", icon: ImageIcon },
+  { href: "/admin/content#home", label: "Главная", icon: Home },
+  { href: "/admin/content#about", label: "О компании", icon: Building2 },
+  { href: "/admin/content#contacts", label: "Контакты", icon: FileText },
+  { href: "/admin/content#delivery", label: "Доставка", icon: Truck },
+  { href: "/admin/content#certificates-page", label: "Страница сертификатов", icon: ShieldCheck },
+  { href: "/admin/content#legal", label: "Политика и условия", icon: FileCheck },
+  { href: "/admin/content#footer", label: "Подвал", icon: Layers },
 ];
 
 const MORE: Item[] = [
-  { href: "/admin/certificates", label: "Сертификаты", icon: Award },
+  { href: "/admin/media", label: "Медиафайлы", icon: ImageIcon },
   { href: "/admin/settings", label: "Настройки", icon: Settings },
 ];
 
-function isActive(pathname: string, href: string): boolean {
+function isActive(pathname: string, href: string, currentHash: string): boolean {
   if (href === "/admin") return pathname === "/admin";
   const pathOnly = href.split("#")[0] ?? href;
+  const hash = href.includes("#") ? `#${href.split("#")[1] ?? ""}` : "";
+  if (hash) {
+    return pathname === pathOnly && currentHash === hash;
+  }
   if (pathOnly === "/admin/categories" && pathname.startsWith("/admin/categories")) {
     return true;
   }
   return pathname === pathOnly || pathname.startsWith(`${pathOnly}/`);
 }
 
-function NavRow({ item, pathname }: { item: Item; pathname: string }) {
-  const active = isActive(pathname, item.href);
+function NavRow({ item, pathname, currentHash }: { item: Item; pathname: string; currentHash: string }) {
+  const active = isActive(pathname, item.href, currentHash);
   const Icon = item.icon;
   return (
     <Link
@@ -67,14 +83,24 @@ function NavRow({ item, pathname }: { item: Item; pathname: string }) {
   );
 }
 
-function NavGroup({ title, items, pathname }: { title: string; items: Item[]; pathname: string }) {
+function NavGroup({
+  title,
+  items,
+  pathname,
+  currentHash,
+}: {
+  title: string;
+  items: Item[];
+  pathname: string;
+  currentHash: string;
+}) {
   return (
     <div className="pt-4 first:pt-0">
       <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{title}</p>
       <ul className="space-y-0.5">
         {items.map((item) => (
           <li key={item.href + item.label}>
-            <NavRow item={item} pathname={pathname} />
+            <NavRow item={item} pathname={pathname} currentHash={currentHash} />
           </li>
         ))}
       </ul>
@@ -84,6 +110,14 @@ function NavGroup({ title, items, pathname }: { title: string; items: Item[]; pa
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const [currentHash, setCurrentHash] = useState("");
+
+  useEffect(() => {
+    const syncHash = () => setCurrentHash(window.location.hash);
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-[#E2E8F0] bg-white">
@@ -96,10 +130,10 @@ export function AdminSidebar() {
         </span>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Разделы админки">
-        <NavGroup title="Разделы" items={PRIMARY} pathname={pathname} />
-        <NavGroup title="Каталог" items={CATALOG} pathname={pathname} />
-        <NavGroup title="Контент и медиа" items={CONTENT} pathname={pathname} />
-        <NavGroup title="Ещё" items={MORE} pathname={pathname} />
+        <NavGroup title="Разделы" items={PRIMARY} pathname={pathname} currentHash={currentHash} />
+        <NavGroup title="Каталог" items={CATALOG} pathname={pathname} currentHash={currentHash} />
+        <NavGroup title="Страницы сайта" items={CONTENT} pathname={pathname} currentHash={currentHash} />
+        <NavGroup title="Медиа и настройки" items={MORE} pathname={pathname} currentHash={currentHash} />
       </nav>
       <div className="border-t border-[#E2E8F0] px-4 py-3">
         <Link

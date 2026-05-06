@@ -1,5 +1,8 @@
+import Link from "next/link";
+
 import { AdminFormFooter } from "@/components/admin/AdminFormFooter";
 import { ContentSection } from "@/components/admin/ContentSection";
+import { MediaUrlField, type MediaUrlOption } from "@/components/admin/MediaUrlField";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +41,7 @@ import {
 } from "@/lib/site-content/models";
 import { getContentBlock } from "@/lib/services/content-blocks";
 import { COMPANY } from "@/lib/company";
+import { listRecentMediaAssets } from "@/lib/services/media";
 
 import {
   saveAboutCopyAction,
@@ -95,6 +99,17 @@ const SAVED_LABELS: Record<string, string> = {
   "footer-main": "Основной подвал сохранён",
 };
 
+const CONTENT_NAV = [
+  { href: "#header", title: "Шапка", description: "Верхнее меню сайта" },
+  { href: "#home", title: "Главная", description: "Баннер, блоки, SEO" },
+  { href: "#about", title: "О компании", description: "Тексты и страница /about" },
+  { href: "#contacts", title: "Контакты", description: "Форма, карта, реквизиты" },
+  { href: "#delivery", title: "Доставка", description: "Страница /delivery" },
+  { href: "#certificates-page", title: "Сертификаты", description: "Страница и обложка" },
+  { href: "#legal", title: "Документы", description: "Политика и условия" },
+  { href: "#footer", title: "Подвал", description: "Логотип, ссылки, контакты" },
+] as const;
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -143,6 +158,7 @@ export default async function AdminContentPage({
     pageCertificatesRow,
     pagePrivacyRow,
     pageTermsRow,
+    recentMedia,
   ] = await Promise.all([
     getContentBlock(SITE_CONTENT_KEYS.homeHero),
     getContentBlock(SITE_CONTENT_KEYS.homeTrustStrip),
@@ -169,6 +185,7 @@ export default async function AdminContentPage({
     getContentBlock(SITE_CONTENT_KEYS.pageCertificates),
     getContentBlock(SITE_CONTENT_KEYS.pagePrivacy),
     getContentBlock(SITE_CONTENT_KEYS.pageTerms),
+    listRecentMediaAssets(80),
   ]);
 
   const hero = mergeHomeHero(heroRow?.data, 0);
@@ -212,6 +229,14 @@ export default async function AdminContentPage({
   const pageCertificates = mergeCertificatesPage(pageCertificatesRow?.data);
   const pagePrivacy = mergePrivacyPage(pagePrivacyRow?.data);
   const pageTerms = mergeTermsPage(pageTermsRow?.data);
+  const mediaLibrary: MediaUrlOption[] = recentMedia
+    .filter((asset) => asset.mimeType.startsWith("image/"))
+    .map((asset) => ({
+      id: asset.id,
+      url: asset.url,
+      mimeType: asset.mimeType,
+      alt: asset.alt,
+    }));
 
   return (
     <div className="mx-auto max-w-5xl space-y-10 pb-12">
@@ -237,7 +262,35 @@ export default async function AdminContentPage({
         </div>
       ) : null}
 
+      <section className="rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold tracking-tight text-slate-900">Где что менять</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Быстрые переходы по страницам сайта. Поля с изображениями теперь можно заполнять из медиатеки или
+              загрузкой файла прямо в форме.
+            </p>
+          </div>
+          <Link href="/admin/media" className="text-sm font-medium text-[#1D4ED8] hover:underline">
+            Открыть медиатеку
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {CONTENT_NAV.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="rounded-lg border border-[#E2E8F0] bg-slate-50 px-3 py-2.5 transition hover:border-blue-200 hover:bg-blue-50"
+            >
+              <span className="block text-sm font-semibold text-slate-900">{item.title}</span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">{item.description}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+
       <ContentSection
+        id="header"
         title="Шапка сайта"
         description="Верхняя строка ссылок над основным меню. У каждой строки: как показать ссылку и куда она ведёт."
       >
@@ -269,6 +322,7 @@ export default async function AdminContentPage({
       </ContentSection>
 
       <ContentSection
+        id="home"
         title="Главная страница"
         description="Баннер, блоки с товарами, преимущества, этапы, кейсы, форма заявки и вопросы — всё показывается на главной."
       >
@@ -626,6 +680,7 @@ export default async function AdminContentPage({
       </ContentSection>
 
       <ContentSection
+        id="about"
         title="О компании"
         description="Страница «О компании» в меню сайта и то, как она выглядит в поиске Google и при расшаривании."
       >
@@ -695,6 +750,7 @@ export default async function AdminContentPage({
       </ContentSection>
 
       <ContentSection
+        id="contacts"
         title="Контакты"
         description="Страница с формой обратной связи: тексты и заголовок для поиска."
       >
@@ -752,10 +808,11 @@ export default async function AdminContentPage({
       </ContentSection>
 
       <ContentSection
+        id="site-pages"
         title="Статические страницы (site.page.*)"
         description="Полные наборы текстов и SEO для публичных страниц. Мета «старых» блоков (например site.meta.about) подмешивается, пока не задано в этих формах. Плейсхолдеры: {{COMPANY}}, {{LEGAL_NAME}}, {{BRAND}}, {{ADDRESS_FULL}}, {{CITY}}, {{STREET}} (по полю)."
       >
-        <Card>
+        <Card id="about-page" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>/about — site.page.about</CardTitle>
             <CardDescription>
@@ -833,13 +890,20 @@ export default async function AdminContentPage({
               ))}
               <Field label="Кнопка каталога (низ страницы)" name="ctaCatalogLabel" defaultValue={pageAbout.ctaCatalogLabel} />
               <Field label="Кнопка контактов" name="ctaContactsLabel" defaultValue={pageAbout.ctaContactsLabel} />
-              <Field label="Изображение в шапке (URL или путь)" name="headerImageSrc" defaultValue={pageAbout.headerImageSrc} />
+              <MediaUrlField
+                label="Изображение в шапке"
+                name="headerImageSrc"
+                defaultValue={pageAbout.headerImageSrc}
+                initialLibrary={mediaLibrary}
+                uploadFolder="content/about"
+                description="Можно вставить путь вручную, выбрать существующее изображение или загрузить новое."
+              />
               <AdminFormFooter previewHref="/about" saveLabel="Сохранить страницу «О компании»" />
             </form>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="contacts-page" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>/contacts — site.page.contacts</CardTitle>
             <CardDescription>
@@ -890,7 +954,14 @@ export default async function AdminContentPage({
               />
               <Field label="Префикс «Карта:»" name="mapBottomMapPrefix" defaultValue={pageContacts.mapBottomMapPrefix} />
               <Field label="Текст ссылки 2GIS" name="mapBottomMapLinkLabel" defaultValue={pageContacts.mapBottomMapLinkLabel} />
-              <Field label="Фон блока карты (URL)" name="mapBackgroundImageSrc" defaultValue={pageContacts.mapBackgroundImageSrc} />
+              <MediaUrlField
+                label="Фон блока карты"
+                name="mapBackgroundImageSrc"
+                defaultValue={pageContacts.mapBackgroundImageSrc}
+                initialLibrary={mediaLibrary}
+                uploadFolder="content/contacts"
+                description="Фоновое изображение блока с адресом и ссылкой на карту."
+              />
               <Field label="Заголовок реквизитов" name="requisitesTitle" defaultValue={pageContacts.requisitesTitle} />
               {Array.from({ length: 5 }).map((_, i) => (
                 <Field
@@ -909,7 +980,7 @@ export default async function AdminContentPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="delivery" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>/delivery — site.page.delivery</CardTitle>
           </CardHeader>
@@ -945,13 +1016,20 @@ export default async function AdminContentPage({
               <Field label="Строка с галочкой" name="footerCheckLine" defaultValue={pageDelivery.footerCheckLine} />
               <Field label="Кнопка заявки" name="ctaPrimaryLabel" defaultValue={pageDelivery.ctaPrimaryLabel} />
               <Field label="Кнопка контактов" name="ctaSecondaryLabel" defaultValue={pageDelivery.ctaSecondaryLabel} />
-              <Field label="Изображение на странице (URL)" name="pageImageSrc" defaultValue={pageDelivery.pageImageSrc} />
+              <MediaUrlField
+                label="Изображение на странице"
+                name="pageImageSrc"
+                defaultValue={pageDelivery.pageImageSrc}
+                initialLibrary={mediaLibrary}
+                uploadFolder="content/delivery"
+                description="Изображение справа/в шапке страницы доставки."
+              />
               <AdminFormFooter previewHref="/delivery" saveLabel="Сохранить «Доставку»" />
             </form>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="certificates-page" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>/certificates — site.page.certificates</CardTitle>
           </CardHeader>
@@ -983,13 +1061,20 @@ export default async function AdminContentPage({
               </div>
               <Field label="Подпись даты в карточке" name="issuedAtLabel" defaultValue={pageCertificates.issuedAtLabel} />
               <Field label="Кнопка «Открыть документ»" name="openDocumentLabel" defaultValue={pageCertificates.openDocumentLabel} />
-              <Field label="Изображение в шапке (URL)" name="headerImageSrc" defaultValue={pageCertificates.headerImageSrc} />
+              <MediaUrlField
+                label="Изображение в шапке"
+                name="headerImageSrc"
+                defaultValue={pageCertificates.headerImageSrc}
+                initialLibrary={mediaLibrary}
+                uploadFolder="content/certificates"
+                description="Обложка страницы сертификатов. Сами PDF и превью сертификатов редактируются в разделе «Сертификаты»."
+              />
               <AdminFormFooter previewHref="/certificates" saveLabel="Сохранить «Сертификаты»" />
             </form>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="legal" className="scroll-mt-24">
           <CardHeader>
             <CardTitle>/privacy — site.page.privacy</CardTitle>
             <CardDescription>
@@ -1101,6 +1186,7 @@ export default async function AdminContentPage({
       </ContentSection>
 
       <ContentSection
+        id="footer"
         title="Подвал сайта"
         description="Нижняя часть каждой страницы: призыв связаться, полоска преимуществ и колонки со ссылками."
       >
@@ -1158,10 +1244,13 @@ export default async function AdminContentPage({
         <CardContent>
           <form action={saveFooterMainAction} className="max-w-3xl space-y-3">
             <Field label="Текст под логотипом" name="brandTagline" defaultValue={footerMain.brandTagline} />
-            <Field
-              label="Логотип (URL или /images/...)"
+            <MediaUrlField
+              label="Логотип"
               name="brandLogoSrc"
               defaultValue={footerMain.brandLogoSrc}
+              initialLibrary={mediaLibrary}
+              uploadFolder="content/footer"
+              description="Логотип в подвале сайта. Можно оставить пустым, тогда будет системный знак."
             />
             <Field label="Юридическое наименование (строка)" name="legalNameLine" defaultValue={footerMain.legalNameLine} />
             <div className="grid gap-3 sm:grid-cols-2">

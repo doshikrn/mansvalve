@@ -112,12 +112,18 @@ export async function listMediaAssets(
       or ${productsTable.documentationMediaId} = ${mediaAssetsTable.id}
   )`;
   const certUsageExpr = sql<number>`count(distinct ${certificatesTable.id})::int`;
+  const certificateDocumentUsageExpr = sql<number>`(
+    select count(*)::int
+    from ${certificatesTable}
+    where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
+  )`;
   const base = db
     .select({
       asset: mediaAssetsTable,
       usedInProducts: usageCountExpr,
       usedInProductDocuments: productDocumentUsageExpr,
       usedInCertificates: certUsageExpr,
+      usedInCertificateDocuments: certificateDocumentUsageExpr,
     })
     .from(mediaAssetsTable)
     .leftJoin(
@@ -138,6 +144,7 @@ export async function listMediaAssets(
         and(
           sql`count(${productImagesTable.id}) = 0`,
           sql`count(${certificatesTable.id}) = 0`,
+          sql`${certificateDocumentUsageExpr} = 0`,
         ),
       )
     : await base;
@@ -157,7 +164,7 @@ export async function listMediaAssets(
         row.asset.driver,
       ),
       usedInProducts: row.usedInProducts + row.usedInProductDocuments,
-      usedInCertificates: row.usedInCertificates,
+      usedInCertificates: row.usedInCertificates + row.usedInCertificateDocuments,
     })),
     total: countRows[0]?.value ?? 0,
     page,
@@ -180,6 +187,11 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
           or ${productsTable.documentationMediaId} = ${mediaAssetsTable.id}
       )`,
       usedInCertificates: sql<number>`count(distinct ${certificatesTable.id})::int`,
+      usedInCertificateDocuments: sql<number>`(
+        select count(*)::int
+        from ${certificatesTable}
+        where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
+      )`,
     })
     .from(mediaAssetsTable)
     .leftJoin(
@@ -202,7 +214,7 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
       row.asset.driver,
     ),
     usedInProducts: row.usedInProducts + row.usedInProductDocuments,
-    usedInCertificates: row.usedInCertificates,
+    usedInCertificates: row.usedInCertificates + row.usedInCertificateDocuments,
   }));
 }
 
@@ -265,7 +277,10 @@ export async function deleteMediaAssetById(id: string): Promise<void> {
       value: sql<number>`count(*)::int`,
     })
     .from(certificatesTable)
-    .where(eq(certificatesTable.mediaAssetId, id));
+    .where(
+      sql`${certificatesTable.mediaAssetId} = ${id}
+        OR ${certificatesTable.documentMediaId} = ${id}`,
+    );
   const certificateUsage = certificateUsageRows[0]?.value ?? 0;
 
   if (certificateUsage > 0) {
@@ -308,7 +323,10 @@ export async function deleteUnusedAssetsByIds(ids: string[]): Promise<number> {
     const certificateUsageRows = await db
       .select({ value: sql<number>`count(*)::int` })
       .from(certificatesTable)
-      .where(eq(certificatesTable.mediaAssetId, candidate.id));
+      .where(
+        sql`${certificatesTable.mediaAssetId} = ${candidate.id}
+          OR ${certificatesTable.documentMediaId} = ${candidate.id}`,
+      );
     const certificateUsage = certificateUsageRows[0]?.value ?? 0;
 
     const productDocumentUsageRows = await db

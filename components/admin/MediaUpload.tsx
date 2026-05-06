@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,8 @@ export type SelectedMediaItem = {
   alt: string;
   isPrimary: boolean;
   sortOrder: number;
+  mimeType?: string;
+  sizeBytes?: number;
 };
 
 type UploadJob = {
@@ -55,9 +58,12 @@ type Props = {
   attachOnUpload?: boolean;
   allowDelete?: boolean;
   title?: string;
+  accept?: "image" | "document" | "all";
+  multiple?: boolean;
 };
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 
 export function MediaUpload({
   initialLibrary,
@@ -68,6 +74,8 @@ export function MediaUpload({
   attachOnUpload = false,
   allowDelete = false,
   title = "Изображения",
+  accept = "image",
+  multiple = true,
 }: Props) {
   const [library, setLibrary] = useState<MediaLibraryItem[]>(initialLibrary);
   const [selected, setSelected] = useState<SelectedMediaItem[]>(
@@ -79,9 +87,9 @@ export function MediaUpload({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const imageLibrary = useMemo(
-    () => library.filter((item) => item.mimeType.startsWith("image/")),
-    [library],
+  const visibleLibrary = useMemo(
+    () => library.filter((item) => matchesAcceptedKind(item.mimeType, accept)),
+    [accept, library],
   );
 
   const payload = useMemo(
@@ -110,12 +118,16 @@ export function MediaUpload({
     setError(null);
     const all = Array.from(files);
     for (const file of all) {
-      if (!file.type.startsWith("image/")) {
-        setError(`Файл ${file.name} не является изображением.`);
+      if (!matchesAcceptedKind(file.type, accept)) {
+        setError(buildInvalidKindMessage(file.name, accept));
         continue;
       }
-      if (file.size > MAX_IMAGE_BYTES) {
-        setError(`Файл ${file.name} больше 10 MB.`);
+      const maxBytes = file.type.startsWith("image/")
+        ? MAX_IMAGE_BYTES
+        : MAX_DOCUMENT_BYTES;
+      if (file.size > maxBytes) {
+        const maxMb = maxBytes / (1024 * 1024);
+        setError(`Файл ${file.name} больше ${maxMb} MB.`);
         continue;
       }
 
@@ -150,7 +162,7 @@ export function MediaUpload({
 
         setLibrary((prev) => [nextAsset, ...prev.filter((x) => x.id !== nextAsset.id)]);
         if (attachOnUpload && allowAttach) {
-          setSelected((prev) => addToSelection(prev, nextAsset));
+          setSelected((prev) => addToSelection(prev, nextAsset, multiple));
         }
 
         setJobs((prev) =>
@@ -283,8 +295,8 @@ export function MediaUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        multiple
+        accept={getNativeAccept(accept)}
+        multiple={multiple}
         className="hidden"
         onChange={(e) => {
           if (e.target.files?.length) {
@@ -306,7 +318,7 @@ export function MediaUpload({
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
       >
-        Перетащите изображения сюда или нажмите «Загрузить»
+        {getDropzoneText(accept)}
       </div>
 
       {hiddenInputName ? (
@@ -347,11 +359,11 @@ export function MediaUpload({
       {allowAttach ? (
         <div className="space-y-3">
           <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Прикрепленные к товару
+            Прикрепленные файлы
           </h4>
           {selected.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Нет прикрепленных изображений.
+              Нет прикрепленных файлов.
             </p>
           ) : (
             <div className="space-y-2">
@@ -360,14 +372,7 @@ export function MediaUpload({
                   key={item.mediaId}
                   className="flex items-start gap-3 rounded-lg border border-border p-2"
                 >
-                  <Image
-                    src={item.url}
-                    alt={item.alt || "Preview"}
-                    width={64}
-                    height={64}
-                    unoptimized={mediaImageNeedsUnoptimized(item.url)}
-                    className="h-16 w-16 rounded object-cover"
-                  />
+                  <MediaThumb item={item} className="h-16 w-16" />
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
@@ -408,7 +413,7 @@ export function MediaUpload({
                     <Input
                       value={item.alt}
                       onChange={(e) => updateSelectedAlt(item.mediaId, e.target.value)}
-                      placeholder="Alt-текст изображения"
+                      placeholder="Alt-текст / описание файла"
                     />
                   </div>
                 </div>
@@ -422,11 +427,11 @@ export function MediaUpload({
         <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           Медиа библиотека
         </h4>
-        {imageLibrary.length === 0 ? (
+        {visibleLibrary.length === 0 ? (
           <p className="text-sm text-muted-foreground">Библиотека пуста.</p>
         ) : (
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4">
-            {imageLibrary.map((item) => {
+            {visibleLibrary.map((item) => {
               const isSelected = selected.some((x) => x.mediaId === item.id);
               const deleting = deletingIds.has(item.id);
               return (
@@ -434,16 +439,7 @@ export function MediaUpload({
                   key={item.id}
                   className="space-y-2 rounded-lg border border-border p-2"
                 >
-                  <div className="relative h-24 w-full overflow-hidden rounded">
-                    <Image
-                      src={item.url}
-                      alt={item.alt || "Media"}
-                      fill
-                      sizes="(max-width: 768px) 50vw, 200px"
-                      unoptimized={mediaImageNeedsUnoptimized(item.url)}
-                      className="object-cover"
-                    />
-                  </div>
+                  <MediaThumb item={item} className="h-24 w-full" />
                   <div className="text-[11px] text-muted-foreground">
                     {item.width ?? "?"}×{item.height ?? "?"} ·{" "}
                     {formatBytes(item.sizeBytes)}
@@ -456,7 +452,7 @@ export function MediaUpload({
                         variant={isSelected ? "secondary" : "outline"}
                         disabled={isSelected}
                         onClick={() =>
-                          setSelected((prev) => addToSelection(prev, item))
+                          setSelected((prev) => addToSelection(prev, item, multiple))
                         }
                       >
                         {isSelected ? "Добавлено" : "Добавить"}
@@ -489,18 +485,21 @@ export function MediaUpload({
 function addToSelection(
   current: SelectedMediaItem[],
   asset: MediaLibraryItem,
+  multiple: boolean,
 ): SelectedMediaItem[] {
   if (current.some((item) => item.mediaId === asset.id)) {
     return current;
   }
   const next = [
-    ...current,
+    ...(multiple ? current : []),
     {
       mediaId: asset.id,
       url: asset.url,
       alt: asset.alt ?? "",
-      isPrimary: current.length === 0,
-      sortOrder: current.length,
+      isPrimary: !multiple || current.length === 0,
+      sortOrder: multiple ? current.length : 0,
+      mimeType: asset.mimeType,
+      sizeBytes: asset.sizeBytes,
     },
   ];
   return normalizeSelection(next);
@@ -526,6 +525,86 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function matchesAcceptedKind(mimeType: string, accept: "image" | "document" | "all") {
+  if (accept === "all") return true;
+  if (accept === "image") return mimeType.startsWith("image/");
+  return isSupportedDocumentMime(mimeType);
+}
+
+function isSupportedDocumentMime(mimeType: string) {
+  return [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ].includes(mimeType);
+}
+
+function getNativeAccept(accept: "image" | "document" | "all") {
+  if (accept === "image") return "image/*";
+  const documents = ".pdf,.doc,.docx,.xls,.xlsx,application/pdf";
+  if (accept === "document") return documents;
+  return `image/*,${documents}`;
+}
+
+function getDropzoneText(accept: "image" | "document" | "all") {
+  if (accept === "image") return "Перетащите изображения сюда или нажмите «Загрузить»";
+  if (accept === "document") return "Перетащите PDF/DOC/XLS сюда или нажмите «Загрузить»";
+  return "Перетащите файлы сюда или нажмите «Загрузить»";
+}
+
+function buildInvalidKindMessage(filename: string, accept: "image" | "document" | "all") {
+  if (accept === "image") return `Файл ${filename} не является изображением.`;
+  if (accept === "document") return `Файл ${filename} не является PDF/DOC/XLS документом.`;
+  return `Файл ${filename} имеет неподдерживаемый тип.`;
+}
+
+function MediaThumb({
+  item,
+  className,
+}: {
+  item: {
+    url: string;
+    alt: string | null;
+    mimeType?: string;
+    sizeBytes?: number;
+  };
+  className: string;
+}) {
+  const mimeType = item.mimeType ?? "image/*";
+  if (mimeType.startsWith("image/")) {
+    return (
+      <div className={`relative overflow-hidden rounded ${className}`}>
+        <Image
+          src={item.url}
+          alt={item.alt || "Media"}
+          fill
+          sizes="(max-width: 768px) 50vw, 200px"
+          unoptimized={mediaImageNeedsUnoptimized(item.url)}
+          className="object-cover"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex shrink-0 flex-col items-center justify-center rounded bg-muted text-muted-foreground ${className}`}>
+      <FileText className="h-6 w-6" />
+      <span className="mt-1 max-w-full truncate px-1 text-[10px] font-medium uppercase">
+        {getFileLabel(mimeType)}
+      </span>
+    </div>
+  );
+}
+
+function getFileLabel(mimeType: string) {
+  if (mimeType === "application/pdf") return "PDF";
+  if (mimeType.includes("word")) return "DOC";
+  if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "XLS";
+  return "FILE";
 }
 
 function uploadSingleFile(
@@ -563,12 +642,12 @@ function uploadSingleFile(
       }
 
       if (xhr.status < 200 || xhr.status >= 300 || body.ok !== true) {
-        reject(new Error(body.error || "Не удалось загрузить изображение."));
+        reject(new Error(body.error || "Не удалось загрузить файл."));
         return;
       }
 
       if (!body.asset?.id || !body.asset?.url) {
-        reject(new Error("Сервер вернул неполные данные по изображению."));
+        reject(new Error("Сервер вернул неполные данные по файлу."));
         return;
       }
 
