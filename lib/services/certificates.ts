@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { getDb } from "@/lib/db/client";
+import { getDb, getSql } from "@/lib/db/client";
 import {
   certificates as certificatesTable,
   mediaAssets as mediaAssetsTable,
@@ -12,6 +12,28 @@ import {
 import { resolvePublicMediaUrl } from "@/lib/services/media";
 
 const documentMediaAssetsTable = alias(mediaAssetsTable, "document_media_assets");
+
+type CertificateBaseRow = Omit<
+  typeof certificatesTable.$inferSelect,
+  "documentMediaId"
+> & {
+  documentMediaId: string | null;
+};
+
+const legacyCertificateSelection = {
+  id: certificatesTable.id,
+  title: certificatesTable.title,
+  description: certificatesTable.description,
+  mediaAssetId: certificatesTable.mediaAssetId,
+  documentMediaId: sql<string | null>`null`,
+  issuedAt: certificatesTable.issuedAt,
+  sortOrder: certificatesTable.sortOrder,
+  isActive: certificatesTable.isActive,
+  createdAt: certificatesTable.createdAt,
+  updatedAt: certificatesTable.updatedAt,
+};
+
+let certificateDocumentMediaColumnExistsCache: boolean | null = null;
 
 export type CertificateListItem = {
   id: number;
@@ -39,7 +61,7 @@ export type CertificateWritePayload = Omit<
 
 function mapRow(
   row: {
-    certificate: typeof certificatesTable.$inferSelect;
+    certificate: CertificateBaseRow;
     media: typeof mediaAssetsTable.$inferSelect;
     document: typeof mediaAssetsTable.$inferSelect | null;
   },
@@ -66,6 +88,10 @@ function mapRow(
 }
 
 export async function listPublicActiveCertificates(): Promise<CertificateListItem[]> {
+  if (!(await hasCertificateDocumentMediaColumn())) {
+    return listPublicActiveCertificatesLegacy();
+  }
+
   const db = getDb();
   const rows = await db
     .select({
@@ -96,6 +122,10 @@ export async function listPublicActiveCertificates(): Promise<CertificateListIte
 }
 
 export async function listAdminCertificates(): Promise<CertificateListItem[]> {
+  if (!(await hasCertificateDocumentMediaColumn())) {
+    return listAdminCertificatesLegacy();
+  }
+
   const db = getDb();
   const rows = await db
     .select({
@@ -127,6 +157,10 @@ export async function listAdminCertificates(): Promise<CertificateListItem[]> {
 export async function getCertificateById(
   id: number,
 ): Promise<CertificateListItem | null> {
+  if (!(await hasCertificateDocumentMediaColumn())) {
+    return getCertificateByIdLegacy(id);
+  }
+
   const db = getDb();
   const rows = await db
     .select({
@@ -162,10 +196,11 @@ function normalizeDocumentRow(
 
 export async function createCertificate(payload: CertificateWritePayload): Promise<number> {
   const db = getDb();
+  const writablePayload = await toWritableCertificatePayload(payload);
   const inserted = await db
     .insert(certificatesTable)
     .values({
-      ...payload,
+      ...writablePayload,
       updatedAt: new Date(),
     })
     .returning({ id: certificatesTable.id });
@@ -180,13 +215,116 @@ export async function updateCertificate(
   payload: CertificateWritePayload,
 ): Promise<void> {
   const db = getDb();
+  const writablePayload = await toWritableCertificatePayload(payload);
   await db
     .update(certificatesTable)
     .set({
-      ...payload,
+      ...writablePayload,
       updatedAt: new Date(),
     })
     .where(eq(certificatesTable.id, id));
+}
+
+async function listPublicActiveCertificatesLegacy(): Promise<CertificateListItem[]> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      certificate: legacyCertificateSelection,
+      media: mediaAssetsTable,
+    })
+    .from(certificatesTable)
+    .innerJoin(mediaAssetsTable, eq(mediaAssetsTable.id, certificatesTable.mediaAssetId))
+    .where(eq(certificatesTable.isActive, true))
+    .orderBy(
+      asc(certificatesTable.sortOrder),
+      desc(certificatesTable.issuedAt),
+      desc(certificatesTable.id),
+    );
+
+  return rows.map((row) =>
+    mapRow({
+      certificate: row.certificate,
+      media: row.media,
+      document: null,
+    }),
+  );
+}
+
+async function listAdminCertificatesLegacy(): Promise<CertificateListItem[]> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      certificate: legacyCertificateSelection,
+      media: mediaAssetsTable,
+    })
+    .from(certificatesTable)
+    .innerJoin(mediaAssetsTable, eq(mediaAssetsTable.id, certificatesTable.mediaAssetId))
+    .orderBy(
+      asc(certificatesTable.sortOrder),
+      desc(certificatesTable.updatedAt),
+      desc(certificatesTable.id),
+    );
+
+  return rows.map((row) =>
+    mapRow({
+      certificate: row.certificate,
+      media: row.media,
+      document: null,
+    }),
+  );
+}
+
+async function getCertificateByIdLegacy(
+  id: number,
+): Promise<CertificateListItem | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      certificate: legacyCertificateSelection,
+      media: mediaAssetsTable,
+    })
+    .from(certificatesTable)
+    .innerJoin(mediaAssetsTable, eq(mediaAssetsTable.id, certificatesTable.mediaAssetId))
+    .where(eq(certificatesTable.id, id))
+    .limit(1);
+
+  if (!rows.length) return null;
+  return mapRow({
+    certificate: rows[0].certificate,
+    media: rows[0].media,
+    document: null,
+  });
+}
+
+async function hasCertificateDocumentMediaColumn(): Promise<boolean> {
+  if (certificateDocumentMediaColumnExistsCache !== null) {
+    return certificateDocumentMediaColumnExistsCache;
+  }
+
+  const sqlClient = getSql();
+  const rows = await sqlClient<{ exists: boolean }[]>`
+    select exists (
+      select 1
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'certificates'
+        and column_name = 'document_media_id'
+    ) as "exists"
+  `;
+  certificateDocumentMediaColumnExistsCache = rows[0]?.exists ?? false;
+  return certificateDocumentMediaColumnExistsCache;
+}
+
+async function toWritableCertificatePayload(
+  payload: CertificateWritePayload,
+): Promise<CertificateWritePayload | Omit<CertificateWritePayload, "documentMediaId">> {
+  if (await hasCertificateDocumentMediaColumn()) {
+    return payload;
+  }
+
+  const legacyPayload = { ...payload };
+  delete legacyPayload.documentMediaId;
+  return legacyPayload;
 }
 
 export async function deleteCertificate(id: number): Promise<void> {

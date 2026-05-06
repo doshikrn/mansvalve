@@ -1,14 +1,11 @@
 import "server-only";
 
 import { promises as fs } from "node:fs";
-import { existsSync } from "node:fs";
 import path from "node:path";
 
 import type { StorageDriver, UploadInput, UploadResult } from "./types";
 
 const PUBLIC_BASE = "/uploads";
-
-const UPLOAD_ROOT = resolveUploadRoot();
 
 /**
  * Filesystem-backed storage driver intended for local development. Files are
@@ -22,7 +19,7 @@ export class LocalStorageDriver implements StorageDriver {
 
   async upload(input: UploadInput): Promise<UploadResult> {
     const safeKey = normalizeKey(input.key);
-    const absolute = path.join(UPLOAD_ROOT, safeKey);
+    const absolute = toLocalUploadPath(safeKey);
     await fs.mkdir(path.dirname(absolute), { recursive: true });
     await fs.writeFile(absolute, input.body);
 
@@ -36,7 +33,7 @@ export class LocalStorageDriver implements StorageDriver {
 
   async delete(key: string): Promise<void> {
     const safeKey = normalizeKey(key);
-    const absolute = path.join(UPLOAD_ROOT, safeKey);
+    const absolute = toLocalUploadPath(safeKey);
     try {
       await fs.rm(absolute, { force: true });
     } catch {
@@ -53,26 +50,8 @@ export class LocalStorageDriver implements StorageDriver {
   }
 }
 
-function resolveUploadRoot(): string {
-  const explicit = process.env.MEDIA_LOCAL_UPLOAD_ROOT?.trim();
-  if (explicit) {
-    return path.resolve(explicit);
-  }
-
-  const cwd = process.cwd();
-  const cwdPublicDir = path.join(cwd, "public");
-  if (existsSync(cwdPublicDir)) {
-    return path.join(cwd, "public", "uploads");
-  }
-
-  // Compatibility for deployments started from the workspace parent
-  // where the Next app itself lives in ./mansvalve.
-  const nestedAppRoot = path.join(cwd, "mansvalve");
-  if (existsSync(path.join(nestedAppRoot, "public"))) {
-    return path.join(nestedAppRoot, "public", "uploads");
-  }
-
-  return path.join(cwd, "public", "uploads");
+function toLocalUploadPath(normalizedKey: string): string {
+  return path.join(process.cwd(), "public", "uploads", normalizedKey);
 }
 
 function normalizeKey(key: string): string {
