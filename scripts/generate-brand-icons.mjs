@@ -51,6 +51,10 @@ async function loadRasterSource() {
 async function main() {
   await mkdir(join(publicDir, "images"), { recursive: true });
 
+  // Tab/SVG favicon must stay tiny vector-only — never embed megapixel PNG as base64
+  // (Chrome then paints garbage in the tab). Sync with scripts/brand/mansvalve-favicon-simple.svg.
+  await writeFile(join(publicDir, "favicon.svg"), await readFile(faviconSvg));
+
   const { buf: brandRaster, label } = await loadRasterSource();
   const faviconRaster = await sharp(await readFile(faviconSvg), { density: 384 })
     .png()
@@ -86,7 +90,7 @@ async function main() {
   await writeFile(join(publicDir, "favicon-mansvalve-96.png"), fav96);
 
   console.log(
-    `Wrote app/favicon.ico, app/apple-icon.png, public/favicon.ico, favicon-v2.ico, favicon-mansvalve.ico, favicon PNG variants, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
+    `Wrote app/favicon.ico, app/apple-icon.png, public/favicon.svg, public/favicon.ico, favicon-v2.ico, favicon-mansvalve.ico, favicon PNG variants, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
   );
 }
 
