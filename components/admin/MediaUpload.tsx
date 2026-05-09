@@ -700,7 +700,7 @@ function uploadSingleFile(
       try {
         body = JSON.parse(xhr.responseText) as UploadBody;
       } catch {
-        reject(new Error("Некорректный ответ сервера."));
+        reject(new Error(buildUnexpectedUploadResponseMessage(xhr)));
         return;
       }
 
@@ -719,6 +719,21 @@ function uploadSingleFile(
 
     xhr.send(formData);
   });
+}
+
+function buildUnexpectedUploadResponseMessage(xhr: XMLHttpRequest): string {
+  if (xhr.status === 413) {
+    return "Файл слишком большой для сервера. Нужно увеличить лимит загрузки или сжать файл.";
+  }
+  if (xhr.status === 401 || xhr.responseURL.includes("/admin/login")) {
+    return "Сессия администратора истекла. Войдите в админку заново и повторите загрузку.";
+  }
+  if (xhr.status >= 500) {
+    return "Серверная ошибка при загрузке. Проверьте логи PM2.";
+  }
+  const plainText = xhr.responseText.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const details = plainText ? ` ${plainText.slice(0, 160)}` : "";
+  return `Сервер вернул неожиданный ответ${xhr.status ? ` (${xhr.status})` : ""}.${details}`;
 }
 
 type UploadedAsset = {
