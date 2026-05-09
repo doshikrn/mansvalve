@@ -21,16 +21,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteBaseUrl()),
   applicationName: "MANSVALVE GROUP",
-  icons: {
-    icon: [
-      { url: "/favicon-mansvalve.ico", sizes: "any" },
-      { url: "/favicon-mansvalve-48.png", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-mansvalve-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-mansvalve-16.png", sizes: "16x16", type: "image/png" },
-    ],
-    shortcut: "/favicon-mansvalve.ico",
-    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
-  },
+  // Tab / Apple icons: `app/favicon.ico` + `app/apple-icon.png` (Next file conventions).
+  // Avoid duplicate `metadata.icons` — multiple `<link rel="icon">` targets confuse Chrome.
   title: {
     default: "MANSVALVE GROUP — промышленная трубопроводная арматура в Казахстане",
     template: `%s | ${COMPANY_BRAND_SEO}`,
