@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { GateValveSeoProductPage } from "@/components/catalog/GateValveSeoProductPage";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { CATALOG_LANDING_PAGES, getLandingPage } from "@/lib/catalog-seo";
 import {
@@ -15,47 +16,86 @@ import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
 } from "@/lib/structured-data";
+import {
+  findGateValveCatalogProduct,
+  GATE_VALVE_SEO_PAGES,
+  getGateValveSeoPage,
+  getRelatedGateValveSeoPages,
+} from "@/lib/seo-product-pages/gate-valves";
 
 interface PageProps {
   params: Promise<{ categorySlug: string; landingSlug: string }>;
 }
 
 export function generateStaticParams() {
-  return CATALOG_LANDING_PAGES.map((page) => ({
-    categorySlug: page.categorySlug,
-    landingSlug: page.slug,
-  }));
+  return [
+    ...CATALOG_LANDING_PAGES.map((page) => ({
+      categorySlug: page.categorySlug,
+      landingSlug: page.slug,
+    })),
+    ...GATE_VALVE_SEO_PAGES.map((page) => ({
+      categorySlug: page.categorySlug,
+      landingSlug: page.slug,
+    })),
+  ];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { categorySlug, landingSlug } = await params;
   const landing = getLandingPage(categorySlug, landingSlug);
 
-  if (!landing) {
+  if (landing) {
+    const canonical = `/${landing.categorySlug}/${landing.slug}`;
+
+    return {
+      title: landing.title,
+      description: landing.description,
+      alternates: {
+        canonical,
+      },
+      openGraph: {
+        title: landing.title,
+        description: landing.description,
+        url: canonical,
+        locale: "ru_KZ",
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: landing.title,
+        description: landing.description,
+      },
+    };
+  }
+
+  const gateValvePage =
+    categorySlug === "zadvizhki" ? getGateValveSeoPage(landingSlug) : undefined;
+
+  if (!gateValvePage) {
     return {
       title: "Страница не найдена",
     };
   }
 
-  const canonical = `/${landing.categorySlug}/${landing.slug}`;
+  const canonical = `/${gateValvePage.categorySlug}/${gateValvePage.slug}`;
 
   return {
-    title: landing.title,
-    description: landing.description,
+    title: gateValvePage.seoTitle,
+    description: gateValvePage.seoDescription,
     alternates: {
       canonical,
     },
     openGraph: {
-      title: landing.title,
-      description: landing.description,
+      title: gateValvePage.seoTitle,
+      description: gateValvePage.seoDescription,
       url: canonical,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: landing.title,
-      description: landing.description,
+      title: gateValvePage.seoTitle,
+      description: gateValvePage.seoDescription,
     },
   };
 }
@@ -64,7 +104,24 @@ export default async function CatalogLandingPage({ params }: PageProps) {
   const { categorySlug, landingSlug } = await params;
   const landing = getLandingPage(categorySlug, landingSlug);
 
-  if (!landing) notFound();
+  if (!landing) {
+    const gateValvePage =
+      categorySlug === "zadvizhki" ? getGateValveSeoPage(landingSlug) : undefined;
+
+    if (!gateValvePage) notFound();
+
+    const products = await getPublicCatalogProducts();
+    const product = findGateValveCatalogProduct(products, gateValvePage);
+    const relatedPages = getRelatedGateValveSeoPages(gateValvePage);
+
+    return (
+      <GateValveSeoProductPage
+        page={gateValvePage}
+        product={product}
+        relatedPages={relatedPages}
+      />
+    );
+  }
 
   const [products, categories, category] = await Promise.all([
     getPublicCatalogProducts(),

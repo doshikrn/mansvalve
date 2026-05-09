@@ -1,0 +1,416 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, BadgeCheck, ChevronRight, FileText, Phone, ShieldCheck, Truck } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { getCategoryVisual } from "@/lib/category-visuals";
+import { buildCompanyProductInquiryWhatsAppUrl, COMPANY } from "@/lib/company";
+import { getSiteBaseUrl } from "@/lib/site-url";
+import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import type { GateValveSeoPage } from "@/lib/seo-product-pages/gate-valves";
+
+interface Props {
+  page: GateValveSeoPage;
+  product?: PublicCatalogProduct;
+  relatedPages: GateValveSeoPage[];
+}
+
+const TRUST_ITEMS = [
+  { icon: ShieldCheck, label: "Сертификаты", sub: "Паспорт и документы" },
+  { icon: Truck, label: "Доставка по РК", sub: "Алматы, Астана, регионы" },
+  { icon: BadgeCheck, label: "Работаем с НДС", sub: "Для B2B и тендеров" },
+] as const;
+
+export function GateValveSeoProductPage({ page, product, relatedPages }: Props) {
+  const categoryVisual = getCategoryVisual("zadvizhki");
+  const imageSrc = product?.primaryImageUrl || product?.images?.[0]?.url || categoryVisual.imageSrc;
+  const imageAlt = product?.primaryImageAlt || product?.images?.[0]?.alt || page.imageAlt;
+  const remoteImage = imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
+  const waUrl = buildCompanyProductInquiryWhatsAppUrl(page.title, {
+    dn: page.dn,
+    pn: page.pn,
+  });
+  const formattedPrice =
+    product?.price && !product.priceByRequest ? formatPrice(product.price) : null;
+  const productJsonLd = buildGateValveJsonLd(page, product, imageSrc);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(page);
+
+  return (
+    <div className="bg-site-card">
+      <JsonLd id={`breadcrumbs-${page.slug}`} data={breadcrumbJsonLd} />
+      <JsonLd id={`product-${page.slug}`} data={productJsonLd} />
+
+      <div className="border-b border-site-border bg-site-bg">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6">
+          <nav aria-label="Хлебные крошки">
+            <ol className="flex flex-wrap items-center gap-1 text-sm text-slate-500">
+              <li>
+                <Link href="/" className="transition-colors hover:text-slate-900">
+                  Главная
+                </Link>
+              </li>
+              <li aria-hidden="true">
+                <ChevronRight size={14} className="text-slate-300" />
+              </li>
+              <li>
+                <Link href="/catalog" className="transition-colors hover:text-slate-900">
+                  Каталог
+                </Link>
+              </li>
+              <li aria-hidden="true">
+                <ChevronRight size={14} className="text-slate-300" />
+              </li>
+              <li>
+                <Link href="/catalog/category/zadvizhki" className="transition-colors hover:text-slate-900">
+                  Задвижки
+                </Link>
+              </li>
+              <li aria-hidden="true">
+                <ChevronRight size={14} className="text-slate-300" />
+              </li>
+              <li>
+                <span className="font-medium text-slate-900" aria-current="page">
+                  {page.title}
+                </span>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(380px,480px)] lg:py-14">
+        <div className="flex flex-col">
+          <div className="mb-4 flex flex-wrap gap-2">
+            <span className="rounded-full bg-[#EFF6FF] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-site-primary">
+              {page.model}
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              DN{page.dn}
+            </span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              PN{page.pn}
+            </span>
+          </div>
+
+          <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl">
+            {page.h1}
+          </h1>
+
+          <div className="mt-6 space-y-4 text-base leading-[1.75] text-slate-650">
+            {page.introParagraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Button
+              size="lg"
+              className="rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
+              asChild
+            >
+              <a href="#request-section">
+                <Phone className="mr-2 h-4 w-4" />
+                Получить КП
+              </a>
+            </Button>
+            <Button
+              size="lg"
+              className="rounded-xl border-0 bg-site-cta text-base font-semibold text-white hover:opacity-90"
+              asChild
+            >
+              <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                <WhatsappIcon className="mr-2 h-4 w-4" />
+                WhatsApp
+              </a>
+            </Button>
+            {product ? (
+              <Button size="lg" variant="outline" className="rounded-xl" asChild>
+                <Link href={`/catalog/${product.slug}`}>
+                  Карточка каталога
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
+        <aside className="space-y-5">
+          <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-site-border bg-slate-100 shadow-sm">
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              priority
+              quality={92}
+              unoptimized={remoteImage}
+              sizes="(max-width: 1024px) 100vw, 480px"
+              className="object-cover"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/10 to-transparent" />
+            <span className="absolute bottom-4 left-4 rounded-md border border-white/20 bg-slate-900/65 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
+              {page.imageAlt}
+            </span>
+          </div>
+
+          <div className="rounded-2xl border border-site-border bg-site-bg p-5">
+            {formattedPrice ? (
+              <>
+                <p className="text-xs font-medium uppercase tracking-widest text-slate-400">Цена за единицу</p>
+                <p className="mt-1 text-3xl font-bold tracking-tight text-slate-900">{formattedPrice}</p>
+                <p className="mt-1.5 text-sm text-slate-500">Цена уточняется при оформлении КП.</p>
+              </>
+            ) : (
+              <>
+                <p className="text-2xl font-bold text-site-primary">Цена по запросу</p>
+                <p className="mt-1.5 text-sm text-slate-500">
+                  Укажите количество и сроки — подготовим КП за 15 минут.
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {TRUST_ITEMS.map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="rounded-xl border border-site-border bg-site-bg p-3 text-center">
+                <Icon className="mx-auto h-5 w-5 text-site-primary" strokeWidth={1.7} />
+                <p className="mt-2 text-xs font-semibold leading-tight text-slate-800">{label}</p>
+                <p className="mt-1 text-[11px] leading-tight text-slate-500">{sub}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
+
+      <section className="border-t border-site-border bg-site-bg">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Основные характеристики</h2>
+            <div className="mt-5 overflow-hidden rounded-xl border border-site-border bg-site-card">
+              <table className="w-full">
+                <tbody>
+                  {page.characteristics.map((item, index) => (
+                    <tr key={item.label} className={index % 2 === 0 ? "bg-white" : "bg-site-bg"}>
+                      <td className="w-2/5 border-r border-slate-100 px-5 py-3 text-sm font-medium text-slate-500">
+                        {item.label}
+                      </td>
+                      <td className="px-5 py-3 text-sm font-semibold text-slate-900">{item.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-site-border bg-site-card p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <FileText className="h-5 w-5 text-site-primary" />
+              <h2 className="text-lg font-bold text-slate-900">Документация и контроль качества</h2>
+            </div>
+            <ul className="space-y-2 text-sm leading-relaxed text-slate-600">
+              {page.qualityDocuments.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-site-primary" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-site-border bg-site-card">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2">
+          <InfoBlock title="Стандарты и соответствие" items={page.standards} />
+          <InfoBlock title="Преимущества" items={page.benefits} />
+          <InfoBlock title="Область применения" items={page.applications} />
+          <InfoBlock title="Условия поставки" items={page.supplyTerms} />
+        </div>
+      </section>
+
+      <section className="border-t border-site-border bg-site-bg">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+          <h2 className="text-2xl font-bold text-slate-900">Другие диаметры этой серии</h2>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {relatedPages.map((related) => (
+              <Link
+                key={related.slug}
+                href={`/zadvizhki/${related.slug}`}
+                className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                  related.slug === page.slug
+                    ? "border-site-primary bg-site-primary text-white"
+                    : "border-site-border bg-site-card text-slate-700 hover:border-site-primary hover:text-site-primary"
+                }`}
+              >
+                DN{related.dn} PN{related.pn}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="request-section" className="scroll-mt-24 bg-site-primary py-12">
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
+          <h2 className="text-2xl font-bold text-white">Нужно коммерческое предложение?</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/85">
+            MANSVALVE GROUP поставляет промышленную трубопроводную арматуру для бизнеса,
+            промышленности и государственных объектов Казахстана.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
+            <Button size="lg" className="rounded-xl bg-white text-site-primary hover:bg-white/90" asChild>
+              <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                <WhatsappIcon className="mr-2 h-4 w-4" />
+                Написать в WhatsApp
+              </a>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-xl border-white/45 text-white hover:bg-white/10"
+              asChild
+            >
+              <Link href="/contacts">Контакты</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function InfoBlock({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+      <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
+        {items.map((item) => (
+          <li key={item} className="flex gap-2">
+            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-site-primary" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("ru-KZ", {
+    style: "currency",
+    currency: "KZT",
+    maximumFractionDigits: 0,
+  }).format(price);
+}
+
+function absoluteUrl(path: string): string {
+  return new URL(path, `${getSiteBaseUrl()}/`).toString();
+}
+
+function normalizeImageUrl(url: string): string {
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return absoluteUrl(url);
+}
+
+function buildBreadcrumbJsonLd(page: GateValveSeoPage): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Главная", item: absoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Каталог", item: absoluteUrl("/catalog") },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "Задвижки",
+        item: absoluteUrl("/catalog/category/zadvizhki"),
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: page.title,
+        item: absoluteUrl(`/zadvizhki/${page.slug}`),
+      },
+    ],
+  };
+}
+
+function buildGateValveJsonLd(
+  page: GateValveSeoPage,
+  product: PublicCatalogProduct | undefined,
+  imageSrc: string,
+): Record<string, unknown> {
+  const offer: Record<string, unknown> = {
+    "@type": "Offer",
+    priceCurrency: "KZT",
+    url: absoluteUrl(`/zadvizhki/${page.slug}`),
+    availability: "https://schema.org/InStock",
+    itemCondition: "https://schema.org/NewCondition",
+    seller: {
+      "@type": "Organization",
+      name: COMPANY.name,
+    },
+    shippingDetails: {
+      "@type": "OfferShippingDetails",
+      shippingDestination: {
+        "@type": "DefinedRegion",
+        addressCountry: "KZ",
+      },
+      deliveryTime: {
+        "@type": "ShippingDeliveryTime",
+        handlingTime: {
+          "@type": "QuantitativeValue",
+          minValue: 1,
+          maxValue: 3,
+          unitCode: "DAY",
+        },
+        transitTime: {
+          "@type": "QuantitativeValue",
+          minValue: 1,
+          maxValue: 10,
+          unitCode: "DAY",
+        },
+      },
+      shippingRate: {
+        "@type": "MonetaryAmount",
+        value: "0",
+        currency: "KZT",
+      },
+    },
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      applicableCountry: "KZ",
+      returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+      merchantReturnDays: 14,
+      returnMethod: "https://schema.org/ReturnByMail",
+      returnFees: "https://schema.org/ReturnShippingFees",
+    },
+  };
+
+  if (product?.price && !product.priceByRequest) {
+    offer.price = String(product.price);
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: page.title,
+    description: page.seoDescription,
+    sku: product?.id ?? page.slug,
+    mpn: `${page.model} DN${page.dn} PN${page.pn}`,
+    brand: {
+      "@type": "Brand",
+      name: COMPANY.name,
+    },
+    category: "Задвижки",
+    material: page.series === "30ch6br" || page.series === "30ch39r" ? "Чугун" : "Сталь",
+    image: [normalizeImageUrl(imageSrc)],
+    url: absoluteUrl(`/zadvizhki/${page.slug}`),
+    additionalProperty: page.characteristics.map((item) => ({
+      "@type": "PropertyValue",
+      name: item.label,
+      value: item.value,
+    })),
+    offers: offer,
+  };
+}

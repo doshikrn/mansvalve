@@ -5,6 +5,7 @@ import type {
 } from "@/lib/public-catalog"
 import { getSiteBaseUrl } from "@/lib/site-url"
 import { COMPANY } from "@/lib/company"
+import { getCategoryVisual } from "@/lib/category-visuals"
 
 interface BreadcrumbItem {
   name: string
@@ -247,6 +248,8 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
         ? url
         : toAbsoluteUrl(url),
     )
+  } else {
+    result.image = [toAbsoluteUrl(getCategoryVisual(product.category).imageSrc)]
   }
 
   if (additionalProperty.length > 0) {

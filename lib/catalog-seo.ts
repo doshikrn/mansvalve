@@ -230,7 +230,7 @@ export function getLandingPage(
 export function buildProductCatalogName(product: PublicCatalogProduct): string {
   const baseName = getProductTypeLabel(product);
   const material = getDisplayMaterial(product, baseName);
-  const model = product.model?.trim();
+  const model = formatModelForDisplay(product.model?.trim());
   const dn = product.dn != null ? `DN${product.dn}` : "";
   const pn = product.pn != null ? `PN${product.pn}` : "";
   const connection = getDisplayConnection(product, baseName);
@@ -266,11 +266,22 @@ function getDisplayMaterial(product: PublicCatalogProduct, productType: string):
 }
 
 function getDisplayConnection(product: PublicCatalogProduct, productType: string): string {
+  const name = product.name.toLowerCase();
+  const model = (product.model || "").toLowerCase();
   if (!product.connectionType || product.connectionType === "Не указано") {
-    if (product.name.toLowerCase().includes("обрезин")) {
+    if (name.includes("обрезин") || model === "30ч39р") {
       return "с обрезиненным клином";
     }
+    if (
+      product.category === "zadvizhki" &&
+      ["30ч6бр", "30с41нж", "30с64нж"].includes(model)
+    ) {
+      return productType === "Задвижка" ? "фланцевая" : "фланцевый";
+    }
     return "";
+  }
+  if (name.includes("обрезин") || model === "30ч39р") {
+    return "с обрезиненным клином";
   }
   const feminine = productType === "Задвижка";
   if (product.connectionType === "Фланцевое") return feminine ? "фланцевая" : "фланцевый";
@@ -282,4 +293,16 @@ function getDisplayConnection(product: PublicCatalogProduct, productType: string
     return feminine ? "муфтовая" : "муфтовый";
   }
   return product.connectionType.toLowerCase();
+}
+
+function formatModelForDisplay(model: string | undefined): string {
+  if (!model) return "";
+  const normalized = model.toLowerCase();
+  const labels: Record<string, string> = {
+    "30ч6бр": "30ч6бр",
+    "30ч39р": "30ч39р",
+    "30с41нж": "30с41нж",
+    "30с64нж": "30с64нж",
+  };
+  return labels[normalized] ?? model;
 }

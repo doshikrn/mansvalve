@@ -6,6 +6,7 @@ import {
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
+import { GATE_VALVE_SEO_PAGES } from "@/lib/seo-product-pages/gate-valves";
 
 const STATIC_ROUTES = [
   "/",
@@ -69,6 +70,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
+  const gateValveSeoPages: MetadataRoute.Sitemap = GATE_VALVE_SEO_PAGES.map((page) => ({
+    url: absoluteUrl(baseUrl, `/${page.categorySlug}/${page.slug}`),
+    lastModified,
+    changeFrequency: "weekly",
+    priority: 0.82,
+  }));
+
   const productPages: MetadataRoute.Sitemap = products.map((product) => ({
     url: absoluteUrl(baseUrl, `/catalog/${product.slug}`),
     lastModified,
@@ -79,6 +87,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return uniqueSitemapEntries([
     ...staticPages,
     ...landingPages,
+    ...gateValveSeoPages,
     ...categoryPages,
     ...subcategoryPages,
     ...productPages,
