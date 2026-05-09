@@ -23,9 +23,9 @@ export const metadata: Metadata = {
   applicationName: "MANSVALVE GROUP",
   icons: {
     icon: [
-      { url: "/favicon-v2.ico", sizes: "any" },
       { url: "/favicon-v2-48.png", sizes: "48x48", type: "image/png" },
       { url: "/favicon-v2-96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon-v2.ico", sizes: "any" },
       { url: "/favicon-google.png", sizes: "48x48", type: "image/png" },
       { url: "/favicon-48.png", sizes: "48x48", type: "image/png" },
       { url: "/favicon-96.png", sizes: "96x96", type: "image/png" },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
       { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
       { url: "/icon.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/favicon-v2.ico",
+    shortcut: "/favicon-v2-48.png",
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   title: {

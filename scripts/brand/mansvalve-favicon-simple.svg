@@ -1,19 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MANSVALVE">
-  <rect width="512" height="512" rx="96" fill="#ffffff"/>
-  <circle cx="256" cy="256" r="232" fill="#050505"/>
-  <g fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M92 334h328"/>
-    <path d="M126 334v-88h62v88"/>
-    <path d="M324 334v-88h62v88"/>
-    <path d="M188 246h136"/>
-    <path d="M214 190h84"/>
-    <path d="M236 190v-74h40v74"/>
-    <path d="M224 190v56"/>
-    <path d="M288 190v56"/>
-    <path d="M236 134 112 108"/>
-    <path d="M276 134 400 108"/>
-    <path d="M112 108h-2a28 28 0 0 0 0 56h2l124-30"/>
-    <path d="M400 108h2a28 28 0 0 1 0 56h-2l-124-30"/>
-  </g>
-  <rect x="178" y="246" width="156" height="88" fill="#050505" stroke="#ffffff" stroke-width="36" rx="4"/>
+  <rect width="512" height="512" rx="112" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="224" fill="#050505"/>
+  <path
+    fill="#ffffff"
+    d="M112 350V162h52l54 92 54-92h52v188h-48V244l-42 70h-32l-42-70v106h-48Zm228 0 58-188h54l-63 188h-49Z"
+  />
 </svg>
