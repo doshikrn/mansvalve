@@ -28,5 +28,13 @@ export function getSiteBaseUrl(): string {
   const vercelBaseUrl = normalizeBaseUrl(process.env.VERCEL_URL);
   if (vercelBaseUrl) return vercelBaseUrl;
 
+  // `next dev` / local `next start` often run without SITE_URL. With the default
+  // production domain as metadataBase, `<link rel="icon">` targets production
+  // while the document loads from localhost — the tab icon then pulls from the
+  // wrong host (missing asset, HTML error page, etc.).
+  if (process.env.NODE_ENV !== "production") {
+    return "http://localhost:3000";
+  }
+
   return DEFAULT_BASE_URL;
 }

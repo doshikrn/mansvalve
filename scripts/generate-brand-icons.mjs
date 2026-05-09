@@ -76,9 +76,14 @@ async function main() {
   await writeFile(join(publicDir, "favicon-v2.ico"), await toIco([fav16, fav32, fav48]));
   await writeFile(join(publicDir, "favicon-v2-48.png"), fav48);
   await writeFile(join(publicDir, "favicon-v2-96.png"), fav96);
+  await writeFile(join(publicDir, "favicon-mansvalve.ico"), await toIco([fav16, fav32, fav48]));
+  await writeFile(join(publicDir, "favicon-mansvalve-16.png"), fav16);
+  await writeFile(join(publicDir, "favicon-mansvalve-32.png"), fav32);
+  await writeFile(join(publicDir, "favicon-mansvalve-48.png"), fav48);
+  await writeFile(join(publicDir, "favicon-mansvalve-96.png"), fav96);
 
   console.log(
-    `Wrote public/favicon.ico, favicon-v2.ico, favicon-google.png, favicon-v2-48.png, favicon-v2-96.png, favicon-16.png, favicon-32.png, favicon-48.png, favicon-96.png, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
+    `Wrote public/favicon.ico, favicon-v2.ico, favicon-mansvalve.ico, favicon PNG variants, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
   );
 }
 
