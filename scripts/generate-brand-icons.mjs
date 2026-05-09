@@ -1,5 +1,5 @@
 /**
- * Генерирует public/favicon.ico, favicon PNG, icon.png и apple-icon.png.
+ * Генерирует public/favicon.ico, favicon PNG, icon.png, apple-icon.png, app/icon.svg, app/apple-icon.png.
  * Все favicon/app icons генерируются из одного фирменного знака, чтобы
  * Google Search Console, вкладка браузера и выдача не показывали разные
  * маленькие значки после кэширования.
@@ -72,7 +72,8 @@ async function main() {
   await writeFile(join(publicDir, "icon.png"), icon512);
   await writeFile(join(publicDir, "apple-icon.png"), apple180);
   await mkdir(join(root, "app"), { recursive: true });
-  await writeFile(join(root, "app", "favicon.ico"), await toIco([fav16, fav32, fav48]));
+  // Tab icon: vector-only `app/icon.svg` — ICO via Next's optimizer breaks on some Chromium builds.
+  await writeFile(join(root, "app", "icon.svg"), await readFile(faviconSvg));
   await writeFile(join(root, "app", "apple-icon.png"), apple180);
   await writeFile(join(publicDir, "favicon-google.png"), faviconGoogle);
   await writeFile(join(publicDir, "favicon-96.png"), fav96);
@@ -90,7 +91,7 @@ async function main() {
   await writeFile(join(publicDir, "favicon-mansvalve-96.png"), fav96);
 
   console.log(
-    `Wrote app/favicon.ico, app/apple-icon.png, public/favicon.svg, public/favicon.ico, favicon-v2.ico, favicon-mansvalve.ico, favicon PNG variants, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
+    `Wrote app/icon.svg, app/apple-icon.png, public/favicon.svg, public/favicon.ico, favicon-v2.ico, favicon-mansvalve.ico, favicon PNG variants, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
   );
 }
 

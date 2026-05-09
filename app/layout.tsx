@@ -21,8 +21,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteBaseUrl()),
   applicationName: "MANSVALVE GROUP",
-  // Tab / Apple icons: `app/favicon.ico` + `app/apple-icon.png` (Next file conventions).
-  // Avoid duplicate `metadata.icons` — multiple `<link rel="icon">` targets confuse Chrome.
+  // Tab / Apple icons: `app/icon.svg` + `app/apple-icon.png` (Next file conventions).
+  // Avoid `app/favicon.ico` here — Next wraps ICO and some Chromium builds show a corrupted tab pixel map.
   title: {
     default: "MANSVALVE GROUP — промышленная трубопроводная арматура в Казахстане",
     template: `%s | ${COMPANY_BRAND_SEO}`,
