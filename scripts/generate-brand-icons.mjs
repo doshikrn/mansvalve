@@ -18,6 +18,7 @@ const root = join(__dir, "..");
 const publicDir = join(root, "public");
 const brandMarkPng = join(root, "public/images/mansvalve-brand-mark.png");
 const fallbackSvg = join(root, "scripts/brand/mansvalve-favicon.svg");
+const faviconSvg = join(root, "scripts/brand/mansvalve-favicon-simple.svg");
 
 async function resizePng(
   buf,
@@ -30,6 +31,7 @@ async function resizePng(
       background,
       position: "center",
     })
+    .flatten({ background })
     .png()
     .toBuffer();
 }
@@ -50,7 +52,9 @@ async function main() {
   await mkdir(join(publicDir, "images"), { recursive: true });
 
   const { buf: brandRaster, label } = await loadRasterSource();
-  const faviconRaster = brandRaster;
+  const faviconRaster = await sharp(await readFile(faviconSvg), { density: 384 })
+    .png()
+    .toBuffer();
   const white = { r: 255, g: 255, b: 255, alpha: 1 };
 
   const icon512 = await resizePng(brandRaster, 512);
@@ -71,7 +75,7 @@ async function main() {
   await writeFile(join(publicDir, "favicon.ico"), await toIco([fav16, fav32, fav48]));
 
   console.log(
-    `Wrote public/favicon.ico, favicon-google.png, favicon-16.png, favicon-32.png, favicon-48.png, favicon-96.png, icon.png, apple-icon.png (app icon source: ${label})`,
+    `Wrote public/favicon.ico, favicon-google.png, favicon-16.png, favicon-32.png, favicon-48.png, favicon-96.png, icon.png, apple-icon.png (app icon source: ${label}, favicon source: scripts/brand/mansvalve-favicon-simple.svg)`,
   );
 }
 
