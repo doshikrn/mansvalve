@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { FileText } from "lucide-react";
+import { Check, Copy, ExternalLink, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +85,7 @@ export function MediaUpload({
   const [jobs, setJobs] = useState<UploadJob[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const visibleLibrary = useMemo(
@@ -278,6 +279,20 @@ export function MediaUpload({
     }
   }
 
+  async function copyAssetUrl(item: MediaLibraryItem) {
+    setError(null);
+    const value = getAbsoluteAssetUrl(item.url);
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedId(item.id);
+      window.setTimeout(() => {
+        setCopiedId((current) => (current === item.id ? null : current));
+      }, 1500);
+    } catch {
+      setError("Не удалось скопировать ссылку. Откройте файл и скопируйте адрес из браузера.");
+    }
+  }
+
   return (
     <section className="space-y-4 rounded-xl border border-border bg-background p-4">
       <div className="flex items-center justify-between">
@@ -440,11 +455,37 @@ export function MediaUpload({
                   className="space-y-2 rounded-lg border border-border p-2"
                 >
                   <MediaThumb item={item} className="h-24 w-full" />
-                  <div className="text-[11px] text-muted-foreground">
-                    {item.width ?? "?"}×{item.height ?? "?"} ·{" "}
-                    {formatBytes(item.sizeBytes)}
+                  <div className="space-y-1 text-[11px] text-muted-foreground">
+                    <p className="line-clamp-2 break-words font-medium text-foreground">
+                      {getMediaDisplayName(item)}
+                    </p>
+                    <p>{formatMediaMeta(item)}</p>
                   </div>
                   <div className="flex flex-wrap gap-1">
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant="outline"
+                      asChild
+                    >
+                      <a href={item.url} target="_blank" rel="noreferrer">
+                        <ExternalLink className="mr-1 h-3 w-3" />
+                        Открыть
+                      </a>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="xs"
+                      variant="outline"
+                      onClick={() => void copyAssetUrl(item)}
+                    >
+                      {copiedId === item.id ? (
+                        <Check className="mr-1 h-3 w-3" />
+                      ) : (
+                        <Copy className="mr-1 h-3 w-3" />
+                      )}
+                      {copiedId === item.id ? "Скопировано" : "URL"}
+                    </Button>
                     {allowAttach ? (
                       <Button
                         type="button"
@@ -525,6 +566,27 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatMediaMeta(item: MediaLibraryItem): string {
+  const parts = [getFileLabel(item.mimeType), formatBytes(item.sizeBytes)];
+  if (item.mimeType.startsWith("image/") && item.width && item.height) {
+    parts.unshift(`${item.width}x${item.height}`);
+  }
+  return parts.join(" · ");
+}
+
+function getMediaDisplayName(item: MediaLibraryItem): string {
+  if (item.alt?.trim()) return item.alt.trim();
+  const source = item.storageKey || item.url;
+  const lastSegment = source.split("/").filter(Boolean).at(-1);
+  return decodeURIComponent(lastSegment || "Файл");
+}
+
+function getAbsoluteAssetUrl(url: string): string {
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("//")) return `${window.location.protocol}${url}`;
+  return new URL(url, window.location.origin).toString();
 }
 
 function matchesAcceptedKind(mimeType: string, accept: "image" | "document" | "all") {

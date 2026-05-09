@@ -34,6 +34,7 @@ export default async function AdminMediaPage({
   const library = media.items.map((asset) => ({
     id: asset.id,
     url: asset.url,
+    storageKey: asset.storageKey,
     mimeType: asset.mimeType,
     sizeBytes: asset.sizeBytes,
     width: asset.width,
