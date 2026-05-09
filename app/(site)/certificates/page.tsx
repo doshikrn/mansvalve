@@ -19,14 +19,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { COMPANY } from "@/lib/company";
 import { isDatabaseConfigured } from "@/lib/db/client";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 import { applyPlaceholders } from "@/lib/site-content/models";
 import { resolveCertificatesPage } from "@/lib/site-content/public";
 import { listPublicActiveCertificates } from "@/lib/services/certificates";
-
-function isRemoteMedia(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
-}
 
 const PROVIDED_ITEMS = [
   "Паспорт изделия",
@@ -149,7 +146,7 @@ export default async function CertificatesPage() {
                   width={1100}
                   height={760}
                   className="h-full min-h-[280px] w-full object-cover lg:min-h-[520px]"
-                  unoptimized={isRemoteMedia(heroMainImage)}
+                  unoptimized={mediaImageNeedsUnoptimized(heroMainImage)}
                 />
               ) : (
                 <div className="flex min-h-[280px] items-center justify-center text-sm text-slate-500 lg:min-h-[520px]">
@@ -188,7 +185,7 @@ export default async function CertificatesPage() {
                       alt={certificate.mediaAlt || certificate.title}
                       fill
                       className="object-cover"
-                      unoptimized={isRemoteMedia(certificate.mediaUrl)}
+                      unoptimized={mediaImageNeedsUnoptimized(certificate.mediaUrl)}
                       sizes="(max-width: 1024px) 50vw, 25vw"
                     />
                   </div>
@@ -242,7 +239,7 @@ export default async function CertificatesPage() {
                     width={520}
                     height={360}
                     className="h-40 w-full object-cover sm:h-48"
-                    unoptimized={isRemoteMedia(src)}
+                    unoptimized={mediaImageNeedsUnoptimized(src)}
                   />
                 </div>
               ))}
@@ -294,7 +291,7 @@ export default async function CertificatesPage() {
                   width={860}
                   height={420}
                   className="h-full min-h-48 w-full object-cover"
-                  unoptimized={isRemoteMedia(trustImage)}
+                  unoptimized={mediaImageNeedsUnoptimized(trustImage)}
                 />
               ) : (
                 <div className="flex min-h-48 items-center justify-center text-sm text-slate-500">

@@ -5,14 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { listAdminCertificates } from "@/lib/services/certificates";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function isRemoteMedia(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
-}
 
 export default async function AdminCertificatesPage() {
   await requireAdmin("/admin/certificates");
@@ -71,7 +68,7 @@ export default async function AdminCertificatesPage() {
                           alt={certificate.mediaAlt || certificate.title}
                           fill
                           sizes="48px"
-                          unoptimized={isRemoteMedia(certificate.mediaUrl)}
+                          unoptimized={mediaImageNeedsUnoptimized(certificate.mediaUrl)}
                           className="object-cover"
                         />
                       </div>

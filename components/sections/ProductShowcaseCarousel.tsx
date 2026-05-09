@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucid
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { getCategoryVisual } from "@/lib/category-visuals";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { cn } from "@/lib/utils";
 
 type ProductShowcaseCarouselProps = {
@@ -164,7 +165,7 @@ export function ProductShowcaseCarousel({
                     fill
                     quality={100}
                     sizes={imgSizes}
-                    unoptimized={image.src.startsWith("http://") || image.src.startsWith("https://")}
+                    unoptimized={mediaImageNeedsUnoptimized(image.src)}
                     className="object-cover transition-transform duration-500 ease-out hover:scale-[1.02] motion-reduce:transition-none motion-reduce:hover:scale-100"
                   />
                   <div className={cn("absolute inset-0 bg-gradient-to-t to-transparent", isHero ? "from-site-deep/65 via-site-deep/5" : "from-black/[0.12] via-transparent")} />

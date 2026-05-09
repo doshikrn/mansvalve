@@ -35,6 +35,7 @@ import {
 } from "@/lib/catalog-seo";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 /* ── Static generation for all 303 products ──────────────────────── */
@@ -189,8 +190,6 @@ export default async function ProductPage({ params }: PageProps) {
     product.primaryImageAlt ||
     product.images?.[0]?.alt ||
     `${categoryLabel} — ${productName}`;
-  const heroImageRemote =
-    heroImageSrc.startsWith("http://") || heroImageSrc.startsWith("https://");
   warnInvalidMediaUrl(heroImageSrc, `ProductPage.hero:${product.slug}`);
 
   const formattedPrice =
@@ -271,7 +270,7 @@ export default async function ProductPage({ params }: PageProps) {
               fill
               priority
               quality={95}
-              unoptimized={heroImageRemote}
+              unoptimized={mediaImageNeedsUnoptimized(heroImageSrc)}
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />

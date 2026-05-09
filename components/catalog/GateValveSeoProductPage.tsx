@@ -7,6 +7,7 @@ import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { buildCompanyProductInquiryWhatsAppUrl, COMPANY } from "@/lib/company";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import type { GateValveSeoPage } from "@/lib/seo-product-pages/gate-valves";
@@ -27,7 +28,6 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
   const categoryVisual = getCategoryVisual("zadvizhki");
   const imageSrc = product?.primaryImageUrl || product?.images?.[0]?.url || categoryVisual.imageSrc;
   const imageAlt = product?.primaryImageAlt || product?.images?.[0]?.alt || page.imageAlt;
-  const remoteImage = imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
   const waUrl = buildCompanyProductInquiryWhatsAppUrl(page.title, {
     dn: page.dn,
     pn: page.pn,
@@ -144,7 +144,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               fill
               priority
               quality={92}
-              unoptimized={remoteImage}
+              unoptimized={mediaImageNeedsUnoptimized(imageSrc)}
               sizes="(max-width: 1024px) 100vw, 480px"
               className="object-cover"
             />

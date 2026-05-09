@@ -7,6 +7,7 @@ import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import { buildProductCatalogName, getCatalogCategoryLabel } from "@/lib/catalog-seo";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 function formatPrice(price: number): string {
@@ -31,7 +32,6 @@ export function ProductCard({ product }: ProductCardProps) {
     product.primaryImageAlt ||
     `${categoryLabel} — ${productName}` ||
     visual.imageAlt;
-  const isRemoteImage = imageSrc.startsWith("http://") || imageSrc.startsWith("https://");
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
@@ -48,7 +48,7 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={imageAlt}
           fill
           quality={90}
-          unoptimized={isRemoteImage}
+          unoptimized={mediaImageNeedsUnoptimized(imageSrc)}
           sizes="(max-width: 640px) 100vw, 320px"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />

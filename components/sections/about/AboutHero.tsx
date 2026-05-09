@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 
 type AboutHeroProps = {
   breadcrumbCurrent: string;
@@ -9,10 +10,6 @@ type AboutHeroProps = {
   description: string;
   heroImages?: string[];
 };
-
-function isRemoteMedia(url: string) {
-  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
-}
 
 export function AboutHero({
   breadcrumbCurrent,
@@ -64,7 +61,7 @@ export function AboutHero({
                   width={1200}
                   height={720}
                   className="h-full min-h-[260px] w-full object-cover lg:min-h-[360px]"
-                  unoptimized={isRemoteMedia(primaryImage)}
+                  unoptimized={mediaImageNeedsUnoptimized(primaryImage)}
                 />
               ) : (
                 <div className="flex h-full min-h-[260px] items-center justify-center text-sm text-slate-300 lg:min-h-[360px]">
@@ -85,7 +82,7 @@ export function AboutHero({
                       width={360}
                       height={220}
                       className="h-20 w-full object-cover sm:h-24"
-                      unoptimized={isRemoteMedia(imageSrc)}
+                      unoptimized={mediaImageNeedsUnoptimized(imageSrc)}
                     />
                   </div>
                 ))}

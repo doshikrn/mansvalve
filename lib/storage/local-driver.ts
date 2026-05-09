@@ -22,6 +22,7 @@ export class LocalStorageDriver implements StorageDriver {
     const absolute = toLocalUploadPath(safeKey);
     await fs.mkdir(path.dirname(absolute), { recursive: true });
     await fs.writeFile(absolute, input.body);
+    await mirrorToStandalonePublic(safeKey, input.body);
 
     return {
       key: safeKey,
@@ -33,11 +34,12 @@ export class LocalStorageDriver implements StorageDriver {
 
   async delete(key: string): Promise<void> {
     const safeKey = normalizeKey(key);
-    const absolute = toLocalUploadPath(safeKey);
-    try {
-      await fs.rm(absolute, { force: true });
-    } catch {
-      /* noop */
+    for (const absolute of getLocalUploadPaths(safeKey)) {
+      try {
+        await fs.rm(absolute, { force: true });
+      } catch {
+        /* noop */
+      }
     }
   }
 
@@ -52,6 +54,37 @@ export class LocalStorageDriver implements StorageDriver {
 
 function toLocalUploadPath(normalizedKey: string): string {
   return path.join(process.cwd(), "public", "uploads", normalizedKey);
+}
+
+function toStandaloneUploadPath(normalizedKey: string): string {
+  return path.join(
+    process.cwd(),
+    ".next",
+    "standalone",
+    "public",
+    "uploads",
+    normalizedKey,
+  );
+}
+
+function getLocalUploadPaths(normalizedKey: string): string[] {
+  return [toLocalUploadPath(normalizedKey), toStandaloneUploadPath(normalizedKey)];
+}
+
+async function mirrorToStandalonePublic(
+  normalizedKey: string,
+  body: Uint8Array,
+): Promise<void> {
+  const standaloneRoot = path.join(process.cwd(), ".next", "standalone");
+  try {
+    await fs.access(standaloneRoot);
+  } catch {
+    return;
+  }
+
+  const absolute = toStandaloneUploadPath(normalizedKey);
+  await fs.mkdir(path.dirname(absolute), { recursive: true });
+  await fs.writeFile(absolute, body);
 }
 
 function normalizeKey(key: string): string {

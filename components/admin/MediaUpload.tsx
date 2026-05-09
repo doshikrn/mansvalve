@@ -11,6 +11,7 @@ import { warnInvalidMediaUrl } from "@/lib/media-url";
 /** Remote / protocol-relative URLs use the image loader without host allowlist. */
 function mediaImageNeedsUnoptimized(url: string): boolean {
   return (
+    url.startsWith("/uploads/") ||
     url.startsWith("http://") ||
     url.startsWith("https://") ||
     url.startsWith("//")

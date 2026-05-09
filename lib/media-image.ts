@@ -3,5 +3,10 @@
  * a host allowlist in next.config; match MediaUpload / ProductCard pattern.
  */
 export function mediaImageNeedsUnoptimized(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
+  return (
+    url.startsWith("/uploads/") ||
+    url.startsWith("http://") ||
+    url.startsWith("https://") ||
+    url.startsWith("//")
+  );
 }

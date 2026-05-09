@@ -6,13 +6,10 @@ import { Button } from "@/components/ui/button";
 import { COMPANY } from "@/lib/company";
 import { applyPlaceholders } from "@/lib/site-content/models";
 import { resolveDeliveryPage } from "@/lib/site-content/public";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 const BULLET_ICONS = [Package, Truck, Clock, FileText] as const;
-
-function isRemoteMedia(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://") || url.startsWith("//");
-}
 
 export async function generateMetadata(): Promise<Metadata> {
   const d = await resolveDeliveryPage();
@@ -76,7 +73,7 @@ export default async function DeliveryPage() {
                 alt=""
                 fill
                 className="object-cover"
-                unoptimized={isRemoteMedia(d.pageImageSrc)}
+                unoptimized={mediaImageNeedsUnoptimized(d.pageImageSrc)}
                 sizes="(max-width: 1280px) 100vw, 80rem"
               />
             </div>
