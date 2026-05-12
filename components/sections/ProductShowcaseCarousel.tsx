@@ -122,7 +122,7 @@ export function ProductShowcaseCarousel({
       <div
         className={cn(
           "relative z-[2] flex items-start justify-between gap-3 border-b border-white/[0.08]",
-          isHero ? "px-7 py-5" : "min-h-[72px] px-5 py-3.5 sm:px-6 sm:py-4",
+          isHero ? "px-5 py-4 sm:px-6 sm:py-5 lg:px-7 lg:py-5" : "min-h-[72px] px-5 py-3.5 sm:px-6 sm:py-4",
         )}
       >
         <div className="min-w-0 flex-1">
@@ -133,12 +133,24 @@ export function ProductShowcaseCarousel({
         </div>
       </div>
 
-      <div className={cn("relative z-[2] isolate w-full", isHero ? "min-h-[420px] lg:min-h-[480px]" : "min-h-[680px] lg:min-h-[520px]")}>
+      <div
+        className={cn(
+          "relative z-[2] isolate w-full",
+          isHero
+            ? "max-lg:min-h-0 lg:min-h-[480px] lg:overflow-hidden"
+            : "min-h-[680px] lg:min-h-[520px]",
+        )}
+      >
         <MotionConfig reducedMotion="never">
           <AnimatePresence mode="wait">
             <motion.div
               key={slideKey}
-              className="absolute inset-0 flex h-full flex-col"
+              className={cn(
+                "flex w-full flex-col",
+                isHero
+                  ? "max-lg:relative max-lg:h-auto max-lg:min-h-0 lg:absolute lg:inset-0 lg:h-full"
+                  : "absolute inset-0 h-full",
+              )}
               initial={{ opacity: 0, scale: 0.992, y: 5 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.992, y: -3 }}
@@ -146,8 +158,10 @@ export function ProductShowcaseCarousel({
             >
               <div
                 className={cn(
-                  "grid flex-1 lg:items-stretch",
-                  isHero ? "lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]" : "lg:[grid-template-columns:60%_40%]",
+                  "grid lg:items-stretch",
+                  isHero
+                    ? "max-lg:flex-none lg:flex-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
+                    : "flex-1 lg:[grid-template-columns:60%_40%]",
                 )}
               >
                 <Link
@@ -176,12 +190,14 @@ export function ProductShowcaseCarousel({
                 </Link>
 
                 {isHero ? (
-                  <div className="flex min-w-0 flex-col gap-y-3 px-7 pb-5 pt-5 lg:flex-1">
+                  <div className="flex min-w-0 flex-col gap-y-3 px-5 pb-5 pt-4 max-lg:pb-4 sm:px-6 lg:flex-1 lg:px-7 lg:pb-5 lg:pt-5">
                     <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">{heroRibbonLabel}</p>
-                    <h4 className="line-clamp-3 min-h-[3.6rem] break-words text-[1.35rem] font-bold leading-[1.2] tracking-tight text-white sm:text-2xl lg:text-[1.55rem]">{product.name}</h4>
-                    <p className="line-clamp-3 min-h-[3.8rem] text-sm leading-snug text-slate-300/95 sm:text-[15px]">{product.shortDescription}</p>
+                    <h4 className="break-words text-[1.2rem] font-bold leading-snug tracking-tight text-white sm:text-[1.35rem] lg:line-clamp-3 lg:text-[1.55rem] lg:leading-[1.2]">
+                      {product.name}
+                    </h4>
+                    <p className="line-clamp-2 text-sm leading-snug text-slate-300/95 sm:text-[15px] lg:line-clamp-3">{product.shortDescription}</p>
                     {heroSpecSummary ? (
-                      <p className="mt-2 line-clamp-2 text-[13px] leading-snug text-slate-200 sm:text-sm">
+                      <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-slate-200 sm:text-sm lg:mt-2">
                         <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
                         <span className="mx-1.5 text-slate-500">·</span>
                         <span className="font-medium text-slate-400">PN</span> {heroSpecSummary.pn}
@@ -189,9 +205,11 @@ export function ProductShowcaseCarousel({
                         <span className="text-slate-100">{heroSpecSummary.mat}</span>
                       </p>
                     ) : null}
-                    <div className="mt-auto border-t border-white/[0.06] pt-4">
+                    <div className="mt-4 border-t border-white/[0.06] pt-4 max-lg:mt-3 lg:mt-auto">
                       <p className="text-xs font-semibold uppercase text-slate-500">{hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}</p>
-                      <p className="mt-1 min-h-[2rem] text-2xl font-bold tabular-nums text-white">{hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}</p>
+                      <p className="mt-1 text-2xl font-bold tabular-nums text-white lg:min-h-[2rem]">
+                        {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
+                      </p>
                       <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
                         <Button asChild className="site-primary-cta min-h-11 flex-1 px-5 font-semibold shadow-lg shadow-black/40">
                           <Link href={`/catalog/${product.slug}`}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
@@ -240,67 +258,107 @@ export function ProductShowcaseCarousel({
         </MotionConfig>
       </div>
 
-      <div
-        className={cn(
-          "relative z-[2] flex shrink-0 items-center justify-between gap-2 border-t border-white/[0.08]",
-          isHero ? "min-h-[44px] bg-black/[0.14] px-7 py-3" : "bg-black/30 px-5 py-2.5 backdrop-blur-sm sm:px-6",
-        )}
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
-          {products.map((item, index) => (
-            <button
-              key={item.slug}
-              type="button"
-              onClick={() => goTo(index)}
-              aria-label={`Показать ${item.name}`}
-              title={item.name}
-              className={cn(
-                "shrink-0 rounded-full transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                index === active ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(234_88_12_/_.42)]" : "h-[5px] w-[5px] bg-white/25 hover:bg-white/38",
-              )}
-            />
-          ))}
-        </div>
-        {products.length > 1 ? (
-          <div className="absolute bottom-0 left-0 h-[2px] w-full overflow-hidden">
-            <motion.div
-              key={`progress-${active}`}
-              initial={{ width: "0%", opacity: 0.6 }}
-              animate={{ width: reducedMotion ? "0%" : "100%", opacity: reducedMotion ? 0 : 1 }}
-              transition={{ duration: reducedMotion ? 0.01 : 7, ease: "linear" }}
-              className="h-full bg-gradient-to-r from-site-cta/85 via-site-cta to-site-cta/85"
-            />
+      {isHero ? (
+        <div className="relative z-[2] flex shrink-0 flex-col gap-2 border-t border-white/[0.08] bg-black/[0.14] px-5 py-2.5 sm:px-6 lg:min-h-[44px] lg:gap-0 lg:px-7 lg:py-3">
+          <div className="flex min-w-0 w-full items-center justify-between gap-2 lg:flex-1">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5 [-webkit-overflow-scrolling:touch]">
+              {products.map((item, index) => (
+                <button
+                  key={item.slug}
+                  type="button"
+                  onClick={() => goTo(index)}
+                  aria-label={`Показать ${item.name}`}
+                  title={item.name}
+                  className={cn(
+                    "shrink-0 rounded-full transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    index === active
+                      ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(234_88_12_/_.42)]"
+                      : "h-[5px] w-[5px] bg-white/25 hover:bg-white/38",
+                  )}
+                />
+              ))}
+            </div>
+            {products.length > 1 ? (
+              <div className="flex shrink-0 gap-1">
+                <button
+                  type="button"
+                  onClick={prev}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.05] text-white/55 transition-all duration-300 ease-out hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
+                  aria-label="Предыдущий товар"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
+                </button>
+                <button
+                  type="button"
+                  onClick={next}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.05] text-white/55 transition-all duration-300 ease-out hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
+                  aria-label="Следующий товар"
+                >
+                  <ArrowRight className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
+                </button>
+              </div>
+            ) : null}
           </div>
-        ) : null}
-        <div className="flex shrink-0 gap-1">
-          <button
-            type="button"
-            onClick={prev}
-            className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ease-out",
-              isHero
-                ? "border border-white/[0.08] bg-white/[0.05] text-white/55 hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
-                : "border border-white/[0.12] bg-white/[0.06] text-slate-200 hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white",
-            )}
-            aria-label="Предыдущий товар"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
-          </button>
-          <button
-            type="button"
-            onClick={next}
-            className={cn(
-              "inline-flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-300 ease-out",
-              isHero
-                ? "border border-white/[0.08] bg-white/[0.05] text-white/55 hover:border-white/14 hover:bg-white/[0.09] hover:text-white/88"
-                : "border border-white/[0.12] bg-white/[0.06] text-slate-200 hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white",
-            )}
-            aria-label="Следующий товар"
-          >
-            <ArrowRight className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
-          </button>
+          {products.length > 1 ? (
+            <div className="relative h-[2px] w-full shrink-0 overflow-hidden lg:absolute lg:bottom-0 lg:left-0 lg:right-0 lg:h-[2px] lg:w-full">
+              <motion.div
+                key={`progress-${active}`}
+                initial={{ width: "0%", opacity: 0.6 }}
+                animate={{ width: reducedMotion ? "0%" : "100%", opacity: reducedMotion ? 0 : 1 }}
+                transition={{ duration: reducedMotion ? 0.01 : 7, ease: "linear" }}
+                className="h-full bg-gradient-to-r from-site-cta/85 via-site-cta to-site-cta/85"
+              />
+            </div>
+          ) : null}
         </div>
-      </div>
+      ) : (
+        <div className="relative z-[2] flex shrink-0 items-center justify-between gap-2 border-t border-white/[0.08] bg-black/30 px-5 py-2.5 backdrop-blur-sm sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
+            {products.map((item, index) => (
+              <button
+                key={item.slug}
+                type="button"
+                onClick={() => goTo(index)}
+                aria-label={`Показать ${item.name}`}
+                title={item.name}
+                className={cn(
+                  "shrink-0 rounded-full transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  index === active ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(234_88_12_/_.42)]" : "h-[5px] w-[5px] bg-white/25 hover:bg-white/38",
+                )}
+              />
+            ))}
+          </div>
+          {products.length > 1 ? (
+            <div className="absolute bottom-0 left-0 h-[2px] w-full overflow-hidden">
+              <motion.div
+                key={`progress-${active}`}
+                initial={{ width: "0%", opacity: 0.6 }}
+                animate={{ width: reducedMotion ? "0%" : "100%", opacity: reducedMotion ? 0 : 1 }}
+                transition={{ duration: reducedMotion ? 0.01 : 7, ease: "linear" }}
+                className="h-full bg-gradient-to-r from-site-cta/85 via-site-cta to-site-cta/85"
+              />
+            </div>
+          ) : null}
+          <div className="flex shrink-0 gap-1">
+            <button
+              type="button"
+              onClick={prev}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.06] text-slate-200 transition-all duration-300 ease-out hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white"
+              aria-label="Предыдущий товар"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.06] text-slate-200 transition-all duration-300 ease-out hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white"
+              aria-label="Следующий товар"
+            >
+              <ArrowRight className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
