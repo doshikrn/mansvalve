@@ -36,6 +36,10 @@ export const COMPANY_TELEGRAM_PUBLIC_HREF: string | undefined = (() => {
   return u || undefined;
 })();
 
+/** Публичный профиль Instagram — ссылки в шапке и мобильном меню. */
+export const COMPANY_INSTAGRAM_URL = "https://www.instagram.com/mansvalve/" as const;
+export const COMPANY_INSTAGRAM_HANDLE = "@mansvalve" as const;
+
 /** Pre-filled Gmail compose (КП) — use for public CTAs that must open webmail, not mailto. */
 const GMAIL_KP_SUBJECT = "Заявка на КП";
 const GMAIL_KP_BODY = "Здравствуйте, нужна коммерческое предложение";

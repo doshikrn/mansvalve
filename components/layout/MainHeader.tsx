@@ -2,10 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
+import { Instagram, Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
-import { COMPANY, COMPANY_EMAIL_HREF, COMPANY_PHONE_HREF } from "@/lib/company";
+import {
+  COMPANY,
+  COMPANY_EMAIL_HREF,
+  COMPANY_INSTAGRAM_HANDLE,
+  COMPANY_INSTAGRAM_URL,
+  COMPANY_PHONE_HREF,
+} from "@/lib/company";
 import { cn } from "@/lib/utils";
 
 type MainHeaderProps = {
@@ -103,7 +109,7 @@ export function MainHeader({
             </div>
           </div>
 
-          <div className="hidden shrink-0 flex-col gap-2 lg:flex xl:flex-row xl:items-stretch xl:gap-3">
+          <div className="hidden shrink-0 flex-col gap-2 lg:flex xl:flex-row xl:flex-wrap xl:items-stretch xl:justify-end xl:gap-3">
             <div className="flex max-w-[272px] min-w-[208px] flex-col gap-2 rounded-lg border border-site-border bg-site-card px-3 py-2.5 ring-1 ring-site-deep/[0.04]">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-site-muted">
@@ -134,6 +140,28 @@ export function MainHeader({
                 </a>
               </div>
             </div>
+
+            <a
+              href={COMPANY_INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex max-w-[200px] min-w-[152px] flex-col justify-center rounded-lg border border-site-border bg-site-card px-3 py-2.5 ring-1 ring-site-deep/[0.04] outline-none transition hover:border-site-primary/30 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+              aria-label={`Instagram, профиль ${COMPANY_INSTAGRAM_HANDLE} — открывается в новой вкладке`}
+            >
+              <span className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary transition group-hover:bg-site-primary/15 group-hover:text-site-primary-hover">
+                  <Instagram className="h-4 w-4" aria-hidden strokeWidth={2} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-bold leading-tight text-site-ink transition group-hover:text-site-primary">
+                    Instagram
+                  </span>
+                  <span className="mt-0.5 block truncate text-[11px] leading-snug text-site-muted">
+                    {COMPANY_INSTAGRAM_HANDLE}
+                  </span>
+                </span>
+              </span>
+            </a>
 
             <Link
               href="/delivery"

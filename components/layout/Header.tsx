@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Instagram, Search } from "lucide-react";
 import {
   COMPANY,
+  COMPANY_INSTAGRAM_HANDLE,
+  COMPANY_INSTAGRAM_URL,
   COMPANY_TELEGRAM_PUBLIC_HREF,
   COMPANY_WHATSAPP_BASE_URL,
 } from "@/lib/company";
@@ -150,6 +152,20 @@ export function Header({ categoryLinks = [], topBarLinks }: HeaderProps) {
                   Telegram
                 </a>
               ) : null}
+              <a
+                href={COMPANY_INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="inline-flex min-h-9 items-center gap-2 rounded-md border border-site-border px-3 py-1.5 text-left text-sm font-medium text-site-muted outline-none transition-colors hover:border-site-primary/30 hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+                aria-label={`Instagram, профиль ${COMPANY_INSTAGRAM_HANDLE} — открывается в новой вкладке`}
+              >
+                <Instagram className="h-4 w-4 shrink-0 self-center" strokeWidth={2} aria-hidden />
+                <span className="flex min-w-0 flex-col gap-0.5 leading-tight">
+                  <span>Instagram</span>
+                  <span className="text-[11px] font-normal tabular-nums text-site-muted">{COMPANY_INSTAGRAM_HANDLE}</span>
+                </span>
+              </a>
               <a
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"
