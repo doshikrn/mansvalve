@@ -1,7 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Phone } from "lucide-react";
-import { COMPANY, COMPANY_TELEGRAM_PUBLIC_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import {
+  COMPANY,
+  COMPANY_INSTAGRAM_URL,
+  COMPANY_TELEGRAM_PUBLIC_HREF,
+  COMPANY_WHATSAPP_BASE_URL,
+} from "@/lib/company";
+import { InstagramBrandIcon } from "@/components/icons/InstagramBrandIcon";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
@@ -69,17 +75,6 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
         </nav>
 
         <div className={cn("flex shrink-0 items-center gap-2.5 sm:gap-3.5", "ml-auto sm:ml-0")}>
-          {COMPANY_TELEGRAM_PUBLIC_HREF ? (
-            <a
-              href={COMPANY_TELEGRAM_PUBLIC_HREF}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-site-muted transition hover:bg-white/70 hover:text-site-ink"
-              aria-label="Telegram"
-            >
-              <TelegramIcon className="h-[22px] w-[22px]" />
-            </a>
-          ) : null}
           <a
             href={COMPANY_WHATSAPP_BASE_URL}
             target="_blank"
@@ -88,6 +83,15 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
             aria-label="WhatsApp"
           >
             <WhatsappIcon className="h-[22px] w-[22px]" />
+          </a>
+          <a
+            href={COMPANY_INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white shadow-sm outline-none ring-1 ring-black/[0.08] transition hover:ring-black/14 hover:brightness-[1.02] focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+            aria-label="Instagram Mansvalve"
+          >
+            <InstagramBrandIcon className="h-[22px] w-[22px]" />
           </a>
           <CopyToClipboard
             variant="minimal"
@@ -102,6 +106,17 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
               {COMPANY.phoneDisplay}
             </span>
           </CopyToClipboard>
+          {COMPANY_TELEGRAM_PUBLIC_HREF ? (
+            <a
+              href={COMPANY_TELEGRAM_PUBLIC_HREF}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-site-muted transition hover:bg-white/70 hover:text-site-ink"
+              aria-label="Telegram"
+            >
+              <TelegramIcon className="h-[22px] w-[22px]" />
+            </a>
+          ) : null}
         </div>
       </div>
     </div>

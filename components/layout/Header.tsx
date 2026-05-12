@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
-import { InstagramIcon } from "@/components/icons/InstagramIcon";
-import { COMPANY, COMPANY_INSTAGRAM_URL, COMPANY_TELEGRAM_PUBLIC_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
+import { COMPANY, COMPANY_TELEGRAM_PUBLIC_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
@@ -147,16 +146,6 @@ export function Header({ categoryLinks = [], topBarLinks }: HeaderProps) {
                   Telegram
                 </a>
               ) : null}
-              <a
-                href={COMPANY_INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-site-border bg-site-card text-site-muted outline-none transition-colors hover:border-site-primary/35 hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
-                aria-label="Instagram Mansvalve"
-              >
-                <InstagramIcon className="h-5 w-5" />
-              </a>
               <a
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"

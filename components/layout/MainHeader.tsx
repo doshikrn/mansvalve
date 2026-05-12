@@ -3,10 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
-import { InstagramIcon } from "@/components/icons/InstagramIcon";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
-import { COMPANY, COMPANY_EMAIL_HREF, COMPANY_INSTAGRAM_URL, COMPANY_PHONE_HREF } from "@/lib/company";
+import { COMPANY, COMPANY_EMAIL_HREF, COMPANY_PHONE_HREF } from "@/lib/company";
 import { cn } from "@/lib/utils";
 
 type MainHeaderProps = {
@@ -105,46 +104,35 @@ export function MainHeader({
           </div>
 
           <div className="hidden shrink-0 flex-col gap-2 lg:flex xl:flex-row xl:flex-wrap xl:items-stretch xl:justify-end xl:gap-3">
-            <div className="flex shrink-0 items-center gap-2">
-              <div className="flex max-w-[272px] min-w-[208px] flex-col gap-2 rounded-lg border border-site-border bg-site-card px-3 py-2.5 ring-1 ring-site-deep/[0.04]">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-site-muted">
-                    Отдел продаж
-                  </p>
-                  <a
-                    href={COMPANY_PHONE_HREF}
-                    className="mt-1 inline-flex max-w-full items-center gap-2 rounded-md text-[15px] font-bold tabular-nums tracking-tight text-site-primary no-underline outline-none transition-colors hover:text-site-primary-hover focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary">
-                      <Phone className="h-4 w-4" aria-hidden strokeWidth={2} />
-                    </span>
-                    <span className="underline-offset-[3px] decoration-site-primary no-underline hover:underline">
-                      {COMPANY.phoneDisplay}
-                    </span>
-                  </a>
-                </div>
-                <div className="border-t border-slate-200/80 pt-2">
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-site-muted">Для заявок</p>
-                  <a
-                    href={COMPANY_EMAIL_HREF}
-                    className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
-                  >
-                    <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-site-muted" aria-hidden strokeWidth={2} />
-                    <span className="min-w-0 break-all underline-offset-[3px] decoration-site-primary no-underline hover:underline">
-                      {COMPANY.email}
-                    </span>
-                  </a>
-                </div>
+            <div className="flex max-w-[272px] min-w-[208px] flex-col gap-2 rounded-lg border border-site-border bg-site-card px-3 py-2.5 ring-1 ring-site-deep/[0.04]">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-site-muted">
+                  Отдел продаж
+                </p>
+                <a
+                  href={COMPANY_PHONE_HREF}
+                  className="mt-1 inline-flex max-w-full items-center gap-2 rounded-md text-[15px] font-bold tabular-nums tracking-tight text-site-primary no-underline outline-none transition-colors hover:text-site-primary-hover focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary">
+                    <Phone className="h-4 w-4" aria-hidden strokeWidth={2} />
+                  </span>
+                  <span className="underline-offset-[3px] decoration-site-primary no-underline hover:underline">
+                    {COMPANY.phoneDisplay}
+                  </span>
+                </a>
               </div>
-              <a
-                href={COMPANY_INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-lg border border-site-border bg-site-card text-site-muted shadow-sm outline-none ring-1 ring-site-deep/[0.04] transition-colors hover:border-site-primary/35 hover:bg-site-bg hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
-                aria-label="Instagram Mansvalve"
-              >
-                <InstagramIcon className="h-[22px] w-[22px]" />
-              </a>
+              <div className="border-t border-slate-200/80 pt-2">
+                <p className="text-[10px] font-medium uppercase tracking-wide text-site-muted">Для заявок</p>
+                <a
+                  href={COMPANY_EMAIL_HREF}
+                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+                >
+                  <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-site-muted" aria-hidden strokeWidth={2} />
+                  <span className="min-w-0 break-all underline-offset-[3px] decoration-site-primary no-underline hover:underline">
+                    {COMPANY.email}
+                  </span>
+                </a>
+              </div>
             </div>
 
             <Link
