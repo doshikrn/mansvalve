@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
+import { Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
+import { InstagramIcon } from "@/components/icons/InstagramIcon";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
 import {
@@ -150,7 +151,7 @@ export function MainHeader({
             >
               <span className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary transition group-hover:bg-site-primary/15 group-hover:text-site-primary-hover">
-                  <Instagram className="h-4 w-4" aria-hidden strokeWidth={2} />
+                  <InstagramIcon className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-bold leading-tight text-site-ink transition group-hover:text-site-primary">
