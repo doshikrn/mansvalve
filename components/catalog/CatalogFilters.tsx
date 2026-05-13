@@ -17,6 +17,7 @@ import type { PublicCatalogCategory as Category } from "@/lib/public-catalog";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { FilterSelectMenu } from "@/components/catalog/FilterSelectMenu";
+import type { CatalogFacetOption } from "@/lib/catalog-query";
 import {
   Sheet,
   SheetContent,
@@ -25,15 +26,15 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 
-type SelectOption = { value: string; label: string };
+type SelectOption = { value: string; label: string; disabled?: boolean };
 
 interface CatalogFiltersProps {
   categories: Category[];
   subcategoryOptions: Array<{ id: string; name: string }>;
-  dnOptions: number[];
-  pnOptions: number[];
+  dnOptions: CatalogFacetOption[];
+  pnOptions: CatalogFacetOption[];
   modelOptions: SelectOption[];
-  threadOptions: string[];
+  threadOptions: CatalogFacetOption[];
   materialOptions: SelectOption[];
   connectionTypeOptions: SelectOption[];
   controlTypeOptions: SelectOption[];
@@ -70,10 +71,10 @@ function FilterSection({
 type FilterFormContentProps = {
   categories: Category[];
   subcategoryOptions: Array<{ id: string; name: string }>;
-  dnOptions: number[];
-  pnOptions: number[];
+  dnOptions: CatalogFacetOption[];
+  pnOptions: CatalogFacetOption[];
   modelOptions: SelectOption[];
-  threadOptions: string[];
+  threadOptions: CatalogFacetOption[];
   materialOptions: SelectOption[];
   connectionTypeOptions: SelectOption[];
   controlTypeOptions: SelectOption[];
@@ -95,12 +96,18 @@ type FilterFormContentProps = {
   activeMaterial: string;
   activeConnectionType: string;
   activeControlType: string;
+  activeSort: string;
   setParam: (key: string, value: string) => void;
 };
 
 /** "Все" + N first links; if more items exist, show a toggle. */
 const CATEGORY_LIST_PREVIEW = 6;
 const SUBCATEGORY_LIST_PREVIEW = 6;
+const SORT_OPTIONS: SelectOption[] = [
+  { value: "name", label: "По названию" },
+  { value: "price-asc", label: "Цена по возрастанию" },
+  { value: "price-desc", label: "Цена по убыванию" },
+];
 
 function FilterFormContent({
   categories,
@@ -129,6 +136,7 @@ function FilterFormContent({
   activeMaterial,
   activeConnectionType,
   activeControlType,
+  activeSort,
 }: FilterFormContentProps) {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllSubcategories, setShowAllSubcategories] = useState(false);
@@ -278,6 +286,16 @@ function FilterFormContent({
         />
       </FilterSection>
 
+      <FilterSection title="Сортировка">
+        <FilterSelectMenu
+          aria-label="Сортировка товаров"
+          value={activeSort}
+          onChange={(v) => setParam("sort", v === "relevance" ? "" : v)}
+          options={SORT_OPTIONS}
+          emptyLabel="По релевантности"
+        />
+      </FilterSection>
+
       {showSubcategoryFilter && (
         <FilterSection title="Подкатегория">
           <div className="space-y-1 rounded-lg border border-site-border bg-site-bg p-1.5">
@@ -351,7 +369,11 @@ function FilterFormContent({
             aria-label="Номинальный диаметр (DN)"
             value={activeDn}
             onChange={(v) => setParam("dn", v)}
-            options={dnOptions.map((dn) => ({ value: String(dn), label: `DN${dn}` }))}
+            options={dnOptions.map((dn) => ({
+              value: dn.value,
+              label: `DN${dn.label}`,
+              disabled: dn.disabled,
+            }))}
             emptyLabel="Все"
           />
         </FilterSection>
@@ -360,20 +382,26 @@ function FilterFormContent({
             aria-label="Номинальное давление (PN)"
             value={activePn}
             onChange={(v) => setParam("pn", v)}
-            options={pnOptions.map((pn) => ({ value: String(pn), label: `PN${pn}` }))}
+            options={pnOptions.map((pn) => ({
+              value: pn.value,
+              label: `PN${pn.label}`,
+              disabled: pn.disabled,
+            }))}
             emptyLabel="Все"
           />
         </FilterSection>
       </div>
 
-      <FilterSection title="Материал">
-        <FilterSelectMenu
-          aria-label="Материал"
-          value={activeMaterial}
-          onChange={(v) => setParam("material", v)}
-          options={materialOptions}
-        />
-      </FilterSection>
+      {(materialOptions.length > 0 || activeMaterial) && (
+        <FilterSection title="Материал">
+          <FilterSelectMenu
+            aria-label="Материал"
+            value={activeMaterial}
+            onChange={(v) => setParam("material", v)}
+            options={materialOptions}
+          />
+        </FilterSection>
+      )}
 
       {showThreadFilter && (
         <FilterSection title="Резьба">
@@ -381,28 +409,32 @@ function FilterFormContent({
             aria-label="Резьба"
             value={activeThread}
             onChange={(v) => setParam("thread", v)}
-            options={threadOptions.map((t) => ({ value: t, label: t }))}
+            options={threadOptions}
           />
         </FilterSection>
       )}
 
-      <FilterSection title="Тип соединения">
-        <FilterSelectMenu
-          aria-label="Тип соединения"
-          value={activeConnectionType}
-          onChange={(v) => setParam("connectionType", v)}
-          options={connectionTypeOptions}
-        />
-      </FilterSection>
+      {(connectionTypeOptions.length > 0 || activeConnectionType) && (
+        <FilterSection title="Тип соединения">
+          <FilterSelectMenu
+            aria-label="Тип соединения"
+            value={activeConnectionType}
+            onChange={(v) => setParam("connection", v)}
+            options={connectionTypeOptions}
+          />
+        </FilterSection>
+      )}
 
-      <FilterSection title="Тип управления">
-        <FilterSelectMenu
-          aria-label="Тип управления"
-          value={activeControlType}
-          onChange={(v) => setParam("controlType", v)}
-          options={controlTypeOptions}
-        />
-      </FilterSection>
+      {(controlTypeOptions.length > 0 || activeControlType) && (
+        <FilterSection title="Тип управления">
+          <FilterSelectMenu
+            aria-label="Тип управления"
+            value={activeControlType}
+            onChange={(v) => setParam("controlType", v)}
+            options={controlTypeOptions}
+          />
+        </FilterSection>
+      )}
     </div>
   );
 }
@@ -470,8 +502,10 @@ function buildFilterChipItems(
   const model = searchParams.get("model") ?? "";
   const material = searchParams.get("material") ?? "";
   const thread = searchParams.get("thread") ?? "";
+  const connection = searchParams.get("connection") ?? "";
   const connectionType = searchParams.get("connectionType") ?? "";
   const controlType = searchParams.get("controlType") ?? "";
+  const sort = searchParams.get("sort") ?? "";
 
   const out: ChipItem[] = [];
   if (q) {
@@ -496,11 +530,13 @@ function buildFilterChipItems(
     out.push({ key: `m-${material}`, paramKey: "material", label: `Материал: ${material}` });
   }
   if (thread) out.push({ key: `t-${thread}`, paramKey: "thread", label: `Резьба: ${thread}` });
-  if (connectionType) {
+  if (connection || connectionType) {
+    const value = connection || connectionType;
+    const paramKey = connection ? "connection" : "connectionType";
     out.push({
-      key: `ct-${connectionType}`,
-      paramKey: "connectionType",
-      label: `Соединение: ${connectionType}`,
+      key: `ct-${value}`,
+      paramKey,
+      label: `Соединение: ${value}`,
     });
   }
   if (controlType) {
@@ -508,6 +544,13 @@ function buildFilterChipItems(
       key: `ctl-${controlType}`,
       paramKey: "controlType",
       label: `Управление: ${controlType}`,
+    });
+  }
+  if (sort) {
+    out.push({
+      key: `sort-${sort}`,
+      paramKey: "sort",
+      label: `Сортировка: ${SORT_OPTIONS.find((option) => option.value === sort)?.label ?? sort}`,
     });
   }
   return out;
@@ -571,10 +614,12 @@ export function CatalogFilters({
   const activeModel = searchParams.get("model") ?? "";
   const activeMaterial = searchParams.get("material") ?? "";
   const activeSubcategory = searchParams.get("subcategory") ?? "";
-  const activeConnectionType = searchParams.get("connectionType") ?? "";
+  const activeConnectionType =
+    searchParams.get("connection") ?? searchParams.get("connectionType") ?? "";
   const activeControlType = searchParams.get("controlType") ?? "";
   const activeQ = searchParams.get("q") ?? "";
   const categoryQuery = searchParams.get("category") ?? "";
+  const activeSort = searchParams.get("sort") ?? "";
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -588,7 +633,8 @@ export function CatalogFilters({
       activeConnectionType ||
       activeControlType ||
       activeQ ||
-      categoryQuery,
+      categoryQuery ||
+      activeSort,
   );
 
   const filterChipItems = buildFilterChipItems(
@@ -719,6 +765,7 @@ export function CatalogFilters({
     activeMaterial,
     activeConnectionType,
     activeControlType,
+    activeSort,
     setParam,
   };
 

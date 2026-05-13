@@ -5,12 +5,20 @@ import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
 interface ProductGridProps {
   products: Product[];
   total: number;
+  query?: string;
+  hasActiveFilters?: boolean;
 }
 
-export function ProductGrid({ products, total }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  total,
+  query,
+  hasActiveFilters,
+}: ProductGridProps) {
   if (products.length === 0) {
+    const trimmedQuery = query?.trim();
     return (
-      <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+      <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
         <PackageSearch
           size={64}
           strokeWidth={1}
@@ -20,8 +28,12 @@ export function ProductGrid({ products, total }: ProductGridProps) {
           Ничего не найдено
         </h3>
         <p className="max-w-sm text-base text-slate-500">
-          По выбранным фильтрам товары не найдены. Попробуйте изменить параметры
-          фильтрации.
+          {trimmedQuery
+            ? `По запросу «${trimmedQuery}» товары не найдены.`
+            : "По выбранным фильтрам товары не найдены."}
+          {hasActiveFilters
+            ? " Попробуйте очистить часть фильтров или нажмите «Сбросить все»."
+            : " Попробуйте изменить поисковую фразу."}
         </p>
       </div>
     );
@@ -30,8 +42,7 @@ export function ProductGrid({ products, total }: ProductGridProps) {
   return (
     <div>
       <p className="mb-5 text-sm text-slate-500">
-        Найдено{" "}
-        <span className="font-semibold text-slate-900">{total}</span>{" "}
+        Найдено <span className="font-semibold text-slate-900">{total}</span>{" "}
         {pluralize(total)}
       </p>
 
@@ -48,7 +59,8 @@ function pluralize(n: number): string {
   const mod10 = n % 10;
   const mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return "позиция";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20))
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
     return "позиции";
+  }
   return "позиций";
 }

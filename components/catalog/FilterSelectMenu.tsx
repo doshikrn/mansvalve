@@ -51,7 +51,7 @@ function transformOriginForPlacement(placement: string | undefined): string {
 }
 
 
-export type FilterSelectOption = { value: string; label: string };
+export type FilterSelectOption = { value: string; label: string; disabled?: boolean };
 
 type FilterSelectMenuProps = {
   value: string;
@@ -95,7 +95,7 @@ function useBodyScrollLock(locked: boolean) {
 type OptionsListProps = {
   listId: string;
   ariaLabel: string;
-  allOptions: { value: string; label: string }[];
+  allOptions: FilterSelectOption[];
   value: string;
   onPick: (v: string) => void;
   scrollClassName?: string;
@@ -132,11 +132,13 @@ function OptionsList({
               type="button"
               role="option"
               aria-selected={selectedItem}
+              disabled={opt.disabled}
               onClick={() => onPick(opt.value)}
               className={cn(
                 "flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-slate-800 transition-colors",
                 "active:bg-slate-100/90 hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none",
                 selectedItem && "bg-slate-50/90 font-medium text-slate-900",
+                opt.disabled && "cursor-not-allowed text-slate-300 hover:bg-transparent",
               )}
             >
               {selectedItem ? (
@@ -167,7 +169,7 @@ export function FilterSelectMenu({
   const selected = options.find((o) => o.value === value);
   const display = value && selected ? selected.label : value ? value : emptyLabel;
   const isSet = Boolean(value);
-  const allOptions: { value: string; label: string }[] = [
+  const allOptions: FilterSelectOption[] = [
     { value: "", label: emptyLabel },
     ...options,
   ];

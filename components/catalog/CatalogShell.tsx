@@ -5,16 +5,10 @@ import { Pagination } from "@/components/catalog/Pagination";
 import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { buildCatalogItemListJsonLd } from "@/lib/structured-data";
-import { isFuzzyCatalogMatch } from "@/lib/search/fuzzy";
 import {
-  CONNECTION_FILTER_OPTIONS,
-  CONTROL_FILTER_OPTIONS,
-  DN_FILTER_OPTIONS,
-  MATERIAL_FILTER_OPTIONS,
-  MODEL_FILTER_OPTIONS,
-  PN_FILTER_OPTIONS,
   getOrderedCatalogCategories,
 } from "@/lib/catalog-seo";
+import { runCatalogQuery } from "@/lib/catalog-query";
 import type {
   PublicCatalogCategory,
   PublicCatalogProduct as Product,
@@ -32,7 +26,9 @@ export interface CatalogSearchParams {
   thread?: string;
   material?: string;
   connectionType?: string;
+  connection?: string;
   controlType?: string;
+  sort?: string;
   page?: string;
   q?: string;
 }
@@ -54,63 +50,6 @@ interface CatalogShellProps {
    * – keeps pagination and filters URL-driven on the subcategory route
    */
   lockedSubcategoryId?: string;
-}
-
-function applySecondaryFilters(pool: Product[], params: CatalogSearchParams): Product[] {
-  let result = pool;
-
-  if (params.subcategory) {
-    result = result.filter((p) => p.subcategory === params.subcategory);
-  }
-  if (params.dn) {
-    const dn = parseInt(params.dn, 10);
-    if (!isNaN(dn)) result = result.filter((p) => p.dn === dn);
-  }
-  if (params.pn) {
-    const pn = parseInt(params.pn, 10);
-    if (!isNaN(pn)) result = result.filter((p) => p.pn === pn);
-  }
-  if (params.model) {
-    const model = params.model.trim().toLowerCase();
-    result = result.filter((p) => p.model.toLowerCase() === model);
-  }
-  if (params.thread) {
-    result = result.filter((p) => p.thread === params.thread);
-  }
-  if (params.material) {
-    result = result.filter((p) => p.material === params.material);
-  }
-  if (params.connectionType) {
-    result = result.filter((p) => p.connectionType === params.connectionType);
-  }
-  if (params.controlType) {
-    result = result.filter((p) => p.controlType === params.controlType);
-  }
-  if (params.q?.trim()) {
-    const q = params.q.trim().toLowerCase();
-    result = result.filter((p) => {
-      const hay = [
-        p.name,
-        p.material,
-        p.connectionType,
-        p.controlType,
-        p.model,
-        p.categoryName,
-        p.subcategoryName,
-        p.shortDescription,
-        p.dn != null ? `dn${p.dn}` : "",
-        p.dn != null ? String(p.dn) : "",
-        p.pn != null ? `pn${p.pn}` : "",
-        p.pn != null ? String(p.pn) : "",
-        p.thread ?? "",
-      ]
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q) || isFuzzyCatalogMatch(q, hay);
-    });
-  }
-
-  return result;
 }
 
 type SubcategoryOption = { id: string; name: string };
@@ -147,59 +86,42 @@ export function CatalogShell({
   // 1. Build the base pool: locked category > query ?category= > all products
   const effectiveCategoryId = effectiveLockedCategoryId ?? (searchParams.category || undefined);
   const effectiveSubcategoryId = lockedSubcategoryId ?? (searchParams.subcategory || undefined);
-  const categoryPool = effectiveCategoryId
-    ? products.filter((p) => p.category === effectiveCategoryId)
-    : products;
-  const pool = effectiveSubcategoryId
-    ? categoryPool.filter((p) => p.subcategory === effectiveSubcategoryId)
-    : categoryPool;
 
-  // 2. Compute filter options from the narrowed pool (before secondary filters)
-  const subcategoryOptions: SubcategoryOption[] = [
-    ...new Set(categoryPool.map((p) => p.subcategory)),
-  ]
-    .map((id) => {
-      const meta = subcategoryById.get(id);
+  const queryResult = runCatalogQuery({
+    products,
+    q: searchParams.q,
+    filters: {
+      category: effectiveCategoryId,
+      subcategory: effectiveSubcategoryId,
+      dn: searchParams.dn,
+      pn: searchParams.pn,
+      model: searchParams.model,
+      thread: searchParams.thread,
+      material: searchParams.material,
+      connection: searchParams.connection,
+      connectionType: searchParams.connectionType,
+      controlType: searchParams.controlType,
+    },
+    sort: parseCatalogSort(searchParams.sort),
+    page: parseInt(searchParams.page ?? "1", 10),
+    pageSize: PAGE_SIZE,
+  });
+
+  // Compute subcategory labels from the category pool, then let facets decide counts.
+  const subcategoryOptions: SubcategoryOption[] = queryResult.facets.subcategories
+    .map((facet) => {
+      const meta = subcategoryById.get(facet.value);
       return {
-        id,
-        name: meta?.name ?? id,
+        id: facet.value,
+        name: meta?.name ? `${meta.name} (${facet.count})` : facet.label,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name, "ru"));
 
-  const dnOptions = [
-    ...new Set(pool.map((p) => p.dn).filter((v): v is number => v != null)),
-  ].sort((a, b) => a - b);
-  const pnOptions = [
-    ...new Set(pool.map((p) => p.pn).filter((v): v is number => v != null)),
-  ].sort((a, b) => a - b);
-  const modelOptions = [
-    ...new Set(pool.map((p) => p.model).filter(Boolean)),
-  ].sort((a, b) => a.localeCompare(b, "ru"));
-  const materialOptions = [...new Set(pool.map((p) => p.material).filter(Boolean))].sort();
-  const threadOptions = [...new Set(pool.map((p) => p.thread).filter(Boolean) as string[])].sort(
-    (a, b) => {
-      const aNum = parseInt(a.replace(/[^\d]/g, ""), 10);
-      const bNum = parseInt(b.replace(/[^\d]/g, ""), 10);
-      return aNum - bNum;
-    },
-  );
-  const connectionTypeOptions = [
-    ...new Set(pool.map((p) => p.connectionType).filter(Boolean)),
-  ].sort((a, b) => a.localeCompare(b, "ru"));
-  const controlTypeOptions = [...new Set(pool.map((p) => p.controlType).filter(Boolean))].sort(
-    (a, b) => a.localeCompare(b, "ru"),
-  );
-
-  // 3. Apply remaining (secondary) filters: dn, pn, thread, material, connectionType, controlType, q
-  const currentPage = Math.max(1, parseInt(searchParams.page ?? "1", 10));
-  const filtered = applySecondaryFilters(pool, {
-    ...searchParams,
-    subcategory: lockedSubcategoryId ? undefined : searchParams.subcategory,
-  });
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const currentPage = queryResult.page;
+  const pageItems = queryResult.pageItems;
+  const totalPages = queryResult.totalPages;
   const start = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = filtered.slice(start, start + PAGE_SIZE);
   const itemListJsonLd = buildCatalogItemListJsonLd(pageItems, {
     startPosition: start + 1,
     maxItems: ITEM_LIST_MAX_ITEMS,
@@ -215,8 +137,10 @@ export function CatalogShell({
     model: searchParams.model,
     thread: searchParams.thread,
     material: searchParams.material,
+    connection: searchParams.connection,
     connectionType: searchParams.connectionType,
     controlType: searchParams.controlType,
+    sort: searchParams.sort,
   };
 
   return (
@@ -231,19 +155,24 @@ export function CatalogShell({
         <CatalogFilters
           categories={orderedCategories}
           subcategoryOptions={subcategoryOptions}
-          modelOptions={mergeTextOptions(MODEL_FILTER_OPTIONS, modelOptions)}
-          dnOptions={mergeNumberOptions(DN_FILTER_OPTIONS, dnOptions)}
-          pnOptions={mergeNumberOptions(PN_FILTER_OPTIONS, pnOptions)}
-          threadOptions={threadOptions}
-          materialOptions={mergeTextOptions(MATERIAL_FILTER_OPTIONS, materialOptions)}
-          connectionTypeOptions={mergeTextOptions(CONNECTION_FILTER_OPTIONS, connectionTypeOptions)}
-          controlTypeOptions={mergeTextOptions(CONTROL_FILTER_OPTIONS, controlTypeOptions)}
+          modelOptions={queryResult.facets.model}
+          dnOptions={queryResult.facets.dn}
+          pnOptions={queryResult.facets.pn}
+          threadOptions={queryResult.facets.thread}
+          materialOptions={queryResult.facets.material}
+          connectionTypeOptions={queryResult.facets.connectionType}
+          controlTypeOptions={queryResult.facets.controlType}
           showCategoryTabs={!effectiveLockedCategoryId}
           showSubcategoryFilter={!lockedSubcategoryId}
-          showThreadFilter={threadOptions.length > 0}
+          showThreadFilter={queryResult.facets.thread.length > 0}
         >
           <div className="flex flex-col gap-6">
-            <ProductGrid products={pageItems} total={filtered.length} />
+            <ProductGrid
+              products={pageItems}
+              total={queryResult.total}
+              query={queryResult.normalizedQuery.raw}
+              hasActiveFilters={hasActiveFilters(searchParams)}
+            />
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -257,30 +186,23 @@ export function CatalogShell({
   );
 }
 
-function mergeNumberOptions(
-  preferred: readonly number[],
-  available: number[],
-): number[] {
-  const seen = new Set<number>();
-  return [...preferred, ...available].filter((value) => {
-    if (seen.has(value)) return false;
-    seen.add(value);
-    return true;
-  });
+function parseCatalogSort(sort: string | undefined) {
+  if (sort === "name" || sort === "price-asc" || sort === "price-desc") return sort;
+  return "relevance";
 }
 
-function mergeTextOptions(
-  preferred: Array<{ value: string; label: string }>,
-  available: string[],
-): Array<{ value: string; label: string }> {
-  const seen = new Set<string>();
-  return [
-    ...preferred,
-    ...available.map((value) => ({ value, label: value })),
-  ].filter((option) => {
-    const key = option.value.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+function hasActiveFilters(params: CatalogSearchParams): boolean {
+  return Boolean(
+    params.q ||
+      params.category ||
+      params.subcategory ||
+      params.dn ||
+      params.pn ||
+      params.model ||
+      params.thread ||
+      params.material ||
+      params.connection ||
+      params.connectionType ||
+      params.controlType,
+  );
 }
