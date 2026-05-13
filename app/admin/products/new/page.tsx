@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
@@ -48,6 +49,7 @@ export default async function NewProductPage() {
           <Link href="/admin/products">← К списку</Link>
         </Button>
       </div>
+      <PublicCatalogSourceNotice />
       <ProductForm
         action={createProductAction}
         categories={categories}

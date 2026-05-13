@@ -34,6 +34,27 @@ export function getPublicCatalogSource(): PublicCatalogSource {
   return "json";
 }
 
+export type PublicCatalogRuntimeInfo = {
+  configuredSource: PublicCatalogSource;
+  effectiveSource: PublicCatalogSource;
+  databaseConfigured: boolean;
+  adminChangesVisibleOnPublicSite: boolean;
+};
+
+export function getPublicCatalogRuntimeInfo(): PublicCatalogRuntimeInfo {
+  const configuredSource = getPublicCatalogSource();
+  const databaseConfigured = isDatabaseConfigured();
+  const effectiveSource =
+    configuredSource === "db" && databaseConfigured ? "db" : "json";
+
+  return {
+    configuredSource,
+    effectiveSource,
+    databaseConfigured,
+    adminChangesVisibleOnPublicSite: effectiveSource === "db",
+  };
+}
+
 function getAdapterForConfiguredSource(): PublicCatalogAdapter {
   const source = getPublicCatalogSource();
   if (source === "db" && isDatabaseConfigured()) {

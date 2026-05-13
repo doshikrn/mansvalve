@@ -8,7 +8,9 @@ import { requireAdmin } from "@/lib/auth/current-user";
 import {
   createProduct,
   deleteProduct,
+  getProductById,
   updateProduct,
+  type ProductDetail,
   type ProductWritePayload,
 } from "@/lib/services/products";
 import { slugify } from "@/lib/services/slug";
@@ -34,6 +36,11 @@ const productDocumentsSchema = z.object({
   questionnaireMediaId: z.string().uuid().nullable().optional(),
   documentationMediaId: z.string().uuid().nullable().optional(),
 });
+
+type ProductPublicRouteInfo = Pick<
+  ProductDetail,
+  "slug" | "categorySlug" | "subcategorySlug"
+>;
 
 const productSchema = z.object({
   name: z.string().trim().min(2).max(300),
@@ -268,6 +275,7 @@ export async function createProductAction(
   }
 
   revalidatePath("/admin/products");
+  revalidateProductPublicPaths(await getProductById(id));
   redirect(`/admin/products/${id}`);
 }
 
@@ -283,6 +291,8 @@ export async function updateProductAction(
     return { fieldErrors: parsed.fieldErrors, error: "Проверьте форму." };
   }
 
+  const before = await getProductById(id);
+
   try {
     await updateProduct(id, parsed.payload);
   } catch (error) {
@@ -292,11 +302,13 @@ export async function updateProductAction(
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
+  revalidateProductPublicPaths(before, await getProductById(id));
   return {};
 }
 
 export async function deleteProductAction(id: number): Promise<void> {
   await requireAdmin("/admin/products");
+  const before = await getProductById(id);
   try {
     await deleteProduct(id);
   } catch (error) {
@@ -304,7 +316,28 @@ export async function deleteProductAction(id: number): Promise<void> {
     throw error;
   }
   revalidatePath("/admin/products");
+  revalidateProductPublicPaths(before);
   redirect("/admin/products");
+}
+
+function revalidateProductPublicPaths(
+  ...products: Array<ProductPublicRouteInfo | null | undefined>
+) {
+  revalidatePath("/", "layout");
+  revalidatePath("/catalog", "layout");
+  revalidatePath("/about");
+  revalidatePath("/sitemap.xml");
+
+  for (const product of products) {
+    if (!product) continue;
+    revalidatePath(`/catalog/${product.slug}`);
+    if (product.categorySlug) {
+      revalidatePath(`/catalog/category/${product.categorySlug}`);
+    }
+    if (product.subcategorySlug) {
+      revalidatePath(`/catalog/subcategory/${product.subcategorySlug}`);
+    }
+  }
 }
 
 function humanizeError(err: unknown): string {

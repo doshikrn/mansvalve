@@ -15,6 +15,10 @@ import {
 } from "@/lib/db/schema";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
 
+type DbClient = ReturnType<typeof getDb>;
+type DbTransaction = Parameters<Parameters<DbClient["transaction"]>[0]>[0];
+type DbExecutor = DbClient | DbTransaction;
+
 export type AdminProductRow = Product & {
   categorySlug: string;
   subcategorySlug: string | null;
@@ -317,11 +321,10 @@ export type ProductImageWritePayload = {
 };
 
 async function resolveDenormalizedNames(
+  db: DbExecutor,
   categoryId: number,
   subcategoryId: number | null | undefined,
 ): Promise<{ categoryName: string; subcategoryName: string | null }> {
-  const db = getDb();
-
   const categoryRow = await db
     .select({ name: categoriesTable.name })
     .from(categoriesTable)
@@ -350,52 +353,24 @@ export async function createProduct(
 ): Promise<number> {
   const db = getDb();
   const { specs, images, ...core } = payload;
-  await validateDocumentMedia(core);
-  const names = await resolveDenormalizedNames(core.categoryId, core.subcategoryId);
 
-  const inserted = await db
-    .insert(productsTable)
-    .values({ ...core, ...names })
-    .returning({ id: productsTable.id });
-
-  const id = inserted[0].id;
-
-  if (specs && specs.length) {
-    await db.insert(productSpecsTable).values(
-      specs.map((s, index) => ({
-        productId: id,
-        key: s.key,
-        value: s.value,
-        sortOrder: s.sortOrder ?? index,
-      })),
+  return db.transaction(async (tx) => {
+    await validateDocumentMedia(tx, core);
+    const names = await resolveDenormalizedNames(
+      tx,
+      core.categoryId,
+      core.subcategoryId,
     );
-  }
 
-  if (images && images.length) {
-    await syncProductImages(id, images);
-  }
+    const inserted = await tx
+      .insert(productsTable)
+      .values({ ...core, ...names })
+      .returning({ id: productsTable.id });
 
-  return id;
-}
+    const id = inserted[0].id;
 
-export async function updateProduct(
-  id: number,
-  payload: ProductWritePayload,
-): Promise<void> {
-  const db = getDb();
-  const { specs, images, ...core } = payload;
-  await validateDocumentMedia(core);
-  const names = await resolveDenormalizedNames(core.categoryId, core.subcategoryId);
-
-  await db
-    .update(productsTable)
-    .set({ ...core, ...names, updatedAt: new Date() })
-    .where(eq(productsTable.id, id));
-
-  if (specs) {
-    await db.delete(productSpecsTable).where(eq(productSpecsTable.productId, id));
-    if (specs.length) {
-      await db.insert(productSpecsTable).values(
+    if (specs && specs.length) {
+      await tx.insert(productSpecsTable).values(
         specs.map((s, index) => ({
           productId: id,
           key: s.key,
@@ -404,11 +379,53 @@ export async function updateProduct(
         })),
       );
     }
-  }
 
-  if (images) {
-    await syncProductImages(id, images);
-  }
+    if (images && images.length) {
+      await syncProductImages(tx, id, images);
+    }
+
+    return id;
+  });
+}
+
+export async function updateProduct(
+  id: number,
+  payload: ProductWritePayload,
+): Promise<void> {
+  const db = getDb();
+  const { specs, images, ...core } = payload;
+
+  await db.transaction(async (tx) => {
+    await validateDocumentMedia(tx, core);
+    const names = await resolveDenormalizedNames(
+      tx,
+      core.categoryId,
+      core.subcategoryId,
+    );
+
+    await tx
+      .update(productsTable)
+      .set({ ...core, ...names, updatedAt: new Date() })
+      .where(eq(productsTable.id, id));
+
+    if (specs) {
+      await tx.delete(productSpecsTable).where(eq(productSpecsTable.productId, id));
+      if (specs.length) {
+        await tx.insert(productSpecsTable).values(
+          specs.map((s, index) => ({
+            productId: id,
+            key: s.key,
+            value: s.value,
+            sortOrder: s.sortOrder ?? index,
+          })),
+        );
+      }
+    }
+
+    if (images) {
+      await syncProductImages(tx, id, images);
+    }
+  });
 }
 
 export async function deleteProduct(id: number): Promise<void> {
@@ -425,10 +442,10 @@ export async function countProducts(): Promise<number> {
 }
 
 async function syncProductImages(
+  db: DbExecutor,
   productId: number,
   images: ProductImageWritePayload[],
 ): Promise<void> {
-  const db = getDb();
   const normalized = normalizeImages(images);
 
   await db
@@ -494,6 +511,7 @@ function normalizeImages(
 }
 
 async function validateDocumentMedia(
+  db: DbExecutor,
   core: Omit<
     ProductWritePayload,
     "specs" | "images"
@@ -507,7 +525,6 @@ async function validateDocumentMedia(
 
   if (!docIds.length) return;
 
-  const db = getDb();
   const rows = await db
     .select({
       id: mediaAssetsTable.id,

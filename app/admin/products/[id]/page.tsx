@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
@@ -65,6 +66,7 @@ export default async function EditProductPage({
         </div>
       </div>
 
+      <PublicCatalogSourceNotice />
       <ProductForm
         action={boundUpdate}
         categories={categories}

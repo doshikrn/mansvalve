@@ -81,6 +81,34 @@ const categoryBaseSchema = z.object({
   isActive: z.boolean(),
 });
 
+type PublicCategoryRouteInfo = {
+  slug: string | null;
+};
+
+type PublicSubcategoryRouteInfo = {
+  slug: string | null;
+};
+
+function revalidateCatalogPublicPaths(
+  categories: Array<PublicCategoryRouteInfo | null | undefined> = [],
+  subcategories: Array<PublicSubcategoryRouteInfo | null | undefined> = [],
+) {
+  revalidatePath("/", "layout");
+  revalidatePath("/catalog", "layout");
+  revalidatePath("/sitemap.xml");
+
+  for (const category of categories) {
+    if (category?.slug) {
+      revalidatePath(`/catalog/category/${category.slug}`);
+    }
+  }
+  for (const subcategory of subcategories) {
+    if (subcategory?.slug) {
+      revalidatePath(`/catalog/subcategory/${subcategory.slug}`);
+    }
+  }
+}
+
 export async function createCategoryAction(formData: FormData) {
   await requireAdmin("/admin/categories");
 
@@ -127,7 +155,7 @@ export async function createCategoryAction(formData: FormData) {
   });
 
   revalidatePath("/admin/categories");
-  revalidatePath("/catalog");
+  revalidateCatalogPublicPaths([{ slug: parsed.data.slug }]);
   redirect(`/admin/categories/${id}/edit`);
 }
 
@@ -160,6 +188,8 @@ export async function updateCategoryAction(formData: FormData) {
     redirect(`/admin/categories/${id}/edit?error=${encodeURIComponent("Такой slug уже занят.")}`);
   }
 
+  const existing = await getCategoryById(id);
+
   await updateCategory(id, {
     name: parsed.data.name,
     slug: parsed.data.slug,
@@ -173,7 +203,7 @@ export async function updateCategoryAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${id}/edit`);
-  revalidatePath("/catalog");
+  revalidateCatalogPublicPaths([existing, { slug: parsed.data.slug }]);
   redirect(`/admin/categories/${id}/edit?saved=1`);
 }
 
@@ -241,7 +271,7 @@ export async function createSubcategoryAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${categoryId}/edit`);
-  revalidatePath("/catalog");
+  revalidateCatalogPublicPaths([parent], [{ slug: parsed.data.slug }]);
   redirect(`/admin/categories/${categoryId}/subcategories/${subId}/edit?saved=1`);
 }
 
@@ -282,6 +312,11 @@ export async function updateSubcategoryAction(formData: FormData) {
     );
   }
 
+  const [oldParent, newParent] = await Promise.all([
+    getCategoryById(existing.categoryId),
+    getCategoryById(categoryId),
+  ]);
+
   await updateSubcategory(id, {
     categoryId: parsed.data.categoryId,
     name: parsed.data.name,
@@ -294,6 +329,9 @@ export async function updateSubcategoryAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${categoryId}/edit`);
-  revalidatePath("/catalog");
+  revalidateCatalogPublicPaths(
+    [oldParent, newParent],
+    [existing, { slug: parsed.data.slug }],
+  );
   redirect(`/admin/categories/${categoryId}/subcategories/${id}/edit?saved=1`);
 }

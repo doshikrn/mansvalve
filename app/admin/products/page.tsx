@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { listProducts } from "@/lib/services/products";
@@ -57,6 +58,8 @@ export default async function AdminProductsPage({
           <Link href="/admin/products/new">+ Новый товар</Link>
         </Button>
       </div>
+
+      <PublicCatalogSourceNotice />
 
       <form className="flex flex-wrap items-center gap-2" role="search">
         <input
