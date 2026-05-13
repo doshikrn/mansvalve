@@ -1,22 +1,24 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import type { ProductDetail } from "@/lib/services/products";
-import type { CategoryWithSubcategories } from "@/lib/services/categories";
+import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
+import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
+import { FormDirtyResetAfterSubmit } from "@/components/admin/FormDirtyResetAfterSubmit";
 import {
   MediaUpload,
   type MediaLibraryItem,
   type SelectedMediaItem,
 } from "@/components/admin/MediaUpload";
 import { ProductDocumentsUpload } from "@/components/admin/ProductDocumentsUpload";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { ProductFormState } from "@/app/admin/products/actions";
+import type { CategoryWithSubcategories } from "@/lib/services/categories";
+import type { ProductDetail } from "@/lib/services/products";
 
 type Action = (
   state: ProductFormState,
@@ -31,6 +33,10 @@ type Props = {
   mediaLibrary: MediaLibraryItem[];
   documentLibrary: MediaLibraryItem[];
   product?: ProductDetail | null;
+  backHref: string;
+  backLabel?: string;
+  /** Sent with create so redirect to edit keeps list filters in `returnTo`. */
+  listReturnTo?: string | null;
 };
 
 const INITIAL: ProductFormState = {};
@@ -41,6 +47,9 @@ export function ProductForm({
   mediaLibrary,
   documentLibrary,
   product,
+  backHref,
+  backLabel = "К списку",
+  listReturnTo,
 }: Props) {
   const [state, runAction] = useActionState(action, INITIAL);
   const [categoryId, setCategoryId] = useState<number | "">(
@@ -64,8 +73,23 @@ export function ProductForm({
     documentation: product?.documents.documentation ?? null,
   };
 
+  const hasFormError = useMemo(
+    () =>
+      Boolean(
+        state.error ||
+          (state.fieldErrors &&
+            Object.keys(state.fieldErrors).length > 0),
+      ),
+    [state.error, state.fieldErrors],
+  );
+
   return (
-    <form action={runAction} className="space-y-6">
+    <AdminUnsavedChangesGuard>
+      <form id="admin-product-form" action={runAction} className="space-y-6">
+        {listReturnTo ? (
+          <input type="hidden" name="returnTo" value={listReturnTo} />
+        ) : null}
+        <FormDirtyResetAfterSubmit hasError={hasFormError} />
       <Section title="Основное">
         <Field label="Название" required name="name" error={state.fieldErrors?.name}>
           <Input name="name" defaultValue={product?.name ?? ""} required />
@@ -299,10 +323,11 @@ export function ProductForm({
         </p>
       ) : null}
 
-      <div className="flex items-center gap-3 border-t border-border pt-4">
+      <AdminStickyActions backHref={backHref} backLabel={backLabel}>
         <SubmitButton isEdit={Boolean(product)} />
-      </div>
+      </AdminStickyActions>
     </form>
+    </AdminUnsavedChangesGuard>
   );
 }
 

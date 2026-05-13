@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { listMediaAssets } from "@/lib/services/media";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,12 @@ export default async function AdminMediaPage({
 
   return (
     <div className="space-y-4">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Медиа" },
+        ]}
+      />
       <header>
         <h1 className="text-xl font-semibold tracking-tight">Медиа</h1>
         <p className="text-sm text-muted-foreground">

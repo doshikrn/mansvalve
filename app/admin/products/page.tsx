@@ -1,25 +1,80 @@
 import Link from "next/link";
 
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
+import { withReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
-import { listProducts } from "@/lib/services/products";
+import { listCategoriesWithSubcategories } from "@/lib/services/categories";
+import { listProducts, type ProductListOptions } from "@/lib/services/products";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 25;
 
+type ListParams = {
+  q?: string;
+  page?: string;
+  active?: string;
+  categoryId?: string;
+  subcategoryId?: string;
+  order?: string;
+  dir?: string;
+};
+
+type ListQueryInput = {
+  q?: string;
+  active?: string;
+  categoryId?: string;
+  subcategoryId?: string;
+  order?: string;
+  dir?: string;
+  page?: number;
+};
+
+function parseOrder(
+  order?: string,
+  dir?: string,
+): Pick<ProductListOptions, "orderBy" | "orderDir"> {
+  const orderBy: NonNullable<ProductListOptions["orderBy"]> =
+    order === "name" || order === "createdAt" || order === "sortOrder"
+      ? order
+      : "updatedAt";
+  const orderDir: NonNullable<ProductListOptions["orderDir"]> =
+    dir === "asc" ? "asc" : "desc";
+  return { orderBy, orderDir };
+}
+
+function buildProductsListQuery(
+  p: ListQueryInput,
+): Record<string, string | undefined> {
+  const out: Record<string, string | undefined> = {};
+  if (p.q?.trim()) out.q = p.q.trim();
+  if (p.active === "true" || p.active === "false") out.active = p.active;
+  if (p.categoryId?.trim()) out.categoryId = p.categoryId.trim();
+  if (p.subcategoryId?.trim()) out.subcategoryId = p.subcategoryId.trim();
+  if (p.order && p.order !== "updatedAt") out.order = p.order;
+  if (p.dir === "asc") out.dir = p.dir;
+  if (p.page && p.page > 1) out.page = String(p.page);
+  return out;
+}
+
+function productsListHref(query: Record<string, string | undefined>): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(query)) {
+    if (v != null && v !== "") sp.set(k, v);
+  }
+  const qs = sp.toString();
+  return qs ? `/admin/products?${qs}` : "/admin/products";
+}
+
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    q?: string;
-    page?: string;
-    active?: string;
-  }>;
+  searchParams: Promise<ListParams>;
 }) {
   await requireAdmin("/admin/products");
   const params = await searchParams;
@@ -38,49 +93,173 @@ export default async function AdminProductsPage({
         ? false
         : undefined;
 
-  const { items, total } = await listProducts({
-    search: params.q,
-    page,
-    pageSize: PAGE_SIZE,
-    isActive: activeFilter,
-  });
+  const rawCat = params.categoryId ? Number(params.categoryId) : NaN;
+  const rawSub = params.subcategoryId ? Number(params.subcategoryId) : NaN;
+  const categoryId =
+    Number.isInteger(rawCat) && rawCat > 0 ? rawCat : undefined;
+  const subcategoryId =
+    Number.isInteger(rawSub) && rawSub > 0 ? rawSub : undefined;
+
+  const { orderBy, orderDir } = parseOrder(params.order, params.dir);
+
+  const [categories, { items, total }] = await Promise.all([
+    listCategoriesWithSubcategories(),
+    listProducts({
+      search: params.q,
+      page,
+      pageSize: PAGE_SIZE,
+      isActive: activeFilter,
+      categoryId,
+      subcategoryId,
+      orderBy,
+      orderDir,
+    }),
+  ]);
 
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const listQuery = buildProductsListQuery({
+    q: params.q,
+    active: params.active,
+    categoryId: params.categoryId,
+    subcategoryId: params.subcategoryId,
+    order: params.order,
+    dir: params.dir,
+    page: page > 1 ? page : undefined,
+  });
+  const listSelfHref = productsListHref(listQuery);
+  const encodedReturnTo = encodeURIComponent(listSelfHref);
+
+  const hasFilters = Boolean(
+    params.q?.trim() ||
+      activeFilter !== undefined ||
+      categoryId ||
+      subcategoryId ||
+      (params.order && params.order !== "updatedAt") ||
+      params.dir === "asc",
+  );
+
+  const subcategoryOptions = categories.flatMap((c) =>
+    c.subcategories.map((s) => ({
+      id: s.id,
+      label: `${c.name} — ${s.name}`,
+      categoryId: c.id,
+    })),
+  );
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Товары" },
+        ]}
+      />
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Товары</h1>
           <p className="text-sm text-muted-foreground">Всего: {total}</p>
         </div>
         <Button asChild size="sm">
-          <Link href="/admin/products/new">+ Новый товар</Link>
+          <Link href={withReturnTo("/admin/products/new", listSelfHref)}>
+            + Новый товар
+          </Link>
         </Button>
       </div>
 
       <PublicCatalogSourceNotice />
 
-      <form className="flex flex-wrap items-center gap-2" role="search">
-        <input
-          type="text"
-          name="q"
-          placeholder="Поиск по названию, slug, модели…"
-          defaultValue={params.q ?? ""}
-          className="h-8 w-full max-w-sm rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
-        />
-        <select
-          name="active"
-          defaultValue={params.active ?? ""}
-          className="h-8 rounded-md border border-border bg-background px-2 text-sm outline-none"
-        >
-          <option value="">Все</option>
-          <option value="true">Только активные</option>
-          <option value="false">Только скрытые</option>
-        </select>
-        <Button type="submit" size="sm" variant="outline">
-          Применить
-        </Button>
+      <form
+        className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4 sm:flex-row sm:flex-wrap sm:items-end"
+        method="get"
+        role="search"
+      >
+        <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <label className="flex min-w-[180px] flex-col gap-1 text-xs font-medium text-muted-foreground lg:col-span-2">
+            Поиск
+            <input
+              type="search"
+              name="q"
+              placeholder="Название, slug, модель…"
+              defaultValue={params.q ?? ""}
+              className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
+            />
+          </label>
+          <label className="flex min-w-[140px] flex-col gap-1 text-xs font-medium text-muted-foreground">
+            Категория
+            <select
+              name="categoryId"
+              defaultValue={categoryId ? String(categoryId) : ""}
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm outline-none"
+            >
+              <option value="">Все</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex min-w-[200px] flex-col gap-1 text-xs font-medium text-muted-foreground lg:col-span-2">
+            Подкатегория
+            <select
+              name="subcategoryId"
+              defaultValue={subcategoryId ? String(subcategoryId) : ""}
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm outline-none"
+            >
+              <option value="">Все</option>
+              {subcategoryOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex min-w-[120px] flex-col gap-1 text-xs font-medium text-muted-foreground">
+            Статус
+            <select
+              name="active"
+              defaultValue={params.active ?? ""}
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm outline-none"
+            >
+              <option value="">Все</option>
+              <option value="true">Только активные</option>
+              <option value="false">Только скрытые</option>
+            </select>
+          </label>
+          <label className="flex min-w-[160px] flex-col gap-1 text-xs font-medium text-muted-foreground">
+            Сортировка
+            <select
+              name="order"
+              defaultValue={orderBy}
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm outline-none"
+            >
+              <option value="updatedAt">По обновлению</option>
+              <option value="createdAt">По созданию</option>
+              <option value="name">По названию</option>
+              <option value="sortOrder">По порядку</option>
+            </select>
+          </label>
+          <label className="flex min-w-[120px] flex-col gap-1 text-xs font-medium text-muted-foreground">
+            Направление
+            <select
+              name="dir"
+              defaultValue={orderDir}
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm outline-none"
+            >
+              <option value="desc">По убыванию</option>
+              <option value="asc">По возрастанию</option>
+            </select>
+          </label>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:ml-auto">
+          <Button type="submit" size="sm" variant="outline">
+            Применить
+          </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link href="/admin/products">Сбросить</Link>
+          </Button>
+        </div>
       </form>
 
       <div className="rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
@@ -104,7 +283,18 @@ export default async function AdminProductsPage({
                     colSpan={7}
                     className="px-4 py-10 text-center text-muted-foreground"
                   >
-                    Товары не найдены.
+                    {hasFilters ? (
+                      <span>
+                        Ничего не найдено по текущим фильтрам. Попробуйте изменить
+                        поиск или{" "}
+                        <Link href="/admin/products" className="text-primary underline">
+                          сбросить фильтры
+                        </Link>
+                        .
+                      </span>
+                    ) : (
+                      "Товаров пока нет."
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -115,7 +305,7 @@ export default async function AdminProductsPage({
                   >
                     <td className="px-4 py-2">
                       <Link
-                        href={`/admin/products/${p.id}`}
+                        href={`/admin/products/${p.id}?returnTo=${encodedReturnTo}`}
                         className="font-medium hover:underline"
                       >
                         {p.name}
@@ -150,7 +340,11 @@ export default async function AdminProductsPage({
                     </td>
                     <td className="px-4 py-2 text-right">
                       <Button asChild size="xs" variant="outline">
-                        <Link href={`/admin/products/${p.id}`}>Открыть</Link>
+                        <Link
+                          href={`/admin/products/${p.id}?returnTo=${encodedReturnTo}`}
+                        >
+                          Открыть
+                        </Link>
                       </Button>
                     </td>
                   </tr>
@@ -162,12 +356,7 @@ export default async function AdminProductsPage({
       </div>
 
       {lastPage > 1 ? (
-        <Pagination
-          basePath="/admin/products"
-          page={page}
-          lastPage={lastPage}
-          query={params}
-        />
+        <Pagination page={page} lastPage={lastPage} query={listQuery} />
       ) : null}
     </div>
   );
@@ -182,23 +371,19 @@ function EmptyState({ message }: { message: string }) {
 }
 
 function Pagination({
-  basePath,
   page,
   lastPage,
   query,
 }: {
-  basePath: string;
   page: number;
   lastPage: number;
   query: Record<string, string | undefined>;
 }) {
-  const buildHref = (p: number) => {
-    const sp = new URLSearchParams();
-    if (query.q) sp.set("q", query.q);
-    if (query.active) sp.set("active", query.active);
-    sp.set("page", String(p));
-    return `${basePath}?${sp.toString()}`;
-  };
+  const buildHref = (p: number) =>
+    productsListHref({
+      ...query,
+      page: p > 1 ? String(p) : undefined,
+    });
 
   return (
     <div className="flex items-center justify-between text-sm">

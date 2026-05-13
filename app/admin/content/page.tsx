@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AdminSectionScroller } from "@/components/admin/AdminSectionScroller";
 import { AdminFormFooter } from "@/components/admin/AdminFormFooter";
+import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { ContentSection } from "@/components/admin/ContentSection";
 import { MediaUrlField, type MediaUrlOption } from "@/components/admin/MediaUrlField";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,6 +243,7 @@ export default async function AdminContentPage({
     }));
 
   return (
+    <AdminUnsavedChangesGuard>
     <div className="mx-auto max-w-5xl space-y-10 pb-12">
       <AdminSectionScroller allowedIds={CONTENT_SECTION_IDS} />
       <header>
@@ -1307,6 +1309,7 @@ export default async function AdminContentPage({
         </p>
       </details>
     </div>
+    </AdminUnsavedChangesGuard>
   );
 }
 

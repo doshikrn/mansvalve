@@ -1,7 +1,6 @@
-import Link from "next/link";
-
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { CertificateForm } from "@/components/admin/CertificateForm";
-import { Button } from "@/components/ui/button";
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { listRecentMediaAssets } from "@/lib/services/media";
@@ -11,8 +10,16 @@ import { createCertificateAction } from "../actions";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export default async function NewCertificatePage() {
+export default async function NewCertificatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
   await requireAdmin("/admin/certificates/new");
+
+  const { returnTo: rawReturn } = await searchParams;
+  const listHref = safeReturnTo(rawReturn, "/admin/certificates");
+  const listReturnTo = safeReturnTo(rawReturn, "") || null;
 
   if (!isDatabaseConfigured()) {
     return (
@@ -26,16 +33,18 @@ export default async function NewCertificatePage() {
 
   return (
     <div className="max-w-3xl space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Новый сертификат</h1>
-          <p className="text-sm text-muted-foreground">
-            Добавьте документ и настройте публикацию на странице сертификатов.
-          </p>
-        </div>
-        <Button asChild size="sm" variant="outline">
-          <Link href="/admin/certificates">← К списку</Link>
-        </Button>
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Сертификаты", href: listHref },
+          { label: "Новый сертификат" },
+        ]}
+      />
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">Новый сертификат</h1>
+        <p className="text-sm text-muted-foreground">
+          Добавьте документ и настройте публикацию на странице сертификатов.
+        </p>
       </div>
 
       <CertificateForm
@@ -55,6 +64,8 @@ export default async function NewCertificatePage() {
               : String(asset.createdAt),
           usedInProducts: asset.usedInProducts,
         }))}
+        backHref={listHref}
+        listReturnTo={listReturnTo}
       />
     </div>
   );

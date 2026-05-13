@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { LeadEditForm } from "@/components/admin/LeadEditForm";
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { LEAD_STATUS_LABEL_RU, normalizeLeadStatus } from "@/lib/leads/lead-status-public";
@@ -29,13 +31,18 @@ function formatAttribution(value: unknown): string {
 
 export default async function AdminLeadDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string }>;
 }) {
   await requireAdmin("/admin/leads");
   const { id: rawId } = await params;
   const id = Number(rawId);
   if (!Number.isFinite(id) || id <= 0) notFound();
+
+  const { returnTo: rawReturn } = await searchParams;
+  const listHref = safeReturnTo(rawReturn, "/admin/leads");
 
   if (!isDatabaseConfigured()) {
     return (
@@ -52,12 +59,16 @@ export default async function AdminLeadDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Заявки", href: listHref },
+          { label: `#${lead.id}` },
+        ]}
+      />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="-ml-2 h-8 px-2">
-              <Link href="/admin/leads">← К списку</Link>
-            </Button>
             <h1 className="text-xl font-semibold tracking-tight">Заявка #{lead.id}</h1>
             <Badge variant={badgeVariantForStatus(displayStatus)}>
               {LEAD_STATUS_LABEL_RU[displayStatus]}
@@ -67,6 +78,9 @@ export default async function AdminLeadDetailPage({
             Создана {new Date(lead.createdAt).toLocaleString("ru-RU")}
           </p>
         </div>
+        <Button asChild variant="outline" size="sm" className="w-full shrink-0 sm:w-auto">
+          <Link href={listHref}>К списку заявок</Link>
+        </Button>
       </div>
 
       <section className="rounded-xl border border-border bg-background p-4 space-y-3">
@@ -215,7 +229,7 @@ export default async function AdminLeadDetailPage({
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Обработка
         </h2>
-        <LeadEditForm lead={lead} />
+        <LeadEditForm lead={lead} backHref={listHref} />
       </div>
     </div>
   );

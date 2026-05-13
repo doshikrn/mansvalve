@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { Button } from "@/components/ui/button";
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
@@ -17,14 +19,19 @@ export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ returnTo?: string }>;
 }) {
   const { id: rawId } = await params;
   const id = Number(rawId);
   if (!Number.isInteger(id) || id <= 0) notFound();
 
   await requireAdmin(`/admin/products/${id}`);
+
+  const { returnTo: rawReturn } = await searchParams;
+  const listHref = safeReturnTo(rawReturn, "/admin/products");
 
   if (!isDatabaseConfigured()) {
     return (
@@ -47,23 +54,32 @@ export default async function EditProductPage({
 
   return (
     <div className="max-w-3xl space-y-4">
-      <div className="flex items-center justify-between">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Товары", href: listHref },
+          { label: product.name },
+        ]}
+      />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">
             {product.name}
           </h1>
-          <p className="text-xs text-muted-foreground">id {product.id} · {product.slug}</p>
+          <p className="text-xs text-muted-foreground">
+            id {product.id} · {product.slug}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/products">← К списку</Link>
+        <DestructiveConfirmForm
+          action={boundDelete}
+          confirmMessage="Удалить этот товар? Действие необратимо."
+          className="shrink-0"
+        >
+          <input type="hidden" name="returnTo" value={listHref} />
+          <Button type="submit" variant="destructive" size="sm">
+            Удалить
           </Button>
-          <form action={boundDelete}>
-            <Button type="submit" variant="destructive" size="sm">
-              Удалить
-            </Button>
-          </form>
-        </div>
+        </DestructiveConfirmForm>
       </div>
 
       <PublicCatalogSourceNotice />
@@ -105,6 +121,7 @@ export default async function EditProductPage({
             usedInProducts: asset.usedInProducts,
           }))}
         product={product}
+        backHref={listHref}
       />
     </div>
   );

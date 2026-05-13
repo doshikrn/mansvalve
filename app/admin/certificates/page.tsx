@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { withReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { listAdminCertificates } from "@/lib/services/certificates";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -23,9 +24,17 @@ export default async function AdminCertificatesPage() {
   }
 
   const certificates = await listAdminCertificates();
+  const listSelfHref = "/admin/certificates";
+  const encodedReturnTo = encodeURIComponent(listSelfHref);
 
   return (
     <div className="space-y-4">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Сертификаты" },
+        ]}
+      />
       <div className="flex items-center justify-between">
         <header>
           <h1 className="text-xl font-semibold tracking-tight">Сертификаты</h1>
@@ -34,10 +43,11 @@ export default async function AdminCertificatesPage() {
           </p>
         </header>
         <Button asChild size="sm">
-          <Link href="/admin/certificates/new">+ Новый сертификат</Link>
+          <Link href={withReturnTo("/admin/certificates/new", listSelfHref)}>
+            + Новый сертификат
+          </Link>
         </Button>
       </div>
-
       <div className="rounded-xl border border-border bg-background">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -95,10 +105,11 @@ export default async function AdminCertificatesPage() {
                     </td>
                     <td className="px-4 py-2 text-right">
                       <Button asChild size="xs" variant="outline">
-                        <Link href={`/admin/certificates/${certificate.id}`}>Изменить</Link>
+                        <Link href={`/admin/certificates/${certificate.id}?returnTo=${encodedReturnTo}`}>
+                          Изменить
+                        </Link>
                       </Button>
-                    </td>
-                  </tr>
+                    </td>                  </tr>
                 ))
               )}
             </tbody>

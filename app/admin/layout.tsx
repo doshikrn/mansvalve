@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AdminBackToTop } from "@/components/admin/AdminBackToTop";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { getAdminSession } from "@/lib/auth/current-user";
@@ -35,7 +36,14 @@ export default async function AdminLayout({
       <AdminSidebar />
       <div className="flex min-w-0 flex-1 flex-col bg-[#F4F7FB]">
         <AdminHeader session={session} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main
+          id="admin-scroll-main"
+          tabIndex={-1}
+          className="flex-1 overflow-y-auto p-6 outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+        >
+          {children}
+          <AdminBackToTop />
+        </main>
       </div>
     </div>
   );

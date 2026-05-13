@@ -1,20 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo } from "react";
 import { useFormStatus } from "react-dom";
 
+import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
+import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
+import { FormDirtyResetAfterSubmit } from "@/components/admin/FormDirtyResetAfterSubmit";
 import {
   MediaUpload,
   type MediaLibraryItem,
   type SelectedMediaItem,
 } from "@/components/admin/MediaUpload";
+import type { CertificateFormState } from "@/app/admin/certificates/actions";
+import type { CertificateListItem } from "@/lib/services/certificates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
-import type { CertificateFormState } from "@/app/admin/certificates/actions";
-import type { CertificateListItem } from "@/lib/services/certificates";
 
 type Action = (
   state: CertificateFormState,
@@ -25,6 +27,9 @@ type Props = {
   action: Action;
   mediaLibrary: MediaLibraryItem[];
   certificate?: CertificateListItem | null;
+  backHref: string;
+  backLabel?: string;
+  listReturnTo?: string | null;
 };
 
 const INITIAL: CertificateFormState = {};
@@ -37,8 +42,25 @@ function toDateInputValue(date: Date | null): string {
   return `${year}-${month}-${day}`;
 }
 
-export function CertificateForm({ action, mediaLibrary, certificate }: Props) {
+export function CertificateForm({
+  action,
+  mediaLibrary,
+  certificate,
+  backHref,
+  backLabel = "К списку",
+  listReturnTo,
+}: Props) {
   const [state, runAction] = useActionState(action, INITIAL);
+
+  const hasFormError = useMemo(
+    () =>
+      Boolean(
+        state.error ||
+          (state.fieldErrors &&
+            Object.keys(state.fieldErrors).length > 0),
+      ),
+    [state.error, state.fieldErrors],
+  );
 
   const initialSelected: SelectedMediaItem[] = certificate
     ? [
@@ -67,109 +89,116 @@ export function CertificateForm({ action, mediaLibrary, certificate }: Props) {
       : [];
 
   return (
-    <form action={runAction} className="space-y-6">
-      <section className="space-y-3 rounded-xl border border-border bg-background p-4">
-        <h2 className="text-sm font-semibold tracking-tight">Основное</h2>
+    <AdminUnsavedChangesGuard>
+      <form id="admin-certificate-form" action={runAction} className="space-y-6">
+        {listReturnTo ? (
+          <input type="hidden" name="returnTo" value={listReturnTo} />
+        ) : null}
+        <FormDirtyResetAfterSubmit hasError={hasFormError} />
+        <section className="space-y-3 rounded-xl border border-border bg-background p-4">
+          <h2 className="text-sm font-semibold tracking-tight">Основное</h2>
 
-        <Field
-          label="Название сертификата"
-          name="title"
-          required
-          error={state.fieldErrors?.title}
-        >
-          <Input name="title" defaultValue={certificate?.title ?? ""} required />
-        </Field>
-
-        <Field label="Описание" name="description" error={state.fieldErrors?.description}>
-          <Textarea
-            name="description"
-            rows={4}
-            defaultValue={certificate?.description ?? ""}
-          />
-        </Field>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Дата документа" name="issuedAt" error={state.fieldErrors?.issuedAt}>
-            <Input
-              name="issuedAt"
-              type="date"
-              defaultValue={toDateInputValue(certificate?.issuedAt ?? null)}
-            />
-          </Field>
           <Field
-            label="Порядок сортировки"
-            name="sortOrder"
-            error={state.fieldErrors?.sortOrder}
+            label="Название сертификата"
+            name="title"
+            required
+            error={state.fieldErrors?.title}
           >
-            <Input
-              name="sortOrder"
-              type="number"
-              defaultValue={certificate?.sortOrder ?? 0}
+            <Input name="title" defaultValue={certificate?.title ?? ""} required />
+          </Field>
+
+          <Field label="Описание" name="description" error={state.fieldErrors?.description}>
+            <Textarea
+              name="description"
+              rows={4}
+              defaultValue={certificate?.description ?? ""}
             />
           </Field>
-        </div>
 
-        <label className="inline-flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            name="isActive"
-            defaultChecked={certificate?.isActive ?? true}
-            className="size-4 rounded border-border accent-foreground"
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Дата документа" name="issuedAt" error={state.fieldErrors?.issuedAt}>
+              <Input
+                name="issuedAt"
+                type="date"
+                defaultValue={toDateInputValue(certificate?.issuedAt ?? null)}
+              />
+            </Field>
+            <Field
+              label="Порядок сортировки"
+              name="sortOrder"
+              error={state.fieldErrors?.sortOrder}
+            >
+              <Input
+                name="sortOrder"
+                type="number"
+                defaultValue={certificate?.sortOrder ?? 0}
+              />
+            </Field>
+          </div>
+
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="isActive"
+              defaultChecked={certificate?.isActive ?? true}
+              className="size-4 rounded border-border accent-foreground"
+            />
+            <span>Показывать на публичной странице</span>
+          </label>
+        </section>
+
+        <section className="space-y-2">
+          <MediaUpload
+            title="Превью сертификата"
+            initialLibrary={mediaLibrary}
+            initialSelected={initialSelected}
+            hiddenInputName="previewMediaPayload"
+            uploadFolder="certificates"
+            accept="image"
+            allowAttach
+            attachOnUpload
+            multiple={false}
           />
-          <span>Показывать на публичной странице</span>
-        </label>
-      </section>
+          <p className="text-xs text-muted-foreground">
+            Изображение используется на публичной странице как карточка сертификата.
+          </p>
+          {state.fieldErrors?.previewMediaPayload ? (
+            <p className="text-xs text-destructive">{state.fieldErrors.previewMediaPayload}</p>
+          ) : null}
+        </section>
 
-      <section className="space-y-2">
-        <MediaUpload
-          title="Превью сертификата"
-          initialLibrary={mediaLibrary}
-          initialSelected={initialSelected}
-          hiddenInputName="previewMediaPayload"
-          uploadFolder="certificates"
-          accept="image"
-          allowAttach
-          attachOnUpload
-          multiple={false}
-        />
-        <p className="text-xs text-muted-foreground">
-          Изображение используется на публичной странице как карточка сертификата.
-        </p>
-        {state.fieldErrors?.previewMediaPayload ? (
-          <p className="text-xs text-destructive">{state.fieldErrors.previewMediaPayload}</p>
+        <section className="space-y-2">
+          <MediaUpload
+            title="PDF-файл сертификата"
+            initialLibrary={mediaLibrary}
+            initialSelected={initialDocumentSelected}
+            hiddenInputName="documentMediaPayload"
+            uploadFolder="certificates"
+            accept="document"
+            allowAttach
+            attachOnUpload
+            multiple={false}
+          />
+          <p className="text-xs text-muted-foreground">
+            Этот файл открывается по кнопке на публичной странице. Для старых сертификатов без PDF
+            будет открываться превью.
+          </p>
+          {state.fieldErrors?.documentMediaPayload ? (
+            <p className="text-xs text-destructive">{state.fieldErrors.documentMediaPayload}</p>
+          ) : null}
+        </section>
+
+        {state.error ? (
+          <p className="text-sm text-destructive" role="alert">
+            {state.error}
+          </p>
         ) : null}
-      </section>
 
-      <section className="space-y-2">
-        <MediaUpload
-          title="PDF-файл сертификата"
-          initialLibrary={mediaLibrary}
-          initialSelected={initialDocumentSelected}
-          hiddenInputName="documentMediaPayload"
-          uploadFolder="certificates"
-          accept="document"
-          allowAttach
-          attachOnUpload
-          multiple={false}
-        />
-        <p className="text-xs text-muted-foreground">
-          Этот файл открывается по кнопке на публичной странице. Для старых сертификатов без PDF будет открываться превью.
-        </p>
-        {state.fieldErrors?.documentMediaPayload ? (
-          <p className="text-xs text-destructive">{state.fieldErrors.documentMediaPayload}</p>
-        ) : null}
-      </section>
-
-      {state.error ? (
-        <p className="text-sm text-destructive" role="alert">
-          {state.error}
-        </p>
-      ) : null}
-
-      <div className="border-t border-border pt-4">
-        <SubmitButton isEdit={Boolean(certificate)} />
-      </div>
-    </form>
+        <AdminStickyActions backHref={backHref} backLabel={backLabel}>
+          <SubmitButton isEdit={Boolean(certificate)} />
+        </AdminStickyActions>
+      </form>
+    </AdminUnsavedChangesGuard>
   );
 }
 

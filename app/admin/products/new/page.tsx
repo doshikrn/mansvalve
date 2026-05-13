@@ -1,8 +1,7 @@
-import Link from "next/link";
-
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { ProductForm } from "@/components/admin/ProductForm";
-import { Button } from "@/components/ui/button";
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
@@ -13,8 +12,16 @@ import { createProductAction } from "../actions";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export default async function NewProductPage() {
+export default async function NewProductPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
   await requireAdmin("/admin/products/new");
+
+  const { returnTo: rawReturn } = await searchParams;
+  const listHref = safeReturnTo(rawReturn, "/admin/products");
+  const listReturnTo = safeReturnTo(rawReturn, "") || null;
 
   if (!isDatabaseConfigured()) {
     return (
@@ -43,12 +50,14 @@ export default async function NewProductPage() {
 
   return (
     <div className="max-w-3xl space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Новый товар</h1>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/admin/products">← К списку</Link>
-        </Button>
-      </div>
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Товары", href: listHref },
+          { label: "Новый товар" },
+        ]}
+      />
+      <h1 className="text-xl font-semibold tracking-tight">Новый товар</h1>
       <PublicCatalogSourceNotice />
       <ProductForm
         action={createProductAction}
@@ -87,6 +96,8 @@ export default async function NewProductPage() {
                 : String(asset.createdAt),
             usedInProducts: asset.usedInProducts,
           }))}
+        backHref={listHref}
+        listReturnTo={listReturnTo}
       />
     </div>
   );

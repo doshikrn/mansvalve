@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
@@ -81,9 +82,21 @@ export default async function AdminLeadsPage({
 
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentFilters = { status, source, from: dateFrom, to: dateTo, q };
+  const listSelfHref = buildListHref({ ...currentFilters, page });
+  const encodedReturnTo = encodeURIComponent(listSelfHref);
+
+  const hasSearchOrFilters = Boolean(
+    status || (source && source !== "__all__") || dateFrom || dateTo || q,
+  );
 
   return (
     <div className="space-y-6">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Заявки" },
+        ]}
+      />
       <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Заявки</h1>
@@ -197,7 +210,17 @@ export default async function AdminLeadsPage({
               {items.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
-                    Заявок по фильтру нет.
+                    {hasSearchOrFilters ? (
+                      <span>
+                        Заявок по фильтру нет. Попробуйте изменить условия или{" "}
+                        <Link href="/admin/leads" className="text-primary underline">
+                          сбросить фильтры
+                        </Link>
+                        .
+                      </span>
+                    ) : (
+                      "Заявок пока нет."
+                    )}
                   </td>
                 </tr>
               ) : (
@@ -213,7 +236,7 @@ export default async function AdminLeadsPage({
                       </td>
                       <td className="px-4 py-2 font-medium">
                         <Link
-                          href={`/admin/leads/${lead.id}`}
+                          href={`/admin/leads/${lead.id}?returnTo=${encodedReturnTo}`}
                           className="text-foreground hover:text-primary hover:underline"
                         >
                           {lead.name}
@@ -251,7 +274,7 @@ export default async function AdminLeadsPage({
                       </td>
                       <td className="px-4 py-2 text-right">
                         <Button asChild variant="ghost" size="sm" className="h-8 px-2">
-                          <Link href={`/admin/leads/${lead.id}`}>→</Link>
+                          <Link href={`/admin/leads/${lead.id}?returnTo=${encodedReturnTo}`}>→</Link>
                         </Button>
                       </td>
                     </tr>

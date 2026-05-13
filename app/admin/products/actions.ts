@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import {
   createProduct,
@@ -276,7 +277,12 @@ export async function createProductAction(
 
   revalidatePath("/admin/products");
   revalidateProductPublicPaths(await getProductById(id));
-  redirect(`/admin/products/${id}`);
+  const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
+  const returnTo = safeReturnTo(rawReturnTo, "");
+  const suffix = returnTo
+    ? `?returnTo=${encodeURIComponent(returnTo)}`
+    : "";
+  redirect(`/admin/products/${id}${suffix}`);
 }
 
 export async function updateProductAction(
@@ -306,7 +312,10 @@ export async function updateProductAction(
   return {};
 }
 
-export async function deleteProductAction(id: number): Promise<void> {
+export async function deleteProductAction(
+  id: number,
+  formData: FormData,
+): Promise<void> {
   await requireAdmin("/admin/products");
   const before = await getProductById(id);
   try {
@@ -317,7 +326,8 @@ export async function deleteProductAction(id: number): Promise<void> {
   }
   revalidatePath("/admin/products");
   revalidateProductPublicPaths(before);
-  redirect("/admin/products");
+  const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
+  redirect(safeReturnTo(rawReturnTo, "/admin/products"));
 }
 
 function revalidateProductPublicPaths(

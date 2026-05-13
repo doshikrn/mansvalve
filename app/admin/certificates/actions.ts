@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import {
   createCertificate,
@@ -121,7 +122,12 @@ export async function createCertificateAction(
 
   revalidatePath("/certificates");
   revalidatePath("/admin/certificates");
-  redirect(`/admin/certificates/${id}`);
+  const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
+  const returnTo = safeReturnTo(rawReturnTo, "");
+  const suffix = returnTo
+    ? `?returnTo=${encodeURIComponent(returnTo)}`
+    : "";
+  redirect(`/admin/certificates/${id}${suffix}`);
 }
 
 export async function updateCertificateAction(
@@ -148,7 +154,10 @@ export async function updateCertificateAction(
   return {};
 }
 
-export async function deleteCertificateAction(id: number): Promise<void> {
+export async function deleteCertificateAction(
+  id: number,
+  formData: FormData,
+): Promise<void> {
   await requireAdmin("/admin/certificates");
   try {
     await deleteCertificate(id);
@@ -159,5 +168,6 @@ export async function deleteCertificateAction(id: number): Promise<void> {
 
   revalidatePath("/certificates");
   revalidatePath("/admin/certificates");
-  redirect("/admin/certificates");
+  const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
+  redirect(safeReturnTo(rawReturnTo, "/admin/certificates"));
 }

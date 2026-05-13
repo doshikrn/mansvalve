@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { withReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
@@ -30,8 +32,17 @@ export default async function AdminCategoriesPage({
 
   const categories = await listCategoriesWithSubcategories();
 
+  const listReturn = `/admin/categories?view=${view}`;
+  const encList = encodeURIComponent(listReturn);
+
   return (
     <div className="space-y-4">
+      <AdminBreadcrumbs
+        items={[
+          { label: "Админка", href: "/admin" },
+          { label: "Категории" },
+        ]}
+      />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <header>
           <h1 className="text-xl font-semibold tracking-tight">
@@ -45,7 +56,9 @@ export default async function AdminCategoriesPage({
         </header>
         {view === "categories" ? (
           <Button asChild size="sm">
-            <Link href="/admin/categories/new">+ Новая категория</Link>
+            <Link href={withReturnTo("/admin/categories/new", listReturn)}>
+              + Новая категория
+            </Link>
           </Button>
         ) : null}
       </div>
@@ -70,15 +83,21 @@ export default async function AdminCategoriesPage({
       </div>
 
       {view === "categories" ? (
-        <CategoriesTable categories={categories} />
+        <CategoriesTable categories={categories} listReturnEncoded={encList} />
       ) : (
-        <SubcategoriesTable categories={categories} />
+        <SubcategoriesTable categories={categories} listReturnEncoded={encList} />
       )}
     </div>
   );
 }
 
-function CategoriesTable({ categories }: { categories: Awaited<ReturnType<typeof listCategoriesWithSubcategories>> }) {
+function CategoriesTable({
+  categories,
+  listReturnEncoded,
+}: {
+  categories: Awaited<ReturnType<typeof listCategoriesWithSubcategories>>;
+  listReturnEncoded: string;
+}) {
   return (
     <div className="rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
         <table className="w-full text-sm">
@@ -122,7 +141,9 @@ function CategoriesTable({ categories }: { categories: Awaited<ReturnType<typeof
                   </td>
                   <td className="px-4 py-2 text-right">
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/admin/categories/${c.id}/edit`}>Изменить</Link>
+                      <Link href={`/admin/categories/${c.id}/edit?returnTo=${listReturnEncoded}`}>
+                        Изменить
+                      </Link>
                     </Button>
                   </td>
                 </tr>
@@ -136,8 +157,10 @@ function CategoriesTable({ categories }: { categories: Awaited<ReturnType<typeof
 
 function SubcategoriesTable({
   categories,
+  listReturnEncoded,
 }: {
   categories: Awaited<ReturnType<typeof listCategoriesWithSubcategories>>;
+  listReturnEncoded: string;
 }) {
   const subcategoryCount = categories.reduce((count, category) => count + category.subcategories.length, 0);
 
@@ -182,7 +205,9 @@ function SubcategoriesTable({
                   <td className="px-4 py-2 text-right">
                     <div className="flex justify-end gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/categories/${category.id}/subcategories/${subcategory.id}/edit`}>
+                        <Link
+                          href={`/admin/categories/${category.id}/subcategories/${subcategory.id}/edit?returnTo=${listReturnEncoded}`}
+                        >
                           Изменить
                         </Link>
                       </Button>
