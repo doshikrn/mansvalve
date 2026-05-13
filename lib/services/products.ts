@@ -24,6 +24,12 @@ export type AdminProductRow = Product & {
   subcategorySlug: string | null;
 };
 
+/** Admin list row: product + primary gallery thumb + image count (images only). */
+export type AdminProductListRow = AdminProductRow & {
+  imageCount: number;
+  listThumbUrl: string | null;
+};
+
 export type ProductImageDetail = {
   id: number;
   mediaId: string;
@@ -69,7 +75,7 @@ export type ProductListOptions = {
 };
 
 export type ProductListResult = {
-  items: AdminProductRow[];
+  items: AdminProductListRow[];
   total: number;
   page: number;
   pageSize: number;
@@ -161,8 +167,56 @@ export async function listProducts(
     subcategorySlug: row.subcategorySlug,
   }));
 
+  const productIds = items.map((p) => p.id);
+  const imageMeta = new Map<number, { imageCount: number; listThumbUrl: string | null }>();
+
+  if (productIds.length > 0) {
+    const imgRows = await db
+      .select({
+        productId: productImagesTable.productId,
+        isPrimary: productImagesTable.isPrimary,
+        sortOrder: productImagesTable.sortOrder,
+        url: mediaAssetsTable.url,
+        storageKey: mediaAssetsTable.storageKey,
+        driver: mediaAssetsTable.driver,
+        mimeType: mediaAssetsTable.mimeType,
+      })
+      .from(productImagesTable)
+      .innerJoin(
+        mediaAssetsTable,
+        eq(mediaAssetsTable.id, productImagesTable.mediaId),
+      )
+      .where(inArray(productImagesTable.productId, productIds));
+
+    const byProduct = new Map<number, typeof imgRows>();
+    for (const row of imgRows) {
+      const list = byProduct.get(row.productId) ?? [];
+      list.push(row);
+      byProduct.set(row.productId, list);
+    }
+
+    for (const pid of productIds) {
+      const list = byProduct.get(pid) ?? [];
+      const imagesOnly = list.filter((r) => r.mimeType.startsWith("image/"));
+      const sorted = [...imagesOnly].sort((a, b) => {
+        if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+        return a.sortOrder - b.sortOrder;
+      });
+      const first = sorted[0];
+      const listThumbUrl = first
+        ? resolvePublicMediaUrl(first.url, first.storageKey, first.driver)
+        : null;
+      imageMeta.set(pid, { imageCount: imagesOnly.length, listThumbUrl });
+    }
+  }
+
+  const listItems: AdminProductListRow[] = items.map((p) => {
+    const meta = imageMeta.get(p.id) ?? { imageCount: 0, listThumbUrl: null };
+    return { ...p, imageCount: meta.imageCount, listThumbUrl: meta.listThumbUrl };
+  });
+
   return {
-    items,
+    items: listItems,
     total: countRow[0]?.value ?? 0,
     page,
     pageSize,

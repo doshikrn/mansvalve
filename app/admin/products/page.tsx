@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { ImageIcon } from "lucide-react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
@@ -7,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { withReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import { listProducts, type ProductListOptions } from "@/lib/services/products";
 
@@ -267,6 +270,8 @@ export default async function AdminProductsPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E2E8F0] text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+                <th className="w-14 px-2 py-2 font-medium">№</th>
+                <th className="w-16 px-2 py-2 font-medium">Фото</th>
                 <th className="px-4 py-2 font-medium">Название</th>
                 <th className="px-4 py-2 font-medium">Категория</th>
                 <th className="px-4 py-2 font-medium">DN/PN</th>
@@ -280,7 +285,7 @@ export default async function AdminProductsPage({
               {items.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={9}
                     className="px-4 py-10 text-center text-muted-foreground"
                   >
                     {hasFilters ? (
@@ -298,11 +303,45 @@ export default async function AdminProductsPage({
                   </td>
                 </tr>
               ) : (
-                items.map((p) => (
+                items.map((p, idx) => {
+                  const rowNum = (page - 1) * PAGE_SIZE + idx + 1;
+                  const photoTitle =
+                    p.imageCount === 0
+                      ? "Нет фото в карточке"
+                      : `Фото в карточке: ${p.imageCount}. Превью — главное по галерее (флажок «основное» и порядок).`;
+                  return (
                   <tr
                     key={p.id}
                     className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
                   >
+                    <td className="px-2 py-2 align-top tabular-nums">
+                      <span className="text-sm font-semibold text-slate-800">{rowNum}</span>
+                      <div className="text-[10px] leading-tight text-muted-foreground">id {p.id}</div>
+                    </td>
+                    <td className="px-2 py-2 align-middle">
+                      <div
+                        className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border border-[#E2E8F0] bg-slate-50"
+                        title={photoTitle}
+                      >
+                        {p.listThumbUrl ? (
+                          <Image
+                            src={p.listThumbUrl}
+                            alt={p.name}
+                            fill
+                            sizes="44px"
+                            className="object-cover"
+                            unoptimized={mediaImageNeedsUnoptimized(p.listThumbUrl)}
+                          />
+                        ) : (
+                          <ImageIcon className="size-5 text-slate-300" aria-hidden />
+                        )}
+                      </div>
+                      {p.imageCount > 1 ? (
+                        <div className="mt-0.5 text-center text-[10px] font-medium tabular-nums text-muted-foreground">
+                          ×{p.imageCount}
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-2">
                       <Link
                         href={`/admin/products/${p.id}?returnTo=${encodedReturnTo}`}
@@ -348,7 +387,8 @@ export default async function AdminProductsPage({
                       </Button>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>
