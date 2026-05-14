@@ -37,6 +37,7 @@ import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
+import { buildProductDetailContent } from "@/lib/product-detail-content";
 
 /* ── Static generation for all 303 products ──────────────────────── */
 
@@ -60,7 +61,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const productName = buildProductCatalogName(product);
-  const canonicalPath = `/catalog/${product.slug}`;
+  const detailContent = buildProductDetailContent(product);
+  const canonicalPath = detailContent.canonicalPath;
   const pageTitle = `Купить ${productName} в Казахстане | ${COMPANY_BRAND_SEO}`;
   const metaDescription = buildProductMetaDescription(productName);
 
@@ -165,7 +167,8 @@ export default async function ProductPage({ params }: PageProps) {
     product.category,
     4,
   );
-  const specsEntries = Object.entries(product.specs);
+  const detailContent = buildProductDetailContent(product);
+  const specsEntries = detailContent.characteristics;
   const productName = buildProductCatalogName(product);
   const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
   const waUrl = buildCompanyProductInquiryWhatsAppUrl(productName, {
@@ -328,10 +331,11 @@ export default async function ProductPage({ params }: PageProps) {
               )}
             </div>
 
-            {/* Short description */}
-            <p className="mb-8 text-base leading-relaxed text-slate-600">
-              {product.shortDescription}
-            </p>
+            <div className="mb-8 space-y-3 text-base leading-relaxed text-slate-600">
+              {detailContent.descriptionParagraphs.slice(0, 2).map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
 
             {showActuatorBlock && (
               <div className="mb-8 rounded-xl border border-site-border bg-site-bg p-5">
@@ -428,33 +432,33 @@ export default async function ProductPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* ── Specs table ─────────────────────────────────────────────── */}
-      {specsEntries.length > 0 && (
-        <div className="border-t border-site-border bg-site-bg">
-          <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
-            <div className="grid grid-cols-1 gap-14 lg:grid-cols-2 lg:gap-20">
-              {/* Description column */}
-              <div>
-                <h2 className="mb-5 text-xl font-bold text-slate-900">
-                  Описание
-                </h2>
-                <p className="text-base leading-[1.75] text-slate-600">
-                  {product.shortDescription}
-                </p>
-                {category && (
-                  <div className="mt-6">
-                    <Link
-                      href={`/catalog/category/${category.slug}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-site-primary transition-colors hover:text-site-primary-hover"
-                    >
-                      Все {category.name.toLowerCase()}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                )}
+      {/* ── Description + specs table ───────────────────────────────── */}
+      <div className="border-t border-site-border bg-site-bg">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:py-20">
+          <div className="grid grid-cols-1 gap-14 lg:grid-cols-2 lg:gap-20">
+            <div>
+              <h2 className="mb-5 text-xl font-bold text-slate-900">
+                Описание
+              </h2>
+              <div className="space-y-4 text-base leading-[1.75] text-slate-600">
+                {detailContent.descriptionParagraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
               </div>
+              {category && (
+                <div className="mt-6">
+                  <Link
+                    href={`/catalog/category/${category.slug}`}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-site-primary transition-colors hover:text-site-primary-hover"
+                  >
+                    Все {category.name.toLowerCase()}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              )}
+            </div>
 
-              {/* Specs table column */}
+            {specsEntries.length > 0 ? (
               <div>
                 <h2 className="mb-5 text-xl font-bold text-slate-900">
                   Технические характеристики
@@ -462,14 +466,10 @@ export default async function ProductPage({ params }: PageProps) {
                 <div className="overflow-hidden rounded-xl border border-site-border bg-site-card">
                   <table className="w-full">
                     <tbody>
-                      {specsEntries.map(([label, value], idx) => (
+                      {specsEntries.map(({ label, value }, idx) => (
                         <tr
                           key={label}
-                          className={
-                            idx % 2 === 0
-                              ? "bg-white"
-                              : "bg-site-bg"
-                          }
+                          className={idx % 2 === 0 ? "bg-white" : "bg-site-bg"}
                         >
                           <td className="w-1/2 border-r border-slate-100 px-5 py-3 text-sm font-medium text-slate-500">
                             {label}
@@ -483,10 +483,36 @@ export default async function ProductPage({ params }: PageProps) {
                   </table>
                 </div>
               </div>
-            </div>
+            ) : null}
           </div>
         </div>
-      )}
+      </div>
+
+      {detailContent.standards.length ||
+      detailContent.benefits.length ||
+      detailContent.applications.length ||
+      detailContent.qualityDocuments.length ||
+      detailContent.supplyTerms.length ? (
+        <div className="border-t border-site-border bg-site-card">
+          <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2">
+            {detailContent.standards.length ? (
+              <InfoList title="Стандарты и соответствие" items={detailContent.standards} />
+            ) : null}
+            {detailContent.benefits.length ? (
+              <InfoList title="Преимущества" items={detailContent.benefits} />
+            ) : null}
+            {detailContent.applications.length ? (
+              <InfoList title="Область применения" items={detailContent.applications} />
+            ) : null}
+            {detailContent.qualityDocuments.length ? (
+              <InfoList title="Документация и контроль качества" items={detailContent.qualityDocuments} />
+            ) : null}
+            {detailContent.supplyTerms.length ? (
+              <InfoList title="Условия поставки" items={detailContent.supplyTerms} />
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <div className="border-t border-site-border bg-site-card">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
@@ -592,6 +618,22 @@ export default async function ProductPage({ params }: PageProps) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+      <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-600">
+        {items.map((item) => (
+          <li key={item} className="flex gap-2">
+            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-site-primary" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -227,7 +227,7 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "Product",
     name: formatProductDisplayName(product),
-    description: product.shortDescription,
+    description: product.longDescription || product.shortDescription,
     sku: product.id,
     mpn: product.model || product.id,
     brand: {

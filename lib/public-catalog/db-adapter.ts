@@ -203,6 +203,7 @@ function mapProductRow(
     shortDescription:
       product.shortDescription ||
       `${product.name}. Категория: ${category.name}.`,
+    longDescription: product.longDescription || undefined,
     primaryImageUrl: primaryImage?.url,
     primaryImageAlt: primaryImage?.alt || undefined,
     documents,

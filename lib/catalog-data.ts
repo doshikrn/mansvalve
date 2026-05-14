@@ -23,6 +23,7 @@ export interface Product {
   weight: number | undefined;
   specs: Record<string, string>;
   shortDescription: string;
+  longDescription?: string;
   documents?: {
     specification?: {
       url: string;

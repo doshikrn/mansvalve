@@ -419,6 +419,15 @@ export function findGateValveCatalogProduct(
   });
 }
 
+export function getGateValveSeoPageForProduct(
+  product: PublicCatalogProduct,
+): GateValveSeoPage | undefined {
+  if (product.category !== "zadvizhki") return undefined;
+  return GATE_VALVE_SEO_PAGES.find((page) =>
+    findGateValveCatalogProduct([product], page),
+  );
+}
+
 function buildGateValvePage(
   template: GateValveTemplate,
   dn: number,

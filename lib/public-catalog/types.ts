@@ -32,6 +32,7 @@ export interface PublicCatalogProduct {
   weight: number | undefined;
   specs: Record<string, string>;
   shortDescription: string;
+  longDescription?: string;
   primaryImageUrl?: string;
   primaryImageAlt?: string;
   images?: PublicCatalogProductImage[];
