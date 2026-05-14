@@ -2,6 +2,7 @@ import type {
   PublicCatalogCategory,
   PublicCatalogProduct,
 } from "@/lib/public-catalog/types";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 
 export interface CatalogFilterOption {
   value: string;
@@ -228,81 +229,9 @@ export function getLandingPage(
 }
 
 export function buildProductCatalogName(product: PublicCatalogProduct): string {
-  const baseName = getProductTypeLabel(product);
-  const material = getDisplayMaterial(product, baseName);
-  const model = formatModelForDisplay(product.model?.trim());
-  const dn = product.dn != null ? `DN${product.dn}` : "";
-  const pn = product.pn != null ? `PN${product.pn}` : "";
-  const connection = getDisplayConnection(product, baseName);
-  const parts = [baseName, material, model, dn, pn, connection].filter(Boolean);
-  return parts.join(" ").replace(/\s+/g, " ").trim();
+  return formatProductDisplayName(product);
 }
 
 export function buildProductMetaDescription(productName: string): string {
   return `${productName} с поставкой по Казахстану. Работаем с НДС, предоставляем сертификаты, паспорт изделия и гарантию. КП за 15 минут.`;
-}
-
-function getProductTypeLabel(product: PublicCatalogProduct): string {
-  const name = product.name.toLowerCase();
-  if (product.category === "zadvizhki") return "Задвижка";
-  if (product.category === "zatvory") return "Затвор дисковый";
-  if (product.category === "krany-sharovye") return "Кран шаровой";
-  if (product.category === "klapany") return "Клапан обратный";
-  if (name.includes("фланец")) return "Фланец";
-  if (name.includes("компенсатор")) return "Компенсатор";
-  if (product.category === "elektroprivody") return "Электропривод";
-  return product.categoryName.replace(/ы$/u, "а");
-}
-
-function getDisplayMaterial(product: PublicCatalogProduct, productType: string): string {
-  if (!product.material || product.material === "Не указан") return "";
-  const feminine = productType === "Задвижка";
-  if (product.material === "Сталь") return feminine ? "стальная" : "стальной";
-  if (product.material === "Чугун") return feminine ? "чугунная" : "чугунный";
-  if (product.material === "Нержавеющая сталь") {
-    return feminine ? "нержавеющая" : "нержавеющий";
-  }
-  return product.material;
-}
-
-function getDisplayConnection(product: PublicCatalogProduct, productType: string): string {
-  const name = product.name.toLowerCase();
-  const model = (product.model || "").toLowerCase();
-  if (!product.connectionType || product.connectionType === "Не указано") {
-    if (name.includes("обрезин") || model === "30ч39р") {
-      return "с обрезиненным клином";
-    }
-    if (
-      product.category === "zadvizhki" &&
-      ["30ч6бр", "30с41нж", "30с64нж"].includes(model)
-    ) {
-      return productType === "Задвижка" ? "фланцевая" : "фланцевый";
-    }
-    return "";
-  }
-  if (name.includes("обрезин") || model === "30ч39р") {
-    return "с обрезиненным клином";
-  }
-  const feminine = productType === "Задвижка";
-  if (product.connectionType === "Фланцевое") return feminine ? "фланцевая" : "фланцевый";
-  if (product.connectionType === "Межфланцевое") {
-    return feminine ? "межфланцевая" : "межфланцевый";
-  }
-  if (product.connectionType === "Под приварку") return "под приварку";
-  if (product.connectionType === "Муфтовое" || product.connectionType === "Резьбовое") {
-    return feminine ? "муфтовая" : "муфтовый";
-  }
-  return product.connectionType.toLowerCase();
-}
-
-function formatModelForDisplay(model: string | undefined): string {
-  if (!model) return "";
-  const normalized = model.toLowerCase();
-  const labels: Record<string, string> = {
-    "30ч6бр": "30ч6бр",
-    "30ч39р": "30ч39р",
-    "30с41нж": "30с41нж",
-    "30с64нж": "30с64нж",
-  };
-  return labels[normalized] ?? model;
 }

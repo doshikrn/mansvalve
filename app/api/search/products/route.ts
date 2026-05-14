@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { buildProductCatalogName } from "@/lib/catalog-seo";
 import { getPublicCatalogProducts } from "@/lib/public-catalog";
 import { searchPublicProducts } from "@/lib/search/product-search";
 import type { ProductSearchItemDto } from "@/lib/search/product-search-dto";
@@ -32,7 +33,7 @@ export async function GET(request: Request) {
 
   const out: ProductSearchItemDto[] = hits.map((p) => ({
     slug: p.slug,
-    name: p.name,
+    name: buildProductCatalogName(p),
     categoryName: p.categoryName,
     subcategoryName: p.subcategoryName,
     price: p.price ?? null,

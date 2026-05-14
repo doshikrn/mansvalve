@@ -6,6 +6,7 @@ import type {
 import { getSiteBaseUrl } from "@/lib/site-url"
 import { COMPANY } from "@/lib/company"
 import { getCategoryVisual } from "@/lib/category-visuals"
+import { formatProductDisplayName } from "@/lib/catalog/product-naming"
 
 interface BreadcrumbItem {
   name: string
@@ -111,7 +112,7 @@ export function buildCatalogItemListJsonLd(
 
   const entries: ItemListEntry[] = limitedProducts.map((product, index) => ({
     position: startPosition + index,
-    name: product.name,
+    name: formatProductDisplayName(product),
     path: `/catalog/${product.slug}`,
   }))
 
@@ -169,11 +170,12 @@ export function buildSubcategoryBreadcrumbJsonLd(
 }
 
 export function buildProductBreadcrumbJsonLd(product: Product): Record<string, unknown> {
+  const productName = formatProductDisplayName(product)
   return buildBreadcrumbJsonLd([
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
     { name: product.categoryName, path: `/catalog/category/${product.category}` },
-    { name: product.name, path: `/catalog/${product.slug}` },
+    { name: productName, path: `/catalog/${product.slug}` },
   ])
 }
 
@@ -224,7 +226,7 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
   const result: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: product.name,
+    name: formatProductDisplayName(product),
     description: product.shortDescription,
     sku: product.id,
     mpn: product.model || product.id,

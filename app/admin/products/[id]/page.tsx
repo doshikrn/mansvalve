@@ -7,6 +7,7 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { Button } from "@/components/ui/button";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import { listRecentMediaAssets } from "@/lib/services/media";
@@ -49,6 +50,7 @@ export default async function EditProductPage({
 
   if (!product) notFound();
 
+  const displayName = formatProductDisplayName(product);
   const boundUpdate = updateProductAction.bind(null, id);
   const boundDelete = deleteProductAction.bind(null, id);
 
@@ -58,13 +60,13 @@ export default async function EditProductPage({
         items={[
           { label: "Админка", href: "/admin" },
           { label: "Товары", href: listHref },
-          { label: product.name },
+          { label: displayName },
         ]}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">
-            {product.name}
+            {displayName}
           </h1>
           <p className="text-xs text-muted-foreground">
             id {product.id} · {product.slug}

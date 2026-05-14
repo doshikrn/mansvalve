@@ -75,8 +75,10 @@ export function buildCompanyWhatsAppUrl(message?: string): string {
 
 const PRODUCT_INQUIRY_MESSAGE = (name: string, dn?: number | null, pn?: number | null) => {
   const n = name.trim() || "позиция";
-  const dnPart = dn != null ? `, DN${dn}` : "";
-  const pnPart = pn != null ? ` PN${pn}` : "";
+  const hasDn = dn != null && new RegExp(`\\bDN\\s*${dn}\\b`, "iu").test(n);
+  const hasPn = pn != null && new RegExp(`\\bPN\\s*${pn}\\b`, "iu").test(n);
+  const dnPart = dn != null && !hasDn ? `, DN${dn}` : "";
+  const pnPart = pn != null && !hasPn ? ` PN${pn}` : "";
   return `Здравствуйте! Интересует: ${n}${dnPart}${pnPart}. Прошу уточнить наличие и стоимость.`;
 };
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { withReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
@@ -305,6 +306,7 @@ export default async function AdminProductsPage({
               ) : (
                 items.map((p, idx) => {
                   const rowNum = (page - 1) * PAGE_SIZE + idx + 1;
+                  const displayName = formatProductDisplayName(p);
                   const photoTitle =
                     p.imageCount === 0
                       ? "Нет фото в карточке"
@@ -326,7 +328,7 @@ export default async function AdminProductsPage({
                         {p.listThumbUrl ? (
                           <Image
                             src={p.listThumbUrl}
-                            alt={p.name}
+                            alt={displayName}
                             fill
                             sizes="44px"
                             className="object-cover"
@@ -347,7 +349,7 @@ export default async function AdminProductsPage({
                         href={`/admin/products/${p.id}?returnTo=${encodedReturnTo}`}
                         className="font-medium hover:underline"
                       >
-                        {p.name}
+                        {displayName}
                       </Link>
                       <div className="text-xs text-muted-foreground">
                         {p.slug}

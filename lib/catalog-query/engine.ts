@@ -218,11 +218,12 @@ function getRequestedConnection(query: NormalizedCatalogQuery): string | undefin
 
 function getRequestedCategory(query: NormalizedCatalogQuery): string | undefined {
   const text = query.text;
+  const tokens = new Set(query.tokens);
   if (text.includes("задвижк")) return "zadvizhki";
   if (text.includes("кран")) return "krany-sharovye";
   if (text.includes("клапан")) return "klapany";
   if (text.includes("затвор")) return "zatvory";
-  if (text.includes("фланец") || text.includes("фланц")) return "flansy-i-otvody";
+  if (tokens.has("фланец") || tokens.has("фланцы")) return "flansy-i-otvody";
   if (text.includes("компенсатор") || text.includes("фильтр")) return "filtry-i-kompensatory";
   return undefined;
 }
