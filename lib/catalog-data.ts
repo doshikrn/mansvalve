@@ -2,6 +2,7 @@
 // DO NOT EDIT MANUALLY — run `python scripts/rebuild_catalog.py`
 
 import catalogData from "@/data/catalog-products.json";
+import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
 
 export interface Product {
   id: string;
@@ -24,6 +25,7 @@ export interface Product {
   specs: Record<string, string>;
   shortDescription: string;
   longDescription?: string;
+  detailBlocks?: ProductDetailBlocks;
   documents?: {
     specification?: {
       url: string;

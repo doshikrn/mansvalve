@@ -17,6 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ProductFormState } from "@/app/admin/products/actions";
+import {
+  joinProductDetailBlockLines,
+  normalizeProductDetailBlocks,
+  PRODUCT_DETAIL_BLOCK_FIELDS,
+  type ProductDetailBlocks,
+} from "@/lib/product-detail-blocks";
 import type { CategoryWithSubcategories } from "@/lib/services/categories";
 import type { ProductDetail } from "@/lib/services/products";
 
@@ -33,6 +39,7 @@ type Props = {
   mediaLibrary: MediaLibraryItem[];
   documentLibrary: MediaLibraryItem[];
   product?: ProductDetail | null;
+  initialDetailBlocks?: ProductDetailBlocks | null;
   backHref: string;
   backLabel?: string;
   /** Sent with create so redirect to edit keeps list filters in `returnTo`. */
@@ -47,6 +54,7 @@ export function ProductForm({
   mediaLibrary,
   documentLibrary,
   product,
+  initialDetailBlocks,
   backHref,
   backLabel = "К списку",
   listReturnTo,
@@ -72,6 +80,9 @@ export function ProductForm({
     questionnaire: product?.documents.questionnaire ?? null,
     documentation: product?.documents.documentation ?? null,
   };
+  const detailBlocks = normalizeProductDetailBlocks(
+    product?.detailBlocks ?? initialDetailBlocks,
+  );
 
   const hasFormError = useMemo(
     () =>
@@ -297,6 +308,27 @@ export function ProductForm({
           >
             + Добавить параметр
           </Button>
+        </div>
+      </Section>
+
+      <Section title="SEO-блоки карточки товара">
+        <p className="text-xs leading-5 text-muted-foreground">
+          Эти списки показываются на публичной странице товара под характеристиками.
+          Если нужно изменить текст из SEO-шаблона, отредактируйте строки здесь.
+        </p>
+        <div className="grid gap-4">
+          {PRODUCT_DETAIL_BLOCK_FIELDS.map((field) => (
+            <Field key={field.key} label={field.title} name={field.name}>
+              <div className="space-y-1.5">
+                <Textarea
+                  name={field.name}
+                  rows={5}
+                  defaultValue={joinProductDetailBlockLines(detailBlocks[field.key])}
+                />
+                <p className="text-xs text-muted-foreground">{field.description}</p>
+              </div>
+            </Field>
+          ))}
         </div>
       </Section>
 

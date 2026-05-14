@@ -15,6 +15,7 @@
  */
 
 import { sql } from "drizzle-orm";
+import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
 import {
   bigserial,
   boolean,
@@ -196,6 +197,7 @@ export const products = pgTable(
 
     shortDescription: text("short_description"),
     longDescription: text("long_description"),
+    detailBlocks: jsonb("detail_blocks").$type<ProductDetailBlocks | null>(),
     /** Файл-спецификация товара (PDF/DOC/XLS и т.п.). */
     specificationMediaId: uuid("specification_media_id").references(
       () => mediaAssets.id,

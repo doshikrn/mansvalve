@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/drizzle-core";
+import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 import {
   categories as categoriesTable,
   mediaAssets as mediaAssetsTable,
@@ -9,8 +10,8 @@ import {
   products as productsTable,
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
+import { normalizeProductDetailBlocks } from "@/lib/product-detail-blocks";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
-import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 
 import type {
   PublicCatalogAdapter,
@@ -204,6 +205,9 @@ function mapProductRow(
       product.shortDescription ||
       `${product.name}. Категория: ${category.name}.`,
     longDescription: product.longDescription || undefined,
+    detailBlocks: product.detailBlocks
+      ? normalizeProductDetailBlocks(product.detailBlocks)
+      : undefined,
     primaryImageUrl: primaryImage?.url,
     primaryImageAlt: primaryImage?.alt || undefined,
     documents,

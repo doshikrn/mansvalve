@@ -7,6 +7,11 @@ import { z } from "zod";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import {
+  parseProductDetailBlockLines,
+  PRODUCT_DETAIL_BLOCK_FIELDS,
+  type ProductDetailBlocks,
+} from "@/lib/product-detail-blocks";
+import {
   createProduct,
   deleteProduct,
   getProductById,
@@ -147,6 +152,7 @@ function parseProductForm(formData: FormData) {
 
   const images = readImages(formData);
   const documents = readDocuments(formData);
+  const detailBlocks = readDetailBlocks(formData);
 
   const data = parsed.data;
   const slug = slugify(data.slug ?? data.name);
@@ -168,6 +174,7 @@ function parseProductForm(formData: FormData) {
     weight: data.weight ?? null,
     shortDescription: data.shortDescription,
     longDescription: data.longDescription,
+    detailBlocks,
     isActive: data.isActive,
     isFeatured: data.isFeatured,
     sortOrder: data.sortOrder,
@@ -179,6 +186,21 @@ function parseProductForm(formData: FormData) {
   };
 
   return { ok: true as const, payload };
+}
+
+function readDetailBlocks(formData: FormData): ProductDetailBlocks | null {
+  const hasDetailBlockFields = PRODUCT_DETAIL_BLOCK_FIELDS.some((field) =>
+    formData.has(field.name),
+  );
+  if (!hasDetailBlockFields) return null;
+
+  return {
+    standards: parseProductDetailBlockLines(formData.get("detailStandards")),
+    benefits: parseProductDetailBlockLines(formData.get("detailBenefits")),
+    applications: parseProductDetailBlockLines(formData.get("detailApplications")),
+    qualityDocuments: parseProductDetailBlockLines(formData.get("detailQualityDocuments")),
+    supplyTerms: parseProductDetailBlockLines(formData.get("detailSupplyTerms")),
+  };
 }
 
 function readImages(formData: FormData) {

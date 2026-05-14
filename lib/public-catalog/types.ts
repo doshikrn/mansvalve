@@ -1,3 +1,5 @@
+import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
+
 export interface PublicCatalogProductImage {
   url: string;
   alt: string;
@@ -33,6 +35,7 @@ export interface PublicCatalogProduct {
   specs: Record<string, string>;
   shortDescription: string;
   longDescription?: string;
+  detailBlocks?: ProductDetailBlocks;
   primaryImageUrl?: string;
   primaryImageAlt?: string;
   images?: PublicCatalogProductImage[];
