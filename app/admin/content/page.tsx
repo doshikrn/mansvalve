@@ -64,6 +64,7 @@ import {
   saveHomeWhoWeSupplyAction,
   saveHomeWhyUsAction,
   savePageAboutAction,
+  savePageAboutHeroImageAction,
   savePageCertificatesAction,
   savePageContactsAction,
   savePageDeliveryAction,
@@ -87,6 +88,7 @@ const SAVED_LABELS: Record<string, string> = {
   contacts: "Тексты страницы контактов сохранены",
   "contacts-meta": "Описание для поиска (контакты) сохранено",
   "page-about": "Страница «О компании» (полный блок) сохранена",
+  "page-about-hero": "Изображение страницы «О компании» сохранено",
   "page-contacts": "Страница «Контакты» (полный блок) сохранена",
   "page-delivery": "Страница «Доставка» сохранена",
   "page-certificates": "Страница «Сертификаты» сохранена",
@@ -750,6 +752,33 @@ export default async function AdminContentPage({
               <Textarea id="about_cta_sub" name="ctaSubtitle" rows={3} defaultValue={about.ctaSubtitle} />
             </div>
             <AdminFormFooter previewHref="/about" saveLabel="Сохранить текст страницы" />
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Изображение в шапке /about</CardTitle>
+          <CardDescription>
+            Это поле управляет блоком справа, где на публичной странице сейчас видна заглушка «Изображение компании».
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={savePageAboutHeroImageAction} className="max-w-3xl space-y-3">
+            <MediaUrlField
+              label="Изображение компании"
+              name="headerImageSrc"
+              defaultValue={pageAbout.headerImageSrc}
+              initialLibrary={mediaLibrary}
+              uploadFolder="content/about"
+              description="Можно загрузить новое изображение, выбрать из медиатеки или очистить поле, чтобы снова показать заглушку."
+            />
+            <Field
+              label="Alt-текст изображения"
+              name="headerImageAlt"
+              defaultValue={pageAbout.headerImageAlt}
+            />
+            <AdminFormFooter previewHref="/about" saveLabel="Сохранить изображение /about" />
           </form>
         </CardContent>
       </Card>

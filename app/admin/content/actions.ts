@@ -25,6 +25,7 @@ import {
   headerTopNavSchema,
   homeCategoriesSchema,
   homeWhyUsSchema,
+  mergeAboutPage,
   homeHowItWorksSchema,
   homeWhoWeSupplySchema,
   homeDeliveryCaseSchema,
@@ -32,7 +33,7 @@ import {
   footerTrustBarSchema,
   footerMainSchema,
 } from "@/lib/site-content/models";
-import { upsertContentBlock } from "@/lib/services/content-blocks";
+import { getContentBlock, upsertContentBlock } from "@/lib/services/content-blocks";
 
 function err(msg: string) {
   redirect(`/admin/content?error=${encodeURIComponent(msg)}`);
@@ -603,6 +604,35 @@ export async function savePageAboutAction(formData: FormData) {
   revalidatePath("/about");
   revalidatePath("/admin/content");
   redirect("/admin/content?saved=page-about");
+}
+
+export async function savePageAboutHeroImageAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const [pageAboutRow, aboutMetaRow] = await Promise.all([
+    getContentBlock(SITE_CONTENT_KEYS.pageAbout),
+    getContentBlock(SITE_CONTENT_KEYS.aboutMeta),
+  ]);
+  const current = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data);
+  const data = {
+    ...current,
+    headerImageSrc: String(formData.get("headerImageSrc") ?? "").trim(),
+    headerImageAlt: String(formData.get("headerImageAlt") ?? "").trim(),
+  };
+  const parsed = aboutPageSchema.safeParse(data);
+  if (!parsed.success) {
+    err(parsed.error.issues.map((e) => e.message).join("; "));
+  }
+
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageAbout,
+    title: "Страница — О компании",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+
+  revalidatePath("/about");
+  revalidatePath("/admin/content");
+  redirect("/admin/content?saved=page-about-hero");
 }
 
 export async function savePageContactsAction(formData: FormData) {
