@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "catalog:rebuild": "python scripts/rebuild_catalog.py",
+    "catalog:add-30s41nzh-welding": "node scripts/catalog/add-30s41nzh-welding-line.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/db/migrate.ts",
     "db:seed": "tsx scripts/db/seed.ts",

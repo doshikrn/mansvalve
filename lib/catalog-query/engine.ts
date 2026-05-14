@@ -163,10 +163,14 @@ function indexProduct(product: PublicCatalogProduct): IndexedProduct {
 
 function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): number {
   let score = 0;
+  const requestedConnection = getRequestedConnection(query);
+  const requestedCategory = getRequestedCategory(query);
 
   if (query.model && item.model !== query.model && !item.compact.includes(query.model)) return 0;
   if (query.dn != null && item.product.dn !== query.dn && !item.compact.includes(`dn${query.dn}`)) return 0;
   if (query.pn != null && item.product.pn !== query.pn && !item.compact.includes(`pn${query.pn}`)) return 0;
+  if (requestedConnection && getEffectiveConnectionType(item.product) !== requestedConnection) return 0;
+  if (requestedCategory && item.product.category !== requestedCategory) return 0;
 
   if (query.model && item.model === query.model) score += 1200;
   if (query.model && item.compact.includes(query.model)) score += 900;
@@ -204,6 +208,37 @@ function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): numb
   }
 
   return score;
+}
+
+function getRequestedConnection(query: NormalizedCatalogQuery): string | undefined {
+  const connection = normalizeConnectionType(query.text);
+  return connection || undefined;
+}
+
+function getRequestedCategory(query: NormalizedCatalogQuery): string | undefined {
+  const text = query.text;
+  if (text.includes("задвиж")) return "zadvizhki";
+  if (text.includes("кран")) return "krany-sharovye";
+  if (text.includes("клапан")) return "klapany";
+  if (text.includes("затвор")) return "zatvory";
+  if (text.includes("фланец") || text.includes("фланц")) return "flansy-i-otvody";
+  if (text.includes("компенсатор") || text.includes("фильтр")) return "filtry-i-kompensatory";
+  return undefined;
+}
+
+function getEffectiveConnectionType(product: PublicCatalogProduct): string {
+  const explicit = normalizeConnectionType(product.connectionType);
+  if (explicit && explicit !== normalizeText("Не указано")) return explicit;
+
+  const model = normalizeModelCode(product.model) ?? "";
+  if (
+    product.category === "zadvizhki" &&
+    ["30ч6бр", "30с41нж", "30с64нж"].includes(model)
+  ) {
+    return normalizeConnectionType("Фланцевое");
+  }
+
+  return explicit;
 }
 
 function matchesBaseFilters(product: PublicCatalogProduct, filters: CatalogQueryFilters): boolean {

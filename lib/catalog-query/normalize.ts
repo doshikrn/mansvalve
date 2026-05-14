@@ -38,6 +38,7 @@ const CYR_TO_LAT: Record<string, string> = {
 
 const LAT_TO_CYR_PATTERNS: Array<[RegExp, string]> = [
   [/sch/g, "щ"],
+  [/nzh/g, "нж"],
   [/sh/g, "ш"],
   [/ch/g, "ч"],
   [/zh/g, "ж"],
@@ -46,7 +47,6 @@ const LAT_TO_CYR_PATTERNS: Array<[RegExp, string]> = [
   [/yo/g, "е"],
   [/kh/g, "х"],
   [/ts/g, "ц"],
-  [/nzh/g, "нж"],
   [/br/g, "бр"],
   [/([0-9])s([0-9])/g, "$1с$2"],
   [/([0-9])c([0-9])/g, "$1с$2"],
