@@ -8,6 +8,7 @@ type AboutHeroProps = {
   title: string;
   subtitle: string;
   description: string;
+  imageAlt: string;
   heroImages?: string[];
 };
 
@@ -16,6 +17,7 @@ export function AboutHero({
   title,
   subtitle,
   description,
+  imageAlt,
   heroImages = [],
 }: AboutHeroProps) {
   const [primaryImage, ...thumbs] = heroImages.filter(Boolean).slice(0, 5);
@@ -57,7 +59,7 @@ export function AboutHero({
               {primaryImage ? (
                 <Image
                   src={primaryImage}
-                  alt={title}
+                  alt={imageAlt || title}
                   width={1200}
                   height={720}
                   className="h-full min-h-[260px] w-full object-cover lg:min-h-[360px]"
@@ -78,7 +80,7 @@ export function AboutHero({
                   >
                     <Image
                       src={imageSrc}
-                      alt={`${title} ${index + 2}`}
+                      alt={`${imageAlt || title} ${index + 2}`}
                       width={360}
                       height={220}
                       className="h-20 w-full object-cover sm:h-24"

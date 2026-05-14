@@ -579,6 +579,7 @@ export async function savePageAboutAction(formData: FormData) {
         .map((value) => value.trim())
         .filter(Boolean)
         .slice(0, 5)[0] ?? "",
+    headerImageAlt: String(formData.get("headerImageAlt") ?? "").trim(),
     heroGalleryImageSrcs: `${String(formData.get("headerImageSrc") ?? "").trim()}\n${String(formData.get("heroGalleryImageSrcs") ?? "").trim()}`
       .split(/\r?\n|,/)
       .map((value) => value.trim())

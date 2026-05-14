@@ -2,7 +2,10 @@ import { CheckCircle2 } from "lucide-react";
 
 type AboutWhyUsProps = {
   title: string;
-  items: string[];
+  items: {
+    title: string;
+    description: string;
+  }[];
 };
 
 export function AboutWhyUs({ title, items }: AboutWhyUsProps) {
@@ -13,13 +16,14 @@ export function AboutWhyUs({ title, items }: AboutWhyUsProps) {
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {items.map((item, index) => (
             <div
-              key={`${item}-${index}`}
+              key={`${item.title}-${index}`}
               className="rounded-xl border border-site-border bg-white px-5 py-4"
             >
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-site-primary" />
                 <div>
-                  <p className="text-sm font-semibold text-site-ink">{item}</p>
+                  <p className="text-sm font-semibold text-site-ink">{item.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-site-muted">{item.description}</p>
                 </div>
               </div>
             </div>

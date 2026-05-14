@@ -904,6 +904,11 @@ export default async function AdminContentPage({
                 uploadFolder="content/about"
                 description="Можно вставить путь вручную, выбрать существующее изображение или загрузить новое."
               />
+              <Field
+                label="Alt-текст изображения в шапке"
+                name="headerImageAlt"
+                defaultValue={pageAbout.headerImageAlt}
+              />
               <AdminFormFooter previewHref="/about" saveLabel="Сохранить страницу «О компании»" />
             </form>
           </CardContent>

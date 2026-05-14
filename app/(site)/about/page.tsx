@@ -21,35 +21,6 @@ import { AboutValues } from "@/components/sections/about/AboutValues";
 import { AboutCTA } from "@/components/sections/about/AboutCTA";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
-const ABOUT_PARAGRAPHS = [
-  "MANSVALVE GROUP — современная казахстанская компания, более 5 лет работающая на рынке комплексных поставок промышленной трубопроводной арматуры, инженерного оборудования и комплектующих для предприятий Казахстана и стран СНГ.",
-  "Мы сотрудничаем с государственными организациями, промышленными предприятиями, строительными и подрядными компаниями, объектами энергетики, водоснабжения, нефтегазового сектора и другими стратегически важными направлениями экономики.",
-  "Для наших клиентов мы являемся не просто поставщиком, а надежным партнером, который понимает цену времени, важность качества продукции и ответственность за соблюдение сроков.",
-] as const;
-
-const SUPPLY_DIRECTIONS = [
-  "Задвижки чугунные и стальные",
-  "Затворы дисковые",
-  "Краны шаровые",
-  "Обратные клапаны",
-  "Фланцы и соединительные элементы",
-  "Электроприводы",
-  "Детали трубопроводов",
-  "Комплектующие и нестандартные решения под проект",
-] as const;
-
-const WHY_US_ITEMS = [
-  "Более 5 лет опыта на рынке",
-  "Официальная работа с НДС",
-  "Полный пакет документов и сертификатов",
-  "Поставка со склада и под заказ",
-  "Быстрый расчет коммерческого предложения",
-  "Подбор оборудования и технические консультации",
-  "Доставка по всему Казахстану и СНГ",
-  "Контроль качества на каждом этапе",
-  "Индивидуальный подход к каждому заказчику",
-] as const;
-
 export async function generateMetadata(): Promise<Metadata> {
   const about = await resolveAboutPage();
   return {
@@ -92,10 +63,12 @@ export default async function AboutPage() {
     warnInvalidMediaUrl(imageSrc, `AboutPage:heroImage:${index}`);
   });
 
-  const headerLead = "MANSVALVE GROUP — надежный партнер в сфере промышленной арматуры и инженерных поставок";
-  const overviewParagraphs = ABOUT_PARAGRAPHS.slice();
-  const h1 = "О компании";
-  const whyTitle = "Почему выбирают MANSVALVE GROUP";
+  const headerLead = applyPlaceholders(aboutCopy.headerLead, COMPANY.name);
+  const overviewParagraphs = aboutCopy.overviewParagraphs.map((paragraph) =>
+    applyPlaceholders(paragraph, COMPANY.name),
+  );
+  const h1 = applyPlaceholders(about.h1Template, COMPANY.name);
+  const whyTitle = applyPlaceholders(about.whyChooseTitleTemplate, COMPANY.name);
   const productGroupsLine = applyAboutCounts(aboutCopy.productGroupsLine, {
     company: COMPANY.name,
     categories: categories.length,
@@ -109,6 +82,7 @@ export default async function AboutPage() {
     }),
   );
   const topCategories = categories.slice(0, 8);
+  const supplyDirections = topCategories.map((category) => category.name);
 
   return (
     <div className="min-h-screen bg-white">
@@ -116,21 +90,26 @@ export default async function AboutPage() {
         breadcrumbCurrent={about.breadcrumbCurrent}
         title={h1}
         subtitle={headerLead}
-        description={overviewParagraphs[0] ?? applyPlaceholders(aboutCopy.headerLead, COMPANY.name)}
+        description={overviewParagraphs[0] ?? headerLead}
+        imageAlt={about.headerImageAlt}
         heroImages={heroImages}
       />
-      <AboutIntro title="MANSVALVE GROUP" paragraphs={overviewParagraphs.slice(1)} />
+      <AboutIntro
+        title={applyPlaceholders(about.whoWeTitle, COMPANY.name)}
+        paragraphs={overviewParagraphs.slice(1)}
+        cards={about.b2bCards}
+      />
       <AboutIndustries />
       <AboutCategories
-        title="Основные направления поставок"
+        title={applyPlaceholders(about.whatWeSupplyTitle, COMPANY.name)}
         description={productGroupsLine}
         linkLabel={about.catalogLinkLabel}
         categories={topCategories}
-        directions={[...SUPPLY_DIRECTIONS]}
+        directions={supplyDirections}
       />
-      <AboutWhyUs title={whyTitle} items={[...WHY_US_ITEMS]} />
+      <AboutWhyUs title={whyTitle} items={about.advantages} />
       <AboutStats slots={about.statSlots} values={statValues} />
-      <AboutValues />
+      <AboutValues standardsEyebrow={about.standardsEyebrow} certifications={about.certifications} />
       <AboutCTA
         title={aboutCopy.ctaTitle}
         subtitle={aboutCopy.ctaSubtitle}

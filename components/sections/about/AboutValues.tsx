@@ -1,4 +1,5 @@
 import { Eye, ShieldCheck, Target } from "lucide-react";
+import type { AboutPageContent } from "@/lib/site-content/models";
 
 const CORE_VALUES = [
   "Ответственность",
@@ -40,10 +41,29 @@ const STRATEGIC_BLOCKS = [
   },
 ] as const;
 
-export function AboutValues() {
+type AboutValuesProps = {
+  standardsEyebrow: string;
+  certifications: AboutPageContent["certifications"];
+};
+
+export function AboutValues({ standardsEyebrow, certifications }: AboutValuesProps) {
   return (
     <section className="bg-[#061738] py-14 text-white sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="mb-6 rounded-2xl border border-white/15 bg-white/5 p-6 sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">
+            {standardsEyebrow}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {certifications.map((item) => (
+              <div key={`${item.label}-${item.sub}`} className="rounded-xl border border-white/15 bg-white/5 p-4">
+                <p className="text-sm font-semibold text-white">{item.label}</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">{item.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-2xl border border-white/15 bg-white/5 p-6 sm:p-8">
           <h3 className="text-xl font-bold">Наш стандарт работы</h3>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-slate-200">

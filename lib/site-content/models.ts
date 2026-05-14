@@ -868,6 +868,7 @@ export const aboutPageSchema = z.object({
   ctaContactsLabel: z.string(),
   /** Пусто — без фонового изображения в шапке. */
   headerImageSrc: z.string(),
+  headerImageAlt: z.string(),
   heroGalleryImageSrcs: z.array(z.string()).max(5),
 });
 
@@ -936,6 +937,7 @@ export function createDefaultAboutPage(): AboutPageContent {
     ctaCatalogLabel: "Перейти в каталог",
     ctaContactsLabel: "Связаться с нами",
     headerImageSrc: "",
+    headerImageAlt: "MANSVALVE GROUP — промышленная арматура",
     heroGalleryImageSrcs: [],
   };
 }

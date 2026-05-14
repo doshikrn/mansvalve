@@ -1,9 +1,13 @@
 type AboutIntroProps = {
   title: string;
   paragraphs: string[];
+  cards: {
+    title: string;
+    text: string;
+  }[];
 };
 
-export function AboutIntro({ title, paragraphs }: AboutIntroProps) {
+export function AboutIntro({ title, paragraphs, cards }: AboutIntroProps) {
   return (
     <section className="bg-white py-14 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -15,6 +19,16 @@ export function AboutIntro({ title, paragraphs }: AboutIntroProps) {
             ))}
           </div>
         </div>
+        {cards.length ? (
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {cards.map((card) => (
+              <div key={card.title} className="rounded-xl border border-site-border bg-slate-50 p-5">
+                <h3 className="text-sm font-semibold text-site-ink">{card.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-site-muted">{card.text}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );
