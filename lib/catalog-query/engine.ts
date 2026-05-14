@@ -167,8 +167,8 @@ function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): numb
   const requestedCategory = getRequestedCategory(query);
 
   if (query.model && item.model !== query.model && !item.compact.includes(query.model)) return 0;
-  if (query.dn != null && item.product.dn !== query.dn && !item.compact.includes(`dn${query.dn}`)) return 0;
-  if (query.pn != null && item.product.pn !== query.pn && !item.compact.includes(`pn${query.pn}`)) return 0;
+  if (query.dn != null && item.product.dn !== query.dn) return 0;
+  if (query.pn != null && item.product.pn !== query.pn) return 0;
   if (requestedConnection && getEffectiveConnectionType(item.product) !== requestedConnection) return 0;
   if (requestedCategory && item.product.category !== requestedCategory) return 0;
 
@@ -212,12 +212,13 @@ function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): numb
 
 function getRequestedConnection(query: NormalizedCatalogQuery): string | undefined {
   const connection = normalizeConnectionType(query.text);
-  return connection || undefined;
+  const knownConnections = new Set(["фланцевое", "межфланцевое", "под приварку", "муфтовое"]);
+  return knownConnections.has(connection) ? connection : undefined;
 }
 
 function getRequestedCategory(query: NormalizedCatalogQuery): string | undefined {
   const text = query.text;
-  if (text.includes("задвиж")) return "zadvizhki";
+  if (text.includes("задвижк")) return "zadvizhki";
   if (text.includes("кран")) return "krany-sharovye";
   if (text.includes("клапан")) return "klapany";
   if (text.includes("затвор")) return "zatvory";
@@ -355,17 +356,36 @@ function numericFacet(
 
 function normalizeFilters(filters: CatalogQueryFilters): CatalogQueryFilters {
   return {
-    ...filters,
+    category: normalizeFilterValue(filters.category),
+    subcategory: normalizeFilterValue(filters.subcategory),
     dn: filters.dn ?? parseDn(String(filters.dn ?? "")),
     pn: filters.pn ?? parsePn(String(filters.pn ?? "")),
+    model: normalizeFilterValue(filters.model),
+    thread: normalizeFilterValue(filters.thread),
+    material: normalizeFilterValue(filters.material),
+    connection: normalizeFilterValue(filters.connection),
+    connectionType: normalizeFilterValue(filters.connectionType),
+    controlType: normalizeFilterValue(filters.controlType),
   };
 }
 
 function numberFilter(value: string | number | undefined): number | undefined {
   if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
   if (!value) return undefined;
+  if (isEmptyFilterValue(value)) return undefined;
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeFilterValue(value: string | number | undefined): string | undefined {
+  if (value == null) return undefined;
+  const stringValue = String(value).trim();
+  return isEmptyFilterValue(stringValue) ? undefined : stringValue;
+}
+
+function isEmptyFilterValue(value: string): boolean {
+  const normalized = normalizeText(value);
+  return normalized === "" || normalized === "all" || normalized === "все";
 }
 
 function sortIndexedProducts(products: IndexedProduct[], sort: CatalogQuerySort): IndexedProduct[] {

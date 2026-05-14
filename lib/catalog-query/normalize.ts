@@ -117,12 +117,14 @@ export function normalizeText(value: string | undefined | null): string {
     out = out.replace(pattern, replacement);
   }
 
-  return out
+  return normalizeCatalogTerms(
+    out
     .replace(/([a-zа-я])(\d)/gi, "$1 $2")
     .replace(/(\d)([a-zа-я])/gi, "$1 $2")
     .replace(/[^a-zа-я0-9]+/gi, " ")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim(),
+  );
 }
 
 export function tokenize(value: string): string[] {
@@ -222,4 +224,16 @@ function parseNamedNumber(
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function normalizeCatalogTerms(value: string): string {
+  return value
+    .split(" ")
+    .map((token) => {
+      if (/^задвиж(ка|ки|ек|ку|кой|ке|ками|ках)?$/u.test(token)) return "задвижк";
+      if (/^клапан(ы|ов|а|у|ом|е|ами|ах)?$/u.test(token)) return "клапан";
+      if (/^кран(ы|ов|а|у|ом|е|ами|ах)?$/u.test(token)) return "кран";
+      return token;
+    })
+    .join(" ");
 }
