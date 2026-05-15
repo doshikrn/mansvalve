@@ -10,6 +10,8 @@ import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { LEAD_STATUS_LABEL_RU, normalizeLeadStatus } from "@/lib/leads/lead-status-public";
+import { getPublicProductBySlug } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { getLeadById } from "@/lib/services/leads";
 
 export const runtime = "nodejs";
@@ -54,6 +56,14 @@ export default async function AdminLeadDetailPage({
 
   const lead = await getLeadById(id);
   if (!lead) notFound();
+
+  const catalogProduct =
+    lead.productSlug != null && lead.productSlug.trim() !== ""
+      ? await getPublicProductBySlug(lead.productSlug.trim())
+      : undefined;
+  const catalogProductHref = catalogProduct
+    ? buildPublicProductView(catalogProduct).canonicalPath
+    : null;
 
   const displayStatus = normalizeLeadStatus(lead.status);
 
@@ -139,9 +149,13 @@ export default async function AdminLeadDetailPage({
             <dt className="text-xs text-muted-foreground">Slug товара</dt>
             <dd className="break-all">
               {lead.productSlug ? (
-                <Link className="text-primary hover:underline" href={`/catalog/${lead.productSlug}`}>
-                  {lead.productSlug}
-                </Link>
+                catalogProductHref ? (
+                  <Link className="text-primary hover:underline" href={catalogProductHref}>
+                    {lead.productSlug}
+                  </Link>
+                ) : (
+                  <span>{lead.productSlug}</span>
+                )
               ) : (
                 "—"
               )}

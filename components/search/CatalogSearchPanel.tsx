@@ -181,7 +181,7 @@ export function CatalogSearchPanel({
         {suggestions.map((p) => (
           <li key={p.slug} className="border-b border-site-bg last:border-0">
             <Link
-              href={`/catalog/${p.slug}`}
+              href={p.href}
               onClick={() => {
                 if (isBar) {
                   setQ("");

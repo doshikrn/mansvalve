@@ -3,6 +3,8 @@
  */
 export type ProductSearchItemDto = {
   slug: string;
+  /** Public product path from `buildPublicProductView().canonicalPath`. */
+  href: string;
   name: string;
   categoryName: string;
   subcategoryName: string;

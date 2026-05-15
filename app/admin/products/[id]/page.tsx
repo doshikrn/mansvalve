@@ -10,7 +10,7 @@ import { requireAdmin } from "@/lib/auth/current-user";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
-import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
@@ -138,14 +138,14 @@ export default async function EditProductPage({
 }
 
 function buildPublicPreview(product: ProductDetail) {
-  const view = buildPublicProductView(toPublicCatalogProduct(product));
+  const view = buildPublicProductView(productDetailToPublicCatalogProduct(product));
   return {
     displayName: view.displayName,
     h1: view.h1,
     seoTitle: view.seoTitle,
     seoDescription: view.seoDescription,
-    catalogPath: view.catalogPath,
     canonicalPath: view.canonicalPath,
+    canonicalUrl: view.canonicalUrl,
     primaryImageUrl: view.primaryImageUrl,
     primaryImageAlt: view.primaryImageAlt,
     imageCount: view.imageCount,
@@ -155,7 +155,7 @@ function buildPublicPreview(product: ProductDetail) {
 function getInitialDetailBlocks(product: ProductDetail): ProductDetailBlocks | null {
   if (product.detailBlocks) return product.detailBlocks;
 
-  const seoPage = getGateValveSeoPageForProduct(toPublicCatalogProduct(product));
+  const seoPage = getGateValveSeoPageForProduct(productDetailToPublicCatalogProduct(product));
   if (!seoPage) return null;
 
   return {
@@ -164,69 +164,5 @@ function getInitialDetailBlocks(product: ProductDetail): ProductDetailBlocks | n
     applications: seoPage.applications,
     qualityDocuments: seoPage.qualityDocuments,
     supplyTerms: seoPage.supplyTerms,
-  };
-}
-
-function toPublicCatalogProduct(product: ProductDetail): PublicCatalogProduct {
-  return {
-    id: String(product.id),
-    name: product.name,
-    slug: product.slug,
-    category: product.categorySlug,
-    subcategory: product.subcategorySlug ?? "",
-    subcategoryName: product.subcategoryName ?? "",
-    categoryName: product.categoryName,
-    dn: product.dn ?? undefined,
-    pn: product.pn ?? undefined,
-    thread: product.thread ?? undefined,
-    material: product.material ?? "",
-    connectionType: product.connectionType ?? "",
-    controlType: product.controlType ?? "",
-    model: product.model ?? "",
-    price: product.price == null ? undefined : Number(product.price),
-    priceByRequest: product.priceByRequest,
-    weight: product.weight == null ? undefined : Number(product.weight),
-    specs: Object.fromEntries(product.specs.map((spec) => [spec.key, spec.value])),
-    shortDescription: product.shortDescription ?? "",
-    longDescription: product.longDescription ?? undefined,
-    detailBlocks: product.detailBlocks ?? undefined,
-    primaryImageUrl:
-      product.images.find((image) => image.isPrimary)?.url ?? product.images[0]?.url,
-    primaryImageAlt:
-      product.images.find((image) => image.isPrimary)?.alt ??
-      product.images[0]?.alt ??
-      undefined,
-    images: product.images.map((image) => ({
-      url: image.url,
-      alt: image.alt ?? "",
-      isPrimary: image.isPrimary,
-      sortOrder: image.sortOrder,
-    })),
-    documents: {
-      specification: product.documents.specification
-        ? {
-            url: product.documents.specification.url,
-            mimeType: product.documents.specification.mimeType,
-            sizeBytes: product.documents.specification.sizeBytes,
-            label: product.documents.specification.alt ?? undefined,
-          }
-        : undefined,
-      questionnaire: product.documents.questionnaire
-        ? {
-            url: product.documents.questionnaire.url,
-            mimeType: product.documents.questionnaire.mimeType,
-            sizeBytes: product.documents.questionnaire.sizeBytes,
-            label: product.documents.questionnaire.alt ?? undefined,
-          }
-        : undefined,
-      documentation: product.documents.documentation
-        ? {
-            url: product.documents.documentation.url,
-            mimeType: product.documents.documentation.mimeType,
-            sizeBytes: product.documents.documentation.sizeBytes,
-            label: product.documents.documentation.alt ?? undefined,
-          }
-        : undefined,
-    },
   };
 }

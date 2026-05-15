@@ -21,6 +21,12 @@ function normalizeBaseUrl(value: string | undefined): string | null {
  * Set `SITE_URL` to the public **domain** (e.g. `https://mansvalve-group.kz`), not
  * a bare server IP, or `/sitemap.xml` and `robots.txt` will expose the wrong host.
  */
+export function toAbsoluteSiteUrl(path: string): string {
+  const base = getSiteBaseUrl();
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return new URL(normalized, `${base}/`).toString();
+}
+
 export function getSiteBaseUrl(): string {
   const explicitBaseUrl = normalizeBaseUrl(process.env.SITE_URL);
   if (explicitBaseUrl) return explicitBaseUrl;

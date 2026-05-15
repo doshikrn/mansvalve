@@ -23,7 +23,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const view = buildPublicProductView(product);
-  const detailHref = view.catalogPath;
+  const detailHref = view.canonicalPath;
   const productName = view.displayName;
   const imageSrc = view.primaryImageUrl;
   const imageAlt = view.primaryImageAlt;

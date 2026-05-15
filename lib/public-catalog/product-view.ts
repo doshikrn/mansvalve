@@ -3,6 +3,7 @@ import { formatProductDisplayName, formatProductSeoName } from "@/lib/catalog/pr
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { buildProductDetailContent, type ProductDetailContent } from "@/lib/product-detail-content";
+import { toAbsoluteSiteUrl } from "@/lib/site-url";
 
 import type { PublicCatalogProduct } from "./types";
 
@@ -16,8 +17,10 @@ export type PublicProductView = {
   shortDescription: string;
   detailContent: ProductDetailContent;
   categoryLabel: string;
+  /** Legacy listing path; public product links must use `canonicalPath` / `canonicalUrl`. */
   catalogPath: string;
   canonicalPath: string;
+  canonicalUrl: string;
   primaryImageUrl: string;
   primaryImageAlt: string;
   primaryImageUnoptimized: boolean;
@@ -36,6 +39,8 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     product.images?.[0]?.alt ||
     `${categoryLabel} - ${displayName}`;
 
+  const canonicalPath = detailContent.canonicalPath;
+
   return {
     product,
     internalTitle: product.name,
@@ -47,7 +52,8 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     detailContent,
     categoryLabel,
     catalogPath: `/catalog/${product.slug}`,
-    canonicalPath: detailContent.canonicalPath,
+    canonicalPath,
+    canonicalUrl: toAbsoluteSiteUrl(canonicalPath),
     primaryImageUrl: imageUrl,
     primaryImageAlt: imageAlt,
     primaryImageUnoptimized: mediaImageNeedsUnoptimized(imageUrl),

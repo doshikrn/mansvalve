@@ -35,6 +35,7 @@ export async function GET(request: Request) {
     const view = buildPublicProductView(p);
     return {
       slug: p.slug,
+      href: view.canonicalPath,
       name: view.displayName,
       categoryName: p.categoryName,
       subcategoryName: p.subcategoryName,

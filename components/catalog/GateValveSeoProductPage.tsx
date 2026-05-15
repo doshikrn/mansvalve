@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, ChevronRight, FileText, Phone, ShieldCheck, Truck } from "lucide-react";
+import { BadgeCheck, ChevronRight, FileText, Phone, ShieldCheck, Truck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
@@ -129,14 +129,6 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
                 WhatsApp
               </a>
             </Button>
-            {product ? (
-              <Button size="lg" variant="outline" className="rounded-xl" asChild>
-                <Link href={`/catalog/${product.slug}`}>
-                  Карточка каталога
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : null}
           </div>
         </div>
 

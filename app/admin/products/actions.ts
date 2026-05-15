@@ -11,6 +11,8 @@ import {
   PRODUCT_DETAIL_BLOCK_FIELDS,
   type ProductDetailBlocks,
 } from "@/lib/product-detail-blocks";
+import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import {
   createProduct,
   deleteProduct,
@@ -42,11 +44,6 @@ const productDocumentsSchema = z.object({
   questionnaireMediaId: z.string().uuid().nullable().optional(),
   documentationMediaId: z.string().uuid().nullable().optional(),
 });
-
-type ProductPublicRouteInfo = Pick<
-  ProductDetail,
-  "slug" | "categorySlug" | "subcategorySlug"
->;
 
 const productSchema = z.object({
   name: z.string().trim().min(2).max(300),
@@ -353,7 +350,7 @@ export async function deleteProductAction(
 }
 
 function revalidateProductPublicPaths(
-  ...products: Array<ProductPublicRouteInfo | null | undefined>
+  ...products: Array<ProductDetail | null | undefined>
 ) {
   revalidatePath("/", "layout");
   revalidatePath("/catalog", "layout");
@@ -362,7 +359,10 @@ function revalidateProductPublicPaths(
 
   for (const product of products) {
     if (!product) continue;
+    const view = buildPublicProductView(productDetailToPublicCatalogProduct(product));
     revalidatePath(`/catalog/${product.slug}`);
+    revalidatePath(`/tovar/${product.slug}`);
+    revalidatePath(view.canonicalPath);
     if (product.categorySlug) {
       revalidatePath(`/catalog/category/${product.categorySlug}`);
     }

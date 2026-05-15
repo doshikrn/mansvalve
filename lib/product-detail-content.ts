@@ -37,7 +37,7 @@ export function buildProductDetailContent(
     supplyTerms: customBlocks?.supplyTerms ?? seoPage?.supplyTerms ?? [],
     canonicalPath: seoPage
       ? `/${seoPage.categorySlug}/${seoPage.slug}`
-      : `/catalog/${product.slug}`,
+      : `/tovar/${product.slug}`,
   };
 }
 

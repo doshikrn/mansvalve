@@ -9,8 +9,8 @@ export type AdminProductPreviewData = {
   h1: string;
   seoTitle: string;
   seoDescription: string;
-  catalogPath: string;
   canonicalPath: string;
+  canonicalUrl: string;
   primaryImageUrl: string;
   primaryImageAlt: string;
   imageCount: number;
@@ -47,18 +47,12 @@ export function AdminProductPreview({ preview }: Props) {
             <dl className="grid gap-2 text-sm sm:grid-cols-2">
               <PreviewRow label="H1" value={preview.h1} />
               <PreviewRow label="Изображений" value={String(preview.imageCount)} />
-              <PreviewRow label="Публичный URL" value={preview.catalogPath} />
-              <PreviewRow label="Canonical" value={preview.canonicalPath} />
+              <PreviewRow label="Публичный URL" value={preview.canonicalPath} />
             </dl>
             <div className="flex flex-wrap gap-2">
-              <Button asChild size="sm" variant="outline">
-                <Link href={preview.catalogPath} target="_blank">
-                  Открыть /catalog
-                </Link>
-              </Button>
               <Button asChild size="sm">
-                <Link href={preview.canonicalPath} target="_blank">
-                  Открыть canonical
+                <Link href={preview.canonicalUrl} target="_blank" rel="noopener noreferrer">
+                  Открыть на сайте
                 </Link>
               </Button>
             </div>
@@ -68,7 +62,7 @@ export function AdminProductPreview({ preview }: Props) {
       <AdminSeoPreview
         title={preview.seoTitle}
         description={preview.seoDescription}
-        url={preview.canonicalPath}
+        url={preview.canonicalUrl}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import {
   getPublicCategoryById,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { toAbsoluteSiteUrl } from "@/lib/site-url";
 import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -81,7 +82,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const products = await getPublicCatalogProducts();
   const product = findGateValveCatalogProduct(products, gateValvePage);
   const view = product ? buildPublicProductView(product) : null;
-  const canonical = view?.canonicalPath ?? `/${gateValvePage.categorySlug}/${gateValvePage.slug}`;
+  const canonical = view?.canonicalUrl ?? toAbsoluteSiteUrl(`/${gateValvePage.categorySlug}/${gateValvePage.slug}`);
   const title = view?.seoTitle ?? gateValvePage.seoTitle;
   const description = view?.seoDescription ?? gateValvePage.seoDescription;
 

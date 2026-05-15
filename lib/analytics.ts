@@ -57,12 +57,19 @@ function getSessionId(): string {
 export function getPageAnalyticsContext(pathname?: string): PageAnalyticsContext {
   const page = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/");
   const categoryMatch = page.match(/^\/catalog\/category\/([^/?#]+)/);
-  const productMatch = page.match(/^\/catalog\/([^/?#]+)$/);
+  const tovarMatch = page.match(/^\/tovar\/([^/?#]+)$/);
+  const zadvizhkiMatch = page.match(/^\/zadvizhki\/([^/?#]+)$/);
+  const legacyCatalogProduct = page.match(/^\/catalog\/([^/?#]+)$/);
+  const legacySegment = legacyCatalogProduct?.[1];
+  const legacyAsProductSlug =
+    legacySegment && legacySegment !== "category" && legacySegment !== "subcategory"
+      ? legacySegment
+      : undefined;
 
   return {
     page,
     category: categoryMatch?.[1],
-    product_slug: productMatch?.[1],
+    product_slug: tovarMatch?.[1] ?? zadvizhkiMatch?.[1] ?? legacyAsProductSlug,
   };
 }
 

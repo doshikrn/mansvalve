@@ -156,7 +156,7 @@ export function ProductShowcaseCarousel({
                 )}
               >
                 <Link
-                  href={`/catalog/${product.slug}`}
+                  href={view.canonicalPath}
                   className={cn(
                     "relative block w-full overflow-hidden lg:border-r",
                     isHero
@@ -203,7 +203,7 @@ export function ProductShowcaseCarousel({
                       </p>
                       <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
                         <Button asChild className="site-primary-cta min-h-11 flex-1 px-5 font-semibold shadow-lg shadow-black/40">
-                          <Link href={`/catalog/${product.slug}`}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                          <Link href={view.canonicalPath}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
                         </Button>
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export function ProductShowcaseCarousel({
                       <p className="mt-1 text-[2rem] font-bold leading-none tabular-nums text-[#2F6BFF]">{hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}</p>
                       <div className="mt-4 flex flex-col gap-3">
                         <Button asChild className="site-primary-cta min-h-11 flex-1 px-5 font-semibold">
-                          <Link href={`/catalog/${product.slug}`}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                          <Link href={view.canonicalPath}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
                         </Button>
                         {showCatalogButton ? (
                           <Link href={linkHref} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06] px-5 text-sm font-semibold text-slate-100 transition hover:border-[#2F6BFF]/45 hover:text-white">

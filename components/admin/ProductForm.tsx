@@ -481,7 +481,7 @@ export function ProductForm({
           <SubmitButton isEdit={Boolean(product)} />
           {livePublicPreview ? (
             <Button asChild type="button" variant="outline" size="sm">
-              <Link href={livePublicPreview.canonicalPath} target="_blank">
+              <Link href={livePublicPreview.canonicalUrl} target="_blank" rel="noopener noreferrer">
                 Открыть на сайте
               </Link>
             </Button>
