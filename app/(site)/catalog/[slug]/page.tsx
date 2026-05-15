@@ -29,16 +29,8 @@ import {
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { buildProductBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/structured-data";
 import { COMPANY_BRAND_SEO, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
-import {
-  buildProductCatalogName,
-  buildProductMetaDescription,
-  getCatalogCategoryLabel,
-} from "@/lib/catalog-seo";
-import { getCategoryVisual } from "@/lib/category-visuals";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
-import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
-import { buildProductDetailContent } from "@/lib/product-detail-content";
 
 /* ── Static generation for all 303 products ──────────────────────── */
 
@@ -62,29 +54,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const view = buildPublicProductView(product);
-  const productName = buildProductCatalogName(product);
-  const canonicalPath = view.canonicalPath;
-  const pageTitle = `Купить ${productName} в Казахстане | ${COMPANY_BRAND_SEO}`;
-  const metaDescription = buildProductMetaDescription(productName);
 
   return {
-    title: pageTitle,
-    description: metaDescription,
+    title: view.seoTitle,
+    description: view.seoDescription,
     alternates: {
-      canonical: canonicalPath,
+      canonical: view.canonicalPath,
     },
     openGraph: {
-      title: pageTitle,
-      description: metaDescription,
+      title: view.seoTitle,
+      description: view.seoDescription,
       type: "website",
-      url: canonicalPath,
+      url: view.canonicalPath,
       siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
+      images: [{ url: view.primaryImageUrl, alt: view.primaryImageAlt }],
     },
     twitter: {
       card: "summary_large_image",
-      title: pageTitle,
-      description: metaDescription,
+      title: view.seoTitle,
+      description: view.seoDescription,
+      images: [view.primaryImageUrl],
     },
   };
 }
@@ -168,15 +158,15 @@ export default async function ProductPage({ params }: PageProps) {
     product.category,
     4,
   );
-  const detailContent = buildProductDetailContent(product);
+  const view = buildPublicProductView(product);
+  const detailContent = view.detailContent;
   const specsEntries = detailContent.characteristics;
-  const productName = buildProductCatalogName(product);
-  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
+  const productName = view.displayName;
+  const categoryLabel = view.categoryLabel;
   const waUrl = buildCompanyProductInquiryWhatsAppUrl(productName, {
     dn: product.dn,
     pn: product.pn,
   });
-  const categoryVisual = getCategoryVisual(product.category);
   const breadcrumbJsonLd = buildProductBreadcrumbJsonLd(product);
   const productJsonLd = buildProductJsonLd(product);
   const actuatorSubcategorySlug = getActuatorSubcategorySlug(
@@ -188,12 +178,8 @@ export default async function ProductPage({ params }: PageProps) {
   const actuatorHref = actuatorSubcategorySlug
     ? `/catalog/subcategory/${actuatorSubcategorySlug}`
     : "/catalog/category/elektroprivody";
-  const heroImageSrc =
-    product.primaryImageUrl || product.images?.[0]?.url || categoryVisual.imageSrc;
-  const heroImageAlt =
-    product.primaryImageAlt ||
-    product.images?.[0]?.alt ||
-    `${categoryLabel} — ${productName}`;
+  const heroImageSrc = view.primaryImageUrl;
+  const heroImageAlt = view.primaryImageAlt;
   warnInvalidMediaUrl(heroImageSrc, `ProductPage.hero:${product.slug}`);
 
   const formattedPrice =
@@ -274,7 +260,7 @@ export default async function ProductPage({ params }: PageProps) {
               fill
               priority
               quality={95}
-              unoptimized={mediaImageNeedsUnoptimized(heroImageSrc)}
+              unoptimized={view.primaryImageUnoptimized}
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />

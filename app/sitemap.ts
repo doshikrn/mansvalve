@@ -5,6 +5,7 @@ import {
   getPublicCatalogCategories,
   getPublicCatalogProducts,
 } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
 import { GATE_VALVE_SEO_PAGES } from "@/lib/seo-product-pages/gate-valves";
 
@@ -77,12 +78,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.82,
   }));
 
-  const productPages: MetadataRoute.Sitemap = products.map((product) => ({
-    url: absoluteUrl(baseUrl, `/catalog/${product.slug}`),
-    lastModified,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+  const productPages: MetadataRoute.Sitemap = products.map((product) => {
+    const view = buildPublicProductView(product);
+    return {
+      url: absoluteUrl(baseUrl, view.canonicalPath),
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    };
+  });
 
   return uniqueSitemapEntries([
     ...staticPages,

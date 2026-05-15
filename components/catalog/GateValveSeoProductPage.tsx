@@ -10,6 +10,7 @@ import { buildCompanyProductInquiryWhatsAppUrl, COMPANY } from "@/lib/company";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import type { GateValveSeoPage } from "@/lib/seo-product-pages/gate-valves";
 
 interface Props {
@@ -25,17 +26,20 @@ const TRUST_ITEMS = [
 ] as const;
 
 export function GateValveSeoProductPage({ page, product, relatedPages }: Props) {
+  const view = product ? buildPublicProductView(product) : null;
   const categoryVisual = getCategoryVisual("zadvizhki");
-  const imageSrc = product?.primaryImageUrl || product?.images?.[0]?.url || categoryVisual.imageSrc;
-  const imageAlt = product?.primaryImageAlt || product?.images?.[0]?.alt || page.imageAlt;
-  const waUrl = buildCompanyProductInquiryWhatsAppUrl(page.title, {
+  const displayName = view?.displayName ?? page.title;
+  const imageSrc = view?.primaryImageUrl ?? categoryVisual.imageSrc;
+  const imageAlt = view?.primaryImageAlt ?? page.imageAlt;
+  const canonicalPath = view?.canonicalPath ?? `/zadvizhki/${page.slug}`;
+  const waUrl = buildCompanyProductInquiryWhatsAppUrl(displayName, {
     dn: page.dn,
     pn: page.pn,
   });
   const formattedPrice =
     product?.price && !product.priceByRequest ? formatPrice(product.price) : null;
-  const productJsonLd = buildGateValveJsonLd(page, product, imageSrc);
-  const breadcrumbJsonLd = buildBreadcrumbJsonLd(page);
+  const productJsonLd = buildGateValveJsonLd(page, product, imageSrc, view);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd(page, displayName, canonicalPath);
 
   return (
     <div className="bg-site-card">
@@ -72,7 +76,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               </li>
               <li>
                 <span className="font-medium text-slate-900" aria-current="page">
-                  {page.title}
+                  {displayName}
                 </span>
               </li>
             </ol>
@@ -95,7 +99,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
           </div>
 
           <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 sm:text-4xl">
-            {page.h1}
+            {view?.h1 ?? page.h1}
           </h1>
 
           <div className="mt-6 space-y-4 text-base leading-[1.75] text-slate-650">
@@ -144,7 +148,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               fill
               priority
               quality={92}
-              unoptimized={mediaImageNeedsUnoptimized(imageSrc)}
+              unoptimized={view?.primaryImageUnoptimized ?? mediaImageNeedsUnoptimized(imageSrc)}
               sizes="(max-width: 1024px) 100vw, 480px"
               className="object-cover"
             />
@@ -312,7 +316,11 @@ function normalizeImageUrl(url: string): string {
   return absoluteUrl(url);
 }
 
-function buildBreadcrumbJsonLd(page: GateValveSeoPage): Record<string, unknown> {
+function buildBreadcrumbJsonLd(
+  page: GateValveSeoPage,
+  displayName: string,
+  canonicalPath: string,
+): Record<string, unknown> {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -328,8 +336,8 @@ function buildBreadcrumbJsonLd(page: GateValveSeoPage): Record<string, unknown> 
       {
         "@type": "ListItem",
         position: 4,
-        name: page.title,
-        item: absoluteUrl(`/zadvizhki/${page.slug}`),
+        name: displayName,
+        item: absoluteUrl(canonicalPath),
       },
     ],
   };
@@ -339,11 +347,13 @@ function buildGateValveJsonLd(
   page: GateValveSeoPage,
   product: PublicCatalogProduct | undefined,
   imageSrc: string,
+  view: ReturnType<typeof buildPublicProductView> | null,
 ): Record<string, unknown> {
+  const canonicalPath = view?.canonicalPath ?? `/zadvizhki/${page.slug}`;
   const offer: Record<string, unknown> = {
     "@type": "Offer",
     priceCurrency: "KZT",
-    url: absoluteUrl(`/zadvizhki/${page.slug}`),
+    url: absoluteUrl(canonicalPath),
     availability: "https://schema.org/InStock",
     itemCondition: "https://schema.org/NewCondition",
     seller: {
@@ -394,8 +404,11 @@ function buildGateValveJsonLd(
   return {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: page.title,
-    description: page.seoDescription,
+    name: view?.displayName ?? page.title,
+    description:
+      view?.detailContent.descriptionParagraphs.join(" ") ||
+      view?.shortDescription ||
+      page.seoDescription,
     sku: product?.id ?? page.slug,
     mpn: `${page.model} DN${page.dn} PN${page.pn}`,
     brand: {
@@ -405,7 +418,7 @@ function buildGateValveJsonLd(
     category: "Задвижки",
     material: page.series === "30ch6br" || page.series === "30ch39r" ? "Чугун" : "Сталь",
     image: [normalizeImageUrl(imageSrc)],
-    url: absoluteUrl(`/zadvizhki/${page.slug}`),
+    url: absoluteUrl(canonicalPath),
     additionalProperty: page.characteristics.map((item) => ({
       "@type": "PropertyValue",
       name: item.label,

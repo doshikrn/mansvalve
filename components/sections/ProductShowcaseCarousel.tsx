@@ -6,9 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PublicCatalogProduct } from "@/lib/public-catalog";
-import { getCategoryVisual } from "@/lib/category-visuals";
-import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
+import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { cn } from "@/lib/utils";
 
 type ProductShowcaseCarouselProps = {
@@ -31,14 +30,6 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-function getProductImage(product: PublicCatalogProduct) {
-  const visual = getCategoryVisual(product.category);
-  return {
-    src: product.primaryImageUrl || visual.imageSrc,
-    alt: product.primaryImageAlt || visual.imageAlt,
-  };
-}
-
 export function ProductShowcaseCarousel({
   products,
   eyebrow,
@@ -53,7 +44,7 @@ export function ProductShowcaseCarousel({
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion() === true;
   const product = products[active];
-  const image = product ? getProductImage(product) : null;
+  const view = product ? buildPublicProductView(product) : null;
   const isHero = variant === "hero";
 
   const goTo = useCallback(
@@ -100,7 +91,7 @@ export function ProductShowcaseCarousel({
     };
   }, [product]);
 
-  if (!product || !image) return null;
+  if (!product || !view) return null;
 
   const hasDirectPrice = product.price != null && !product.priceByRequest;
   const slideKey = `${variant}-${active}-${product.slug}`;
@@ -174,12 +165,12 @@ export function ProductShowcaseCarousel({
                   )}
                 >
                   <Image
-                    src={image.src}
-                    alt={image.alt}
+                    src={view.primaryImageUrl}
+                    alt={view.primaryImageAlt}
                     fill
                     quality={100}
                     sizes={imgSizes}
-                    unoptimized={mediaImageNeedsUnoptimized(image.src)}
+                    unoptimized={view.primaryImageUnoptimized}
                     className="object-cover transition-transform duration-500 ease-out hover:scale-[1.02] motion-reduce:transition-none motion-reduce:hover:scale-100"
                   />
                   <div className={cn("absolute inset-0 bg-gradient-to-t to-transparent", isHero ? "from-site-deep/65 via-site-deep/5" : "from-black/[0.12] via-transparent")} />
@@ -193,9 +184,9 @@ export function ProductShowcaseCarousel({
                   <div className="flex min-w-0 flex-col gap-y-3 px-5 pb-5 pt-4 max-lg:pb-4 sm:px-6 lg:flex-1 lg:px-7 lg:pb-5 lg:pt-5">
                     <p className="mb-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400/95">{heroRibbonLabel}</p>
                     <h4 className="break-words text-[1.2rem] font-bold leading-snug tracking-tight text-white sm:text-[1.35rem] lg:line-clamp-3 lg:text-[1.55rem] lg:leading-[1.2]">
-                      {product.name}
+                      {view.displayName}
                     </h4>
-                    <p className="line-clamp-2 text-sm leading-snug text-slate-300/95 sm:text-[15px] lg:line-clamp-3">{product.shortDescription}</p>
+                    <p className="line-clamp-2 text-sm leading-snug text-slate-300/95 sm:text-[15px] lg:line-clamp-3">{view.shortDescription}</p>
                     {heroSpecSummary ? (
                       <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-slate-200 sm:text-sm lg:mt-2">
                         <span className="font-medium text-slate-400">DN</span> {heroSpecSummary.dn}
@@ -224,8 +215,8 @@ export function ProductShowcaseCarousel({
                         <Package className="h-3.5 w-3.5" />
                         {catalogBadgeLabel}
                       </div>
-                      <h4 className="line-clamp-2 break-words text-[1.2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-3xl">{product.name}</h4>
-                      <p className="line-clamp-2 text-sm leading-snug text-slate-300 sm:text-[15px]">{product.shortDescription}</p>
+                      <h4 className="line-clamp-2 break-words text-[1.2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-3xl">{view.displayName}</h4>
+                      <p className="line-clamp-2 text-sm leading-snug text-slate-300 sm:text-[15px]">{view.shortDescription}</p>
                       <div className="hidden grid-cols-3 gap-2 pt-1 lg:grid">
                         {specs.map(({ icon: Icon, label, value }) => (
                           <div key={`${label}-${product.slug}`} className="flex min-h-[5rem] min-w-0 flex-col rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-2">

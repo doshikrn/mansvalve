@@ -12,6 +12,7 @@ import {
   getPublicCatalogProducts,
   getPublicCategoryById,
 } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -77,25 +78,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const canonical = `/${gateValvePage.categorySlug}/${gateValvePage.slug}`;
+  const products = await getPublicCatalogProducts();
+  const product = findGateValveCatalogProduct(products, gateValvePage);
+  const view = product ? buildPublicProductView(product) : null;
+  const canonical = view?.canonicalPath ?? `/${gateValvePage.categorySlug}/${gateValvePage.slug}`;
+  const title = view?.seoTitle ?? gateValvePage.seoTitle;
+  const description = view?.seoDescription ?? gateValvePage.seoDescription;
 
   return {
-    title: gateValvePage.seoTitle,
-    description: gateValvePage.seoDescription,
+    title,
+    description,
     alternates: {
       canonical,
     },
     openGraph: {
-      title: gateValvePage.seoTitle,
-      description: gateValvePage.seoDescription,
+      title,
+      description,
       url: canonical,
       locale: "ru_KZ",
       type: "website",
+      images: view ? [{ url: view.primaryImageUrl, alt: view.primaryImageAlt }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
-      title: gateValvePage.seoTitle,
-      description: gateValvePage.seoDescription,
+      title,
+      description,
+      images: view ? [view.primaryImageUrl] : undefined,
     },
   };
 }

@@ -6,7 +6,6 @@ import type {
 import { getSiteBaseUrl } from "@/lib/site-url"
 import { COMPANY } from "@/lib/company"
 import { getCategoryVisual } from "@/lib/category-visuals"
-import { formatProductDisplayName } from "@/lib/catalog/product-naming"
 import { buildPublicProductView } from "@/lib/public-catalog/product-view"
 
 interface BreadcrumbItem {
@@ -111,11 +110,14 @@ export function buildCatalogItemListJsonLd(
   const maxItems = options.maxItems ?? 20
   const limitedProducts = products.slice(0, Math.max(0, maxItems))
 
-  const entries: ItemListEntry[] = limitedProducts.map((product, index) => ({
-    position: startPosition + index,
-    name: formatProductDisplayName(product),
-    path: `/catalog/${product.slug}`,
-  }))
+  const entries: ItemListEntry[] = limitedProducts.map((product, index) => {
+    const view = buildPublicProductView(product)
+    return {
+      position: startPosition + index,
+      name: view.displayName,
+      path: view.canonicalPath,
+    }
+  })
 
   return buildItemListJsonLd(entries)
 }
@@ -171,12 +173,12 @@ export function buildSubcategoryBreadcrumbJsonLd(
 }
 
 export function buildProductBreadcrumbJsonLd(product: Product): Record<string, unknown> {
-  const productName = formatProductDisplayName(product)
+  const view = buildPublicProductView(product)
   return buildBreadcrumbJsonLd([
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
     { name: product.categoryName, path: `/catalog/category/${product.category}` },
-    { name: productName, path: `/catalog/${product.slug}` },
+    { name: view.displayName, path: view.canonicalPath },
   ])
 }
 
@@ -266,7 +268,7 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
       "@type": "Offer",
       priceCurrency: "KZT",
       price: String(product.price),
-      url: toAbsoluteUrl(`/catalog/${product.slug}`),
+      url: toAbsoluteUrl(view.canonicalPath),
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       eligibleRegion: {
