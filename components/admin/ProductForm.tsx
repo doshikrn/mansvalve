@@ -1,8 +1,16 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
+import Link from "next/link";
 
+import { AdminFieldHint } from "@/components/admin/AdminFieldHint";
+import {
+  AdminProductPreview,
+  type AdminProductPreviewData,
+} from "@/components/admin/AdminProductPreview";
+import { AdminSectionCard } from "@/components/admin/AdminSectionCard";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { FormDirtyResetAfterSubmit } from "@/components/admin/FormDirtyResetAfterSubmit";
@@ -33,17 +41,6 @@ type Action = (
 
 type Spec = { key: string; value: string };
 
-type ProductPublicPreview = {
-  displayName: string;
-  h1: string;
-  seoTitle: string;
-  seoDescription: string;
-  catalogPath: string;
-  canonicalPath: string;
-  primaryImageUrl: string;
-  imageCount: number;
-};
-
 type Props = {
   action: Action;
   categories: CategoryWithSubcategories[];
@@ -51,14 +48,23 @@ type Props = {
   documentLibrary: MediaLibraryItem[];
   product?: ProductDetail | null;
   initialDetailBlocks?: ProductDetailBlocks | null;
-  publicPreview?: ProductPublicPreview | null;
+  publicPreview?: AdminProductPreviewData | null;
   backHref: string;
   backLabel?: string;
-  /** Sent with create so redirect to edit keeps list filters in `returnTo`. */
   listReturnTo?: string | null;
 };
 
 const INITIAL: ProductFormState = {};
+
+const SECTION_LINKS = [
+  { id: "preview", label: "Preview" },
+  { id: "main", label: "Основное" },
+  { id: "images", label: "Изображения" },
+  { id: "seo", label: "SEO" },
+  { id: "parameters", label: "Параметры" },
+  { id: "description", label: "Описание" },
+  { id: "documents", label: "Документы" },
+] as const;
 
 export function ProductForm({
   action,
@@ -87,7 +93,12 @@ export function ProductForm({
     alt: img.alt ?? "",
     isPrimary: img.isPrimary,
     sortOrder: img.sortOrder,
+    mimeType: img.mimeType,
+    sizeBytes: img.sizeBytes,
   }));
+  const [liveImages, setLiveImages] = useState<SelectedMediaItem[]>(
+    selectedImages,
+  );
   const selectedDocuments = {
     specification: product?.documents.specification ?? null,
     questionnaire: product?.documents.questionnaire ?? null,
@@ -101,337 +112,461 @@ export function ProductForm({
     () =>
       Boolean(
         state.error ||
-          (state.fieldErrors &&
-            Object.keys(state.fieldErrors).length > 0),
+          (state.fieldErrors && Object.keys(state.fieldErrors).length > 0),
       ),
     [state.error, state.fieldErrors],
   );
 
+  const livePublicPreview = useMemo(() => {
+    if (!publicPreview) return null;
+    const primaryImage =
+      liveImages.find((image) => image.isPrimary) ?? liveImages[0] ?? null;
+    if (!primaryImage) return publicPreview;
+    return {
+      ...publicPreview,
+      primaryImageUrl: primaryImage.url,
+      primaryImageAlt: primaryImage.alt || publicPreview.primaryImageAlt,
+      imageCount: liveImages.length,
+    };
+  }, [liveImages, publicPreview]);
+
   return (
     <AdminUnsavedChangesGuard>
-      <form id="admin-product-form" action={runAction} className="space-y-6">
+      <form id="admin-product-form" action={runAction} className="space-y-5">
         {listReturnTo ? (
           <input type="hidden" name="returnTo" value={listReturnTo} />
         ) : null}
         <FormDirtyResetAfterSubmit hasError={hasFormError} />
-        {publicPreview ? (
-          <ProductPublicPreviewCard preview={publicPreview} />
-        ) : null}
-      <Section title="Основное">
-        <Field label="Название" required name="name" error={state.fieldErrors?.name}>
-          <Input name="name" defaultValue={product?.name ?? ""} required />
-        </Field>
 
-        <Field
-          label="Slug (опционально — сгенерируется из названия)"
-          name="slug"
-          error={state.fieldErrors?.slug}
-        >
-          <Input name="slug" defaultValue={product?.slug ?? ""} />
-        </Field>
+        <ProductSectionNav />
+        <ProductValidationWarnings
+          product={product}
+          preview={livePublicPreview}
+          imageCount={liveImages.length}
+        />
 
-        <div className="grid grid-cols-2 gap-3">
-          <Field
-            label="Категория"
-            name="categoryId"
-            required
-            error={state.fieldErrors?.categoryId}
+        {livePublicPreview ? (
+          <AdminSectionCard
+            id="preview"
+            title="Как товар отображается на сайте"
+            description="Этот блок строится только через buildPublicProductView и должен совпадать с карточкой, страницей товара, SEO и JSON-LD."
+            badge="публичный слой"
           >
-            <select
+            <AdminProductPreview preview={livePublicPreview} />
+          </AdminSectionCard>
+        ) : null}
+
+        <AdminSectionCard
+          id="main"
+          title="Основное"
+          description="Внутренние поля товара, публикация, категория и короткие параметры для менеджера."
+        >
+          <Field
+            label="Внутреннее название"
+            required
+            name="name"
+            error={state.fieldErrors?.name}
+          >
+            <Input name="name" defaultValue={product?.name ?? ""} required />
+            <AdminFieldHint>
+              Публичное название формируется автоматически из типа, материала,
+              соединения, модели, DN и PN. Это поле можно оставлять коротким
+              для работы внутри админки.
+            </AdminFieldHint>
+          </Field>
+
+          <Field label="Slug" name="slug" error={state.fieldErrors?.slug}>
+            <Input name="slug" defaultValue={product?.slug ?? ""} />
+            <AdminFieldHint>
+              URL товара. После индексации лучше не менять, чтобы не ломать SEO
+              и старые ссылки.
+            </AdminFieldHint>
+          </Field>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field
+              label="Категория"
               name="categoryId"
               required
-              value={categoryId}
-              onChange={(e) =>
-                setCategoryId(e.target.value ? Number(e.target.value) : "")
-              }
-              className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none"
+              error={state.fieldErrors?.categoryId}
             >
-              <option value="">— выберите —</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+              <select
+                name="categoryId"
+                required
+                value={categoryId}
+                onChange={(e) =>
+                  setCategoryId(e.target.value ? Number(e.target.value) : "")
+                }
+                className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="">Выберите категорию</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
 
-          <Field
-            label="Подкатегория"
-            name="subcategoryId"
-            error={state.fieldErrors?.subcategoryId}
-          >
-            <select
+            <Field
+              label="Подкатегория"
               name="subcategoryId"
-              defaultValue={product?.subcategoryId ?? ""}
-              className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none"
-              disabled={!selectedCategory}
+              error={state.fieldErrors?.subcategoryId}
             >
-              <option value="">— не выбрана —</option>
-              {selectedCategory?.subcategories.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
+              <select
+                name="subcategoryId"
+                defaultValue={product?.subcategoryId ?? ""}
+                className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                disabled={!selectedCategory}
+              >
+                <option value="">Не выбрана</option>
+                {selectedCategory?.subcategories.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </div>
 
-        <Field label="Короткое описание" name="shortDescription">
-          <Textarea
-            name="shortDescription"
-            rows={2}
-            defaultValue={product?.shortDescription ?? ""}
-          />
-        </Field>
-
-        <Field label="Полное описание" name="longDescription">
-          <Textarea
-            name="longDescription"
-            rows={6}
-            defaultValue={product?.longDescription ?? ""}
-          />
-        </Field>
-      </Section>
-
-      <Section title="Параметры">
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="DN" name="dn">
-            <Input name="dn" type="number" defaultValue={product?.dn ?? ""} />
-          </Field>
-          <Field label="PN" name="pn">
-            <Input name="pn" type="number" defaultValue={product?.pn ?? ""} />
-          </Field>
-          <Field label="Резьба" name="thread">
-            <Input name="thread" defaultValue={product?.thread ?? ""} />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Материал" name="material">
-            <Input name="material" defaultValue={product?.material ?? ""} />
-          </Field>
-          <Field label="Модель" name="model">
-            <Input name="model" defaultValue={product?.model ?? ""} />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Тип соединения" name="connectionType">
-            <Input
-              name="connectionType"
-              defaultValue={product?.connectionType ?? ""}
+          <div className="flex flex-wrap gap-4 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+            <CheckboxField
+              name="isActive"
+              label="Показывать на сайте"
+              defaultChecked={product?.isActive ?? true}
             />
-          </Field>
-          <Field label="Тип управления" name="controlType">
-            <Input
-              name="controlType"
-              defaultValue={product?.controlType ?? ""}
+            <CheckboxField
+              name="isFeatured"
+              label="Рекомендуемый товар"
+              defaultChecked={product?.isFeatured ?? false}
             />
-          </Field>
-        </div>
+            <CheckboxField
+              name="priceByRequest"
+              label="Цена по запросу"
+              defaultChecked={product?.priceByRequest ?? true}
+            />
+          </div>
+        </AdminSectionCard>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Цена, ₸" name="price">
-            <Input
-              name="price"
-              type="number"
-              step="0.01"
-              defaultValue={product?.price ?? ""}
-            />
-          </Field>
-          <Field label="Вес, кг" name="weight">
-            <Input
-              name="weight"
-              type="number"
-              step="0.001"
-              defaultValue={product?.weight ?? ""}
-            />
-          </Field>
-          <Field label="Порядок" name="sortOrder">
-            <Input
-              name="sortOrder"
-              type="number"
-              defaultValue={product?.sortOrder ?? 0}
-            />
-          </Field>
-        </div>
+        <AdminSectionCard
+          id="images"
+          title="Изображения"
+          description="Основное изображение и порядок галереи. Preview выше показывает финальную картинку, которую увидит клиент."
+        >
+          <MediaUpload
+            title="Изображения товара"
+            initialLibrary={mediaLibrary}
+            initialSelected={selectedImages}
+            onSelectedChange={setLiveImages}
+            hiddenInputName="imagesPayload"
+            uploadFolder="products"
+            allowAttach
+            attachOnUpload
+          />
+        </AdminSectionCard>
 
-        <div className="flex gap-4 pt-1 text-sm">
-          <CheckboxField
-            name="priceByRequest"
-            label="Цена по запросу"
-            defaultChecked={product?.priceByRequest ?? true}
-          />
-          <CheckboxField
-            name="isActive"
-            label="Активен"
-            defaultChecked={product?.isActive ?? true}
-          />
-          <CheckboxField
-            name="isFeatured"
-            label="Рекомендуем"
-            defaultChecked={product?.isFeatured ?? false}
-          />
-        </div>
-      </Section>
+        <AdminSectionCard
+          id="seo"
+          title="SEO"
+          description="SEO title, description, H1 и canonical сейчас формируются публичным builder'ом. Итоговый вид показан в preview."
+          badge="generated"
+        >
+          {livePublicPreview ? (
+            <div className="space-y-4">
+              <AdminProductPreview preview={livePublicPreview} />
+              <AdminFieldHint>
+                Ручные SEO override-поля намеренно не добавлены без DB-миграции.
+                Если они понадобятся, их нужно добавить отдельными nullable
+                колонками и подключить в buildPublicProductView.
+              </AdminFieldHint>
+            </div>
+          ) : (
+            <AdminFieldHint>
+              SEO preview появится после создания товара.
+            </AdminFieldHint>
+          )}
+        </AdminSectionCard>
 
-      <Section title="Характеристики">
-        <div className="space-y-2">
-          {specs.map((spec, i) => (
-            <div key={i} className="flex items-center gap-2">
+        <AdminSectionCard
+          id="parameters"
+          title="Характеристики"
+          description="DN, PN, материал, модель и соединение участвуют в фильтрах, поиске, публичном названии и SEO."
+        >
+          <div className="grid gap-3 md:grid-cols-3">
+            <Field label="DN" name="dn">
+              <Input name="dn" type="number" defaultValue={product?.dn ?? ""} />
+            </Field>
+            <Field label="PN" name="pn">
+              <Input name="pn" type="number" defaultValue={product?.pn ?? ""} />
+            </Field>
+            <Field label="Резьба" name="thread">
+              <Input name="thread" defaultValue={product?.thread ?? ""} />
+            </Field>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field label="Материал" name="material">
+              <Input name="material" defaultValue={product?.material ?? ""} />
+            </Field>
+            <Field label="Марка / модель" name="model">
+              <Input name="model" defaultValue={product?.model ?? ""} />
+            </Field>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <Field label="Тип соединения" name="connectionType">
               <Input
-                name="specKey[]"
-                value={spec.key}
-                onChange={(e) =>
-                  setSpecs((curr) =>
-                    curr.map((s, idx) =>
-                      idx === i ? { ...s, key: e.target.value } : s,
-                    ),
-                  )
-                }
-                placeholder="Ключ (например, DN)"
-                className="max-w-xs"
+                name="connectionType"
+                defaultValue={product?.connectionType ?? ""}
               />
+            </Field>
+            <Field label="Тип управления" name="controlType">
               <Input
-                name="specValue[]"
-                value={spec.value}
-                onChange={(e) =>
-                  setSpecs((curr) =>
-                    curr.map((s, idx) =>
-                      idx === i ? { ...s, value: e.target.value } : s,
-                    ),
-                  )
-                }
-                placeholder="Значение"
+                name="controlType"
+                defaultValue={product?.controlType ?? ""}
               />
+            </Field>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <Field label="Цена, ₸" name="price">
+              <Input
+                name="price"
+                type="number"
+                step="0.01"
+                defaultValue={product?.price ?? ""}
+              />
+            </Field>
+            <Field label="Вес, кг" name="weight">
+              <Input
+                name="weight"
+                type="number"
+                step="0.001"
+                defaultValue={product?.weight ?? ""}
+              />
+            </Field>
+            <Field label="Порядок сортировки" name="sortOrder">
+              <Input
+                name="sortOrder"
+                type="number"
+                defaultValue={product?.sortOrder ?? 0}
+              />
+            </Field>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold">Таблица характеристик</h3>
+                <AdminFieldHint>
+                  Эти строки показываются на публичной странице товара.
+                </AdminFieldHint>
+              </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setSpecs((curr) => curr.filter((_, idx) => idx !== i))
-                }
+                onClick={() => setSpecs((s) => [...s, { key: "", value: "" }])}
               >
-                Удалить
+                + Добавить строку
               </Button>
             </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setSpecs((s) => [...s, { key: "", value: "" }])}
-          >
-            + Добавить параметр
-          </Button>
-        </div>
-      </Section>
+            <div className="space-y-2">
+              {specs.map((spec, i) => (
+                <div key={i} className="grid gap-2 md:grid-cols-[240px_1fr_auto]">
+                  <Input
+                    name="specKey[]"
+                    value={spec.key}
+                    onChange={(e) =>
+                      setSpecs((curr) =>
+                        curr.map((s, idx) =>
+                          idx === i ? { ...s, key: e.target.value } : s,
+                        ),
+                      )
+                    }
+                    placeholder="Например: ГОСТ"
+                  />
+                  <Input
+                    name="specValue[]"
+                    value={spec.value}
+                    onChange={(e) =>
+                      setSpecs((curr) =>
+                        curr.map((s, idx) =>
+                          idx === i ? { ...s, value: e.target.value } : s,
+                        ),
+                      )
+                    }
+                    placeholder="Значение"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setSpecs((curr) => curr.filter((_, idx) => idx !== i))
+                    }
+                  >
+                    Убрать
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </AdminSectionCard>
 
-      <Section title="SEO-блоки карточки товара">
-        <p className="text-xs leading-5 text-muted-foreground">
-          Эти списки показываются на публичной странице товара под характеристиками.
-          Если нужно изменить текст из SEO-шаблона, отредактируйте строки здесь.
-        </p>
-        <div className="grid gap-4">
-          {PRODUCT_DETAIL_BLOCK_FIELDS.map((field) => (
-            <Field key={field.key} label={field.title} name={field.name}>
-              <div className="space-y-1.5">
+        <AdminSectionCard
+          id="description"
+          title="Описание и SEO-блоки страницы товара"
+          description="Описание и списки ниже отображаются на публичной странице товара. Если поле пустое, сайт может использовать SEO fallback."
+        >
+          <Field label="Короткое описание" name="shortDescription">
+            <Textarea
+              name="shortDescription"
+              rows={2}
+              defaultValue={product?.shortDescription ?? ""}
+            />
+            <AdminFieldHint>
+              Используется в карточках, быстрых превью и fallback-описании.
+            </AdminFieldHint>
+          </Field>
+
+          <Field label="Полное описание" name="longDescription">
+            <Textarea
+              name="longDescription"
+              rows={6}
+              defaultValue={product?.longDescription ?? ""}
+            />
+            <AdminFieldHint>
+              При заполнении имеет приоритет над сгенерированным SEO-описанием.
+            </AdminFieldHint>
+          </Field>
+
+          <div className="grid gap-4">
+            {PRODUCT_DETAIL_BLOCK_FIELDS.map((field) => (
+              <Field key={field.key} label={field.title} name={field.name}>
                 <Textarea
                   name={field.name}
                   rows={5}
                   defaultValue={joinProductDetailBlockLines(detailBlocks[field.key])}
                 />
-                <p className="text-xs text-muted-foreground">{field.description}</p>
-              </div>
-            </Field>
-          ))}
-        </div>
-      </Section>
+                <AdminFieldHint>{field.description}</AdminFieldHint>
+              </Field>
+            ))}
+          </div>
+        </AdminSectionCard>
 
-      <MediaUpload
-        title="Изображения товара"
-        initialLibrary={mediaLibrary}
-        initialSelected={selectedImages}
-        hiddenInputName="imagesPayload"
-        uploadFolder="products"
-        allowAttach
-        attachOnUpload
-      />
+        <AdminSectionCard
+          id="documents"
+          title="Документы"
+          description="Паспорта, спецификации, опросные листы и PDF-файлы, связанные с товаром."
+        >
+          <ProductDocumentsUpload
+            library={documentLibrary}
+            initial={selectedDocuments}
+            hiddenInputName="documentsPayload"
+            uploadFolder="products/documents"
+          />
+        </AdminSectionCard>
 
-      <ProductDocumentsUpload
-        library={documentLibrary}
-        initial={selectedDocuments}
-        hiddenInputName="documentsPayload"
-        uploadFolder="products/documents"
-      />
+        {state.error ? (
+          <p
+            className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            role="alert"
+          >
+            {state.error}
+          </p>
+        ) : null}
 
-      {state.error ? (
-        <p className="text-sm text-destructive" role="alert">
-          {state.error}
-        </p>
-      ) : null}
-
-      <AdminStickyActions backHref={backHref} backLabel={backLabel}>
-        <SubmitButton isEdit={Boolean(product)} />
-      </AdminStickyActions>
-    </form>
+        <AdminStickyActions backHref={backHref} backLabel={backLabel}>
+          <SubmitButton isEdit={Boolean(product)} />
+          {livePublicPreview ? (
+            <Button asChild type="button" variant="outline" size="sm">
+              <Link href={livePublicPreview.canonicalPath} target="_blank">
+                Открыть на сайте
+              </Link>
+            </Button>
+          ) : null}
+        </AdminStickyActions>
+      </form>
     </AdminUnsavedChangesGuard>
   );
 }
 
-function Section({
-  title,
-  children,
+function ProductValidationWarnings({
+  product,
+  preview,
+  imageCount,
 }: {
-  title: string;
-  children: React.ReactNode;
+  product?: ProductDetail | null;
+  preview?: AdminProductPreviewData | null;
+  imageCount: number;
 }) {
-  return (
-    <section className="space-y-3 rounded-xl border border-border bg-background p-4">
-      <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
-      {children}
-    </section>
-  );
-}
+  const warnings = [
+    product && !product.isActive
+      ? "Товар скрыт: изменения сохранятся, но клиент не увидит товар в публичном каталоге."
+      : null,
+    imageCount === 0
+      ? "Нет изображения товара: публичная карточка будет использовать fallback категории."
+      : null,
+    !product?.shortDescription?.trim() && !product?.longDescription?.trim()
+      ? "Нет описания: страница будет использовать сгенерированный SEO fallback."
+      : null,
+    product && product.dn == null
+      ? "DN не указан: фильтры и поиск по диаметру будут работать хуже."
+      : null,
+    product && product.pn == null
+      ? "PN не указан: фильтры и поиск по давлению будут работать хуже."
+      : null,
+    preview && !preview.seoTitle.trim()
+      ? "SEO title пустой: проверьте название, модель, DN и PN."
+      : null,
+    preview && !preview.seoDescription.trim()
+      ? "SEO description пустой: заполните описание или характеристики."
+      : null,
+    preview && preview.seoTitle.length > 70
+      ? "SEO title длиннее 70 символов: в Google он может обрезаться."
+      : null,
+    preview && preview.seoDescription.length > 170
+      ? "SEO description длиннее 170 символов: в Google он может обрезаться."
+      : null,
+  ].filter(Boolean);
 
-function ProductPublicPreviewCard({ preview }: { preview: ProductPublicPreview }) {
-  return (
-    <Section title="Как товар отображается на сайте">
-      <div className="grid gap-4 text-sm lg:grid-cols-[160px_1fr]">
-        <div className="overflow-hidden rounded-lg border border-border bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={preview.primaryImageUrl}
-            alt={preview.displayName}
-            className="h-28 w-full object-cover"
-          />
-        </div>
-        <div className="space-y-2">
-          <PreviewRow label="Публичное название" value={preview.displayName} />
-          <PreviewRow label="H1" value={preview.h1} />
-          <PreviewRow label="SEO title" value={preview.seoTitle} />
-          <PreviewRow label="SEO description" value={preview.seoDescription} />
-          <PreviewRow label="Публичный URL" value={preview.catalogPath} />
-          <PreviewRow label="Canonical" value={preview.canonicalPath} />
-          <PreviewRow label="Изображений" value={String(preview.imageCount)} />
-          <p className="text-xs text-muted-foreground">
-            Внутреннее название ниже можно оставить коротким. Публичное название
-            формируется автоматически из типа, материала, соединения, марки, DN и PN.
-          </p>
-        </div>
+  if (!warnings.length) {
+    return (
+      <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        Карточка выглядит готовой для публикации: есть базовые параметры, SEO
+        preview и публичный view.
       </div>
-    </Section>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+      <p className="font-semibold">Проверьте перед публикацией</p>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        {warnings.map((warning) => (
+          <li key={warning}>{warning}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
-function PreviewRow({ label, value }: { label: string; value: string }) {
+function ProductSectionNav() {
   return (
-    <div className="grid gap-1 sm:grid-cols-[150px_1fr]">
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="min-w-0 break-words font-medium text-foreground">{value}</dd>
-    </div>
+    <nav className="sticky top-0 z-10 -mx-1 overflow-x-auto border-b border-border bg-muted/80 px-1 py-2 backdrop-blur supports-[backdrop-filter]:bg-muted/60">
+      <div className="flex min-w-max gap-1">
+        {SECTION_LINKS.map((section) => (
+          <a
+            key={section.id}
+            href={`#${section.id}`}
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {section.label}
+          </a>
+        ))}
+      </div>
+    </nav>
   );
 }
 
@@ -443,7 +578,7 @@ function Field({
   error,
 }: {
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
   name: string;
   required?: boolean;
   error?: string;
@@ -485,8 +620,12 @@ function CheckboxField({
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Сохраняем…" : isEdit ? "Сохранить изменения" : "Создать товар"}
+    <Button type="submit" disabled={pending} size="sm">
+      {pending
+        ? "Сохранение..."
+        : isEdit
+          ? "Сохранить и продолжить"
+          : "Создать товар"}
     </Button>
   );
 }

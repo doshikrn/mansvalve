@@ -19,6 +19,14 @@ type DbClient = ReturnType<typeof getDb>;
 type DbTransaction = Parameters<Parameters<DbClient["transaction"]>[0]>[0];
 type DbExecutor = DbClient | DbTransaction;
 
+function parseAdminSearchNumber(value: string, aliases: string[]): number | undefined {
+  const aliasPattern = aliases.map((alias) => alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const match = value
+    .toLowerCase()
+    .match(new RegExp(`(?:^|[^a-zа-я0-9])(?:${aliasPattern})\\s*-?\\s*(\\d{1,4})(?=$|[^a-zа-я0-9])`, "iu"));
+  return match?.[1] ? Number.parseInt(match[1], 10) : undefined;
+}
+
 export type AdminProductRow = Product & {
   categorySlug: string;
   subcategorySlug: string | null;
@@ -108,15 +116,26 @@ export async function listProducts(
     conditions.push(eq(productsTable.subcategoryId, subcategoryId));
   }
   if (search && search.trim()) {
-    const needle = `%${search.trim()}%`;
-    conditions.push(
-      or(
-        ilike(productsTable.name, needle),
-        ilike(productsTable.slug, needle),
-        ilike(productsTable.model, needle),
-        ilike(productsTable.material, needle),
-      )!,
-    );
+    const rawSearch = search.trim();
+    const needle = `%${rawSearch}%`;
+    const compactNeedle = `%${rawSearch.replace(/[\s-]+/g, "")}%`;
+    const dn = parseAdminSearchNumber(rawSearch, ["dn", "du", "dy", "ду"]);
+    const pn = parseAdminSearchNumber(rawSearch, ["pn", "ru", "ру"]);
+    const searchConditions = [
+      ilike(productsTable.name, needle),
+      ilike(productsTable.slug, needle),
+      ilike(productsTable.model, needle),
+      ilike(productsTable.material, needle),
+      ilike(productsTable.connectionType, needle),
+      ilike(productsTable.controlType, needle),
+      ilike(productsTable.categoryName, needle),
+      ilike(productsTable.subcategoryName, needle),
+      ilike(sql<string>`replace(${productsTable.model}, ' ', '')`, compactNeedle),
+      ilike(sql<string>`replace(${productsTable.slug}, '-', '')`, compactNeedle),
+    ];
+    if (dn != null) searchConditions.push(eq(productsTable.dn, dn));
+    if (pn != null) searchConditions.push(eq(productsTable.pn, pn));
+    conditions.push(or(...searchConditions)!);
   }
 
   const whereClause = conditions.length ? and(...conditions) : undefined;

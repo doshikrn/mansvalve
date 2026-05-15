@@ -53,6 +53,7 @@ type UploadJob = {
 type Props = {
   initialLibrary: MediaLibraryItem[];
   initialSelected?: SelectedMediaItem[];
+  onSelectedChange?: (items: SelectedMediaItem[]) => void;
   hiddenInputName?: string;
   uploadFolder?: string;
   allowAttach?: boolean;
@@ -69,6 +70,7 @@ const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 export function MediaUpload({
   initialLibrary,
   initialSelected = [],
+  onSelectedChange,
   hiddenInputName,
   uploadFolder = "general",
   allowAttach = false,
@@ -115,6 +117,10 @@ export function MediaUpload({
       warnInvalidMediaUrl(item.url, "MediaUpload.selected");
     }
   }, [library, selected]);
+
+  useEffect(() => {
+    onSelectedChange?.(selected);
+  }, [onSelectedChange, selected]);
 
   async function handleFiles(files: FileList | File[]) {
     setError(null);
@@ -386,15 +392,28 @@ export function MediaUpload({
               {selected.map((item, index) => (
                 <div
                   key={item.mediaId}
-                  className="flex items-start gap-3 rounded-lg border border-border p-2"
+                  className={[
+                    "flex items-start gap-3 rounded-lg border p-2 transition",
+                    item.isPrimary
+                      ? "border-blue-500 bg-blue-50/70 ring-1 ring-blue-200"
+                      : "border-border bg-background",
+                  ].join(" ")}
                 >
-                  <MediaThumb item={item} className="h-16 w-16" />
+                  <div className="relative shrink-0">
+                    <MediaThumb item={item} className="h-16 w-16" />
+                    {item.isPrimary ? (
+                      <span className="absolute -left-1 -top-1 rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+                        main
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
                         type="button"
                         size="xs"
                         variant={item.isPrimary ? "default" : "outline"}
+                        aria-pressed={item.isPrimary}
                         onClick={() => setPrimary(item.mediaId)}
                       >
                         {item.isPrimary ? "Основное" : "Сделать основным"}
@@ -403,6 +422,7 @@ export function MediaUpload({
                         type="button"
                         size="xs"
                         variant="outline"
+                        aria-label="Поднять изображение выше"
                         onClick={() => moveSelected(index, -1)}
                         disabled={index === 0}
                       >
@@ -412,6 +432,7 @@ export function MediaUpload({
                         type="button"
                         size="xs"
                         variant="outline"
+                        aria-label="Опустить изображение ниже"
                         onClick={() => moveSelected(index, 1)}
                         disabled={index === selected.length - 1}
                       >
@@ -453,7 +474,12 @@ export function MediaUpload({
               return (
                 <div
                   key={item.id}
-                  className="space-y-2 rounded-lg border border-border p-2"
+                  className={[
+                    "space-y-2 rounded-lg border p-2 transition",
+                    isSelected
+                      ? "border-blue-400 bg-blue-50/50"
+                      : "border-border bg-background",
+                  ].join(" ")}
                 >
                   <MediaThumb item={item} className="h-24 w-full" />
                   <div className="space-y-1 text-[11px] text-muted-foreground">

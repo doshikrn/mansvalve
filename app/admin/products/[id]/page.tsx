@@ -147,6 +147,7 @@ function buildPublicPreview(product: ProductDetail) {
     catalogPath: view.catalogPath,
     canonicalPath: view.canonicalPath,
     primaryImageUrl: view.primaryImageUrl,
+    primaryImageAlt: view.primaryImageAlt,
     imageCount: view.imageCount,
   };
 }
@@ -189,5 +190,43 @@ function toPublicCatalogProduct(product: ProductDetail): PublicCatalogProduct {
     shortDescription: product.shortDescription ?? "",
     longDescription: product.longDescription ?? undefined,
     detailBlocks: product.detailBlocks ?? undefined,
+    primaryImageUrl:
+      product.images.find((image) => image.isPrimary)?.url ?? product.images[0]?.url,
+    primaryImageAlt:
+      product.images.find((image) => image.isPrimary)?.alt ??
+      product.images[0]?.alt ??
+      undefined,
+    images: product.images.map((image) => ({
+      url: image.url,
+      alt: image.alt ?? "",
+      isPrimary: image.isPrimary,
+      sortOrder: image.sortOrder,
+    })),
+    documents: {
+      specification: product.documents.specification
+        ? {
+            url: product.documents.specification.url,
+            mimeType: product.documents.specification.mimeType,
+            sizeBytes: product.documents.specification.sizeBytes,
+            label: product.documents.specification.alt ?? undefined,
+          }
+        : undefined,
+      questionnaire: product.documents.questionnaire
+        ? {
+            url: product.documents.questionnaire.url,
+            mimeType: product.documents.questionnaire.mimeType,
+            sizeBytes: product.documents.questionnaire.sizeBytes,
+            label: product.documents.questionnaire.alt ?? undefined,
+          }
+        : undefined,
+      documentation: product.documents.documentation
+        ? {
+            url: product.documents.documentation.url,
+            mimeType: product.documents.documentation.mimeType,
+            sizeBytes: product.documents.documentation.sizeBytes,
+            label: product.documents.documentation.alt ?? undefined,
+          }
+        : undefined,
+    },
   };
 }
