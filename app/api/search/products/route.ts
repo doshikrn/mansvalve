@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { buildProductCatalogName } from "@/lib/catalog-seo";
 import { getPublicCatalogProducts } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { searchPublicProducts } from "@/lib/search/product-search";
 import type { ProductSearchItemDto } from "@/lib/search/product-search-dto";
 
@@ -31,15 +31,18 @@ export async function GET(request: Request) {
   const products = await getPublicCatalogProducts();
   const hits = searchPublicProducts(products, rawQ, limit);
 
-  const out: ProductSearchItemDto[] = hits.map((p) => ({
-    slug: p.slug,
-    name: buildProductCatalogName(p),
-    categoryName: p.categoryName,
-    subcategoryName: p.subcategoryName,
-    price: p.price ?? null,
-    priceByRequest: p.priceByRequest,
-    primaryImageUrl: p.primaryImageUrl?.trim() || null,
-  }));
+  const out: ProductSearchItemDto[] = hits.map((p) => {
+    const view = buildPublicProductView(p);
+    return {
+      slug: p.slug,
+      name: view.displayName,
+      categoryName: p.categoryName,
+      subcategoryName: p.subcategoryName,
+      price: p.price ?? null,
+      priceByRequest: p.priceByRequest,
+      primaryImageUrl: view.primaryImageUrl?.trim() || null,
+    };
+  });
 
   return NextResponse.json({ products: out });
 }

@@ -1,13 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
-import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
-import { buildProductCatalogName, getCatalogCategoryLabel } from "@/lib/catalog-seo";
-import { getCategoryVisual } from "@/lib/category-visuals";
+
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
-import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
+import { Button } from "@/components/ui/button";
+import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
+import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 function formatPrice(price: number): string {
@@ -23,20 +22,15 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const detailHref = `/catalog/${product.slug}`;
-  const productName = buildProductCatalogName(product);
-  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
-  const visual = getCategoryVisual(product.category);
-  const imageSrc = product.primaryImageUrl || visual.imageSrc;
-  const imageAlt =
-    product.primaryImageAlt ||
-    `${categoryLabel} — ${productName}` ||
-    visual.imageAlt;
+  const view = buildPublicProductView(product);
+  const detailHref = view.catalogPath;
+  const productName = view.displayName;
+  const imageSrc = view.primaryImageUrl;
+  const imageAlt = view.primaryImageAlt;
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
     <article className="site-card group flex flex-col overflow-hidden p-0 active:scale-[0.98] motion-reduce:active:scale-100">
-      {/* Category visual fallback */}
       <Link
         href={detailHref}
         className="relative flex h-40 items-center justify-center bg-site-bg"
@@ -48,19 +42,17 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={imageAlt}
           fill
           quality={90}
-          unoptimized={mediaImageNeedsUnoptimized(imageSrc)}
+          unoptimized={view.primaryImageUnoptimized}
           sizes="(max-width: 640px) 100vw, 320px"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/10 to-transparent" />
         <span className="absolute bottom-2 left-2 rounded-md bg-site-card px-2 py-0.5 text-[11px] font-medium text-site-muted">
-          {categoryLabel}
+          {view.categoryLabel}
         </span>
       </Link>
 
-      {/* Content */}
       <div className="flex flex-1 flex-col p-4">
-        {/* Spec badges */}
         <div className="mb-2.5 flex flex-wrap gap-1.5">
           {product.dn != null && (
             <span className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
@@ -92,7 +84,6 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* Product name */}
         <Link
           href={detailHref}
           className="mb-1.5 block text-sm font-semibold leading-snug text-site-ink transition-colors line-clamp-2 hover:text-site-primary-hover"
@@ -107,12 +98,10 @@ export function ProductCard({ product }: ProductCardProps) {
           <SpecItem label="Статус" value="В наличии / под заказ" />
         </dl>
 
-        {/* Description */}
         <p className="mb-3 text-xs text-site-muted leading-relaxed line-clamp-2 flex-1">
-          {product.shortDescription}
+          {view.shortDescription}
         </p>
 
-        {/* Price */}
         <div className="mb-3">
           {product.price && !product.priceByRequest ? (
             <p className="text-lg font-bold text-site-ink tracking-tight">
@@ -125,7 +114,6 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* CTA buttons */}
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
             <Link href={`${detailHref}#request-section`}>

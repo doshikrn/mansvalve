@@ -11,6 +11,7 @@ import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import { listRecentMediaAssets } from "@/lib/services/media";
@@ -55,6 +56,7 @@ export default async function EditProductPage({
 
   const displayName = formatProductDisplayName(product);
   const initialDetailBlocks = getInitialDetailBlocks(product);
+  const publicPreview = buildPublicPreview(product);
   const boundUpdate = updateProductAction.bind(null, id);
   const boundDelete = deleteProductAction.bind(null, id);
 
@@ -128,10 +130,25 @@ export default async function EditProductPage({
           }))}
         product={product}
         initialDetailBlocks={initialDetailBlocks}
+        publicPreview={publicPreview}
         backHref={listHref}
       />
     </div>
   );
+}
+
+function buildPublicPreview(product: ProductDetail) {
+  const view = buildPublicProductView(toPublicCatalogProduct(product));
+  return {
+    displayName: view.displayName,
+    h1: view.h1,
+    seoTitle: view.seoTitle,
+    seoDescription: view.seoDescription,
+    catalogPath: view.catalogPath,
+    canonicalPath: view.canonicalPath,
+    primaryImageUrl: view.primaryImageUrl,
+    imageCount: view.imageCount,
+  };
 }
 
 function getInitialDetailBlocks(product: ProductDetail): ProductDetailBlocks | null {

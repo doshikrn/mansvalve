@@ -33,6 +33,17 @@ type Action = (
 
 type Spec = { key: string; value: string };
 
+type ProductPublicPreview = {
+  displayName: string;
+  h1: string;
+  seoTitle: string;
+  seoDescription: string;
+  catalogPath: string;
+  canonicalPath: string;
+  primaryImageUrl: string;
+  imageCount: number;
+};
+
 type Props = {
   action: Action;
   categories: CategoryWithSubcategories[];
@@ -40,6 +51,7 @@ type Props = {
   documentLibrary: MediaLibraryItem[];
   product?: ProductDetail | null;
   initialDetailBlocks?: ProductDetailBlocks | null;
+  publicPreview?: ProductPublicPreview | null;
   backHref: string;
   backLabel?: string;
   /** Sent with create so redirect to edit keeps list filters in `returnTo`. */
@@ -55,6 +67,7 @@ export function ProductForm({
   documentLibrary,
   product,
   initialDetailBlocks,
+  publicPreview,
   backHref,
   backLabel = "К списку",
   listReturnTo,
@@ -101,6 +114,9 @@ export function ProductForm({
           <input type="hidden" name="returnTo" value={listReturnTo} />
         ) : null}
         <FormDirtyResetAfterSubmit hasError={hasFormError} />
+        {publicPreview ? (
+          <ProductPublicPreviewCard preview={publicPreview} />
+        ) : null}
       <Section title="Основное">
         <Field label="Название" required name="name" error={state.fieldErrors?.name}>
           <Input name="name" defaultValue={product?.name ?? ""} required />
@@ -375,6 +391,47 @@ function Section({
       <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
       {children}
     </section>
+  );
+}
+
+function ProductPublicPreviewCard({ preview }: { preview: ProductPublicPreview }) {
+  return (
+    <Section title="Как товар отображается на сайте">
+      <div className="grid gap-4 text-sm lg:grid-cols-[160px_1fr]">
+        <div className="overflow-hidden rounded-lg border border-border bg-muted">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={preview.primaryImageUrl}
+            alt={preview.displayName}
+            className="h-28 w-full object-cover"
+          />
+        </div>
+        <div className="space-y-2">
+          <PreviewRow label="Публичное название" value={preview.displayName} />
+          <PreviewRow label="H1" value={preview.h1} />
+          <PreviewRow label="SEO title" value={preview.seoTitle} />
+          <PreviewRow label="SEO description" value={preview.seoDescription} />
+          <PreviewRow label="Публичный URL" value={preview.catalogPath} />
+          <PreviewRow label="Canonical" value={preview.canonicalPath} />
+          <PreviewRow label="Изображений" value={String(preview.imageCount)} />
+          <p className="text-xs text-muted-foreground">
+            Внутреннее название ниже можно оставить коротким. Публичное название
+            формируется автоматически из типа, материала, соединения, марки, DN и PN.
+          </p>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function PreviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1 sm:grid-cols-[150px_1fr]">
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="min-w-0 break-words font-medium text-foreground">{value}</dd>
+    </div>
   );
 }
 

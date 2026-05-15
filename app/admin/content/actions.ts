@@ -226,6 +226,7 @@ export async function saveAboutCopyAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/about");
+  revalidatePath("/sitemap.xml");
   redirect("/admin/content?saved=about");
 }
 
@@ -244,6 +245,7 @@ export async function saveAboutMetaAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/about");
+  revalidatePath("/sitemap.xml");
   redirect("/admin/content?saved=about-meta");
 }
 
@@ -603,6 +605,7 @@ export async function savePageAboutAction(formData: FormData) {
 
   revalidatePath("/about");
   revalidatePath("/admin/content");
+  revalidatePath("/sitemap.xml");
   redirect("/admin/content?saved=page-about");
 }
 
@@ -632,6 +635,7 @@ export async function savePageAboutHeroImageAction(formData: FormData) {
 
   revalidatePath("/about");
   revalidatePath("/admin/content");
+  revalidatePath("/sitemap.xml");
   redirect("/admin/content?saved=page-about-hero");
 }
 

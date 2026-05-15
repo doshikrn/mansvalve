@@ -7,6 +7,7 @@ import { getSiteBaseUrl } from "@/lib/site-url"
 import { COMPANY } from "@/lib/company"
 import { getCategoryVisual } from "@/lib/category-visuals"
 import { formatProductDisplayName } from "@/lib/catalog/product-naming"
+import { buildPublicProductView } from "@/lib/public-catalog/product-view"
 
 interface BreadcrumbItem {
   name: string
@@ -180,6 +181,7 @@ export function buildProductBreadcrumbJsonLd(product: Product): Record<string, u
 }
 
 export function buildProductJsonLd(product: Product): Record<string, unknown> {
+  const view = buildPublicProductView(product)
   const additionalProperty: Array<Record<string, string>> = []
 
   if (product.subcategoryName) {
@@ -226,8 +228,9 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
   const result: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: formatProductDisplayName(product),
-    description: product.longDescription || product.shortDescription,
+    name: view.displayName,
+    description:
+      view.detailContent.descriptionParagraphs.join(" ") || view.shortDescription,
     sku: product.id,
     mpn: product.model || product.id,
     brand: {
@@ -236,11 +239,11 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
     },
     category: product.categoryName,
     material: product.material,
-    url: toAbsoluteUrl(`/catalog/${product.slug}`),
+    url: toAbsoluteUrl(view.canonicalPath),
   }
 
   const imageCandidates = [
-    product.primaryImageUrl,
+    view.primaryImageUrl,
     ...(product.images ?? []).map((image) => image.url),
   ].filter((url): url is string => Boolean(url))
 

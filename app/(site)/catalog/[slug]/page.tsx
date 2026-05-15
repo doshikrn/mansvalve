@@ -26,6 +26,7 @@ import {
   type PublicCatalogCategory,
   type PublicCatalogProduct,
 } from "@/lib/public-catalog";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { buildProductBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/structured-data";
 import { COMPANY_BRAND_SEO, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import {
@@ -60,9 +61,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Товар не найден" };
   }
 
+  const view = buildPublicProductView(product);
   const productName = buildProductCatalogName(product);
-  const detailContent = buildProductDetailContent(product);
-  const canonicalPath = detailContent.canonicalPath;
+  const canonicalPath = view.canonicalPath;
   const pageTitle = `Купить ${productName} в Казахстане | ${COMPANY_BRAND_SEO}`;
   const metaDescription = buildProductMetaDescription(productName);
 
