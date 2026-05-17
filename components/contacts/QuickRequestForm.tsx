@@ -426,6 +426,14 @@ export function QuickRequestForm({
         product_name: productContext?.productName,
         category: productContext?.productCategory ?? pageContext.category,
       });
+      trackEvent("generate_lead", {
+        source,
+        page,
+        method: "site_form",
+        product_slug: productContext?.productSlug ?? pageContext.product_slug,
+        product_name: productContext?.productName,
+        category: productContext?.productCategory ?? pageContext.category,
+      });
       setSubmitState("success");
     } catch (error) {
       const message =

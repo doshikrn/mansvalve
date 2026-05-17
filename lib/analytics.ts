@@ -4,6 +4,16 @@ type AnalyticsValue = string | number | boolean | null | undefined;
 
 export type AnalyticsPayload = Record<string, AnalyticsValue>;
 const SESSION_STORAGE_KEY = "mansvalve:analytics-session-id";
+const URL_ATTRIBUTION_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "yclid",
+  "fbclid",
+] as const;
 
 export interface PageAnalyticsContext {
   page: string;
@@ -82,10 +92,17 @@ function getDefaultDataLayerContext(): AnalyticsPayload {
   const pathname = window.location.pathname;
   const page = `${pathname}${window.location.search || ""}`;
   const { product_slug, category } = getPageAnalyticsContext(pathname);
+  const searchParams = new URLSearchParams(window.location.search);
   const out: AnalyticsPayload = {
     page,
     pathname,
+    page_path: pathname,
+    page_location: window.location.href,
   };
+  for (const key of URL_ATTRIBUTION_KEYS) {
+    const value = searchParams.get(key)?.trim();
+    if (value) out[key] = value;
+  }
   if (product_slug) out.product_slug = product_slug;
   if (category) out.category = category;
   return out;

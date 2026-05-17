@@ -49,6 +49,7 @@ export async function generateStaticParams() {
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -136,6 +137,21 @@ function getActuatorSubcategorySlug(
   return undefined;
 }
 
+function buildQueryString(query: Record<string, string | string[] | undefined>) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item) params.append(key, item);
+      }
+      continue;
+    }
+    if (value) params.set(key, value);
+  }
+  const search = params.toString();
+  return search ? `?${search}` : "";
+}
+
 /* ── Trust strip data ────────────────────────────────────────────── */
 
 const TRUST_ITEMS = [
@@ -146,7 +162,7 @@ const TRUST_ITEMS = [
 
 /* ── Page component ──────────────────────────────────────────────── */
 
-export default async function ProductPage({ params }: PageProps) {
+export default async function ProductPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const [product, categories, allProducts] = await Promise.all([
     getPublicProductBySlug(slug),
@@ -157,7 +173,9 @@ export default async function ProductPage({ params }: PageProps) {
   if (!product) notFound();
 
   if (getGateValveSeoPageForProduct(product)) {
-    permanentRedirect(buildPublicProductView(product).canonicalPath);
+    const query = searchParams ? await searchParams : {};
+    const view = buildPublicProductView(product);
+    permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);
   }
 
   const category = await getPublicCategoryById(product.category);

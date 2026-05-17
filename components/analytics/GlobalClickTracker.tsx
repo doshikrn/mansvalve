@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
 const WHATSAPP_PATTERN = /wa\.me|api\.whatsapp\.com|whatsapp/i;
+const TELEGRAM_PATTERN = /t\.me|telegram/i;
 
 export function GlobalClickTracker() {
   useEffect(() => {
@@ -39,6 +40,11 @@ export function GlobalClickTracker() {
 
       if (WHATSAPP_PATTERN.test(href)) {
         trackEvent("whatsapp_click", basePayload);
+        return;
+      }
+
+      if (TELEGRAM_PATTERN.test(href)) {
+        trackEvent("telegram_click", basePayload);
       }
     };
 

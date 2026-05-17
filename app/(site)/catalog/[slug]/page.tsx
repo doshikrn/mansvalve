@@ -14,13 +14,31 @@ export async function generateStaticParams() {
  */
 export default async function LegacyCatalogProductRedirect({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
   const product = await getPublicProductBySlug(slug);
   if (!product) notFound();
 
   const view = buildPublicProductView(product);
-  permanentRedirect(view.canonicalPath);
+  permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);
+}
+
+function buildQueryString(query: Record<string, string | string[] | undefined>) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item) params.append(key, item);
+      }
+      continue;
+    }
+    if (value) params.set(key, value);
+  }
+  const search = params.toString();
+  return search ? `?${search}` : "";
 }
