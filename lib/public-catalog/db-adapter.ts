@@ -41,6 +41,7 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       .select({
         slug: categoriesTable.slug,
         name: categoriesTable.name,
+        sortOrder: categoriesTable.sortOrder,
       })
       .from(categoriesTable)
       .where(eq(categoriesTable.isActive, true))
@@ -49,6 +50,7 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       .select({
         slug: subcategoriesTable.slug,
         name: subcategoriesTable.name,
+        sortOrder: subcategoriesTable.sortOrder,
         categorySlug: categoriesTable.slug,
       })
       .from(subcategoriesTable)
@@ -77,6 +79,7 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       name: subcategory.name,
       slug: subcategory.slug,
       parentCategory: subcategory.categorySlug,
+      sortOrder: subcategory.sortOrder,
     });
     bucket.set(subcategory.categorySlug, arr);
   }
@@ -86,6 +89,7 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       id: category.slug,
       name: category.name,
       slug: category.slug,
+      sortOrder: category.sortOrder,
       subcategories: bucket.get(category.slug) ?? [],
     })),
   );

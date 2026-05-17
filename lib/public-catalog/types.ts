@@ -51,12 +51,14 @@ export interface PublicCatalogSubcategory {
   name: string;
   slug: string;
   parentCategory: string;
+  sortOrder?: number;
 }
 
 export interface PublicCatalogCategory {
   id: string;
   name: string;
   slug: string;
+  sortOrder?: number;
   subcategories: PublicCatalogSubcategory[];
 }
 

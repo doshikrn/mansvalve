@@ -200,15 +200,32 @@ export const CATALOG_LANDING_PAGES: CatalogLandingPage[] = [
 export function getOrderedCatalogCategories(
   categories: PublicCatalogCategory[],
 ): PublicCatalogCategory[] {
+  const hasDatabaseOrder = categories.some(
+    (category) => typeof category.sortOrder === "number",
+  );
   const order = new Map<string, number>(
     CATALOG_CATEGORY_ORDER.map((id, index) => [id, index]),
   );
   return [...categories]
     .map((category) => ({
       ...category,
-      name: CATALOG_CATEGORY_LABELS[category.id] ?? category.name,
+      name: hasDatabaseOrder
+        ? category.name
+        : CATALOG_CATEGORY_LABELS[category.id] ?? category.name,
     }))
-    .sort((a, b) => (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99));
+    .sort((a, b) => {
+      if (hasDatabaseOrder) {
+        return (
+          (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+          a.name.localeCompare(b.name, "ru")
+        );
+      }
+
+      return (
+        (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99) ||
+        a.name.localeCompare(b.name, "ru")
+      );
+    });
 }
 
 export function getCatalogCategoryLabel(categoryId: string, fallback: string): string {

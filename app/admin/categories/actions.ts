@@ -94,7 +94,10 @@ function revalidateCatalogPublicPaths(
   subcategories: Array<PublicSubcategoryRouteInfo | null | undefined> = [],
 ) {
   revalidatePath("/", "layout");
+  revalidatePath("/catalog");
   revalidatePath("/catalog", "layout");
+  revalidatePath("/catalog/category/[categorySlug]", "page");
+  revalidatePath("/catalog/subcategory/[subcategorySlug]", "page");
   revalidatePath("/sitemap.xml");
 
   for (const category of categories) {

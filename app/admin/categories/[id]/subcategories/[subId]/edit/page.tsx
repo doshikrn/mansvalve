@@ -100,7 +100,7 @@ export default async function EditSubcategoryPage({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sortOrder">Порядок</Label>
+            <Label htmlFor="sortOrder">Порядок сортировки</Label>
             <input
               id="sortOrder"
               name="sortOrder"
