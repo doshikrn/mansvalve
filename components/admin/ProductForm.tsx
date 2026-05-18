@@ -10,6 +10,7 @@ import {
   AdminProductPreview,
   type AdminProductPreviewData,
 } from "@/components/admin/AdminProductPreview";
+import { AdminSeoPreview } from "@/components/admin/AdminSeoPreview";
 import { AdminSectionCard } from "@/components/admin/AdminSectionCard";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
@@ -60,9 +61,9 @@ const SECTION_LINKS = [
   { id: "preview", label: "Preview" },
   { id: "main", label: "Основное" },
   { id: "images", label: "Изображения" },
-  { id: "seo", label: "SEO" },
+  { id: "seo", label: "SEO preview" },
   { id: "parameters", label: "Параметры" },
-  { id: "description", label: "Описание" },
+  { id: "description", label: "Контент" },
   { id: "documents", label: "Документы" },
 ] as const;
 
@@ -267,17 +268,25 @@ export function ProductForm({
 
         <AdminSectionCard
           id="seo"
-          title="SEO"
-          description="SEO title, description, H1 и canonical сейчас формируются публичным builder'ом. Итоговый вид показан в preview."
+          title="SEO preview"
+          description="SEO title, description, H1 и canonical сейчас формируются автоматически через buildPublicProductView(). Здесь только итоговый preview, без повторного редактирования тех же текстов."
           badge="generated"
         >
           {livePublicPreview ? (
             <div className="space-y-4">
-              <AdminProductPreview preview={livePublicPreview} />
+              <AdminSeoPreview
+                title={livePublicPreview.seoTitle}
+                description={livePublicPreview.seoDescription}
+                url={livePublicPreview.canonicalUrl}
+              />
+              <dl className="grid gap-3 rounded-lg border border-border bg-muted/30 p-3 text-sm sm:grid-cols-2">
+                <PreviewValue label="H1" value={livePublicPreview.h1} />
+                <PreviewValue label="Canonical" value={livePublicPreview.canonicalPath} />
+              </dl>
               <AdminFieldHint>
-                Ручные SEO override-поля намеренно не добавлены без DB-миграции.
-                Если они понадобятся, их нужно добавить отдельными nullable
-                колонками и подключить в buildPublicProductView.
+                Ручные SEO override-поля сейчас намеренно не добавлены. SEO берёт публичное
+                название, описание и canonical из public builder, чтобы админка и сайт не
+                расходились.
               </AdminFieldHint>
             </div>
           ) : (
@@ -354,6 +363,39 @@ export function ProductForm({
             </Field>
           </div>
 
+        </AdminSectionCard>
+
+        <AdminSectionCard
+          id="description"
+          title="Контент страницы товара"
+          description="Краткое и полное описание, таблица характеристик и списки ниже управляют публичной страницей товара."
+        >
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-relaxed text-blue-950">
+            Если поле заполнено — оно показывается на сайте. Если пустое — используется fallback из public builder.
+          </div>
+
+          <Field label="Короткое описание" name="shortDescription">
+            <Textarea
+              name="shortDescription"
+              rows={2}
+              defaultValue={product?.shortDescription ?? ""}
+            />
+            <AdminFieldHint>
+              Используется в карточках, быстрых превью и fallback-описании.
+            </AdminFieldHint>
+          </Field>
+
+          <Field label="Полное описание" name="longDescription">
+            <Textarea
+              name="longDescription"
+              rows={6}
+              defaultValue={product?.longDescription ?? ""}
+            />
+            <AdminFieldHint>
+              При заполнении имеет приоритет над сгенерированным SEO-описанием.
+            </AdminFieldHint>
+          </Field>
+
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -412,34 +454,6 @@ export function ProductForm({
               ))}
             </div>
           </div>
-        </AdminSectionCard>
-
-        <AdminSectionCard
-          id="description"
-          title="Описание и SEO-блоки страницы товара"
-          description="Описание и списки ниже отображаются на публичной странице товара. Если поле пустое, сайт может использовать SEO fallback."
-        >
-          <Field label="Короткое описание" name="shortDescription">
-            <Textarea
-              name="shortDescription"
-              rows={2}
-              defaultValue={product?.shortDescription ?? ""}
-            />
-            <AdminFieldHint>
-              Используется в карточках, быстрых превью и fallback-описании.
-            </AdminFieldHint>
-          </Field>
-
-          <Field label="Полное описание" name="longDescription">
-            <Textarea
-              name="longDescription"
-              rows={6}
-              defaultValue={product?.longDescription ?? ""}
-            />
-            <AdminFieldHint>
-              При заполнении имеет приоритет над сгенерированным SEO-описанием.
-            </AdminFieldHint>
-          </Field>
 
           <div className="grid gap-4">
             {PRODUCT_DETAIL_BLOCK_FIELDS.map((field) => (
@@ -591,6 +605,17 @@ function Field({
       </Label>
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}
+
+function PreviewValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </dt>
+      <dd className="mt-0.5 break-words font-medium text-foreground">{value}</dd>
     </div>
   );
 }
