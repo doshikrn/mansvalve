@@ -1,7 +1,10 @@
 import Link from "next/link";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
-import { Badge } from "@/components/ui/badge";
+import {
+  CategoriesOrderTable,
+  SubcategoriesOrderTable,
+} from "@/components/admin/CatalogTaxonomyOrderTables";
 import { Button } from "@/components/ui/button";
 import { withReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
@@ -13,14 +16,23 @@ export const dynamic = "force-dynamic";
 
 type CategoriesView = "categories" | "subcategories";
 
+const MSG_COPY: Record<string, string> = {
+  category_moved: "Порядок категорий обновлён (swap sort_order с соседом).",
+  category_sort_saved: "Порядок категории сохранён.",
+  subcategory_moved: "Порядок подкатегории внутри категории обновлён.",
+  subcategory_sort_saved: "Порядок подкатегории сохранён.",
+};
+
 export default async function AdminCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; msg?: string; error?: string }>;
 }) {
   await requireAdmin("/admin/categories");
   const params = await searchParams;
   const view: CategoriesView = params.view === "subcategories" ? "subcategories" : "categories";
+  const flash = params.msg ? MSG_COPY[params.msg] ?? null : null;
+  const error = params.error?.trim() || null;
 
   if (!isDatabaseConfigured()) {
     return (
@@ -50,8 +62,8 @@ export default async function AdminCategoriesPage({
           </h1>
           <p className="text-sm text-muted-foreground">
             {view === "categories"
-              ? "Редактирование главных разделов каталога: SEO, порядок, slug и статус."
-              : "Редактирование подкатегорий внутри главных разделов каталога."}
+              ? "Порядок влияет на публичный каталог и блок категорий на главной. Меняйте ↑↓ или введите sort_order и нажмите OK — без отдельной страницы."
+              : "Порядок подкатегорий задаётся внутри каждой категории: стрелки меняют позицию только среди соседей с тем же родителем."}
           </p>
         </header>
         {view === "categories" ? (
@@ -62,6 +74,20 @@ export default async function AdminCategoriesPage({
           </Button>
         ) : null}
       </div>
+
+      {error ? (
+        <div
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
+          role="alert"
+        >
+          {error}
+        </div>
+      ) : null}
+      {flash ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          {flash}
+        </div>
+      ) : null}
 
       <div className="inline-flex rounded-xl border border-[#E2E8F0] bg-white p-1 shadow-sm">
         <Link
@@ -83,145 +109,10 @@ export default async function AdminCategoriesPage({
       </div>
 
       {view === "categories" ? (
-        <CategoriesTable categories={categories} listReturnEncoded={encList} />
+        <CategoriesOrderTable categories={categories} listReturnEncoded={encList} listView={view} />
       ) : (
-        <SubcategoriesTable categories={categories} listReturnEncoded={encList} />
+        <SubcategoriesOrderTable categories={categories} listReturnEncoded={encList} listView={view} />
       )}
-    </div>
-  );
-}
-
-function CategoriesTable({
-  categories,
-  listReturnEncoded,
-}: {
-  categories: Awaited<ReturnType<typeof listCategoriesWithSubcategories>>;
-  listReturnEncoded: string;
-}) {
-  return (
-    <div className="rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#E2E8F0] text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-2">Порядок</th>
-              <th className="px-4 py-2">Категория</th>
-              <th className="px-4 py-2 font-medium">Slug</th>
-              <th className="px-4 py-2 font-medium">Статус</th>
-              <th className="px-4 py-2 font-medium">Подкатегории</th>
-              <th className="px-4 py-2 w-24" />
-            </tr>
-          </thead>
-          <tbody>
-            {categories.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                  Категории не найдены. Запустите <code>npm run db:import-catalog</code>.
-                </td>
-              </tr>
-            ) : (
-              categories.map((c) => (
-                <tr
-                  key={c.id}
-                  className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
-                >
-                  <td className="px-4 py-2 tabular-nums text-muted-foreground">{c.sortOrder}</td>
-                  <td className="px-4 py-2 font-medium">{c.name}</td>
-                  <td className="px-4 py-2 text-xs text-muted-foreground">{c.slug}</td>
-                  <td className="px-4 py-2">
-                    {c.isActive ? (
-                      <Badge variant="secondary">активна</Badge>
-                    ) : (
-                      <Badge variant="outline">скрыта</Badge>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-xs text-muted-foreground">
-                    {c.subcategories.length
-                      ? `${c.subcategories.length}: ${c.subcategories.map((s) => s.name).join(", ")}`
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/admin/categories/${c.id}/edit?returnTo=${listReturnEncoded}`}>
-                        Изменить
-                      </Link>
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-  );
-}
-
-function SubcategoriesTable({
-  categories,
-  listReturnEncoded,
-}: {
-  categories: Awaited<ReturnType<typeof listCategoriesWithSubcategories>>;
-  listReturnEncoded: string;
-}) {
-  const subcategoryCount = categories.reduce((count, category) => count + category.subcategories.length, 0);
-
-  return (
-    <div className="rounded-xl border border-[#E2E8F0] bg-white shadow-sm">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-[#E2E8F0] text-left text-xs font-medium uppercase tracking-wide text-slate-500">
-            <th className="px-4 py-2">Порядок</th>
-            <th className="px-4 py-2">Подкатегория</th>
-            <th className="px-4 py-2">Категория</th>
-            <th className="px-4 py-2">Slug</th>
-            <th className="px-4 py-2">Статус</th>
-            <th className="w-48 px-4 py-2" />
-          </tr>
-        </thead>
-        <tbody>
-          {subcategoryCount === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
-                Подкатегории не найдены.
-              </td>
-            </tr>
-          ) : (
-            categories.flatMap((category) =>
-              category.subcategories.map((subcategory) => (
-                <tr
-                  key={subcategory.id}
-                  className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
-                >
-                  <td className="px-4 py-2 tabular-nums text-muted-foreground">{subcategory.sortOrder}</td>
-                  <td className="px-4 py-2 font-medium">{subcategory.name}</td>
-                  <td className="px-4 py-2 text-muted-foreground">{category.name}</td>
-                  <td className="px-4 py-2 text-xs text-muted-foreground">{subcategory.slug}</td>
-                  <td className="px-4 py-2">
-                    {subcategory.isActive ? (
-                      <Badge variant="secondary">активна</Badge>
-                    ) : (
-                      <Badge variant="outline">скрыта</Badge>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={`/admin/categories/${category.id}/subcategories/${subcategory.id}/edit?returnTo=${listReturnEncoded}`}
-                        >
-                          Изменить
-                        </Link>
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              )),
-            )
-          )}
-        </tbody>
-      </table>
-      <div className="border-t border-[#E2E8F0] px-4 py-3 text-xs text-slate-500">
-        Новая подкатегория создаётся внутри нужной категории: откройте категорию и нажмите «Добавить подкатегорию».
-      </div>
     </div>
   );
 }

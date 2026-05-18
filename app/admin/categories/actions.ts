@@ -14,6 +14,8 @@ import {
   getSubcategoryById,
   isCategorySlugTaken,
   isSubcategorySlugTaken,
+  listCategoriesWithSubcategories,
+  listSubcategoriesFor,
   splitLineList,
   splitParagraphBlocks,
   updateCategory,
@@ -94,6 +96,7 @@ function revalidateCatalogPublicPaths(
   subcategories: Array<PublicSubcategoryRouteInfo | null | undefined> = [],
 ) {
   revalidatePath("/", "layout");
+  revalidatePath("/");
   revalidatePath("/catalog");
   revalidatePath("/catalog", "layout");
   revalidatePath("/catalog/category/[categorySlug]", "page");
@@ -110,6 +113,159 @@ function revalidateCatalogPublicPaths(
       revalidatePath(`/catalog/subcategory/${subcategory.slug}`);
     }
   }
+}
+
+function compareCategoriesBySort<T extends { sortOrder: number; name: string }>(a: T, b: T) {
+  if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+  return a.name.localeCompare(b.name, "ru");
+}
+
+function compareSubcategoriesBySort<T extends { sortOrder: number; name: string }>(a: T, b: T) {
+  if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+  return a.name.localeCompare(b.name, "ru");
+}
+
+function listViewFromForm(formData: FormData): "categories" | "subcategories" {
+  return String(formData.get("listView") ?? "") === "subcategories" ? "subcategories" : "categories";
+}
+
+const quickSortOrderSchema = z.object({
+  id: z.coerce.number().int().positive(),
+  sortOrder: z.coerce.number().int().min(0).max(1_000_000),
+});
+
+const moveCategorySchema = z.object({
+  id: z.coerce.number().int().positive(),
+  direction: z.enum(["up", "down"]),
+});
+
+const moveSubcategorySchema = z.object({
+  id: z.coerce.number().int().positive(),
+  categoryId: z.coerce.number().int().positive(),
+  direction: z.enum(["up", "down"]),
+});
+
+/** Swap sort_order with adjacent row in the ordered list (no drag-and-drop). */
+export async function moveCategoryInListAction(formData: FormData) {
+  await requireAdmin("/admin/categories");
+  const listView = listViewFromForm(formData);
+  const parsed = moveCategorySchema.safeParse({
+    id: formData.get("id"),
+    direction: formData.get("direction"),
+  });
+  if (!parsed.success) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent(parsed.error.message)}`);
+  }
+
+  const rows = await listCategoriesWithSubcategories();
+  const sorted = [...rows].sort(compareCategoriesBySort);
+  const idx = sorted.findIndex((c) => c.id === parsed.data.id);
+  if (idx < 0) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent("Категория не найдена.")}`);
+  }
+  const swapIdx = parsed.data.direction === "up" ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= sorted.length) {
+    redirect(`/admin/categories?view=${listView}`);
+  }
+
+  const a = sorted[idx];
+  const b = sorted[swapIdx];
+  await updateCategory(a.id, { sortOrder: b.sortOrder });
+  await updateCategory(b.id, { sortOrder: a.sortOrder });
+
+  revalidatePath("/admin/categories");
+  revalidateCatalogPublicPaths([a, b]);
+  redirect(`/admin/categories?view=${listView}&msg=category_moved`);
+}
+
+export async function quickSetCategorySortOrderAction(formData: FormData) {
+  await requireAdmin("/admin/categories");
+  const listView = listViewFromForm(formData);
+  const parsed = quickSortOrderSchema.safeParse({
+    id: formData.get("id"),
+    sortOrder: formData.get("sortOrder"),
+  });
+  if (!parsed.success) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent(parsed.error.message)}`);
+  }
+
+  const existing = await getCategoryById(parsed.data.id);
+  if (!existing) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent("Категория не найдена.")}`);
+  }
+
+  await updateCategory(parsed.data.id, { sortOrder: parsed.data.sortOrder });
+
+  revalidatePath("/admin/categories");
+  revalidateCatalogPublicPaths([existing]);
+  redirect(`/admin/categories?view=${listView}&msg=category_sort_saved`);
+}
+
+export async function moveSubcategoryInListAction(formData: FormData) {
+  await requireAdmin("/admin/categories");
+  const listView = listViewFromForm(formData);
+  const parsed = moveSubcategorySchema.safeParse({
+    id: formData.get("id"),
+    categoryId: formData.get("categoryId"),
+    direction: formData.get("direction"),
+  });
+  if (!parsed.success) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent(parsed.error.message)}`);
+  }
+
+  const parent = await getCategoryById(parsed.data.categoryId);
+  if (!parent) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent("Категория не найдена.")}`);
+  }
+
+  const subs = await listSubcategoriesFor(parsed.data.categoryId);
+  const sorted = [...subs].sort(compareSubcategoriesBySort);
+  const idx = sorted.findIndex((s) => s.id === parsed.data.id);
+  if (idx < 0) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent("Подкатегория не найдена.")}`);
+  }
+  const swapIdx = parsed.data.direction === "up" ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= sorted.length) {
+    redirect(`/admin/categories?view=${listView}`);
+  }
+
+  const a = sorted[idx];
+  const b = sorted[swapIdx];
+  await updateSubcategory(a.id, { sortOrder: b.sortOrder });
+  await updateSubcategory(b.id, { sortOrder: a.sortOrder });
+
+  revalidatePath("/admin/categories");
+  revalidateCatalogPublicPaths([parent], [a, b]);
+  redirect(`/admin/categories?view=${listView}&msg=subcategory_moved`);
+}
+
+export async function quickSetSubcategorySortOrderAction(formData: FormData) {
+  await requireAdmin("/admin/categories");
+  const listView = listViewFromForm(formData);
+  const parsed = quickSortOrderSchema
+    .extend({ categoryId: z.coerce.number().int().positive() })
+    .safeParse({
+      id: formData.get("id"),
+      categoryId: formData.get("categoryId"),
+      sortOrder: formData.get("sortOrder"),
+    });
+  if (!parsed.success) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent(parsed.error.message)}`);
+  }
+
+  const [parent, existing] = await Promise.all([
+    getCategoryById(parsed.data.categoryId),
+    getSubcategoryById(parsed.data.id),
+  ]);
+  if (!parent || !existing || existing.categoryId !== parsed.data.categoryId) {
+    redirect(`/admin/categories?view=${listView}&error=${encodeURIComponent("Подкатегория не найдена.")}`);
+  }
+
+  await updateSubcategory(parsed.data.id, { sortOrder: parsed.data.sortOrder });
+
+  revalidatePath("/admin/categories");
+  revalidateCatalogPublicPaths([parent], [existing]);
+  redirect(`/admin/categories?view=${listView}&msg=subcategory_sort_saved`);
 }
 
 export async function createCategoryAction(formData: FormData) {
