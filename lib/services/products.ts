@@ -123,6 +123,8 @@ export async function listProducts(
     const pn = parseAdminSearchNumber(rawSearch, ["pn", "ru", "ру"]);
     const searchConditions = [
       ilike(productsTable.name, needle),
+      ilike(productsTable.publicTitle, needle),
+      ilike(productsTable.h1Override, needle),
       ilike(productsTable.slug, needle),
       ilike(productsTable.model, needle),
       ilike(productsTable.material, needle),

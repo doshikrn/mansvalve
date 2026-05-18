@@ -190,6 +190,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
   const detailContent = view.detailContent;
   const specsEntries = detailContent.characteristics;
   const productName = view.displayName;
+  const productH1 = view.h1;
   const categoryLabel = view.categoryLabel;
   const waUrl = buildCompanyProductInquiryWhatsAppUrl(productName, {
     dn: product.dn,
@@ -312,7 +313,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
 
             {/* Product title */}
             <h1 className="mb-4 text-2xl font-bold leading-tight text-slate-900 sm:text-3xl">
-              {productName}
+              {productH1}
             </h1>
 
             {/* Spec chips */}

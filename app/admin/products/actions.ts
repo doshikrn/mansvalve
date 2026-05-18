@@ -47,6 +47,8 @@ const productDocumentsSchema = z.object({
 
 const productSchema = z.object({
   name: z.string().trim().min(2).max(300),
+  publicTitle: z.string().trim().max(300).optional().transform((v) => v || null),
+  h1Override: z.string().trim().max(300).optional().transform((v) => v || null),
   slug: z
     .string()
     .trim()
@@ -157,6 +159,8 @@ function parseProductForm(formData: FormData) {
   const payload: ProductWritePayload = {
     slug,
     name: data.name,
+    publicTitle: data.publicTitle,
+    h1Override: data.h1Override,
     categoryId: data.categoryId,
     subcategoryId: data.subcategoryId,
     dn: data.dn ?? null,

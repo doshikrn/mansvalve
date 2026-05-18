@@ -7,6 +7,8 @@ export function productDetailToPublicCatalogProduct(
   return {
     id: String(product.id),
     name: product.name,
+    publicTitle: product.publicTitle ?? undefined,
+    h1Override: product.h1Override ?? undefined,
     slug: product.slug,
     category: product.categorySlug,
     subcategory: product.subcategorySlug ?? "",

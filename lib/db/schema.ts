@@ -195,6 +195,8 @@ export const products = pgTable(
     priceByRequest: boolean("price_by_request").notNull().default(true),
     weight: numeric("weight", { precision: 10, scale: 3 }),
 
+    publicTitle: text("public_title"),
+    h1Override: text("h1_override"),
     shortDescription: text("short_description"),
     longDescription: text("long_description"),
     detailBlocks: jsonb("detail_blocks").$type<ProductDetailBlocks | null>(),

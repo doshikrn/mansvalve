@@ -10,6 +10,7 @@ import type { PublicCatalogProduct } from "./types";
 export type PublicProductView = {
   product: PublicCatalogProduct;
   internalTitle: string;
+  generatedDisplayName: string;
   displayName: string;
   h1: string;
   seoTitle: string;
@@ -28,8 +29,12 @@ export type PublicProductView = {
 };
 
 export function buildPublicProductView(product: PublicCatalogProduct): PublicProductView {
-  const displayName = formatProductDisplayName(product);
-  const seoName = formatProductSeoName(product);
+  const generatedDisplayName = formatProductDisplayName(product);
+  const publicTitle = product.publicTitle?.trim();
+  const h1Override = product.h1Override?.trim();
+  const displayName = publicTitle || generatedDisplayName;
+  const h1 = h1Override || publicTitle || generatedDisplayName;
+  const seoName = publicTitle || formatProductSeoName(product);
   const detailContent = buildProductDetailContent(product);
   const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
   const categoryVisual = getCategoryVisual(product.category);
@@ -44,11 +49,12 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   return {
     product,
     internalTitle: product.name,
+    generatedDisplayName,
     displayName,
-    h1: displayName,
+    h1,
     seoTitle: `Купить ${seoName} в Казахстане | MANSVALVE GROUP`,
     seoDescription: buildProductMetaDescription(displayName),
-    shortDescription: product.shortDescription,
+    shortDescription: product.shortDescription || detailContent.descriptionParagraphs[0] || "",
     detailContent,
     categoryLabel,
     catalogPath: `/catalog/${product.slug}`,

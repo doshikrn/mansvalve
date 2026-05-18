@@ -1,4 +1,5 @@
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { normalizeProductDetailBlocks } from "@/lib/product-detail-blocks";
 import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
 
@@ -50,7 +51,8 @@ function pickDescriptionParagraphs(
   if (generatedParagraphs?.length) return generatedParagraphs;
   const shortDescription = product.shortDescription.trim();
   if (shortDescription) return [shortDescription];
-  return [`${product.name}. Категория: ${product.categoryName}.`];
+  const publicName = product.publicTitle?.trim() || formatProductDisplayName(product);
+  return [`${publicName}. Категория: ${product.categoryName}.`];
 }
 
 function pickCharacteristics(

@@ -176,6 +176,39 @@ export function ProductForm({
             </AdminFieldHint>
           </Field>
 
+          <Field
+            label="Публичное название на сайте"
+            name="publicTitle"
+            error={state.fieldErrors?.publicTitle}
+          >
+            <Input name="publicTitle" defaultValue={product?.publicTitle ?? ""} />
+            <AdminFieldHint>
+              Если заполнено — это название будет показано на сайте, в карточках,
+              поиске и SEO. Если пусто — название сформируется автоматически из
+              типа, материала, модели, DN и PN.
+            </AdminFieldHint>
+            {livePublicPreview ? (
+              <p className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                Generated fallback:{" "}
+                <span className="font-medium text-foreground">
+                  {livePublicPreview.generatedDisplayName}
+                </span>
+              </p>
+            ) : null}
+          </Field>
+
+          <Field
+            label="H1 override"
+            name="h1Override"
+            error={state.fieldErrors?.h1Override}
+          >
+            <Input name="h1Override" defaultValue={product?.h1Override ?? ""} />
+            <AdminFieldHint>
+              Если заполнено — этот текст станет H1 на странице товара. Если пусто,
+              H1 берется из публичного названия, а затем из generated fallback.
+            </AdminFieldHint>
+          </Field>
+
           <Field label="Slug" name="slug" error={state.fieldErrors?.slug}>
             <Input name="slug" defaultValue={product?.slug ?? ""} />
             <AdminFieldHint>

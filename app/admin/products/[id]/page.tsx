@@ -140,6 +140,7 @@ export default async function EditProductPage({
 function buildPublicPreview(product: ProductDetail) {
   const view = buildPublicProductView(productDetailToPublicCatalogProduct(product));
   return {
+    generatedDisplayName: view.generatedDisplayName,
     displayName: view.displayName,
     h1: view.h1,
     seoTitle: view.seoTitle,

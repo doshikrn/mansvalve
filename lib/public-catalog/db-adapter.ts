@@ -189,6 +189,8 @@ function mapProductRow(
   return {
     id: String(product.id),
     name: product.name,
+    publicTitle: product.publicTitle ?? undefined,
+    h1Override: product.h1Override ?? undefined,
     slug: product.slug,
     category: category.slug,
     subcategory: subcategory?.slug ?? "",
@@ -205,9 +207,7 @@ function mapProductRow(
     priceByRequest: product.priceByRequest || product.price == null,
     weight: toNumber(product.weight),
     specs: {},
-    shortDescription:
-      product.shortDescription ||
-      `${product.name}. Категория: ${category.name}.`,
+    shortDescription: product.shortDescription || "",
     longDescription: product.longDescription || undefined,
     detailBlocks: product.detailBlocks
       ? normalizeProductDetailBlocks(product.detailBlocks)

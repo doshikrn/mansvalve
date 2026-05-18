@@ -5,6 +5,7 @@ import { AdminSeoPreview } from "@/components/admin/AdminSeoPreview";
 import { Button } from "@/components/ui/button";
 
 export type AdminProductPreviewData = {
+  generatedDisplayName: string;
   displayName: string;
   h1: string;
   seoTitle: string;

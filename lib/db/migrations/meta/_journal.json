@@ -29,6 +29,13 @@
       "when": 1779120000000,
       "tag": "0006_ensure_category_sort_order",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779123600000,
+      "tag": "0007_product_public_title_overrides",
+      "breakpoints": true
     }
   ]
 }
