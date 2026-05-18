@@ -505,7 +505,11 @@ export async function updateProduct(
 
 export async function deleteProduct(id: number): Promise<void> {
   const db = getDb();
-  await db.delete(productsTable).where(eq(productsTable.id, id));
+  await db.transaction(async (tx) => {
+    await tx.delete(productImagesTable).where(eq(productImagesTable.productId, id));
+    await tx.delete(productSpecsTable).where(eq(productSpecsTable.productId, id));
+    await tx.delete(productsTable).where(eq(productsTable.id, id));
+  });
 }
 
 export async function countProducts(): Promise<number> {

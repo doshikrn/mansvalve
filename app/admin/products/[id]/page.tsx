@@ -80,7 +80,7 @@ export default async function EditProductPage({
         </div>
         <DestructiveConfirmForm
           action={boundDelete}
-          confirmMessage="Удалить этот товар? Действие необратимо."
+          confirmMessage="Удалить товар окончательно? Товар исчезнет с сайта, из поиска, sitemap и витрины. Действие нельзя отменить."
           className="shrink-0"
         >
           <input type="hidden" name="returnTo" value={listHref} />

@@ -7,6 +7,7 @@ import { getDb } from "@/lib/db/client";
 import type { CategorySeoContent } from "@/lib/category-content";
 import {
   categories as categoriesTable,
+  products as productsTable,
   subcategories as subcategoriesTable,
   type Category,
   type NewCategory,
@@ -72,6 +73,23 @@ export function splitLineList(raw: string): string[] {
 export type CategoryWithSubcategories = Category & {
   subcategories: Subcategory[];
 };
+
+export class CategoryDeleteBlockedError extends Error {
+  constructor(
+    readonly productsCount: number,
+    readonly subcategoriesCount: number,
+  ) {
+    super("Category has linked products or subcategories.");
+    this.name = "CategoryDeleteBlockedError";
+  }
+}
+
+export class SubcategoryDeleteBlockedError extends Error {
+  constructor(readonly productsCount: number) {
+    super("Subcategory has linked products.");
+    this.name = "SubcategoryDeleteBlockedError";
+  }
+}
 
 export async function listCategoriesWithSubcategories(): Promise<
   CategoryWithSubcategories[]
@@ -285,4 +303,76 @@ export async function updateSubcategory(
     .update(subcategoriesTable)
     .set({ ...patch, updatedAt: new Date() })
     .where(eq(subcategoriesTable.id, id));
+}
+
+export async function getCategoryDeleteBlockers(
+  id: number,
+): Promise<{ productsCount: number; subcategoriesCount: number }> {
+  const db = getDb();
+  const [productsRows, subcategoryRows] = await Promise.all([
+    db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(productsTable)
+      .where(eq(productsTable.categoryId, id)),
+    db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(subcategoriesTable)
+      .where(eq(subcategoriesTable.categoryId, id)),
+  ]);
+
+  return {
+    productsCount: productsRows[0]?.value ?? 0,
+    subcategoriesCount: subcategoryRows[0]?.value ?? 0,
+  };
+}
+
+export async function getSubcategoryDeleteBlockers(
+  id: number,
+): Promise<{ productsCount: number }> {
+  const db = getDb();
+  const rows = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(productsTable)
+    .where(eq(productsTable.subcategoryId, id));
+
+  return { productsCount: rows[0]?.value ?? 0 };
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  const db = getDb();
+  await db.transaction(async (tx) => {
+    const productsRows = await tx
+      .select({ value: sql<number>`count(*)::int` })
+      .from(productsTable)
+      .where(eq(productsTable.categoryId, id));
+    const subcategoryRows = await tx
+      .select({ value: sql<number>`count(*)::int` })
+      .from(subcategoriesTable)
+      .where(eq(subcategoriesTable.categoryId, id));
+
+    const productsCount = productsRows[0]?.value ?? 0;
+    const subcategoriesCount = subcategoryRows[0]?.value ?? 0;
+    if (productsCount > 0 || subcategoriesCount > 0) {
+      throw new CategoryDeleteBlockedError(productsCount, subcategoriesCount);
+    }
+
+    await tx.delete(categoriesTable).where(eq(categoriesTable.id, id));
+  });
+}
+
+export async function deleteSubcategory(id: number): Promise<void> {
+  const db = getDb();
+  await db.transaction(async (tx) => {
+    const productsRows = await tx
+      .select({ value: sql<number>`count(*)::int` })
+      .from(productsTable)
+      .where(eq(productsTable.subcategoryId, id));
+
+    const productsCount = productsRows[0]?.value ?? 0;
+    if (productsCount > 0) {
+      throw new SubcategoryDeleteBlockedError(productsCount);
+    }
+
+    await tx.delete(subcategoriesTable).where(eq(subcategoriesTable.id, id));
+  });
 }

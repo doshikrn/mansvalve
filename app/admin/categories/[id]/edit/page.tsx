@@ -5,6 +5,7 @@ import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { CategorySeoFields } from "@/components/admin/CategorySeoFields";
+import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { categorySeoToFormDefaults, getCategoryWithSubcategoriesById } from "@/lib/services/categories";
 
-import { updateCategoryAction } from "../../actions";
+import { deleteCategoryAction, updateCategoryAction } from "../../actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function EditCategoryPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; returnTo?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; msg?: string; returnTo?: string }>;
 }) {
   await requireAdmin("/admin/categories");
   const { id: raw } = await params;
@@ -71,6 +72,11 @@ export default async function EditCategoryPage({
       {sp.saved === "1" ? (
         <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
           Сохранено.
+        </p>
+      ) : null}
+      {sp.msg ? (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          {sp.msg}
         </p>
       ) : null}
 
@@ -209,6 +215,26 @@ export default async function EditCategoryPage({
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="space-y-3 rounded-xl border border-red-200 bg-red-50/60 p-4">
+        <div>
+          <h2 className="text-sm font-semibold text-red-950">Опасная зона</h2>
+          <p className="mt-1 text-sm text-red-900">
+            Категорию можно удалить только если в ней нет товаров и подкатегорий.
+            Slug и старый публичный URL после удаления перестанут открываться.
+          </p>
+        </div>
+        <DestructiveConfirmForm
+          action={deleteCategoryAction}
+          confirmMessage="Удалить категорию окончательно? Это можно сделать только если в ней нет товаров и подкатегорий."
+        >
+          <input type="hidden" name="id" value={String(category.id)} />
+          <input type="hidden" name="returnTo" value={listHref} />
+          <Button type="submit" variant="destructive" size="sm">
+            Удалить категорию
+          </Button>
+        </DestructiveConfirmForm>
       </section>
     </div>
   );

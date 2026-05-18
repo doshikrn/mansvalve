@@ -340,17 +340,18 @@ export async function deleteProductAction(
   formData: FormData,
 ): Promise<void> {
   await requireAdmin("/admin/products");
+  const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
+  const returnTo = safeReturnTo(rawReturnTo, "/admin/products");
   const before = await getProductById(id);
   try {
     await deleteProduct(id);
   } catch (error) {
     console.error("[products] delete failed", error);
-    throw error;
+    redirect(withStatusParam(returnTo, "error", "Не удалось удалить товар. Проверьте связанные данные и попробуйте ещё раз."));
   }
   revalidatePath("/admin/products");
   revalidateProductPublicPaths(before);
-  const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
-  redirect(safeReturnTo(rawReturnTo, "/admin/products"));
+  redirect(withStatusParam(returnTo, "msg", "Товар удалён. Он исчез с сайта, поиска, sitemap и витрины."));
 }
 
 function revalidateProductPublicPaths(
@@ -374,6 +375,13 @@ function revalidateProductPublicPaths(
       revalidatePath(`/catalog/subcategory/${product.subcategorySlug}`);
     }
   }
+}
+
+function withStatusParam(href: string, key: "msg" | "error", value: string): string {
+  const [path, query = ""] = href.split("?");
+  const params = new URLSearchParams(query);
+  params.set(key, value);
+  return `${path}?${params.toString()}`;
 }
 
 function humanizeError(err: unknown): string {

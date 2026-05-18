@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ImageIcon } from "lucide-react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,8 @@ import { isDatabaseConfigured } from "@/lib/db/client";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import { listProducts, type ProductListOptions } from "@/lib/services/products";
+
+import { deleteProductAction } from "./actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +30,8 @@ type ListParams = {
   subcategoryId?: string;
   order?: string;
   dir?: string;
+  msg?: string;
+  error?: string;
 };
 
 type ListQueryInput = {
@@ -172,6 +177,20 @@ export default async function AdminProductsPage({
       </div>
 
       <PublicCatalogSourceNotice />
+
+      {params.error ? (
+        <div
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900"
+          role="alert"
+        >
+          {params.error}
+        </div>
+      ) : null}
+      {params.msg ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          {params.msg}
+        </div>
+      ) : null}
 
       <form
         className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4 sm:flex-row sm:flex-wrap sm:items-end"
@@ -380,13 +399,24 @@ export default async function AdminProductsPage({
                         : String(p.updatedAt)}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      <Button asChild size="xs" variant="outline">
-                        <Link
-                          href={`/admin/products/${p.id}?returnTo=${encodedReturnTo}`}
+                      <div className="flex justify-end gap-2">
+                        <Button asChild size="xs" variant="outline">
+                          <Link
+                            href={`/admin/products/${p.id}?returnTo=${encodedReturnTo}`}
+                          >
+                            Открыть
+                          </Link>
+                        </Button>
+                        <DestructiveConfirmForm
+                          action={deleteProductAction.bind(null, p.id)}
+                          confirmMessage="Удалить товар окончательно? Товар исчезнет с сайта, из поиска, sitemap и витрины. Действие нельзя отменить."
                         >
-                          Открыть
-                        </Link>
-                      </Button>
+                          <input type="hidden" name="returnTo" value={listSelfHref} />
+                          <Button type="submit" size="xs" variant="destructive">
+                            Удалить
+                          </Button>
+                        </DestructiveConfirmForm>
+                      </div>
                     </td>
                   </tr>
                   );

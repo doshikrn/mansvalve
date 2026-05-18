@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
+import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +12,7 @@ import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { getCategoryById, getSubcategoryById } from "@/lib/services/categories";
 
-import { updateSubcategoryAction } from "../../../../actions";
+import { deleteSubcategoryAction, updateSubcategoryAction } from "../../../../actions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,7 @@ export default async function EditSubcategoryPage({
   searchParams,
 }: {
   params: Promise<{ id: string; subId: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; returnTo?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; msg?: string; returnTo?: string }>;
 }) {
   await requireAdmin("/admin/categories");
   const { id: rawCat, subId: rawSub } = await params;
@@ -67,6 +68,11 @@ export default async function EditSubcategoryPage({
       {sp.saved === "1" ? (
         <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
           Сохранено.
+        </p>
+      ) : null}
+      {sp.msg ? (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+          {sp.msg}
         </p>
       ) : null}
 
@@ -147,6 +153,26 @@ export default async function EditSubcategoryPage({
           </Button>
         </AdminStickyActions>
       </AdminUnsavedChangesGuard>
+
+      <section className="space-y-3 rounded-xl border border-red-200 bg-red-50/60 p-4">
+        <div>
+          <h2 className="text-sm font-semibold text-red-950">Опасная зона</h2>
+          <p className="mt-1 text-sm text-red-900">
+            Подкатегорию можно удалить только если в ней нет товаров. Старый публичный URL после удаления перестанет открываться.
+          </p>
+        </div>
+        <DestructiveConfirmForm
+          action={deleteSubcategoryAction}
+          confirmMessage="Удалить подкатегорию окончательно? Это можно сделать только если в ней нет товаров."
+        >
+          <input type="hidden" name="id" value={String(sub.id)} />
+          <input type="hidden" name="categoryId" value={String(parent.id)} />
+          <input type="hidden" name="returnTo" value={backHref} />
+          <Button type="submit" variant="destructive" size="sm">
+            Удалить подкатегорию
+          </Button>
+        </DestructiveConfirmForm>
+      </section>
     </div>
   );
 }

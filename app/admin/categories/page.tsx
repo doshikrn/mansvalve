@@ -21,6 +21,8 @@ const MSG_COPY: Record<string, string> = {
   category_sort_saved: "Порядок категории сохранён.",
   subcategory_moved: "Порядок подкатегории внутри категории обновлён.",
   subcategory_sort_saved: "Порядок подкатегории сохранён.",
+  category_deleted: "Категория удалена.",
+  subcategory_deleted: "Подкатегория удалена.",
 };
 
 export default async function AdminCategoriesPage({
@@ -31,7 +33,7 @@ export default async function AdminCategoriesPage({
   await requireAdmin("/admin/categories");
   const params = await searchParams;
   const view: CategoriesView = params.view === "subcategories" ? "subcategories" : "categories";
-  const flash = params.msg ? MSG_COPY[params.msg] ?? null : null;
+  const flash = params.msg ? MSG_COPY[params.msg] ?? params.msg : null;
   const error = params.error?.trim() || null;
 
   if (!isDatabaseConfigured()) {

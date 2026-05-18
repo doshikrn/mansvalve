@@ -4,14 +4,19 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import {
+  CategoryDeleteBlockedError,
   createCategory,
   createSubcategory,
+  deleteCategory,
+  deleteSubcategory,
   getCategoryById,
   getNextCategorySortOrder,
   getNextSubcategorySortOrder,
   getSubcategoryById,
+  SubcategoryDeleteBlockedError,
   isCategorySlugTaken,
   isSubcategorySlugTaken,
   listCategoriesWithSubcategories,
@@ -127,6 +132,13 @@ function compareSubcategoriesBySort<T extends { sortOrder: number; name: string 
 
 function listViewFromForm(formData: FormData): "categories" | "subcategories" {
   return String(formData.get("listView") ?? "") === "subcategories" ? "subcategories" : "categories";
+}
+
+function withAdminStatusParam(href: string, key: "msg" | "error", value: string): string {
+  const [path, query = ""] = href.split("?");
+  const params = new URLSearchParams(query);
+  params.set(key, value);
+  return `${path}?${params.toString()}`;
 }
 
 const quickSortOrderSchema = z.object({
@@ -266,6 +278,88 @@ export async function quickSetSubcategorySortOrderAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([parent], [existing]);
   redirect(`/admin/categories?view=${listView}&msg=subcategory_sort_saved`);
+}
+
+export async function deleteCategoryAction(formData: FormData) {
+  await requireAdmin("/admin/categories");
+  const id = Number(formData.get("id"));
+  const returnTo = safeReturnTo(
+    String(formData.get("returnTo") ?? ""),
+    "/admin/categories?view=categories",
+  );
+
+  if (!Number.isFinite(id) || id <= 0) {
+    redirect(withAdminStatusParam(returnTo, "error", "Категория не найдена."));
+  }
+
+  const existing = await getCategoryById(id);
+  if (!existing) {
+    redirect(withAdminStatusParam(returnTo, "error", "Категория не найдена."));
+  }
+
+  try {
+    await deleteCategory(id);
+  } catch (error) {
+    if (error instanceof CategoryDeleteBlockedError) {
+      redirect(
+        withAdminStatusParam(
+          returnTo,
+          "error",
+          "Нельзя удалить категорию, пока в ней есть товары или подкатегории. Сначала перенесите или удалите связанные элементы.",
+        ),
+      );
+    }
+    console.error("[categories] delete category failed", error);
+    redirect(withAdminStatusParam(returnTo, "error", "Не удалось удалить категорию. Попробуйте ещё раз."));
+  }
+
+  revalidatePath("/admin/categories");
+  revalidateCatalogPublicPaths([existing]);
+  redirect(withAdminStatusParam(returnTo, "msg", "Категория удалена."));
+}
+
+export async function deleteSubcategoryAction(formData: FormData) {
+  await requireAdmin("/admin/categories");
+  const id = Number(formData.get("id"));
+  const categoryId = Number(formData.get("categoryId"));
+  const returnTo = safeReturnTo(
+    String(formData.get("returnTo") ?? ""),
+    Number.isFinite(categoryId) && categoryId > 0
+      ? `/admin/categories/${categoryId}/edit`
+      : "/admin/categories?view=subcategories",
+  );
+
+  if (!Number.isFinite(id) || id <= 0) {
+    redirect(withAdminStatusParam(returnTo, "error", "Подкатегория не найдена."));
+  }
+
+  const existing = await getSubcategoryById(id);
+  if (!existing) {
+    redirect(withAdminStatusParam(returnTo, "error", "Подкатегория не найдена."));
+  }
+
+  const parent = await getCategoryById(existing.categoryId);
+
+  try {
+    await deleteSubcategory(id);
+  } catch (error) {
+    if (error instanceof SubcategoryDeleteBlockedError) {
+      redirect(
+        withAdminStatusParam(
+          returnTo,
+          "error",
+          "Нельзя удалить подкатегорию, пока в ней есть товары. Сначала перенесите товары или удалите их.",
+        ),
+      );
+    }
+    console.error("[categories] delete subcategory failed", error);
+    redirect(withAdminStatusParam(returnTo, "error", "Не удалось удалить подкатегорию. Попробуйте ещё раз."));
+  }
+
+  revalidatePath("/admin/categories");
+  revalidatePath(`/admin/categories/${existing.categoryId}/edit`);
+  revalidateCatalogPublicPaths([parent], [existing]);
+  redirect(withAdminStatusParam(returnTo, "msg", "Подкатегория удалена."));
 }
 
 export async function createCategoryAction(formData: FormData) {

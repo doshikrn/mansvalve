@@ -1,11 +1,14 @@
 import Link from "next/link";
 
 import {
+  deleteCategoryAction,
+  deleteSubcategoryAction,
   moveCategoryInListAction,
   moveSubcategoryInListAction,
   quickSetCategorySortOrderAction,
   quickSetSubcategorySortOrderAction,
 } from "@/app/admin/categories/actions";
+import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -129,11 +132,23 @@ export function CategoriesOrderTable({
                     : "—"}
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/admin/categories/${c.id}/edit?returnTo=${listReturnEncoded}`}>
-                      Изменить
-                    </Link>
-                  </Button>
+                  <div className="flex justify-end gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/admin/categories/${c.id}/edit?returnTo=${listReturnEncoded}`}>
+                        Изменить
+                      </Link>
+                    </Button>
+                    <DestructiveConfirmForm
+                      action={deleteCategoryAction}
+                      confirmMessage="Удалить категорию окончательно? Это можно сделать только если в ней нет товаров и подкатегорий."
+                    >
+                      <input type="hidden" name="id" value={String(c.id)} />
+                      <input type="hidden" name="returnTo" value={`/admin/categories?view=${listView}`} />
+                      <Button type="submit" variant="destructive" size="sm">
+                        Удалить
+                      </Button>
+                    </DestructiveConfirmForm>
+                  </div>
                 </td>
               </tr>
             ))
@@ -269,13 +284,26 @@ export function SubcategoriesOrderTable({
                   )}
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      href={`/admin/categories/${category.id}/subcategories/${subcategory.id}/edit?returnTo=${listReturnEncoded}`}
+                  <div className="flex justify-end gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        href={`/admin/categories/${category.id}/subcategories/${subcategory.id}/edit?returnTo=${listReturnEncoded}`}
+                      >
+                        Изменить
+                      </Link>
+                    </Button>
+                    <DestructiveConfirmForm
+                      action={deleteSubcategoryAction}
+                      confirmMessage="Удалить подкатегорию окончательно? Это можно сделать только если в ней нет товаров."
                     >
-                      Изменить
-                    </Link>
-                  </Button>
+                      <input type="hidden" name="id" value={String(subcategory.id)} />
+                      <input type="hidden" name="categoryId" value={String(category.id)} />
+                      <input type="hidden" name="returnTo" value={`/admin/categories?view=${listView}`} />
+                      <Button type="submit" variant="destructive" size="sm">
+                        Удалить
+                      </Button>
+                    </DestructiveConfirmForm>
+                  </div>
                 </td>
               </tr>
             ))
