@@ -1,6 +1,5 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -16,6 +15,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import {
@@ -282,22 +282,21 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-14">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
           {/* LEFT — Product image (DB) with category fallback */}
-          <div className="relative min-h-[280px] overflow-hidden rounded-2xl border border-site-border bg-slate-100 lg:min-h-[400px]">
-            <Image
-              src={heroImageSrc}
-              alt={heroImageAlt}
-              fill
-              priority
-              quality={95}
-              unoptimized={view.primaryImageUnoptimized}
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-            />
+          <ProductImageFrame
+            src={heroImageSrc}
+            alt={heroImageAlt}
+            priority
+            quality={95}
+            unoptimized={view.primaryImageUnoptimized}
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="min-h-[280px] rounded-2xl border border-site-border lg:min-h-[400px]"
+            safeAreaClassName="p-6 sm:p-8 lg:p-10"
+          >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
             <span className="absolute bottom-4 left-4 rounded-md border border-white/20 bg-slate-900/60 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
               {categoryLabel}
             </span>
-          </div>
+          </ProductImageFrame>
 
           {/* RIGHT — Product info */}
           <div className="flex flex-col">

@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
@@ -33,23 +33,24 @@ export function ProductCard({ product }: ProductCardProps) {
     <article className="site-card group flex flex-col overflow-hidden p-0 active:scale-[0.98] motion-reduce:active:scale-100">
       <Link
         href={detailHref}
-        className="relative flex h-40 items-center justify-center bg-site-bg"
+        className="block"
         tabIndex={-1}
         aria-hidden="true"
       >
-        <Image
+        <ProductImageFrame
           src={imageSrc}
           alt={imageAlt}
-          fill
           quality={90}
           unoptimized={view.primaryImageUnoptimized}
           sizes="(max-width: 640px) 100vw, 320px"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/45 via-slate-900/10 to-transparent" />
-        <span className="absolute bottom-2 left-2 rounded-md bg-site-card px-2 py-0.5 text-[11px] font-medium text-site-muted">
-          {view.categoryLabel}
-        </span>
+          className="rounded-t-[inherit]"
+          safeAreaClassName="p-3.5 sm:p-4"
+        >
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950/28 to-transparent" />
+          <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-medium text-site-muted shadow-sm">
+            {view.categoryLabel}
+          </span>
+        </ProductImageFrame>
       </Link>
 
       <div className="flex flex-1 flex-col p-4">

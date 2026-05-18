@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 
 export type AdminProductPreviewData = {
@@ -25,16 +25,14 @@ export function AdminProductPreview({ preview }: Props) {
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-xl border border-border bg-white">
-        <div className="relative h-48 bg-muted">
-          <Image
-            src={preview.primaryImageUrl}
-            alt={preview.primaryImageAlt}
-            fill
-            unoptimized
-            sizes="(max-width: 1280px) 100vw, 520px"
-            className="object-cover"
-          />
-        </div>
+        <ProductImageFrame
+          src={preview.primaryImageUrl}
+          alt={preview.primaryImageAlt}
+          unoptimized
+          sizes="(max-width: 1280px) 100vw, 520px"
+          className="h-48 rounded-none"
+          safeAreaClassName="p-5"
+        />
         <div className="space-y-3 p-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

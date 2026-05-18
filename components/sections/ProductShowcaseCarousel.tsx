@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
@@ -158,26 +158,34 @@ export function ProductShowcaseCarousel({
                 <Link
                   href={view.canonicalPath}
                   className={cn(
-                    "relative block w-full overflow-hidden lg:border-r",
+                    "block w-full lg:border-r",
                     isHero
-                      ? "h-[280px] border-white/[0.06] sm:h-[300px] lg:h-[min(400px,100%)] lg:min-h-[400px]"
-                      : "h-[280px] border-white/[0.06] sm:h-[300px] lg:h-full lg:min-h-[500px] lg:rounded-l-[calc(0.75rem-1px)]",
+                      ? "border-white/[0.06] lg:h-full"
+                      : "border-white/[0.06] lg:h-full lg:rounded-l-[calc(0.75rem-1px)]",
                   )}
                 >
-                  <Image
+                  <ProductImageFrame
                     src={view.primaryImageUrl}
                     alt={view.primaryImageAlt}
-                    fill
                     quality={100}
                     sizes={imgSizes}
                     unoptimized={view.primaryImageUnoptimized}
-                    className="object-cover transition-transform duration-500 ease-out hover:scale-[1.02] motion-reduce:transition-none motion-reduce:hover:scale-100"
-                  />
-                  <div className={cn("absolute inset-0 bg-gradient-to-t to-transparent", isHero ? "from-site-deep/65 via-site-deep/5" : "from-black/[0.12] via-transparent")} />
-                  <div className={cn("absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-md border px-3 py-2 shadow-sm", isHero ? "border-white/10 bg-site-deep/85" : "border-white/15 bg-black/55")}>
-                    <p className={cn("text-[10px] font-semibold uppercase", isHero ? "text-slate-300" : "text-slate-400")}>{product.categoryName}</p>
-                    <p className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-white">{product.subcategoryName}</p>
-                  </div>
+                    tone="dark"
+                    className={cn(
+                      "rounded-none",
+                      isHero
+                        ? "aspect-[16/10] lg:h-full lg:aspect-auto"
+                        : "aspect-[16/10] lg:h-full lg:aspect-auto lg:rounded-l-[calc(0.75rem-1px)]",
+                    )}
+                    safeAreaClassName={isHero ? "p-6 sm:p-8 lg:p-10" : "p-5 sm:p-8 lg:p-10"}
+                    imageClassName="group-hover:scale-[1.015]"
+                  >
+                    <div className={cn("absolute inset-0 bg-gradient-to-t to-transparent", isHero ? "from-site-deep/56 via-site-deep/8" : "from-black/[0.18] via-transparent")} />
+                    <div className={cn("absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-md border px-3 py-2 shadow-sm", isHero ? "border-white/10 bg-site-deep/85" : "border-white/15 bg-black/55")}>
+                      <p className={cn("text-[10px] font-semibold uppercase", isHero ? "text-slate-300" : "text-slate-400")}>{product.categoryName}</p>
+                      <p className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-white">{product.subcategoryName}</p>
+                    </div>
+                  </ProductImageFrame>
                 </Link>
 
                 {isHero ? (

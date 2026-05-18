@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, ChevronRight, FileText, Phone, ShieldCheck, Truck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { buildCompanyProductInquiryWhatsAppUrl, COMPANY } from "@/lib/company";
@@ -149,22 +149,21 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
         </div>
 
         <aside className="space-y-5">
-          <div className="relative min-h-[320px] overflow-hidden rounded-2xl border border-site-border bg-slate-100 shadow-sm">
-            <Image
-              src={imageSrc}
-              alt={imageAlt}
-              fill
-              priority
-              quality={92}
-              unoptimized={view?.primaryImageUnoptimized ?? mediaImageNeedsUnoptimized(imageSrc)}
-              sizes="(max-width: 1024px) 100vw, 480px"
-              className="object-cover"
-            />
+          <ProductImageFrame
+            src={imageSrc}
+            alt={imageAlt}
+            priority
+            quality={92}
+            unoptimized={view?.primaryImageUnoptimized ?? mediaImageNeedsUnoptimized(imageSrc)}
+            sizes="(max-width: 1024px) 100vw, 480px"
+            className="min-h-[320px] rounded-2xl border border-site-border shadow-sm"
+            safeAreaClassName="p-6 sm:p-8"
+          >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/10 to-transparent" />
             <span className="absolute bottom-4 left-4 rounded-md border border-white/20 bg-slate-900/65 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white">
               {page.imageAlt}
             </span>
-          </div>
+          </ProductImageFrame>
 
           <div className="rounded-2xl border border-site-border bg-site-bg p-5">
             {formattedPrice ? (

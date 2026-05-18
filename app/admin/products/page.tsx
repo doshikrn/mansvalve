@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ImageIcon } from "lucide-react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -326,12 +326,12 @@ export default async function AdminProductsPage({
                         title={photoTitle}
                       >
                         {p.listThumbUrl ? (
-                          <Image
+                          <ProductImageFrame
                             src={p.listThumbUrl}
                             alt={displayName}
-                            fill
                             sizes="44px"
-                            className="object-cover"
+                            className="h-full w-full rounded-none"
+                            safeAreaClassName="p-1"
                             unoptimized={mediaImageNeedsUnoptimized(p.listThumbUrl)}
                           />
                         ) : (

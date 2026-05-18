@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight, Loader2, Package, Search, X } from "lucide-react";
+import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { isMediaUrlValid } from "@/lib/media-url";
@@ -192,15 +192,15 @@ export function CatalogSearchPanel({
               }}
               className="flex gap-3 px-3 py-2.5 text-left transition hover:bg-site-bg"
             >
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-site-bg">
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-site-bg">
                 {p.primaryImageUrl && isMediaUrlValid(p.primaryImageUrl) ? (
-                  <Image
+                  <ProductImageFrame
                     src={p.primaryImageUrl}
                     alt=""
-                    width={48}
-                    height={48}
+                    sizes="48px"
                     unoptimized={mediaImageNeedsUnoptimized(p.primaryImageUrl)}
-                    className="h-12 w-12 object-contain p-0.5"
+                    className="h-12 w-12 rounded-lg"
+                    safeAreaClassName="p-1.5"
                   />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center text-site-muted" aria-hidden>
