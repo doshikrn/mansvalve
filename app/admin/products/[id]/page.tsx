@@ -143,6 +143,7 @@ function buildPublicPreview(product: ProductDetail) {
     generatedDisplayName: view.generatedDisplayName,
     displayName: view.displayName,
     h1: view.h1,
+    shortDescription: view.shortDescription,
     seoTitle: view.seoTitle,
     seoDescription: view.seoDescription,
     canonicalPath: view.canonicalPath,

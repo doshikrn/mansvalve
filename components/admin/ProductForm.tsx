@@ -177,19 +177,19 @@ export function ProductForm({
           </Field>
 
           <Field
-            label="Публичное название на сайте"
+            label="Название на сайте"
             name="publicTitle"
             error={state.fieldErrors?.publicTitle}
           >
             <Input name="publicTitle" defaultValue={product?.publicTitle ?? ""} />
             <AdminFieldHint>
-              Если заполнено — это название будет показано на сайте, в карточках,
-              поиске и SEO. Если пусто — название сформируется автоматически из
-              типа, материала, модели, DN и PN.
+              Показывается в карточках, поиске и в шаблоне SEO title. Если пусто —
+              подставляется автоматическое имя из параметров (см. ниже).
             </AdminFieldHint>
             {livePublicPreview ? (
               <p className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                Generated fallback:{" "}
+                <AutoBadge className="mr-2 align-middle" />
+                Автоматическое имя, если «Название на сайте» пустое:{" "}
                 <span className="font-medium text-foreground">
                   {livePublicPreview.generatedDisplayName}
                 </span>
@@ -198,14 +198,14 @@ export function ProductForm({
           </Field>
 
           <Field
-            label="H1 override"
+            label="Заголовок H1 на сайте"
             name="h1Override"
             error={state.fieldErrors?.h1Override}
           >
             <Input name="h1Override" defaultValue={product?.h1Override ?? ""} />
             <AdminFieldHint>
-              Если заполнено — этот текст станет H1 на странице товара. Если пусто,
-              H1 берется из публичного названия, а затем из generated fallback.
+              Если пусто — H1 совпадает с «Названием на сайте», затем с автоматическим
+              именем из параметров.
             </AdminFieldHint>
           </Field>
 
@@ -302,8 +302,8 @@ export function ProductForm({
         <AdminSectionCard
           id="seo"
           title="SEO preview"
-          description="SEO title, description, H1 и canonical сейчас формируются автоматически через buildPublicProductView(). Здесь только итоговый preview, без повторного редактирования тех же текстов."
-          badge="generated"
+          description="Итоговые title, description, H1 и canonical считаются в buildPublicProductView() из названия и параметров товара. Ручных SEO override-полей нет — здесь только preview."
+          badge="автоматически"
         >
           {livePublicPreview ? (
             <div className="space-y-4">
@@ -401,20 +401,22 @@ export function ProductForm({
         <AdminSectionCard
           id="description"
           title="Контент страницы товара"
-          description="Краткое и полное описание, таблица характеристик и списки ниже управляют публичной страницей товара."
+          description="Краткое и полное описание, таблица характеристик и списки ниже — это то, что видит клиент на странице товара (через buildPublicProductView)."
         >
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-relaxed text-blue-950">
-            Если поле заполнено — оно показывается на сайте. Если пустое — используется fallback из public builder.
+            Заполненные поля идут на сайт как есть. Пустые списки для задвижек могут
+            подставляться из шаблона серии — см. docs/product-content-contract.md.
           </div>
 
-          <Field label="Короткое описание" name="shortDescription">
+          <Field label="Краткое описание" name="shortDescription">
             <Textarea
               name="shortDescription"
               rows={2}
               defaultValue={product?.shortDescription ?? ""}
             />
             <AdminFieldHint>
-              Используется в карточках, быстрых превью и fallback-описании.
+              Карточки каталога, превью в админке и краткий текст на странице (если нет
+              отдельного полного описания).
             </AdminFieldHint>
           </Field>
 
@@ -425,7 +427,8 @@ export function ProductForm({
               defaultValue={product?.longDescription ?? ""}
             />
             <AdminFieldHint>
-              При заполнении имеет приоритет над сгенерированным SEO-описанием.
+              Основной текст блока «Описание» на публичной странице. Если пусто — берётся
+              шаблон серии (для задвижек) или краткое описание.
             </AdminFieldHint>
           </Field>
 
@@ -499,6 +502,10 @@ export function ProductForm({
                 <AdminFieldHint>{field.description}</AdminFieldHint>
               </Field>
             ))}
+            <AdminFieldHint>
+              Если строка не заполнена, для задвижек по шаблону серии список может
+              дополниться автоматически (см. docs/product-content-contract.md).
+            </AdminFieldHint>
           </div>
         </AdminSectionCard>
 
@@ -556,7 +563,7 @@ function ProductValidationWarnings({
       ? "Нет изображения товара: публичная карточка будет использовать fallback категории."
       : null,
     !product?.shortDescription?.trim() && !product?.longDescription?.trim()
-      ? "Нет описания: страница будет использовать сгенерированный SEO fallback."
+      ? "Нет своего описания: блок «Описание» на сайте заполнится автоматически (шаблон серии или служебный fallback)."
       : null,
     product && product.dn == null
       ? "DN не указан: фильтры и поиск по диаметру будут работать хуже."
@@ -624,7 +631,7 @@ function Field({
   required,
   error,
 }: {
-  label: string;
+  label: ReactNode;
   children: ReactNode;
   name: string;
   required?: boolean;
@@ -632,13 +639,23 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={name}>
+      <Label htmlFor={name} className="inline-flex flex-wrap items-center gap-x-1">
         {label}
         {required ? <span className="text-destructive"> *</span> : null}
       </Label>
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
+  );
+}
+
+function AutoBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground ${className ?? ""}`}
+    >
+      автоматически
+    </span>
   );
 }
 

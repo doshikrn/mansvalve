@@ -231,8 +231,7 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "Product",
     name: view.displayName,
-    description:
-      view.detailContent.descriptionParagraphs.join(" ") || view.shortDescription,
+    description: view.fullDescription.replace(/\s+/g, " ").trim() || view.shortDescription,
     sku: product.id,
     mpn: product.model || product.id,
     brand: {

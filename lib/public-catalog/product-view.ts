@@ -7,6 +7,15 @@ import { toAbsoluteSiteUrl } from "@/lib/site-url";
 
 import type { PublicCatalogProduct } from "./types";
 
+/** Section bullets on the public product page (contract names; same data as in `detailContent`). */
+export type PublicProductContentSections = {
+  standards: string[];
+  advantages: string[];
+  application: string[];
+  documentsQuality: string[];
+  deliveryTerms: string[];
+};
+
 export type PublicProductView = {
   product: PublicCatalogProduct;
   internalTitle: string;
@@ -16,6 +25,9 @@ export type PublicProductView = {
   seoTitle: string;
   seoDescription: string;
   shortDescription: string;
+  /** Full body copy after paragraph resolution (`\n\n` between paragraphs). */
+  fullDescription: string;
+  contentSections: PublicProductContentSections;
   detailContent: ProductDetailContent;
   categoryLabel: string;
   /** Legacy listing path; public product links must use `canonicalPath` / `canonicalUrl`. */
@@ -28,6 +40,10 @@ export type PublicProductView = {
   imageCount: number;
 };
 
+/**
+ * Единственная точка принятия решений для публичного товара: имя, H1, описания,
+ * SEO (без ручных override-полей), изображение, canonical и секции контента.
+ */
 export function buildPublicProductView(product: PublicCatalogProduct): PublicProductView {
   const generatedDisplayName = formatProductDisplayName(product);
   const publicTitle = product.publicTitle?.trim();
@@ -36,6 +52,14 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   const h1 = h1Override || publicTitle || generatedDisplayName;
   const seoName = publicTitle || formatProductSeoName(product);
   const detailContent = buildProductDetailContent(product);
+  const fullDescription = detailContent.descriptionParagraphs.join("\n\n");
+  const contentSections: PublicProductContentSections = {
+    standards: detailContent.standards,
+    advantages: detailContent.benefits,
+    application: detailContent.applications,
+    documentsQuality: detailContent.qualityDocuments,
+    deliveryTerms: detailContent.supplyTerms,
+  };
   const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
   const categoryVisual = getCategoryVisual(product.category);
   const imageUrl = product.primaryImageUrl || product.images?.[0]?.url || categoryVisual.imageSrc;
@@ -55,6 +79,8 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     seoTitle: `Купить ${seoName} в Казахстане | MANSVALVE GROUP`,
     seoDescription: buildProductMetaDescription(displayName),
     shortDescription: product.shortDescription || detailContent.descriptionParagraphs[0] || "",
+    fullDescription,
+    contentSections,
     detailContent,
     categoryLabel,
     catalogPath: `/catalog/${product.slug}`,

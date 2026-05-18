@@ -27,6 +27,22 @@ const TRUST_ITEMS = [
 
 export function GateValveSeoProductPage({ page, product, relatedPages }: Props) {
   const view = product ? buildPublicProductView(product) : null;
+  const introParagraphs =
+    view?.detailContent?.descriptionParagraphs?.length
+      ? view.detailContent.descriptionParagraphs
+      : page.introParagraphs;
+  const characteristicsRows =
+    view?.detailContent?.characteristics?.length
+      ? view.detailContent.characteristics
+      : page.characteristics;
+  const qualityDocumentsItems =
+    view && view.detailContent.qualityDocuments.length > 0
+      ? view.detailContent.qualityDocuments
+      : page.qualityDocuments;
+  const standardsItems = view ? view.contentSections.standards : page.standards;
+  const advantagesItems = view ? view.contentSections.advantages : page.benefits;
+  const applicationItems = view ? view.contentSections.application : page.applications;
+  const deliveryTermsItems = view ? view.contentSections.deliveryTerms : page.supplyTerms;
   const categoryVisual = getCategoryVisual("zadvizhki");
   const displayName = view?.displayName ?? page.title;
   const imageSrc = view?.primaryImageUrl ?? categoryVisual.imageSrc;
@@ -103,7 +119,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
           </h1>
 
           <div className="mt-6 space-y-4 text-base leading-[1.75] text-slate-650">
-            {page.introParagraphs.map((paragraph) => (
+            {introParagraphs.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
@@ -186,7 +202,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
             <div className="mt-5 overflow-hidden rounded-xl border border-site-border bg-site-card">
               <table className="w-full">
                 <tbody>
-                  {page.characteristics.map((item, index) => (
+                  {characteristicsRows.map((item, index) => (
                     <tr key={item.label} className={index % 2 === 0 ? "bg-white" : "bg-site-bg"}>
                       <td className="w-2/5 border-r border-slate-100 px-5 py-3 text-sm font-medium text-slate-500">
                         {item.label}
@@ -205,7 +221,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               <h2 className="text-lg font-bold text-slate-900">Документация и контроль качества</h2>
             </div>
             <ul className="space-y-2 text-sm leading-relaxed text-slate-600">
-              {page.qualityDocuments.map((item) => (
+              {qualityDocumentsItems.map((item) => (
                 <li key={item} className="flex gap-2">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-site-primary" />
                   <span>{item}</span>
@@ -216,14 +232,27 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
         </div>
       </section>
 
-      <section className="border-t border-site-border bg-site-card">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2">
-          <InfoBlock title="Стандарты и соответствие" items={page.standards} />
-          <InfoBlock title="Преимущества" items={page.benefits} />
-          <InfoBlock title="Область применения" items={page.applications} />
-          <InfoBlock title="Условия поставки" items={page.supplyTerms} />
-        </div>
-      </section>
+      {standardsItems.length ||
+      advantagesItems.length ||
+      applicationItems.length ||
+      deliveryTermsItems.length ? (
+        <section className="border-t border-site-border bg-site-card">
+          <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2">
+            {standardsItems.length ? (
+              <InfoBlock title="Стандарты и соответствие" items={standardsItems} />
+            ) : null}
+            {advantagesItems.length ? (
+              <InfoBlock title="Преимущества" items={advantagesItems} />
+            ) : null}
+            {applicationItems.length ? (
+              <InfoBlock title="Область применения" items={applicationItems} />
+            ) : null}
+            {deliveryTermsItems.length ? (
+              <InfoBlock title="Условия поставки" items={deliveryTermsItems} />
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       <section className="border-t border-site-border bg-site-bg">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -398,7 +427,7 @@ function buildGateValveJsonLd(
     "@type": "Product",
     name: view?.displayName ?? page.title,
     description:
-      view?.detailContent.descriptionParagraphs.join(" ") ||
+      view?.fullDescription.replace(/\s+/g, " ").trim() ||
       view?.shortDescription ||
       page.seoDescription,
     sku: product?.id ?? page.slug,

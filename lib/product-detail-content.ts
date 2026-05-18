@@ -14,6 +14,7 @@ export type ProductDetailContent = {
   canonicalPath: string;
 };
 
+/** @see buildPublicProductView — единая точка входа для публичного слоя. */
 export function buildProductDetailContent(
   product: PublicCatalogProduct,
 ): ProductDetailContent {

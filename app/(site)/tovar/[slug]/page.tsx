@@ -504,27 +504,27 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
         </div>
       </div>
 
-      {detailContent.standards.length ||
-      detailContent.benefits.length ||
-      detailContent.applications.length ||
-      detailContent.qualityDocuments.length ||
-      detailContent.supplyTerms.length ? (
+      {view.contentSections.standards.length ||
+      view.contentSections.advantages.length ||
+      view.contentSections.application.length ||
+      view.contentSections.documentsQuality.length ||
+      view.contentSections.deliveryTerms.length ? (
         <div className="border-t border-site-border bg-site-card">
           <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-2">
-            {detailContent.standards.length ? (
-              <InfoList title="Стандарты и соответствие" items={detailContent.standards} />
+            {view.contentSections.standards.length ? (
+              <InfoList title="Стандарты и соответствие" items={view.contentSections.standards} />
             ) : null}
-            {detailContent.benefits.length ? (
-              <InfoList title="Преимущества" items={detailContent.benefits} />
+            {view.contentSections.advantages.length ? (
+              <InfoList title="Преимущества" items={view.contentSections.advantages} />
             ) : null}
-            {detailContent.applications.length ? (
-              <InfoList title="Область применения" items={detailContent.applications} />
+            {view.contentSections.application.length ? (
+              <InfoList title="Область применения" items={view.contentSections.application} />
             ) : null}
-            {detailContent.qualityDocuments.length ? (
-              <InfoList title="Документация и контроль качества" items={detailContent.qualityDocuments} />
+            {view.contentSections.documentsQuality.length ? (
+              <InfoList title="Документация и контроль качества" items={view.contentSections.documentsQuality} />
             ) : null}
-            {detailContent.supplyTerms.length ? (
-              <InfoList title="Условия поставки" items={detailContent.supplyTerms} />
+            {view.contentSections.deliveryTerms.length ? (
+              <InfoList title="Условия поставки" items={view.contentSections.deliveryTerms} />
             ) : null}
           </div>
         </div>

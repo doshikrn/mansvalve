@@ -17,7 +17,7 @@ export const PRODUCT_DETAIL_BLOCK_FIELDS: Array<{
   {
     key: "standards",
     name: "detailStandards",
-    title: "Стандарты и соответствие",
+    title: "Стандарты",
     description: "ГОСТ, ТР ТС и другие нормативы. Один пункт на строку.",
   },
   {
@@ -35,7 +35,7 @@ export const PRODUCT_DETAIL_BLOCK_FIELDS: Array<{
   {
     key: "qualityDocuments",
     name: "detailQualityDocuments",
-    title: "Документация и контроль качества",
+    title: "Документация и качество",
     description: "Паспорт, сертификаты, испытания и контроль. Один пункт на строку.",
   },
   {

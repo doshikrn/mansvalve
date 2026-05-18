@@ -19,7 +19,11 @@ export type {
   PublicCatalogProductImage,
   PublicCatalogSource,
 } from "./types";
-export { buildPublicProductView, type PublicProductView } from "./product-view";
+export {
+  buildPublicProductView,
+  type PublicProductContentSections,
+  type PublicProductView,
+} from "./product-view";
 
 export function getPublicCatalogSource(): PublicCatalogSource {
   const explicit = process.env.PUBLIC_CATALOG_SOURCE?.trim().toLowerCase();
