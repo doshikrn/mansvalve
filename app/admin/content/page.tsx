@@ -672,6 +672,11 @@ export default async function AdminContentPage({
         </CardHeader>
         <CardContent>
           <form action={saveHomeMetaAction} className="max-w-3xl space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Эти поля задают и{" "}
+              <code className="rounded bg-muted px-1">&lt;title&gt;</code>, и Open Graph / Twitter на главной (
+              <code className="rounded bg-muted px-1">/</code>).
+            </p>
             <Field label="Заголовок для поиска" name="ogTitle" defaultValue={meta.ogTitle} />
             <div className="space-y-1">
               <Label htmlFor="ogd">Краткое описание</Label>
@@ -979,6 +984,19 @@ export default async function AdminContentPage({
               ))}
               <Field label="Время — строка 1" name="workLine1" defaultValue={pageContacts.workLine1} />
               <Field label="Время — строка 2" name="workLine2" defaultValue={pageContacts.workLine2} />
+              <Field
+                label="Заголовок блока «Направления работы»"
+                name="workDirectionsSectionTitle"
+                defaultValue={pageContacts.workDirectionsSectionTitle}
+              />
+              <div className="space-y-1">
+                <Label>Направления работы (по одной строке)</Label>
+                <Textarea
+                  name="workDirectionsBullets"
+                  rows={6}
+                  defaultValue={pageContacts.workDirections.join("\n")}
+                />
+              </div>
               <Field label="Подпись ссылки на карту (2GIS)" name="mapLinkLabel" defaultValue={pageContacts.mapLinkLabel} />
               <Field label="WhatsApp карточка — заголовок" name="whatsAppTitle" defaultValue={pageContacts.whatsAppTitle} />
               <Field label="WhatsApp карточка — подзаголовок" name="whatsAppSubtitle" defaultValue={pageContacts.whatsAppSubtitle} />
@@ -1014,6 +1032,10 @@ export default async function AdminContentPage({
               <div className="space-y-1">
                 <Label>Примечание под таблицей</Label>
                 <Textarea name="requisitesFooterNote" rows={2} defaultValue={pageContacts.requisitesFooterNote} />
+              </div>
+              <div className="space-y-1">
+                <Label>Финальная строка под реквизитами</Label>
+                <Textarea name="requisitesClosingLine" rows={2} defaultValue={pageContacts.requisitesClosingLine} />
               </div>
               <AdminFormFooter previewHref="/contacts" saveLabel="Сохранить страницу «Контакты»" />
             </form>
@@ -1109,6 +1131,76 @@ export default async function AdminContentPage({
                 uploadFolder="content/certificates"
                 description="Обложка страницы сертификатов. Сами PDF и превью сертификатов редактируются в разделе «Сертификаты»."
               />
+              <Field label="Eyebrow над заголовком" name="heroEyebrow" defaultValue={pageCertificates.heroEyebrow} />
+              <div className="space-y-1">
+                <Label>Главный заголовок (перенос строки = новая строка на сайте)</Label>
+                <Textarea name="heroTitle" rows={3} defaultValue={pageCertificates.heroTitle} />
+              </div>
+              <div className="space-y-1">
+                <Label>Вводные абзацы под заголовком (до блока с лидом)</Label>
+                <Textarea
+                  name="supportingParagraphs"
+                  rows={5}
+                  defaultValue={pageCertificates.supportingParagraphs.join("\n\n")}
+                />
+                <p className="text-xs text-muted-foreground">Разделяйте абзацы пустой строкой.</p>
+              </div>
+              <p className="text-xs font-medium text-muted-foreground">Три карточки под вводным текстом</p>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="grid gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
+                  <Field label={`Заголовок ${i + 1}`} name={`mf_${i}_title`} defaultValue={pageCertificates.heroMicroFeatures[i]?.title ?? ""} />
+                  <Field label={`Текст ${i + 1}`} name={`mf_${i}_text`} defaultValue={pageCertificates.heroMicroFeatures[i]?.text ?? ""} />
+                </div>
+              ))}
+              <Field
+                label="Заголовок списка «По запросу»"
+                name="providedSectionTitle"
+                defaultValue={pageCertificates.providedSectionTitle}
+              />
+              <div className="space-y-1">
+                <Label>Пункты списка (по одной строке)</Label>
+                <Textarea name="providedItems" rows={10} defaultValue={pageCertificates.providedItems.join("\n")} />
+              </div>
+              <Field
+                label="Заголовок блока «Контроль качества»"
+                name="qualitySectionTitle"
+                defaultValue={pageCertificates.qualitySectionTitle}
+              />
+              <div className="space-y-1">
+                <Label>Текст блока «Контроль качества»</Label>
+                <Textarea
+                  name="qualitySectionParagraphs"
+                  rows={5}
+                  defaultValue={pageCertificates.qualitySectionParagraphs.join("\n\n")}
+                />
+              </div>
+              <Field
+                label="Заголовок блока отраслей"
+                name="industriesSectionTitle"
+                defaultValue={pageCertificates.industriesSectionTitle}
+              />
+              <Field label="Вводная строка перед отраслями" name="industriesIntro" defaultValue={pageCertificates.industriesIntro} />
+              <div className="space-y-1">
+                <Label>Отрасли (по одной строке; иконки назначаются по порядку)</Label>
+                <Textarea name="industryLabels" rows={6} defaultValue={pageCertificates.industryLabels.join("\n")} />
+              </div>
+              <div className="space-y-1">
+                <Label>Заключительный абзац блока отраслей</Label>
+                <Textarea name="industriesClosing" rows={2} defaultValue={pageCertificates.industriesClosing} />
+              </div>
+              <Field
+                label="Заголовок блока «Гарантия надежности»"
+                name="reliabilitySectionTitle"
+                defaultValue={pageCertificates.reliabilitySectionTitle}
+              />
+              <div className="space-y-1">
+                <Label>Текст блока «Гарантия надежности»</Label>
+                <Textarea
+                  name="reliabilityParagraphs"
+                  rows={4}
+                  defaultValue={pageCertificates.reliabilityParagraphs.join("\n\n")}
+                />
+              </div>
               <AdminFormFooter previewHref="/certificates" saveLabel="Сохранить «Сертификаты»" />
             </form>
           </CardContent>

@@ -47,6 +47,7 @@ import {
   type HomeHeroContent,
   type HomeHowItWorksContent,
   type HomeMetaContent,
+  type HomePageView,
   type HomeProductShowcasesContent,
   type HomeWhoWeSupplyContent,
   type HomeWhyUsContent,
@@ -95,6 +96,13 @@ export async function resolveHomeFaq(): Promise<HomeFaqContent> {
 export async function resolveHomeMeta(): Promise<HomeMetaContent> {
   const data = await loadData(SITE_CONTENT_KEYS.homeMeta);
   return mergeHomeMeta(data);
+}
+
+/** Единая точка входа для главной (мета + при необходимости другие срезы). */
+export async function resolveHomePage(): Promise<HomePageView> {
+  return {
+    meta: await resolveHomeMeta(),
+  };
 }
 
 export async function resolveAboutCopy(): Promise<AboutCopyContent> {

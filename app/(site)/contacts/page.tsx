@@ -47,15 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const CONTACT_ICONS: LucideIcon[] = [Phone, Mail, MapPin, Clock];
-const CONTACTS_LEAD =
-  "Работаем с B2B-клиентами по всему Казахстану, обеспечивая надежные поставки промышленной арматуры и инженерного оборудования. Подготовим коммерческое предложение с ценой, сроками и условиями поставки в течение 15 минут в рабочее время.";
-const WORK_DIRECTIONS = [
-  "Государственные закупки",
-  "Промышленные предприятия",
-  "Строительные компании",
-  "ТЭЦ и теплосети",
-  "Водоканалы и коммунальный сектор",
-] as const;
 
 /* ── Page ─────────────────────────────────────────────────────────── */
 
@@ -121,7 +112,7 @@ export default async function ContactsPage() {
     {
       icon: CONTACT_ICONS[3]!,
       label: page.contactCardLabels[3]!,
-      lines: ["Пн–Пт: 09:00–18:00", "Сб–Вс: по согласованию"],
+      lines: [page.workLine1, page.workLine2],
       copy: undefined,
       href: null,
       hrefLabel: null,
@@ -159,7 +150,7 @@ export default async function ContactsPage() {
           <h1 className="mb-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
             {page.h1}
           </h1>
-          <p className="max-w-3xl text-lg text-slate-500">{CONTACTS_LEAD}</p>
+          <p className="max-w-3xl text-lg text-slate-500">{page.pageLead}</p>
         </div>
       </div>
 
@@ -240,10 +231,10 @@ export default async function ContactsPage() {
 
             <div className="rounded-xl border border-site-border bg-site-card p-5">
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                Направления работы
+                {page.workDirectionsSectionTitle}
               </p>
               <ul className="space-y-2">
-                {WORK_DIRECTIONS.map((item) => (
+                {page.workDirections.map((item) => (
                   <li key={item} className="text-sm font-medium text-slate-900">
                     ✔️ {item}
                   </li>
@@ -305,9 +296,7 @@ export default async function ContactsPage() {
             <Building2 size={13} />
             {page.requisitesFooterNote}
           </p>
-          <p className="mt-4 text-sm font-semibold text-slate-900">
-            MANSVALVE GROUP — быстрый ответ, точные сроки, надежные поставки.
-          </p>
+          <p className="mt-4 text-sm font-semibold text-slate-900">{page.requisitesClosingLine}</p>
         </div>
       </div>
     </div>

@@ -650,6 +650,15 @@ export async function savePageContactsAction(formData: FormData) {
     requisitesRowLabels.push(String(formData.get(`req_lab_${i}`) ?? "").trim());
   }
 
+  const workDirections = String(formData.get("workDirectionsBullets") ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (!workDirections.length) {
+    err("Список «Направления работы»: добавьте хотя бы одну строку.");
+  }
+
   const data = {
     metaTitle: String(formData.get("metaTitle") ?? "").trim(),
     metaDescription: String(formData.get("metaDescription") ?? "").trim(),
@@ -661,6 +670,8 @@ export async function savePageContactsAction(formData: FormData) {
     contactCardLabels,
     workLine1: String(formData.get("workLine1") ?? "").trim(),
     workLine2: String(formData.get("workLine2") ?? "").trim(),
+    workDirectionsSectionTitle: String(formData.get("workDirectionsSectionTitle") ?? "").trim(),
+    workDirections,
     mapLinkLabel: String(formData.get("mapLinkLabel") ?? "").trim(),
     whatsAppTitle: String(formData.get("whatsAppTitle") ?? "").trim(),
     whatsAppSubtitle: String(formData.get("whatsAppSubtitle") ?? "").trim(),
@@ -668,6 +679,7 @@ export async function savePageContactsAction(formData: FormData) {
     requisitesTitle: String(formData.get("requisitesTitle") ?? "").trim(),
     requisitesRowLabels,
     requisitesFooterNote: String(formData.get("requisitesFooterNote") ?? "").trim(),
+    requisitesClosingLine: String(formData.get("requisitesClosingLine") ?? "").trim(),
     mapPinEyebrow: String(formData.get("mapPinEyebrow") ?? "").trim(),
     mapCityLineTemplate: String(formData.get("mapCityLineTemplate") ?? "").trim(),
     mapStreetLineTemplate: String(formData.get("mapStreetLineTemplate") ?? "").trim(),
@@ -730,6 +742,40 @@ export async function savePageDeliveryAction(formData: FormData) {
 
 export async function savePageCertificatesAction(formData: FormData) {
   const session = await requireAdmin("/admin/content");
+
+  const supportingParagraphs = splitParagraphs(String(formData.get("supportingParagraphs") ?? ""));
+  if (!supportingParagraphs.length) err("Сертификаты: заполните вводные абзацы (минимум один блок через пустую строку).");
+
+  const providedItems = String(formData.get("providedItems") ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (!providedItems.length) err("Сертификаты: список «По запросу» не может быть пустым.");
+
+  const industryLabels = String(formData.get("industryLabels") ?? "")
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (!industryLabels.length) err("Сертификаты: добавьте хотя бы одну отрасль (по строке).");
+
+  const qualitySectionParagraphs = splitParagraphs(String(formData.get("qualitySectionParagraphs") ?? ""));
+  if (!qualitySectionParagraphs.length) {
+    err("Сертификаты: блок «Контроль качества» — минимум один абзац (пустая строка между абзацами).");
+  }
+
+  const reliabilityParagraphs = splitParagraphs(String(formData.get("reliabilityParagraphs") ?? ""));
+  if (!reliabilityParagraphs.length) {
+    err("Сертификаты: блок «Гарантия надежности» — минимум один абзац.");
+  }
+
+  const heroMicroFeatures = [];
+  for (let i = 0; i < 3; i++) {
+    heroMicroFeatures.push({
+      title: String(formData.get(`mf_${i}_title`) ?? "").trim(),
+      text: String(formData.get(`mf_${i}_text`) ?? "").trim(),
+    });
+  }
+
   const data = {
     metaTitle: String(formData.get("metaTitle") ?? "").trim(),
     metaDescription: String(formData.get("metaDescription") ?? "").trim(),
@@ -743,6 +789,20 @@ export async function savePageCertificatesAction(formData: FormData) {
     issuedAtLabel: String(formData.get("issuedAtLabel") ?? "").trim(),
     openDocumentLabel: String(formData.get("openDocumentLabel") ?? "").trim(),
     headerImageSrc: String(formData.get("headerImageSrc") ?? "").trim(),
+    heroEyebrow: String(formData.get("heroEyebrow") ?? "").trim(),
+    heroTitle: String(formData.get("heroTitle") ?? "").trim(),
+    supportingParagraphs,
+    heroMicroFeatures,
+    providedSectionTitle: String(formData.get("providedSectionTitle") ?? "").trim(),
+    providedItems,
+    qualitySectionTitle: String(formData.get("qualitySectionTitle") ?? "").trim(),
+    qualitySectionParagraphs,
+    industriesSectionTitle: String(formData.get("industriesSectionTitle") ?? "").trim(),
+    industriesIntro: String(formData.get("industriesIntro") ?? "").trim(),
+    industryLabels,
+    industriesClosing: String(formData.get("industriesClosing") ?? "").trim(),
+    reliabilitySectionTitle: String(formData.get("reliabilitySectionTitle") ?? "").trim(),
+    reliabilityParagraphs,
   };
   const parsed = certificatesPageSchema.safeParse(data);
   if (!parsed.success) err("Сертификаты: проверьте поля.");

@@ -14,6 +14,7 @@ import {
   HardHat,
   Landmark,
   ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,24 +26,8 @@ import { applyPlaceholders } from "@/lib/site-content/models";
 import { resolveCertificatesPage } from "@/lib/site-content/public";
 import { listPublicActiveCertificates } from "@/lib/services/certificates";
 
-const PROVIDED_ITEMS = [
-  "Паспорт изделия",
-  "Сертификаты соответствия",
-  "Декларации соответствия",
-  "Протоколы испытаний",
-  "Гарантийные обязательства",
-  "Технические характеристики",
-  "Чертежи и каталожные данные",
-  "Счета, договоры, закрывающие документы",
-] as const;
-
-const INDUSTRIES = [
-  { label: "ТЭЦ и теплосетей", icon: Flame },
-  { label: "Водоканалов", icon: Droplets },
-  { label: "Промышленных предприятий", icon: Factory },
-  { label: "Нефтегазовых объектов", icon: HardHat },
-  { label: "Государственных и тендерных проектов", icon: Landmark },
-] as const;
+const INDUSTRY_ICONS = [Flame, Droplets, Factory, HardHat, Landmark] as const;
+const MICRO_ICONS = [ShieldCheck, FileText, BadgeCheck] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const c = await resolveCertificatesPage();
@@ -114,27 +99,27 @@ export default async function CertificatesPage() {
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-site-primary">
-                Сертификаты
+                {cms.heroEyebrow}
               </p>
-              <h1 className="mt-3 text-3xl font-bold leading-tight text-site-ink sm:text-5xl">
-                СЕРТИФИКАТЫ
-                <br />
-                И ГАРАНТИЯ КАЧЕСТВА
+              <h1 className="mt-3 whitespace-pre-line text-3xl font-bold leading-tight text-site-ink sm:text-5xl">
+                {cms.heroTitle}
               </h1>
-              <p className="mt-5 text-base leading-relaxed text-slate-700">
-                MANSVALVE GROUP уделяет особое внимание качеству поставляемой продукции и соответствию требованиям клиентов.
-              </p>
-              <p className="mt-3 text-base leading-relaxed text-slate-700">
-                Вся поставляемая арматура и комплектующие сопровождаются необходимым пакетом документов в зависимости от типа продукции и требований проекта.
-              </p>
-              <p className="mt-3 text-base leading-relaxed text-slate-700">
-                {lead}
-              </p>
+              {cms.supportingParagraphs.map((paragraph) => (
+                <p key={paragraph} className="mt-5 text-base leading-relaxed text-slate-700">
+                  {applyPlaceholders(paragraph, COMPANY.name)}
+                </p>
+              ))}
+              <p className="mt-3 text-base leading-relaxed text-slate-700">{lead}</p>
 
               <div className="mt-7 grid gap-3 sm:grid-cols-3">
-                <Feature icon={ShieldCheck} title="Надежность" text="Проверенные поставщики и контроль качества" />
-                <Feature icon={FileText} title="Документы" text="Полный пакет документов на продукцию" />
-                <Feature icon={BadgeCheck} title="Гарантия" text="Гарантийные обязательства на всю продукцию" />
+                {cms.heroMicroFeatures.map((item, index) => (
+                  <Feature
+                    key={`${item.title}-${index}`}
+                    icon={MICRO_ICONS[index] ?? ShieldCheck}
+                    title={item.title}
+                    text={item.text}
+                  />
+                ))}
               </div>
             </div>
 
@@ -161,9 +146,9 @@ export default async function CertificatesPage() {
       <section className="border-b border-slate-200 bg-slate-50 py-12">
         <div className="mx-auto grid max-w-7xl gap-7 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <h2 className="text-2xl font-bold text-site-primary">По запросу предоставляем:</h2>
+            <h2 className="text-2xl font-bold text-site-primary">{cms.providedSectionTitle}</h2>
             <ul className="mt-4 space-y-2.5">
-              {PROVIDED_ITEMS.map((item) => (
+              {cms.providedItems.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-base text-site-ink">
                   <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-site-primary" />
                   <span>{item}</span>
@@ -219,13 +204,12 @@ export default async function CertificatesPage() {
                   <ClipboardCheck className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="text-2xl font-bold text-site-primary">Контроль качества</h2>
-                  <p className="mt-3 text-base leading-relaxed text-slate-700">
-                    Перед поставкой продукция проходит проверку комплектности, маркировки, внешнего состояния и соответствия заявленным характеристикам.
-                  </p>
-                  <p className="mt-3 text-base leading-relaxed text-slate-700">
-                    Для отдельных позиций возможно предоставление гидравлических испытаний, заводских тестов и дополнительной проверки по запросу заказчика.
-                  </p>
+                  <h2 className="text-2xl font-bold text-site-primary">{cms.qualitySectionTitle}</h2>
+                  {cms.qualitySectionParagraphs.map((paragraph) => (
+                    <p key={paragraph} className="mt-3 text-base leading-relaxed text-slate-700">
+                      {applyPlaceholders(paragraph, COMPANY.name)}
+                    </p>
+                  ))}
                 </div>
               </div>
             </div>
@@ -250,21 +234,20 @@ export default async function CertificatesPage() {
 
       <section className="border-b border-slate-200 bg-slate-50 py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <h2 className="text-2xl font-bold text-site-primary">Работаем с объектами повышенных требований</h2>
-          <p className="mt-3 text-base leading-relaxed text-slate-700">
-            Мы поставляем оборудование для:
-          </p>
+          <h2 className="text-2xl font-bold text-site-primary">{cms.industriesSectionTitle}</h2>
+          <p className="mt-3 text-base leading-relaxed text-slate-700">{cms.industriesIntro}</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {INDUSTRIES.map(({ label, icon: Icon }) => (
-              <div key={label} className="rounded-xl border border-slate-200 bg-white p-4">
-                <Icon className="h-5 w-5 text-site-primary" />
-                <p className="mt-2 text-sm font-semibold text-site-ink">{label}</p>
-              </div>
-            ))}
+            {cms.industryLabels.map((label, index) => {
+              const Icon = INDUSTRY_ICONS[index % INDUSTRY_ICONS.length]!;
+              return (
+                <div key={`${label}-${index}`} className="rounded-xl border border-slate-200 bg-white p-4">
+                  <Icon className="h-5 w-5 text-site-primary" />
+                  <p className="mt-2 text-sm font-semibold text-site-ink">{label}</p>
+                </div>
+              );
+            })}
           </div>
-          <p className="mt-4 text-base leading-relaxed text-slate-700">
-            Поэтому понимаем важность корректной документации и соблюдения технических требований.
-          </p>
+          <p className="mt-4 text-base leading-relaxed text-slate-700">{cms.industriesClosing}</p>
         </div>
       </section>
 
@@ -274,14 +257,13 @@ export default async function CertificatesPage() {
             <div>
               <div className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-site-primary" />
-                <h2 className="text-2xl font-bold text-site-primary">Гарантия надежности</h2>
+                <h2 className="text-2xl font-bold text-site-primary">{cms.reliabilitySectionTitle}</h2>
               </div>
-              <p className="mt-3 text-base leading-relaxed text-slate-700">
-                Мы заинтересованы в долгосрочном сотрудничестве, поэтому предлагаем клиентам только проверенные решения, соответствующие заявленным параметрам и условиям эксплуатации.
-              </p>
-              <p className="mt-4 text-base font-semibold text-site-ink">
-                MANSVALVE GROUP — качество, подтвержденное документально.
-              </p>
+              {cms.reliabilityParagraphs.map((paragraph) => (
+                <p key={paragraph} className="mt-3 text-base leading-relaxed text-slate-700">
+                  {applyPlaceholders(paragraph, COMPANY.name)}
+                </p>
+              ))}
             </div>
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
               {trustImage ? (
@@ -311,7 +293,7 @@ function Feature({
   title,
   text,
 }: {
-  icon: typeof ShieldCheck;
+  icon: LucideIcon;
   title: string;
   text: string;
 }) {

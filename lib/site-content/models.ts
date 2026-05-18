@@ -167,6 +167,10 @@ export const homeMetaSchema = z.object({
 
 export type HomeMetaContent = z.infer<typeof homeMetaSchema>;
 
+export type HomePageView = {
+  meta: HomeMetaContent;
+};
+
 export function defaultHomeMeta(): HomeMetaContent {
   return {
     ogTitle: "MANSVALVE Group — трубопроводная арматура в Казахстане",
@@ -969,6 +973,8 @@ export const contactsPageSchema = z.object({
   contactCardLabels: z.array(z.string()).length(4),
   workLine1: z.string(),
   workLine2: z.string(),
+  workDirectionsSectionTitle: z.string(),
+  workDirections: z.array(z.string()).min(1).max(16),
   mapLinkLabel: z.string(),
   whatsAppTitle: z.string(),
   whatsAppSubtitle: z.string(),
@@ -976,6 +982,7 @@ export const contactsPageSchema = z.object({
   requisitesTitle: z.string(),
   requisitesRowLabels: z.array(z.string()).length(5),
   requisitesFooterNote: z.string(),
+  requisitesClosingLine: z.string(),
   mapPinEyebrow: z.string(),
   mapCityLineTemplate: z.string(),
   mapStreetLineTemplate: z.string(),
@@ -1011,6 +1018,14 @@ export function createDefaultContactsPage(input: {
     ],
     workLine1: "Пн – Пт: 09:00 – 18:00",
     workLine2: "Сб – Вс: выходной",
+    workDirectionsSectionTitle: "Направления работы",
+    workDirections: [
+      "Государственные закупки",
+      "Промышленные предприятия",
+      "Строительные компании",
+      "ТЭЦ и теплосети",
+      "Водоканалы и коммунальный сектор",
+    ],
     mapLinkLabel: "Открыть в 2GIS",
     whatsAppTitle: "Написать в WhatsApp",
     whatsAppSubtitle: "Отвечаем в течение 15 минут",
@@ -1024,6 +1039,8 @@ export function createDefaultContactsPage(input: {
       "БИК",
     ],
     requisitesFooterNote: "Полные реквизиты для заключения договора предоставляются по запросу.",
+    requisitesClosingLine:
+      "MANSVALVE GROUP — быстрый ответ, точные сроки, надежные поставки.",
     mapPinEyebrow: "Офис и склад",
     mapCityLineTemplate: "г. {{CITY}}",
     mapStreetLineTemplate: "{{STREET}}",
@@ -1137,6 +1154,21 @@ export const certificatesPageSchema = z.object({
   openDocumentLabel: z.string(),
   /** Опциональное изображение в шапке страницы. */
   headerImageSrc: z.string(),
+  heroEyebrow: z.string(),
+  /** Многострочный заголовок; перевод строки = `<br />` на сайте через `whitespace-pre-line`. */
+  heroTitle: z.string(),
+  supportingParagraphs: z.array(z.string()).min(1).max(4),
+  heroMicroFeatures: z.array(z.object({ title: z.string().min(1), text: z.string().min(1) })).length(3),
+  providedSectionTitle: z.string(),
+  providedItems: z.array(z.string()).min(1).max(24),
+  qualitySectionTitle: z.string(),
+  qualitySectionParagraphs: z.array(z.string()).min(1).max(4),
+  industriesSectionTitle: z.string(),
+  industriesIntro: z.string(),
+  industryLabels: z.array(z.string()).min(1).max(12),
+  industriesClosing: z.string(),
+  reliabilitySectionTitle: z.string(),
+  reliabilityParagraphs: z.array(z.string()).min(1).max(4),
 });
 
 export type CertificatesPageContent = z.infer<typeof certificatesPageSchema>;
@@ -1157,6 +1189,48 @@ export const DEFAULT_CERTIFICATES_PAGE: CertificatesPageContent = {
   issuedAtLabel: "Дата документа:",
   openDocumentLabel: "Открыть документ",
   headerImageSrc: "",
+  heroEyebrow: "Сертификаты",
+  heroTitle: "СЕРТИФИКАТЫ\nИ ГАРАНТИЯ КАЧЕСТВА",
+  supportingParagraphs: [
+    "MANSVALVE GROUP уделяет особое внимание качеству поставляемой продукции и соответствию требованиям клиентов.",
+    "Вся поставляемая арматура и комплектующие сопровождаются необходимым пакетом документов в зависимости от типа продукции и требований проекта.",
+  ],
+  heroMicroFeatures: [
+    { title: "Надежность", text: "Проверенные поставщики и контроль качества" },
+    { title: "Документы", text: "Полный пакет документов на продукцию" },
+    { title: "Гарантия", text: "Гарантийные обязательства на всю продукцию" },
+  ],
+  providedSectionTitle: "По запросу предоставляем:",
+  providedItems: [
+    "Паспорт изделия",
+    "Сертификаты соответствия",
+    "Декларации соответствия",
+    "Протоколы испытаний",
+    "Гарантийные обязательства",
+    "Технические характеристики",
+    "Чертежи и каталожные данные",
+    "Счета, договоры, закрывающие документы",
+  ],
+  qualitySectionTitle: "Контроль качества",
+  qualitySectionParagraphs: [
+    "Перед поставкой продукция проходит проверку комплектности, маркировки, внешнего состояния и соответствия заявленным характеристикам.",
+    "Для отдельных позиций возможно предоставление гидравлических испытаний, заводских тестов и дополнительной проверки по запросу заказчика.",
+  ],
+  industriesSectionTitle: "Работаем с объектами повышенных требований",
+  industriesIntro: "Мы поставляем оборудование для:",
+  industryLabels: [
+    "ТЭЦ и теплосетей",
+    "Водоканалов",
+    "Промышленных предприятий",
+    "Нефтегазовых объектов",
+    "Государственных и тендерных проектов",
+  ],
+  industriesClosing: "Поэтому понимаем важность корректной документации и соблюдения технических требований.",
+  reliabilitySectionTitle: "Гарантия надежности",
+  reliabilityParagraphs: [
+    "Мы заинтересованы в долгосрочном сотрудничестве, поэтому предлагаем клиентам только проверенные решения, соответствующие заявленным параметрам и условиям эксплуатации.",
+    "MANSVALVE GROUP — качество, подтвержденное документально.",
+  ],
 };
 
 export function mergeCertificatesPage(dbJson: unknown): CertificatesPageContent {
