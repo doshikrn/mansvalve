@@ -183,7 +183,7 @@ export default async function CatalogLandingPage({ params }: PageProps) {
               </li>
               <li>
                 <Link
-                  href={`/catalog/category/${category.slug}`}
+                  href={`/catalog/${category.slug}`}
                   className="text-slate-500 transition-colors hover:text-slate-900"
                 >
                   {category.name}

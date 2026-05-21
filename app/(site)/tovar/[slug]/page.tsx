@@ -28,6 +28,7 @@ import {
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { buildProductBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/structured-data";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { COMPANY_BRAND_SEO, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -219,8 +220,14 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
   const showActuatorBlock =
     Boolean(actuatorSubcategorySlug) && product.controlType !== "Электропривод";
   const actuatorHref = actuatorSubcategorySlug
-    ? `/catalog/subcategory/${actuatorSubcategorySlug}`
-    : "/catalog/category/elektroprivody";
+    ? (() => {
+        for (const c of categories) {
+          const sub = c.subcategories.find((s) => s.slug === actuatorSubcategorySlug);
+          if (sub) return catalogSubcategoryPath(c.slug, sub.slug);
+        }
+        return `/catalog/subcategory/${actuatorSubcategorySlug}`;
+      })()
+    : catalogCategoryPath("elektroprivody");
   const heroImageSrc = view.primaryImageUrl;
   const heroImageAlt = view.primaryImageAlt;
   warnInvalidMediaUrl(heroImageSrc, `ProductPage.hero:${product.slug}`);
@@ -273,10 +280,24 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
               </li>
               <li>
                 <Link
-                  href={`/catalog/category/${category?.slug ?? product.category}`}
+                  href={catalogCategoryPath(category?.slug ?? product.category)}
                   className="hover:text-slate-900 transition-colors"
                 >
                   {categoryLabel}
+                </Link>
+              </li>
+              <li aria-hidden="true">
+                <ChevronRight size={14} className="text-slate-300" />
+              </li>
+              <li>
+                <Link
+                  href={catalogSubcategoryPath(
+                    category?.slug ?? product.category,
+                    product.subcategory,
+                  )}
+                  className="hover:text-slate-900 transition-colors"
+                >
+                  {product.subcategoryName}
                 </Link>
               </li>
               <li aria-hidden="true">
@@ -477,7 +498,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
               {category && (
                 <div className="mt-6">
                   <Link
-                    href={`/catalog/category/${category.slug}`}
+                    href={catalogCategoryPath(category.slug)}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-site-primary transition-colors hover:text-site-primary-hover"
                   >
                     Все {category.name.toLowerCase()}
@@ -633,7 +654,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
                 Похожие позиции
               </h2>
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/catalog/category/${category?.slug ?? product.category}`}>
+                <Link href={catalogCategoryPath(category?.slug ?? product.category)}>
                   Смотреть все
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>

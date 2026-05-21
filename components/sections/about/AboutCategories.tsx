@@ -52,7 +52,7 @@ export function AboutCategories({
           {categories.map((category) => (
             <Link
               key={category.id}
-              href={`/catalog/category/${category.slug}`}
+              href={`/catalog/${category.slug}`}
               className="group flex min-h-28 flex-col justify-between rounded-xl border border-site-border bg-slate-50 p-5 transition-all hover:border-site-primary/35 hover:bg-white"
             >
               <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary">

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { settleRevalidation } from "@/lib/revalidation";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import {
   CategoryDeleteBlockedError,
   createCategory,
@@ -109,15 +110,21 @@ function revalidateCatalogPublicPaths(
   revalidatePath("/catalog/subcategory/[subcategorySlug]", "page");
   revalidatePath("/sitemap.xml");
 
-  for (const category of categories) {
-    if (category?.slug) {
-      revalidatePath(`/catalog/category/${category.slug}`);
-    }
+  const categorySlugs = categories.map((c) => c?.slug).filter(Boolean) as string[];
+
+  for (const slug of categorySlugs) {
+    revalidatePath(catalogCategoryPath(slug));
+    revalidatePath(`/catalog/category/${slug}`);
   }
-  for (const subcategory of subcategories) {
-    if (subcategory?.slug) {
-      revalidatePath(`/catalog/subcategory/${subcategory.slug}`);
+
+  for (let i = 0; i < subcategories.length; i++) {
+    const sub = subcategories[i];
+    if (!sub?.slug) continue;
+    const owningCategorySlug = categorySlugs[i] ?? categorySlugs[0];
+    if (owningCategorySlug) {
+      revalidatePath(catalogSubcategoryPath(owningCategorySlug, sub.slug));
     }
+    revalidatePath(`/catalog/subcategory/${sub.slug}`);
   }
 }
 

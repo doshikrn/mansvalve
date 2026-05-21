@@ -178,7 +178,15 @@ export function PageViewTracker() {
     const visit = pageVisitRef.current;
     if (!visit) return;
 
-    if (pathname === "/catalog" || pathname.startsWith("/catalog/category/")) {
+    const isCatalogListing =
+      pathname === "/catalog" ||
+      pathname.startsWith("/catalog/category/") ||
+      pathname.startsWith("/catalog/subcategory/") ||
+      (pathname.startsWith("/catalog/") &&
+        pathname.split("/").filter(Boolean).length <= 3 &&
+        !pathname.startsWith("/catalog/category/"));
+
+    if (isCatalogListing) {
       const step = "catalog_view";
       if (!visit.emittedFunnelSteps.has(step)) {
         visit.emittedFunnelSteps.add(step);

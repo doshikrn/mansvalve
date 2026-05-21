@@ -67,19 +67,26 @@ function getSessionId(): string {
 export function getPageAnalyticsContext(pathname?: string): PageAnalyticsContext {
   const page = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "/");
   const categoryMatch = page.match(/^\/catalog\/category\/([^/?#]+)/);
+  const catalogNestedProduct = page.match(/^\/catalog\/([^/]+)\/([^/]+)\/([^/?#]+)$/);
+  const catalogSubcategoryOnly = page.match(/^\/catalog\/([^/]+)\/([^/?#]+)$/);
   const tovarMatch = page.match(/^\/tovar\/([^/?#]+)$/);
   const zadvizhkiMatch = page.match(/^\/zadvizhki\/([^/?#]+)$/);
-  const legacyCatalogProduct = page.match(/^\/catalog\/([^/?#]+)$/);
-  const legacySegment = legacyCatalogProduct?.[1];
-  const legacyAsProductSlug =
-    legacySegment && legacySegment !== "category" && legacySegment !== "subcategory"
-      ? legacySegment
-      : undefined;
+  const catalogCategoryShort = page.match(/^\/catalog\/([^/?#]+)$/);
+  const shortSeg = catalogCategoryShort?.[1];
+  const isReservedShortSegment =
+    shortSeg === "category" || shortSeg === "subcategory" || shortSeg === undefined;
 
   return {
     page,
-    category: categoryMatch?.[1],
-    product_slug: tovarMatch?.[1] ?? zadvizhkiMatch?.[1] ?? legacyAsProductSlug,
+    category:
+      categoryMatch?.[1] ??
+      catalogNestedProduct?.[1] ??
+      catalogSubcategoryOnly?.[1] ??
+      (!isReservedShortSegment ? shortSeg : undefined),
+    product_slug:
+      tovarMatch?.[1] ??
+      zadvizhkiMatch?.[1] ??
+      catalogNestedProduct?.[3],
   };
 }
 

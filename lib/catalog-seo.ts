@@ -93,6 +93,12 @@ export const CATEGORY_SEO: Record<
       "Промышленные задвижки DN50-DN1000, PN16-PN64 с поставкой по Казахстану. Чугунные, стальные, с обрезиненным клином, с электроприводом.",
     h1: "Задвижки промышленные в Казахстане",
   },
+  klapany: {
+    title: "Купить обратные клапаны в Казахстане оптом | Цены от MANSVALVE GROUP",
+    description:
+      "Обратные клапаны для трубопроводов: поворотные, межфланцевые, подъёмные, шаровые. Подбор по DN/PN, КП за 15 минут, доставка по РК, сертификаты.",
+    h1: "Клапаны обратные трубопроводные",
+  },
 };
 
 export const ZADVIZHKI_SUBCATEGORY_LINKS: CatalogFilterOption[] = [
@@ -114,15 +120,15 @@ export interface CategoryQuickLink {
 
 export const CATEGORY_QUICK_LINKS: Record<string, CategoryQuickLink[]> = {
   zadvizhki: [
-    { label: "Все задвижки", href: "/catalog/category/zadvizhki" },
-    { label: "Чугунные задвижки", href: "/catalog/category/zadvizhki?material=Чугун" },
-    { label: "Стальные задвижки", href: "/catalog/category/zadvizhki?material=Сталь" },
-    { label: "Задвижки с обрезиненным клином", href: "/catalog/category/zadvizhki?q=обрезиненным" },
+    { label: "Все задвижки", href: "/catalog/zadvizhki" },
+    { label: "Чугунные задвижки", href: "/catalog/zadvizhki?material=Чугун" },
+    { label: "Стальные задвижки", href: "/catalog/zadvizhki?material=Сталь" },
+    { label: "Задвижки с обрезиненным клином", href: "/catalog/zadvizhki?q=обрезиненным" },
     { label: "Задвижки с электроприводом", href: "/zadvizhki/s-elektroprivodom" },
-    { label: "Задвижки PN16", href: "/catalog/category/zadvizhki?pn=16" },
-    { label: "Задвижки PN25", href: "/catalog/category/zadvizhki?pn=25" },
-    { label: "Задвижки PN40", href: "/catalog/category/zadvizhki?pn=40" },
-    { label: "Задвижки PN64", href: "/catalog/category/zadvizhki?pn=64" },
+    { label: "Задвижки PN16", href: "/catalog/zadvizhki?pn=16" },
+    { label: "Задвижки PN25", href: "/catalog/zadvizhki?pn=25" },
+    { label: "Задвижки PN40", href: "/catalog/zadvizhki?pn=40" },
+    { label: "Задвижки PN64", href: "/catalog/zadvizhki?pn=64" },
   ],
 };
 

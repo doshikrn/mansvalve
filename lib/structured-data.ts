@@ -7,6 +7,7 @@ import { getSiteBaseUrl } from "@/lib/site-url"
 import { COMPANY } from "@/lib/company"
 import { getCategoryVisual } from "@/lib/category-visuals"
 import { buildPublicProductView } from "@/lib/public-catalog/product-view"
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes"
 
 interface BreadcrumbItem {
   name: string
@@ -156,7 +157,7 @@ export function buildCategoryBreadcrumbJsonLd(category: Category): Record<string
   return buildBreadcrumbJsonLd([
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
-    { name: category.name, path: `/catalog/category/${category.slug}` },
+    { name: category.name, path: catalogCategoryPath(category.slug) },
   ])
 }
 
@@ -167,8 +168,8 @@ export function buildSubcategoryBreadcrumbJsonLd(
   return buildBreadcrumbJsonLd([
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
-    { name: category.name, path: `/catalog/category/${category.slug}` },
-    { name: subcategory.name, path: `/catalog/subcategory/${subcategory.slug}` },
+    { name: category.name, path: catalogCategoryPath(category.slug) },
+    { name: subcategory.name, path: catalogSubcategoryPath(category.slug, subcategory.slug) },
   ])
 }
 
@@ -177,7 +178,11 @@ export function buildProductBreadcrumbJsonLd(product: Product): Record<string, u
   return buildBreadcrumbJsonLd([
     { name: "Главная", path: "/" },
     { name: "Каталог", path: "/catalog" },
-    { name: product.categoryName, path: `/catalog/category/${product.category}` },
+    { name: product.categoryName, path: catalogCategoryPath(product.category) },
+    {
+      name: product.subcategoryName,
+      path: catalogSubcategoryPath(product.category, product.subcategory),
+    },
     { name: view.displayName, path: view.canonicalPath },
   ])
 }

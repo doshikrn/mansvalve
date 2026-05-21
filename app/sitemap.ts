@@ -7,6 +7,7 @@ import {
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import {
   findSeriesCatalogProduct,
   getSeriesPagePath,
@@ -53,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: absoluteUrl(baseUrl, `/catalog/category/${cat.slug}`),
+    url: absoluteUrl(baseUrl, catalogCategoryPath(cat.slug)),
     lastModified,
     changeFrequency: "weekly",
     priority: 0.8,
@@ -61,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const subcategoryPages: MetadataRoute.Sitemap = categories.flatMap((cat) =>
     cat.subcategories.map((sub) => ({
-      url: absoluteUrl(baseUrl, `/catalog/subcategory/${sub.slug}`),
+      url: absoluteUrl(baseUrl, catalogSubcategoryPath(cat.slug, sub.slug)),
       lastModified,
       changeFrequency: "weekly" as const,
       priority: 0.75,

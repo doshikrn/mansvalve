@@ -9,6 +9,7 @@ import {
   getOrderedCatalogCategories,
 } from "@/lib/catalog-seo";
 import { runCatalogQuery } from "@/lib/catalog-query";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import type {
   PublicCatalogCategory,
   PublicCatalogProduct as Product,
@@ -78,9 +79,9 @@ export function CatalogShell({
     : undefined;
 
   const basePath = lockedSubcategory
-    ? `/catalog/subcategory/${lockedSubcategory.slug}`
+    ? catalogSubcategoryPath(lockedSubcategory.category.slug, lockedSubcategory.slug)
     : lockedCategory
-      ? `/catalog/category/${lockedCategory.slug}`
+      ? catalogCategoryPath(lockedCategory.slug)
       : "/catalog";
 
   // 1. Build the base pool: locked category > query ?category= > all products

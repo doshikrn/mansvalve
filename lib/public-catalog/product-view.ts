@@ -5,6 +5,7 @@ import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { buildProductDetailContent, type ProductDetailContent } from "@/lib/product-detail-content";
 import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
+import { catalogCategoryPath } from "@/lib/catalog-routes";
 
 import type { PublicCatalogProduct } from "./types";
 
@@ -85,7 +86,7 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     contentSections,
     detailContent,
     categoryLabel,
-    catalogPath: `/catalog/${product.slug}`,
+    catalogPath: catalogCategoryPath(product.category),
     canonicalPath,
     canonicalUrl: toAbsoluteSiteUrl(canonicalPath),
     primaryImageUrl: imageUrl,

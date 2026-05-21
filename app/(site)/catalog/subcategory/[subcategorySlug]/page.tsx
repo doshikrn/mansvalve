@@ -1,204 +1,67 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 
-import {
-  getPublicCatalogCategories,
-  getPublicCatalogProducts,
-  getPublicProductsBySubcategory,
-  getPublicSubcategoryBySlug,
-  type PublicCatalogCategory as Category,
-  type PublicCatalogSubcategory as Subcategory,
-} from "@/lib/public-catalog";
-import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
-import { JsonLd } from "@/components/seo/JsonLd";
-import { COMPANY } from "@/lib/company";
-import {
-  buildCollectionPageJsonLd,
-  buildSubcategoryBreadcrumbJsonLd,
-} from "@/lib/structured-data";
-import { resolveSubcategorySeoMetaDescription } from "@/lib/services/category-public-content";
+import { getPublicSubcategoryBySlug } from "@/lib/public-catalog";
+import { catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { resolveLegacyKlapanySubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
 
 export const revalidate = 300;
 
+export const dynamicParams = true;
+
 interface PageProps {
   params: Promise<{ subcategorySlug: string }>;
-  searchParams: Promise<CatalogSearchParams>;
-}
-
-type SubcategoryContext = {
-  category: Category;
-  subcategory: Subcategory;
-};
-
-async function getSubcategoryContext(
-  subcategorySlug: string,
-): Promise<SubcategoryContext | undefined> {
-  return getPublicSubcategoryBySlug(subcategorySlug);
-}
-
-function buildSubcategoryDescription(
-  category: Category,
-  subcategory: Subcategory,
-  productCount: number,
-): string {
-  return `${subcategory.name} в категории «${category.name}» — ${productCount} позиций. Промышленная арматура в Казахстане: DN, PN, материал, КП, доставка по РК. Фильтрация в каталоге.`;
-}
-
-async function resolveSubcategoryDescription(
-  category: Category,
-  subcategory: Subcategory,
-  productCount: number,
-): Promise<string> {
-  const manualDescription = await resolveSubcategorySeoMetaDescription(subcategory.slug);
-  return (
-    manualDescription?.trim() ||
-    buildSubcategoryDescription(category, subcategory, productCount)
-  );
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export async function generateStaticParams() {
-  const categories = await getPublicCatalogCategories();
-  return categories.flatMap((category) =>
-    category.subcategories.map((subcategory) => ({
-      subcategorySlug: subcategory.slug,
-    })),
-  );
+  return [];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subcategorySlug } = await params;
-  const context = await getSubcategoryContext(subcategorySlug);
-
+  const legacy = resolveLegacyKlapanySubcategoryCanonicalPath(subcategorySlug);
+  if (legacy) {
+    return { title: "Перенаправление…", alternates: { canonical: legacy } };
+  }
+  const context = await getPublicSubcategoryBySlug(subcategorySlug);
   if (!context) return { title: "Подкатегория не найдена" };
-
-  const productCount = (await getPublicProductsBySubcategory(context.subcategory.id))
-    .length;
-  const description = await resolveSubcategoryDescription(
-    context.category,
-    context.subcategory,
-    productCount,
-  );
-  const canonicalPath = `/catalog/subcategory/${context.subcategory.slug}`;
-  const pageTitle = `${context.subcategory.name} — ${context.category.name} · Казахстан`;
-
-  return {
-    title: pageTitle,
-    description,
-    alternates: {
-      canonical: canonicalPath,
-    },
-    openGraph: {
-      title: `${pageTitle} | ${COMPANY.name}`,
-      description,
-      url: canonicalPath,
-      siteName: COMPANY.name,
-      locale: "ru_KZ",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${pageTitle} | ${COMPANY.name}`,
-      description,
-    },
-  };
+  const canonicalPath = catalogSubcategoryPath(context.category.slug, context.subcategory.slug);
+  return { title: "Перенаправление…", alternates: { canonical: canonicalPath } };
 }
 
-export default async function SubcategoryPage({ params, searchParams }: PageProps) {
+/** `/catalog/subcategory/[slug]` → канонический `/catalog/[category]/[subcategory]`. */
+export default async function LegacyCatalogSubcategoryRedirect({
+  params,
+  searchParams,
+}: PageProps) {
   const { subcategorySlug } = await params;
-  const context = await getSubcategoryContext(subcategorySlug);
+  const query = await searchParams;
+
+  const legacy = resolveLegacyKlapanySubcategoryCanonicalPath(subcategorySlug);
+  if (legacy) {
+    permanentRedirect(`${legacy}${buildQueryString(query)}`);
+  }
+
+  const context = await getPublicSubcategoryBySlug(subcategorySlug);
   if (!context) notFound();
 
-  const resolvedSearch = await searchParams;
-  const [allProducts, allCategories, subcategoryProducts] = await Promise.all([
-    getPublicCatalogProducts(),
-    getPublicCatalogCategories(),
-    getPublicProductsBySubcategory(context.subcategory.id),
-  ]);
-  const description = await resolveSubcategoryDescription(
-    context.category,
-    context.subcategory,
-    subcategoryProducts.length,
+  permanentRedirect(
+    `${catalogSubcategoryPath(context.category.slug, context.subcategory.slug)}${buildQueryString(query)}`,
   );
-  const breadcrumbJsonLd = buildSubcategoryBreadcrumbJsonLd(
-    context.category,
-    context.subcategory,
-  );
-  const collectionPageJsonLd = buildCollectionPageJsonLd({
-    name: context.subcategory.name,
-    description,
-    path: `/catalog/subcategory/${context.subcategory.slug}`,
-  });
+}
 
-  return (
-    <div className="min-h-screen bg-site-bg">
-      <JsonLd id={`breadcrumbs-subcategory-${context.subcategory.slug}`} data={breadcrumbJsonLd} />
-      <JsonLd id={`collection-page-subcategory-${context.subcategory.slug}`} data={collectionPageJsonLd} />
-
-      <div className="border-b border-site-border bg-site-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-          <nav aria-label="Хлебные крошки" className="mb-4">
-            <ol className="flex items-center gap-1.5 text-sm">
-              <li>
-                <Link href="/" className="text-slate-500 hover:text-slate-900 transition-colors">
-                  Главная
-                </Link>
-              </li>
-              <li aria-hidden="true">
-                <ChevronRight size={14} className="text-slate-400" />
-              </li>
-              <li>
-                <Link
-                  href="/catalog"
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
-                >
-                  Каталог
-                </Link>
-              </li>
-              <li aria-hidden="true">
-                <ChevronRight size={14} className="text-slate-400" />
-              </li>
-              <li>
-                <Link
-                  href={`/catalog/category/${context.category.slug}`}
-                  className="text-slate-500 hover:text-slate-900 transition-colors"
-                >
-                  {context.category.name}
-                </Link>
-              </li>
-              <li aria-hidden="true">
-                <ChevronRight size={14} className="text-slate-400" />
-              </li>
-              <li>
-                <span className="font-medium text-slate-900" aria-current="page">
-                  {context.subcategory.name}
-                </span>
-              </li>
-            </ol>
-          </nav>
-
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            {context.subcategory.name}
-            <span className="mt-1 block text-xl font-semibold text-slate-500 sm:mt-2 sm:text-2xl">
-              {context.category.name} · Казахстан
-            </span>
-          </h1>
-          <p className="mt-2 max-w-3xl text-lg leading-relaxed text-slate-500">
-            {description}
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <CatalogShell
-          products={allProducts}
-          categories={allCategories}
-          searchParams={resolvedSearch}
-          lockedCategoryId={context.category.id}
-          lockedSubcategoryId={context.subcategory.id}
-        />
-      </div>
-    </div>
-  );
+function buildQueryString(query: Record<string, string | string[] | undefined>) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item) params.append(key, item);
+      }
+      continue;
+    }
+    if (value) params.set(key, value);
+  }
+  const search = params.toString();
+  return search ? `?${search}` : "";
 }

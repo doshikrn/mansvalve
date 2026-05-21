@@ -15,6 +15,7 @@ import {
 import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { settleRevalidation } from "@/lib/revalidation";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import {
   createProduct,
   deleteProduct,
@@ -400,7 +401,11 @@ function revalidateProductPublicPaths(
       revalidatePath(path);
     }
     if (product.categorySlug) {
+      revalidatePath(catalogCategoryPath(product.categorySlug));
       revalidatePath(`/catalog/category/${product.categorySlug}`);
+    }
+    if (product.subcategorySlug && product.categorySlug) {
+      revalidatePath(catalogSubcategoryPath(product.categorySlug, product.subcategorySlug));
     }
     if (product.subcategorySlug) {
       revalidatePath(`/catalog/subcategory/${product.subcategorySlug}`);

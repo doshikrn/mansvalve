@@ -12,11 +12,13 @@ import { getSiteBaseUrl } from "@/lib/site-url";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import {
-  getSeriesPageCategoryLabel,
   getSeriesPageCatalogCategoryId,
+  getSeriesPageCatalogSubcategoryId,
+  getSeriesPageCategoryLabel,
   getSeriesPagePath,
   type ProductSeriesSeoPage,
 } from "@/lib/seo-product-pages/product-series";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 
 interface Props {
   page: ProductSeriesSeoPage;
@@ -49,6 +51,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
   const applicationItems = view ? view.contentSections.application : page.applications;
   const deliveryTermsItems = view ? view.contentSections.deliveryTerms : page.supplyTerms;
   const catalogCategoryId = getSeriesPageCatalogCategoryId(page);
+  const catalogSubcategoryId = getSeriesPageCatalogSubcategoryId(page);
   const categoryLabel = getSeriesPageCategoryLabel(page);
   const categoryVisual = getCategoryVisual(catalogCategoryId);
   const displayName = view?.displayName ?? page.title;
@@ -90,8 +93,19 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
                 <ChevronRight size={14} className="text-slate-300" />
               </li>
               <li>
-                <Link href={`/catalog/category/${catalogCategoryId}`} className="transition-colors hover:text-slate-900">
+                <Link href={catalogCategoryPath(catalogCategoryId)} className="transition-colors hover:text-slate-900">
                   {categoryLabel}
+                </Link>
+              </li>
+              <li aria-hidden="true">
+                <ChevronRight size={14} className="text-slate-300" />
+              </li>
+              <li>
+                <Link
+                  href={catalogSubcategoryPath(catalogCategoryId, catalogSubcategoryId)}
+                  className="transition-colors hover:text-slate-900"
+                >
+                  {"catalogSubcategoryName" in page ? page.catalogSubcategoryName : catalogSubcategoryId}
                 </Link>
               </li>
               <li aria-hidden="true">
@@ -349,7 +363,11 @@ function buildBreadcrumbJsonLd(
   canonicalPath: string,
 ): Record<string, unknown> {
   const catalogCategoryId = getSeriesPageCatalogCategoryId(page);
+  const catalogSubcategoryId = getSeriesPageCatalogSubcategoryId(page);
   const categoryLabel = getSeriesPageCategoryLabel(page);
+  const subLabel =
+    "catalogSubcategoryName" in page ? page.catalogSubcategoryName : catalogSubcategoryId;
+
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -360,11 +378,17 @@ function buildBreadcrumbJsonLd(
         "@type": "ListItem",
         position: 3,
         name: categoryLabel,
-        item: absoluteUrl(`/catalog/category/${catalogCategoryId}`),
+        item: absoluteUrl(catalogCategoryPath(catalogCategoryId)),
       },
       {
         "@type": "ListItem",
         position: 4,
+        name: subLabel,
+        item: absoluteUrl(catalogSubcategoryPath(catalogCategoryId, catalogSubcategoryId)),
+      },
+      {
+        "@type": "ListItem",
+        position: 5,
         name: displayName,
         item: absoluteUrl(canonicalPath),
       },

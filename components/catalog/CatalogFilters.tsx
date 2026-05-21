@@ -143,7 +143,7 @@ function FilterFormContent({
   const categoryListOverflows = categories.length > CATEGORY_LIST_PREVIEW;
   const subListOverflows = subcategoryOptions.length > SUBCATEGORY_LIST_PREVIEW;
   const activeCategoryIndex = categories.findIndex(
-    (c) => pathname === `/catalog/category/${c.slug}`,
+    (c) => pathname === `/catalog/${c.slug}`,
   );
   const activeSubIndex = subcategoryOptions.findIndex(
     (s) => s.id === activeSubcategory,
@@ -224,11 +224,11 @@ function FilterFormContent({
               <span className="min-w-0 flex-1 leading-snug">Все категории</span>
             </Link>
             {categorySlice.map((cat) => {
-              const active = pathname === `/catalog/category/${cat.slug}`;
+              const active = pathname === `/catalog/${cat.slug}`;
               return (
                 <Link
                   key={cat.id}
-                  href={`/catalog/category/${cat.slug}`}
+                  href={`/catalog/${cat.slug}`}
                   onClick={() =>
                     trackEvent("catalog_filter_change", {
                       source: "catalog-filters",

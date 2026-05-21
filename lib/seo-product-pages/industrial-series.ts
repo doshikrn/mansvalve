@@ -200,17 +200,17 @@ function buildCheckValvePage(spec: CheckValveSpec): IndustrialSeriesSeoPage {
     categorySlug: "klapany",
     groupSlug: "obratnye",
     slug,
-    path: `/klapany/obratnye/${slug}`,
+    path: `/catalog/klapany/povorotnye-flancevye/${slug}`,
     catalogCategoryId: "klapany",
-    catalogSubcategoryId: "klapany-obratnye",
-    catalogCategoryName: "Клапаны",
-    catalogSubcategoryName: "Обратные клапаны",
+    catalogSubcategoryId: "povorotnye-flancevye",
+    catalogCategoryName: "Клапаны обратные",
+    catalogSubcategoryName: "Поворотные фланцевые клапаны",
     series: "19s38nzh",
     model: marking,
     dn: spec.dn,
     pn: 16,
     title: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
-    h1: `Клапан обратный поворотный 19с38нж ${diameter} PN16`,
+    h1: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
     seoTitle: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} Ру16 купить в Казахстане | MANSVALVE GROUP`,
     seoDescription: `Поворотный обратный клапан стальной фланцевый 19с38нж ${diameter} PN16 (Ру16) для защиты трубопроводов, насосных станций и систем теплоснабжения от обратного потока. Доставка по РК от MANSVALVE GROUP.`,
     imageAlt: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
@@ -247,10 +247,17 @@ const pagesByPath = new Map(
   INDUSTRIAL_SERIES_SEO_PAGES.map((page) => [page.path, page]),
 );
 
+/** Старые SEO-URL серии 19с38нж до переноса в `/catalog/klapany/...`. */
+const LEGACY_CHECK_VALVE_PATH_BY_SLUG = new Map<string, IndustrialSeriesSeoPage>(
+  INDUSTRIAL_SERIES_SEO_PAGES.filter((page) => page.kind === "check-valve-19s38nzh").map(
+    (page) => [`/klapany/obratnye/${page.slug}`, page] as [string, IndustrialSeriesSeoPage],
+  ),
+);
+
 export function getIndustrialSeriesSeoPageByPath(
   path: string,
 ): IndustrialSeriesSeoPage | undefined {
-  return pagesByPath.get(path);
+  return pagesByPath.get(path) ?? LEGACY_CHECK_VALVE_PATH_BY_SLUG.get(path);
 }
 
 export function findIndustrialSeriesCatalogProduct(

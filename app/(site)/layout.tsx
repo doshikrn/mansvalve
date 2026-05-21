@@ -21,7 +21,7 @@ export default async function SiteLayout({
   ]);
   const categoryLinks = categories.slice(0, 6).map((c) => ({
     label: c.name,
-    href: `/catalog/category/${c.slug}`,
+    href: `/catalog/${c.slug}`,
   }));
 
   return (
