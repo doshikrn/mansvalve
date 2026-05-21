@@ -39,7 +39,7 @@ const CATEGORY_SEEDS: CategorySeed[] = [
   {
     externalId: "klapany",
     slug: "klapany",
-    name: "Клапаны",
+    name: "Клапаны обратные",
     sortOrder: 3,
   },
 ];
@@ -53,9 +53,9 @@ const SUBCATEGORY_SEEDS: SubcategorySeed[] = [
     sortOrder: 1,
   },
   {
-    externalId: "klapany-obratnye",
-    slug: "klapany-obratnye",
-    name: "Обратные клапаны",
+    externalId: "povorotnye-flancevye",
+    slug: "povorotnye-flancevye",
+    name: "Поворотные фланцевые обратные клапаны",
     categoryExternalId: "klapany",
     sortOrder: 0,
   },

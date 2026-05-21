@@ -790,7 +790,7 @@ export const DEFAULT_FOOTER_MAIN: FooterMainContent = {
     { label: "Задвижки", href: "/catalog/zadvizhki" },
     { label: "Затворы дисковые", href: "/catalog/subcategory/zatvory-diskovye" },
     { label: "Краны шаровые", href: "/catalog/krany-sharovye" },
-    { label: "Обратные клапаны", href: "/catalog/subcategory/klapany-obratnye" },
+    { label: "Обратные клапаны", href: "/catalog/klapany" },
     { label: "Фланцы", href: "/catalog/subcategory/flansy" },
     { label: "Электроприводы", href: "/catalog/elektroprivody" },
     { label: "Фитинги", href: "/catalog" },
