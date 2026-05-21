@@ -7,7 +7,10 @@ import {
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
-import { GATE_VALVE_SEO_PAGES } from "@/lib/seo-product-pages/gate-valves";
+import {
+  findGateValveCatalogProduct,
+  GATE_VALVE_SEO_PAGES,
+} from "@/lib/seo-product-pages/gate-valves";
 
 const STATIC_ROUTES = [
   "/",
@@ -71,7 +74,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  const gateValveSeoPages: MetadataRoute.Sitemap = GATE_VALVE_SEO_PAGES.map((page) => ({
+  const gateValveSeoPages: MetadataRoute.Sitemap = GATE_VALVE_SEO_PAGES.filter((page) =>
+    findGateValveCatalogProduct(products, page),
+  ).map((page) => ({
     url: absoluteUrl(baseUrl, `/${page.categorySlug}/${page.slug}`),
     lastModified,
     changeFrequency: "weekly",

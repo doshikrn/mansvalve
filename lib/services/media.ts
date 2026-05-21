@@ -4,6 +4,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
 import { getStorageDriver } from "@/lib/storage";
+import { hasCertificateDocumentMediaColumn } from "@/lib/services/certificate-schema";
 import {
   certificates as certificatesTable,
   mediaAssets as mediaAssetsTable,
@@ -102,6 +103,7 @@ export async function listMediaAssets(
   const { page = 1, pageSize = 30, onlyUnused = false } = options;
   const db = getDb();
   const offset = (Math.max(1, page) - 1) * pageSize;
+  const hasDocumentMedia = await hasCertificateDocumentMediaColumn();
 
   const usageCountExpr = sql<number>`count(distinct ${productImagesTable.id})::int`;
   const productDocumentUsageExpr = sql<number>`(
@@ -112,11 +114,13 @@ export async function listMediaAssets(
       or ${productsTable.documentationMediaId} = ${mediaAssetsTable.id}
   )`;
   const certUsageExpr = sql<number>`count(distinct ${certificatesTable.id})::int`;
-  const certificateDocumentUsageExpr = sql<number>`(
-    select count(*)::int
-    from ${certificatesTable}
-    where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
-  )`;
+  const certificateDocumentUsageExpr = hasDocumentMedia
+    ? sql<number>`(
+        select count(*)::int
+        from ${certificatesTable}
+        where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
+      )`
+    : sql<number>`0`;
   const base = db
     .select({
       asset: mediaAssetsTable,
@@ -174,6 +178,14 @@ export async function listMediaAssets(
 
 export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithUsage[]> {
   const db = getDb();
+  const hasDocumentMedia = await hasCertificateDocumentMediaColumn();
+  const certificateDocumentUsageExpr = hasDocumentMedia
+    ? sql<number>`(
+        select count(*)::int
+        from ${certificatesTable}
+        where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
+      )`
+    : sql<number>`0`;
 
   const rows = await db
     .select({
@@ -187,11 +199,7 @@ export async function listRecentMediaAssets(limit = 60): Promise<MediaAssetWithU
           or ${productsTable.documentationMediaId} = ${mediaAssetsTable.id}
       )`,
       usedInCertificates: sql<number>`count(distinct ${certificatesTable.id})::int`,
-      usedInCertificateDocuments: sql<number>`(
-        select count(*)::int
-        from ${certificatesTable}
-        where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
-      )`,
+      usedInCertificateDocuments: certificateDocumentUsageExpr,
     })
     .from(mediaAssetsTable)
     .leftJoin(
@@ -288,14 +296,17 @@ export async function deleteMediaAssetById(id: string): Promise<void> {
     throw new Error("MEDIA_IN_USE_PRODUCT_DOCUMENT");
   }
 
+  const hasDocumentMedia = await hasCertificateDocumentMediaColumn();
   const certificateUsageRows = await db
     .select({
       value: sql<number>`count(*)::int`,
     })
     .from(certificatesTable)
     .where(
-      sql`${certificatesTable.mediaAssetId} = ${id}
-        OR ${certificatesTable.documentMediaId} = ${id}`,
+      hasDocumentMedia
+        ? sql`${certificatesTable.mediaAssetId} = ${id}
+            OR ${certificatesTable.documentMediaId} = ${id}`
+        : eq(certificatesTable.mediaAssetId, id),
     );
   const certificateUsage = certificateUsageRows[0]?.value ?? 0;
 
@@ -320,6 +331,7 @@ export async function deleteMediaAssetById(id: string): Promise<void> {
 export async function deleteUnusedAssetsByIds(ids: string[]): Promise<number> {
   if (!ids.length) return 0;
   const db = getDb();
+  const hasDocumentMedia = await hasCertificateDocumentMediaColumn();
   const candidates = await db
     .select({
       id: mediaAssetsTable.id,
@@ -340,8 +352,10 @@ export async function deleteUnusedAssetsByIds(ids: string[]): Promise<number> {
       .select({ value: sql<number>`count(*)::int` })
       .from(certificatesTable)
       .where(
-        sql`${certificatesTable.mediaAssetId} = ${candidate.id}
-          OR ${certificatesTable.documentMediaId} = ${candidate.id}`,
+        hasDocumentMedia
+          ? sql`${certificatesTable.mediaAssetId} = ${candidate.id}
+              OR ${certificatesTable.documentMediaId} = ${candidate.id}`
+          : eq(certificatesTable.mediaAssetId, candidate.id),
       );
     const certificateUsage = certificateUsageRows[0]?.value ?? 0;
 

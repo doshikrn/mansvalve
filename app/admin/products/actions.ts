@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
+import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
 import {
   parseProductDetailBlockLines,
   PRODUCT_DETAIL_BLOCK_FIELDS,
@@ -22,6 +23,7 @@ import {
   type ProductWritePayload,
 } from "@/lib/services/products";
 import { slugify } from "@/lib/services/slug";
+import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
 
 /* -------------------------------------------------------------------------- */
 /* Shared parsing                                                             */
@@ -364,10 +366,14 @@ function revalidateProductPublicPaths(
 
   for (const product of products) {
     if (!product) continue;
-    const view = buildPublicProductView(productDetailToPublicCatalogProduct(product));
+    const publicProduct = productDetailToPublicCatalogProduct(product);
+    const view = buildPublicProductView(publicProduct);
     revalidatePath(`/catalog/${product.slug}`);
     revalidatePath(`/tovar/${product.slug}`);
     revalidatePath(view.canonicalPath);
+    for (const path of getRelatedSeoLandingPaths(product, publicProduct, view.canonicalPath)) {
+      revalidatePath(path);
+    }
     if (product.categorySlug) {
       revalidatePath(`/catalog/category/${product.categorySlug}`);
     }
@@ -375,6 +381,31 @@ function revalidateProductPublicPaths(
       revalidatePath(`/catalog/subcategory/${product.subcategorySlug}`);
     }
   }
+}
+
+function getRelatedSeoLandingPaths(
+  product: ProductDetail,
+  publicProduct: ReturnType<typeof productDetailToPublicCatalogProduct>,
+  canonicalPath: string,
+): string[] {
+  const paths = new Set<string>();
+  const gateValvePage = getGateValveSeoPageForProduct(publicProduct);
+  if (gateValvePage) {
+    paths.add(`/${gateValvePage.categorySlug}/${gateValvePage.slug}`);
+  }
+
+  const categorySlug = product.categorySlug || publicProduct.category;
+  const productSlug = product.slug.toLowerCase();
+  const canonical = canonicalPath.toLowerCase();
+  for (const landingPage of CATALOG_LANDING_PAGES) {
+    if (landingPage.categorySlug !== categorySlug) continue;
+    const landingSlug = landingPage.slug.toLowerCase();
+    if (productSlug.includes(landingSlug) || canonical.includes(`/${categorySlug}/${landingSlug}`)) {
+      paths.add(`/${landingPage.categorySlug}/${landingPage.slug}`);
+    }
+  }
+
+  return [...paths];
 }
 
 function withStatusParam(href: string, key: "msg" | "error", value: string): string {

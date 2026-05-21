@@ -3,13 +3,14 @@ import "server-only";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import { getDb, getSql } from "@/lib/db/client";
+import { getDb } from "@/lib/db/client";
 import {
   certificates as certificatesTable,
   mediaAssets as mediaAssetsTable,
   type NewCertificate,
 } from "@/lib/db/schema";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
+import { hasCertificateDocumentMediaColumn } from "@/lib/services/certificate-schema";
 
 const documentMediaAssetsTable = alias(mediaAssetsTable, "document_media_assets");
 
@@ -32,8 +33,6 @@ const legacyCertificateSelection = {
   createdAt: certificatesTable.createdAt,
   updatedAt: certificatesTable.updatedAt,
 };
-
-let certificateDocumentMediaColumnExistsCache: boolean | null = null;
 
 export type CertificateListItem = {
   id: number;
@@ -294,25 +293,6 @@ async function getCertificateByIdLegacy(
     media: rows[0].media,
     document: null,
   });
-}
-
-async function hasCertificateDocumentMediaColumn(): Promise<boolean> {
-  if (certificateDocumentMediaColumnExistsCache !== null) {
-    return certificateDocumentMediaColumnExistsCache;
-  }
-
-  const sqlClient = getSql();
-  const rows = await sqlClient<{ exists: boolean }[]>`
-    select exists (
-      select 1
-      from information_schema.columns
-      where table_schema = 'public'
-        and table_name = 'certificates'
-        and column_name = 'document_media_id'
-    ) as "exists"
-  `;
-  certificateDocumentMediaColumnExistsCache = rows[0]?.exists ?? false;
-  return certificateDocumentMediaColumnExistsCache;
 }
 
 async function toWritableCertificatePayload(

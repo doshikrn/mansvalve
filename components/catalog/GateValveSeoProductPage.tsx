@@ -370,6 +370,19 @@ function buildGateValveJsonLd(
   view: ReturnType<typeof buildPublicProductView> | null,
 ): Record<string, unknown> {
   const canonicalPath = view?.canonicalPath ?? `/zadvizhki/${page.slug}`;
+  const description =
+    (view?.fullDescription || view?.shortDescription || page.seoDescription)
+      .replace(/\s+/g, " ")
+      .trim();
+  const imageUrl = view?.primaryImageUrl ?? imageSrc;
+  const characteristics =
+    view?.detailContent.characteristics?.length
+      ? view.detailContent.characteristics
+      : page.characteristics;
+  const model = product?.model || page.model;
+  const dn = product?.dn ?? page.dn;
+  const pn = product?.pn ?? page.pn;
+  const material = product?.material || page.series;
   const offer: Record<string, unknown> = {
     "@type": "Offer",
     priceCurrency: "KZT",
@@ -425,21 +438,18 @@ function buildGateValveJsonLd(
     "@context": "https://schema.org",
     "@type": "Product",
     name: view?.displayName ?? page.title,
-    description:
-      view?.fullDescription.replace(/\s+/g, " ").trim() ||
-      view?.shortDescription ||
-      page.seoDescription,
+    description,
     sku: product?.id ?? page.slug,
-    mpn: `${page.model} DN${page.dn} PN${page.pn}`,
+    mpn: `${model} DN${dn} PN${pn}`,
     brand: {
       "@type": "Brand",
       name: COMPANY.name,
     },
-    category: "Задвижки",
-    material: page.series === "30ch6br" || page.series === "30ch39r" ? "Чугун" : "Сталь",
-    image: [normalizeImageUrl(imageSrc)],
+    category: view?.categoryLabel || product?.categoryName || page.categorySlug,
+    material,
+    image: [normalizeImageUrl(imageUrl)],
     url: absoluteUrl(canonicalPath),
-    additionalProperty: page.characteristics.map((item) => ({
+    additionalProperty: characteristics.map((item) => ({
       "@type": "PropertyValue",
       name: item.label,
       value: item.value,
