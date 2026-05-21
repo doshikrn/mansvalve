@@ -10,7 +10,7 @@ import {
   MARKETING_CATALOG_LINK_COUNT,
   resolveAboutStatDisplayValue,
 } from "@/lib/site-content/models";
-import { resolveAboutCopy, resolveAboutPage } from "@/lib/site-content/public";
+import { resolveAboutPage } from "@/lib/site-content/public";
 import { AboutHero } from "@/components/sections/about/AboutHero";
 import { AboutIntro } from "@/components/sections/about/AboutIntro";
 import { AboutIndustries } from "@/components/sections/about/AboutIndustries";
@@ -46,10 +46,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function AboutPage() {
-  const [categories, products, aboutCopy, about] = await Promise.all([
+  const [categories, products, about] = await Promise.all([
     getPublicCatalogCategories(),
     getPublicCatalogProducts(),
-    resolveAboutCopy(),
     resolveAboutPage(),
   ]);
 
@@ -63,13 +62,13 @@ export default async function AboutPage() {
     warnInvalidMediaUrl(imageSrc, `AboutPage:heroImage:${index}`);
   });
 
-  const headerLead = applyPlaceholders(aboutCopy.headerLead, COMPANY.name);
-  const overviewParagraphs = aboutCopy.overviewParagraphs.map((paragraph) =>
+  const headerLead = applyPlaceholders(about.headerLead, COMPANY.name);
+  const overviewParagraphs = about.overviewParagraphs.map((paragraph) =>
     applyPlaceholders(paragraph, COMPANY.name),
   );
   const h1 = applyPlaceholders(about.h1Template, COMPANY.name);
   const whyTitle = applyPlaceholders(about.whyChooseTitleTemplate, COMPANY.name);
-  const productGroupsLine = applyAboutCounts(aboutCopy.productGroupsLine, {
+  const productGroupsLine = applyAboutCounts(about.productGroupsLine, {
     company: COMPANY.name,
     categories: categories.length,
     products: products.length,
@@ -111,8 +110,8 @@ export default async function AboutPage() {
       <AboutStats slots={about.statSlots} values={statValues} />
       <AboutValues standardsEyebrow={about.standardsEyebrow} certifications={about.certifications} />
       <AboutCTA
-        title={aboutCopy.ctaTitle}
-        subtitle={aboutCopy.ctaSubtitle}
+        title={about.ctaTitle}
+        subtitle={about.ctaSubtitle}
         catalogLabel={about.ctaCatalogLabel}
         contactsLabel={about.ctaContactsLabel}
       />

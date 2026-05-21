@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
@@ -8,7 +9,11 @@ const WHATSAPP_PATTERN = /wa\.me|api\.whatsapp\.com|whatsapp/i;
 const TELEGRAM_PATTERN = /t\.me|telegram/i;
 
 export function GlobalClickTracker() {
+  const pathname = usePathname();
+
   useEffect(() => {
+    if (pathname.startsWith("/admin")) return;
+
     const onDocumentClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -52,7 +57,7 @@ export function GlobalClickTracker() {
     return () => {
       document.removeEventListener("click", onDocumentClick);
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }

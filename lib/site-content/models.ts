@@ -856,6 +856,9 @@ export const aboutPageSchema = z.object({
   metaTitle: z.string(),
   metaDescription: z.string(),
   breadcrumbCurrent: z.string(),
+  headerLead: z.string(),
+  overviewParagraphs: z.array(z.string()).min(1).max(8),
+  productGroupsLine: z.string(),
   /** e.g. «О компании {{COMPANY}}» */
   h1Template: z.string(),
   whoWeTitle: z.string(),
@@ -868,6 +871,8 @@ export const aboutPageSchema = z.object({
   standardsEyebrow: z.string(),
   certifications: z.array(aboutCertificationChipSchema).min(1).max(8),
   statSlots: z.array(aboutStatSlotSchema).length(4),
+  ctaTitle: z.string(),
+  ctaSubtitle: z.string(),
   ctaCatalogLabel: z.string(),
   ctaContactsLabel: z.string(),
   /** Пусто — без фонового изображения в шапке. */
@@ -940,6 +945,11 @@ export function createDefaultAboutPage(): AboutPageContent {
     ],
     ctaCatalogLabel: "Перейти в каталог",
     ctaContactsLabel: "Связаться с нами",
+    headerLead: DEFAULT_ABOUT_COPY.headerLead,
+    overviewParagraphs: DEFAULT_ABOUT_COPY.overviewParagraphs,
+    productGroupsLine: DEFAULT_ABOUT_COPY.productGroupsLine,
+    ctaTitle: DEFAULT_ABOUT_COPY.ctaTitle,
+    ctaSubtitle: DEFAULT_ABOUT_COPY.ctaSubtitle,
     headerImageSrc: "",
     headerImageAlt: "MANSVALVE GROUP — промышленная арматура",
     heroGalleryImageSrcs: [],
@@ -949,13 +959,20 @@ export function createDefaultAboutPage(): AboutPageContent {
 export function mergeAboutPage(
   dbJson: unknown,
   legacyMetaJson: unknown,
+  legacyCopyJson?: unknown,
 ): AboutPageContent {
   const base = createDefaultAboutPage();
   const legacyMeta = mergeAboutMeta(legacyMetaJson, COMPANY_BRAND_SEO);
+  const legacyCopy = mergeAboutCopy(legacyCopyJson);
   const withLegacy: AboutPageContent = {
     ...base,
     metaTitle: legacyMeta.title,
     metaDescription: legacyMeta.description,
+    headerLead: legacyCopy.headerLead,
+    overviewParagraphs: legacyCopy.overviewParagraphs,
+    productGroupsLine: legacyCopy.productGroupsLine,
+    ctaTitle: legacyCopy.ctaTitle,
+    ctaSubtitle: legacyCopy.ctaSubtitle,
   };
   const merged = shallowMerge(withLegacy as unknown as Record<string, unknown>, dbJson);
   const parsed = aboutPageSchema.safeParse(merged);

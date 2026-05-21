@@ -178,7 +178,8 @@ export async function resolveFooterMain(): Promise<FooterMainContent> {
 export async function resolveAboutPage(): Promise<AboutPageContent> {
   const data = await loadData(SITE_CONTENT_KEYS.pageAbout);
   const legacyMeta = await loadData(SITE_CONTENT_KEYS.aboutMeta);
-  return mergeAboutPage(data, legacyMeta);
+  const legacyCopy = await loadData(SITE_CONTENT_KEYS.aboutCopy);
+  return mergeAboutPage(data, legacyMeta, legacyCopy);
 }
 
 export async function resolveContactsPage(): Promise<ContactsPageContent> {

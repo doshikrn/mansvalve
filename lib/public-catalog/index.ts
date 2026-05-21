@@ -68,18 +68,43 @@ function getAdapterForConfiguredSource(): PublicCatalogAdapter {
   return jsonCatalogAdapter;
 }
 
+function canRecoverDbCatalogWithJson(): boolean {
+  return (
+    process.env.NODE_ENV !== "production" ||
+    process.env.PUBLIC_CATALOG_ALLOW_JSON_FALLBACK === "true" ||
+    process.env.PUBLIC_CATALOG_RECOVERY_MODE === "json"
+  );
+}
+
 async function withSafeFallback<T>(call: (adapter: PublicCatalogAdapter) => Promise<T>) {
   const source = getPublicCatalogSource();
+  const databaseConfigured = isDatabaseConfigured();
+
+  if (source === "db" && !databaseConfigured) {
+    const error = new Error(
+      "PUBLIC_CATALOG_SOURCE=db, but DATABASE_URL is not configured.",
+    );
+    console.error("[public-catalog] CRITICAL: DB catalog source is unavailable.", error);
+    if (canRecoverDbCatalogWithJson()) {
+      console.error("[public-catalog] Recovery mode/dev: using JSON catalog fallback.");
+      return call(jsonCatalogAdapter);
+    }
+    throw error;
+  }
+
   const adapter = getAdapterForConfiguredSource();
   try {
     return await call(adapter);
   } catch (error) {
     if (source === "db") {
       console.error(
-        "[public-catalog] DB adapter failed, falling back to JSON source.",
+        "[public-catalog] CRITICAL: DB adapter failed while PUBLIC_CATALOG_SOURCE=db.",
         error,
       );
-      return call(jsonCatalogAdapter);
+      if (canRecoverDbCatalogWithJson()) {
+        console.error("[public-catalog] Recovery mode/dev: using JSON catalog fallback.");
+        return call(jsonCatalogAdapter);
+      }
     }
     throw error;
   }

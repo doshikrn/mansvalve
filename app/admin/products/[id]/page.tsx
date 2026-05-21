@@ -9,10 +9,8 @@ import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { isDatabaseConfigured } from "@/lib/db/client";
-import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
 import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
-import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import { listRecentMediaAssets } from "@/lib/services/media";
 import { getProductById, type ProductDetail } from "@/lib/services/products";
@@ -55,7 +53,6 @@ export default async function EditProductPage({
   if (!product) notFound();
 
   const displayName = formatProductDisplayName(product);
-  const initialDetailBlocks = getInitialDetailBlocks(product);
   const publicPreview = buildPublicPreview(product);
   const boundUpdate = updateProductAction.bind(null, id);
   const boundDelete = deleteProductAction.bind(null, id);
@@ -129,7 +126,7 @@ export default async function EditProductPage({
             usedInProducts: asset.usedInProducts,
           }))}
         product={product}
-        initialDetailBlocks={initialDetailBlocks}
+        initialDetailBlocks={product.detailBlocks}
         publicPreview={publicPreview}
         backHref={listHref}
       />
@@ -151,20 +148,5 @@ function buildPublicPreview(product: ProductDetail) {
     primaryImageUrl: view.primaryImageUrl,
     primaryImageAlt: view.primaryImageAlt,
     imageCount: view.imageCount,
-  };
-}
-
-function getInitialDetailBlocks(product: ProductDetail): ProductDetailBlocks | null {
-  if (product.detailBlocks) return product.detailBlocks;
-
-  const seoPage = getGateValveSeoPageForProduct(productDetailToPublicCatalogProduct(product));
-  if (!seoPage) return null;
-
-  return {
-    standards: seoPage.standards,
-    benefits: seoPage.benefits,
-    applications: seoPage.applications,
-    qualityDocuments: seoPage.qualityDocuments,
-    supplyTerms: seoPage.supplyTerms,
   };
 }

@@ -22,6 +22,7 @@ interface PageVisitContext {
 export function PageViewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const analyticsDisabled = pathname.startsWith("/admin");
   const searchString = searchParams.toString();
   const search = searchString ? `?${searchString}` : "";
   const lastTrackedPageRef = useRef<string | null>(null);
@@ -84,6 +85,8 @@ export function PageViewTracker() {
   }, []);
 
   useEffect(() => {
+    if (analyticsDisabled) return;
+
     const onScrollOrResize = () => {
       scheduleScrollDepthCheck();
     };
@@ -101,9 +104,11 @@ export function PageViewTracker() {
         scrollRafRef.current = null;
       }
     };
-  }, [scheduleScrollDepthCheck]);
+  }, [analyticsDisabled, scheduleScrollDepthCheck]);
 
   useEffect(() => {
+    if (analyticsDisabled) return;
+
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         emitEngagement("hidden");
@@ -115,9 +120,15 @@ export function PageViewTracker() {
       document.removeEventListener("visibilitychange", onVisibilityChange);
       emitEngagement("unmount");
     };
-  }, [emitEngagement]);
+  }, [analyticsDisabled, emitEngagement]);
 
   useEffect(() => {
+    if (analyticsDisabled) {
+      pageVisitRef.current = null;
+      lastTrackedPageRef.current = null;
+      return;
+    }
+
     const context = getPageAnalyticsContext(pathname);
     const page = `${pathname}${search}`;
 
@@ -183,7 +194,7 @@ export function PageViewTracker() {
         });
       }
     }
-  }, [emitEngagement, pathname, scheduleScrollDepthCheck, search]);
+  }, [analyticsDisabled, emitEngagement, pathname, scheduleScrollDepthCheck, search]);
 
   return null;
 }

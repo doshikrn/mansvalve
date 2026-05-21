@@ -219,7 +219,7 @@ export default async function AdminContentPage({
   const footerTrust = mergeFooterTrustBar(footerTrustRow?.data);
   const footerMain = mergeFooterMain(footerMainRow?.data);
 
-  const pageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data);
+  const pageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data, aboutRow?.data);
   const pageContacts = mergeContactsPage(
     pageContactsRow?.data,
     contactsMetaRow?.data,

@@ -225,6 +225,17 @@ export async function saveAboutCopyAction(formData: FormData) {
     data: parsed.data as unknown as Record<string, unknown>,
     updatedBy: Number(session.sub) || null,
   });
+  const [pageAboutRow, aboutMetaRow] = await Promise.all([
+    getContentBlock(SITE_CONTENT_KEYS.pageAbout),
+    getContentBlock(SITE_CONTENT_KEYS.aboutMeta),
+  ]);
+  const currentPageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data, parsed.data);
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.pageAbout,
+    title: "РЎС‚СЂР°РЅРёС†Р° вЂ” Рћ РєРѕРјРїР°РЅРёРё",
+    data: { ...currentPageAbout, ...parsed.data } as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
   revalidatePath("/about");
   revalidatePath("/sitemap.xml");
   redirect("/admin/content?saved=about");
@@ -560,10 +571,32 @@ export async function savePageAboutAction(formData: FormData) {
     err("О компании: укажите хотя бы одну пару «стандарт / подпись».");
   }
 
+  const [currentPageAboutRow, currentAboutMetaRow, currentAboutCopyRow] = await Promise.all([
+    getContentBlock(SITE_CONTENT_KEYS.pageAbout),
+    getContentBlock(SITE_CONTENT_KEYS.aboutMeta),
+    getContentBlock(SITE_CONTENT_KEYS.aboutCopy),
+  ]);
+  const currentAboutPage = mergeAboutPage(
+    currentPageAboutRow?.data,
+    currentAboutMetaRow?.data,
+    currentAboutCopyRow?.data,
+  );
+  const overviewParagraphs = String(formData.get("overview") ?? "")
+    .split(/\n\s*\n|\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
   const data = {
     metaTitle: String(formData.get("metaTitle") ?? "").trim(),
     metaDescription: String(formData.get("metaDescription") ?? "").trim(),
     breadcrumbCurrent: String(formData.get("breadcrumbCurrent") ?? "").trim(),
+    headerLead: String(formData.get("headerLead") ?? "").trim() || currentAboutPage.headerLead,
+    overviewParagraphs: overviewParagraphs.length
+      ? overviewParagraphs
+      : currentAboutPage.overviewParagraphs,
+    productGroupsLine:
+      String(formData.get("productGroupsLine") ?? "").trim() ||
+      currentAboutPage.productGroupsLine,
     h1Template: String(formData.get("h1Template") ?? "").trim(),
     whoWeTitle: String(formData.get("whoWeTitle") ?? "").trim(),
     whatWeSupplyTitle: String(formData.get("whatWeSupplyTitle") ?? "").trim(),
@@ -574,6 +607,9 @@ export async function savePageAboutAction(formData: FormData) {
     standardsEyebrow: String(formData.get("standardsEyebrow") ?? "").trim(),
     certifications,
     statSlots,
+    ctaTitle: String(formData.get("ctaTitle") ?? "").trim() || currentAboutPage.ctaTitle,
+    ctaSubtitle:
+      String(formData.get("ctaSubtitle") ?? "").trim() || currentAboutPage.ctaSubtitle,
     ctaCatalogLabel: String(formData.get("ctaCatalogLabel") ?? "").trim(),
     ctaContactsLabel: String(formData.get("ctaContactsLabel") ?? "").trim(),
     headerImageSrc:
@@ -611,11 +647,12 @@ export async function savePageAboutAction(formData: FormData) {
 
 export async function savePageAboutHeroImageAction(formData: FormData) {
   const session = await requireAdmin("/admin/content");
-  const [pageAboutRow, aboutMetaRow] = await Promise.all([
+  const [pageAboutRow, aboutMetaRow, aboutRow] = await Promise.all([
     getContentBlock(SITE_CONTENT_KEYS.pageAbout),
     getContentBlock(SITE_CONTENT_KEYS.aboutMeta),
+    getContentBlock(SITE_CONTENT_KEYS.aboutCopy),
   ]);
-  const current = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data);
+  const current = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data, aboutRow?.data);
   const data = {
     ...current,
     headerImageSrc: String(formData.get("headerImageSrc") ?? "").trim(),
