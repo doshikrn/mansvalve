@@ -25,6 +25,8 @@ import {
   getRelatedGateValveSeoPages,
 } from "@/lib/seo-product-pages/gate-valves";
 
+export const revalidate = 300;
+
 interface PageProps {
   params: Promise<{ categorySlug: string; landingSlug: string }>;
 }

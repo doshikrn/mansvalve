@@ -31,6 +31,8 @@ import {
   buildCollectionPageJsonLd,
 } from "@/lib/structured-data";
 
+export const revalidate = 300;
+
 /* ── Static generation for all 6 categories ─────────────────────── */
 
 export async function generateStaticParams() {

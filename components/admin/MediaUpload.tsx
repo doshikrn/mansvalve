@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Check, Copy, ExternalLink, FileText } from "lucide-react";
 
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -303,7 +304,14 @@ export function MediaUpload({
   return (
     <section className="space-y-4 rounded-xl border border-border bg-background p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
+        <div>
+          <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
+          {allowAttach ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Первое/основное изображение идёт на публичную карточку. Если файлов нет, сайт покажет fallback категории.
+            </p>
+          ) : null}
+        </div>
         <Button
           type="button"
           size="sm"
@@ -385,7 +393,7 @@ export function MediaUpload({
           </h4>
           {selected.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Нет прикрепленных файлов.
+              Нет прикрепленных файлов. <AdminStatusBadge tone="auto" className="ml-1 align-middle">FALLBACK</AdminStatusBadge>
             </p>
           ) : (
             <div className="space-y-2">
@@ -402,12 +410,20 @@ export function MediaUpload({
                   <div className="relative shrink-0">
                     <MediaThumb item={item} className="h-16 w-16" />
                     {item.isPrimary ? (
-                      <span className="absolute -left-1 -top-1 rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                        main
+                      <span className="absolute -left-1 -top-1 rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white shadow-sm">
+                        primary
                       </span>
                     ) : null}
                   </div>
                   <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <AdminStatusBadge tone={item.isPrimary ? "manual" : "readonly"}>
+                        {item.isPrimary ? "PRIMARY IMAGE" : `ORDER ${index + 1}`}
+                      </AdminStatusBadge>
+                      {index === 0 && !item.isPrimary ? (
+                        <AdminStatusBadge tone="auto">FIRST FALLBACK</AdminStatusBadge>
+                      ) : null}
+                    </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
                         type="button"

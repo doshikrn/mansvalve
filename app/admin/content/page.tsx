@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AdminSectionScroller } from "@/components/admin/AdminSectionScroller";
 import { AdminFormFooter } from "@/components/admin/AdminFormFooter";
+import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { ContentSection } from "@/components/admin/ContentSection";
 import { MediaUrlField, type MediaUrlOption } from "@/components/admin/MediaUrlField";
@@ -218,6 +219,11 @@ export default async function AdminContentPage({
   const footerPreCta = mergeFooterPreCta(footerPreCtaRow?.data);
   const footerTrust = mergeFooterTrustBar(footerTrustRow?.data);
   const footerMain = mergeFooterMain(footerMainRow?.data);
+  const cmsWarnings = [
+    !hero.h1Line1.trim() ? "Главный заголовок hero пустой." : null,
+    !hero.subhead.trim() ? "Подзаголовок hero пустой." : null,
+    !meta.ogTitle.trim() ? "SEO title главной пустой." : null,
+  ].filter(Boolean);
 
   const pageAbout = mergeAboutPage(pageAboutRow?.data, aboutMetaRow?.data, aboutRow?.data);
   const pageContacts = mergeContactsPage(
@@ -254,6 +260,11 @@ export default async function AdminContentPage({
           Здесь редактируются тексты и подписи для публичных страниц. Если что‑то не заполнить, на сайте останутся
           стандартные формулировки.
         </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <AdminStatusBadge tone="manual">MANUAL OVERRIDE</AdminStatusBadge>
+          <AdminStatusBadge tone="auto">AUTO FALLBACK</AdminStatusBadge>
+          <AdminStatusBadge tone="readonly">PREVIEW ONLY</AdminStatusBadge>
+        </div>
       </header>
 
       {sp.error ? (
@@ -266,8 +277,18 @@ export default async function AdminContentPage({
       ) : null}
       {sp.saved ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          {SAVED_LABELS[sp.saved] ?? "Изменения сохранены."}
+          {SAVED_LABELS[sp.saved] ?? "Изменения сохранены."} Публичный сайт может обновиться в течение нескольких минут.
         </div>
+      ) : null}
+      {cmsWarnings.length ? (
+        <AdminInlineNotice tone="auto">
+          <p className="font-semibold">Проверьте критичные поля CMS</p>
+          <ul className="mt-1 list-disc pl-5">
+            {cmsWarnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </AdminInlineNotice>
       ) : null}
 
       <section className="rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
@@ -304,7 +325,9 @@ export default async function AdminContentPage({
       >
       <Card>
         <CardHeader>
-          <CardTitle>Верхнее меню</CardTitle>
+          <CardTitle className="flex flex-wrap items-center gap-2">
+            Верхнее меню <AdminStatusBadge tone="manual" />
+          </CardTitle>
           <CardDescription>
             Каждая строка — это одна ссылка: сначала текст, символ &quot;|&quot;, затем адрес (например{" "}
             <span className="whitespace-nowrap">О компании|/about</span>).
@@ -336,7 +359,9 @@ export default async function AdminContentPage({
       >
       <Card>
         <CardHeader>
-          <CardTitle>Главный баннер</CardTitle>
+          <CardTitle className="flex flex-wrap items-center gap-2">
+            Главный баннер <AdminStatusBadge tone="manual" />
+          </CardTitle>
           <CardDescription>
             Первый экран главной страницы: заголовки, кнопки и три цифры со словами под ними. В средней колонке
             подставляется ваше маркетинговое значение и подпись (например «700+ позиций»).

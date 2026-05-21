@@ -169,11 +169,16 @@ export default async function AdminProductsPage({
           <h1 className="text-xl font-semibold tracking-tight">Товары</h1>
           <p className="text-sm text-muted-foreground">Всего: {total}</p>
         </div>
-        <Button asChild size="sm">
-          <Link href={withReturnTo("/admin/products/new", listSelfHref)}>
-            + Новый товар
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/admin/products/series">Серии и шаблоны</Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href={withReturnTo("/admin/products/new", listSelfHref)}>
+              + Новый товар
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <PublicCatalogSourceNotice />

@@ -32,6 +32,9 @@ import { COMPANY_BRAND_SEO, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
+import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
+
+export const revalidate = 300;
 
 /** Gate-valve SEO products use `/zadvizhki/[slug]`; this route only serves generic catalog products. */
 export const dynamicParams = true;
@@ -57,6 +60,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = await getPublicProductBySlug(slug);
 
   if (!product) {
+    const aliasTarget = await resolveProductSlugAliasTarget(slug);
+    if (aliasTarget) {
+      return { title: "Перенаправление…", alternates: { canonical: aliasTarget } };
+    }
     return { title: "Товар не найден" };
   }
 
@@ -170,7 +177,14 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
     getPublicCatalogProducts(),
   ]);
 
-  if (!product) notFound();
+  if (!product) {
+    const aliasTarget = await resolveProductSlugAliasTarget(slug);
+    if (aliasTarget) {
+      const query = searchParams ? await searchParams : {};
+      permanentRedirect(`${aliasTarget}${buildQueryString(query)}`);
+    }
+    notFound();
+  }
 
   if (getGateValveSeoPageForProduct(product)) {
     const query = searchParams ? await searchParams : {};

@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
+import { settleRevalidation } from "@/lib/revalidation";
 import {
   CategoryDeleteBlockedError,
   createCategory,
@@ -187,6 +188,7 @@ export async function moveCategoryInListAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([a, b]);
+  await settleRevalidation();
   redirect(`/admin/categories?view=${listView}&msg=category_moved`);
 }
 
@@ -210,6 +212,7 @@ export async function quickSetCategorySortOrderAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([existing]);
+  await settleRevalidation();
   redirect(`/admin/categories?view=${listView}&msg=category_sort_saved`);
 }
 
@@ -248,6 +251,7 @@ export async function moveSubcategoryInListAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([parent], [a, b]);
+  await settleRevalidation();
   redirect(`/admin/categories?view=${listView}&msg=subcategory_moved`);
 }
 
@@ -277,6 +281,7 @@ export async function quickSetSubcategorySortOrderAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([parent], [existing]);
+  await settleRevalidation();
   redirect(`/admin/categories?view=${listView}&msg=subcategory_sort_saved`);
 }
 
@@ -315,6 +320,7 @@ export async function deleteCategoryAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([existing]);
+  await settleRevalidation();
   redirect(withAdminStatusParam(returnTo, "msg", "Категория удалена."));
 }
 
@@ -359,6 +365,7 @@ export async function deleteSubcategoryAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${existing.categoryId}/edit`);
   revalidateCatalogPublicPaths([parent], [existing]);
+  await settleRevalidation();
   redirect(withAdminStatusParam(returnTo, "msg", "Подкатегория удалена."));
 }
 
@@ -409,6 +416,7 @@ export async function createCategoryAction(formData: FormData) {
 
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([{ slug: parsed.data.slug }]);
+  await settleRevalidation();
   redirect(`/admin/categories/${id}/edit`);
 }
 
@@ -457,6 +465,7 @@ export async function updateCategoryAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${id}/edit`);
   revalidateCatalogPublicPaths([existing, { slug: parsed.data.slug }]);
+  await settleRevalidation();
   redirect(`/admin/categories/${id}/edit?saved=1`);
 }
 
@@ -525,6 +534,7 @@ export async function createSubcategoryAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidatePath(`/admin/categories/${categoryId}/edit`);
   revalidateCatalogPublicPaths([parent], [{ slug: parsed.data.slug }]);
+  await settleRevalidation();
   redirect(`/admin/categories/${categoryId}/subcategories/${subId}/edit?saved=1`);
 }
 
@@ -586,5 +596,6 @@ export async function updateSubcategoryAction(formData: FormData) {
     [oldParent, newParent],
     [existing, { slug: parsed.data.slug }],
   );
+  await settleRevalidation();
   redirect(`/admin/categories/${categoryId}/subcategories/${id}/edit?saved=1`);
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
+import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { CategorySeoFields } from "@/components/admin/CategorySeoFields";
 import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
@@ -47,6 +48,10 @@ export default async function EditCategoryPage({
   if (!category) notFound();
 
   const seoDefaults = categorySeoToFormDefaults(category.seoContent);
+  const warnings = [
+    !category.name.trim() ? "Название категории пустое." : null,
+    !category.slug.trim() ? "Slug пустой: публичная страница категории не откроется." : null,
+  ].filter(Boolean);
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -70,14 +75,24 @@ export default async function EditCategoryPage({
         </p>
       ) : null}
       {sp.saved === "1" ? (
-        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-          Сохранено.
-        </p>
+        <AdminInlineNotice tone="manual">
+          Изменения сохранены. Публичный сайт может обновиться в течение нескольких минут.
+        </AdminInlineNotice>
       ) : null}
       {sp.msg ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
           {sp.msg}
         </p>
+      ) : null}
+      {warnings.length ? (
+        <AdminInlineNotice tone="auto">
+          <p className="font-semibold">Проверьте категорию</p>
+          <ul className="mt-1 list-disc pl-5">
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </AdminInlineNotice>
       ) : null}
 
       <AdminUnsavedChangesGuard>
@@ -90,7 +105,7 @@ export default async function EditCategoryPage({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="name">Название</Label>
+              <Label htmlFor="name">Название <AdminStatusBadge tone="manual" /></Label>
               <input
                 id="name"
                 name="name"
@@ -100,7 +115,7 @@ export default async function EditCategoryPage({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
+              <Label htmlFor="slug">Slug <AdminStatusBadge tone="manual" /></Label>
               <input
                 id="slug"
                 name="slug"
@@ -110,7 +125,7 @@ export default async function EditCategoryPage({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="sortOrder">Порядок сортировки</Label>
+              <Label htmlFor="sortOrder">Порядок сортировки <AdminStatusBadge tone="manual" /></Label>
               <input
                 id="sortOrder"
                 name="sortOrder"
@@ -134,7 +149,7 @@ export default async function EditCategoryPage({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="seoMetaDescription">SEO description (meta)</Label>
+            <Label htmlFor="seoMetaDescription">SEO description (meta) <AdminStatusBadge tone="manual" /></Label>
             <Textarea
               id="seoMetaDescription"
               name="seoMetaDescription"
@@ -227,7 +242,15 @@ export default async function EditCategoryPage({
         </div>
         <DestructiveConfirmForm
           action={deleteCategoryAction}
-          confirmMessage="Удалить категорию окончательно? Это можно сделать только если в ней нет товаров и подкатегорий."
+          confirmMessage={`Удалить категорию «${category.name}» окончательно? Это можно сделать только если в ней нет товаров и подкатегорий.`}
+          title="Удаление категории"
+          details={
+            <>
+              Будет удалена категория <strong>{category.name}</strong> (`{category.slug}`).
+              Удаление заблокируется, если внутри есть товары или подкатегории.
+              Сейчас подкатегорий: {category.subcategories.length}.
+            </>
+          }
         >
           <input type="hidden" name="id" value={String(category.id)} />
           <input type="hidden" name="returnTo" value={listHref} />

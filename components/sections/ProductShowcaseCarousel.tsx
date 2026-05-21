@@ -66,12 +66,39 @@ export function ProductShowcaseCarousel({
   }, [products.length]);
 
   useEffect(() => {
-    if (products.length <= 1) return;
-    const id = window.setInterval(() => {
-      setActive((a) => (a + 1) % products.length);
-    }, 7000);
-    return () => window.clearInterval(id);
-  }, [products.length]);
+    if (products.length <= 1 || reducedMotion) return;
+    let intervalId: number | undefined;
+
+    const stop = () => {
+      if (intervalId === undefined) return;
+      window.clearInterval(intervalId);
+      intervalId = undefined;
+    };
+
+    const start = () => {
+      if (document.visibilityState !== "visible" || intervalId !== undefined) return;
+      intervalId = window.setInterval(() => {
+        if (document.visibilityState !== "visible") return;
+        setActive((a) => (a + 1) % products.length);
+      }, 7000);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        stop();
+        return;
+      }
+      start();
+    };
+
+    start();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      stop();
+    };
+  }, [products.length, reducedMotion]);
 
   const specs = useMemo(() => {
     if (!product) return [];
@@ -133,7 +160,7 @@ export function ProductShowcaseCarousel({
         )}
       >
         <MotionConfig reducedMotion="never">
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={slideKey}
               className={cn(

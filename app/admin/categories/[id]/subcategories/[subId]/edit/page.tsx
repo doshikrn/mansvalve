@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
+import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,10 @@ export default async function EditSubcategoryPage({
 
   const [parent, sub] = await Promise.all([getCategoryById(categoryId), getSubcategoryById(subId)]);
   if (!parent || !sub || sub.categoryId !== categoryId) notFound();
+  const warnings = [
+    !sub.name.trim() ? "Название подкатегории пустое." : null,
+    !sub.slug.trim() ? "Slug пустой: публичная страница подкатегории не откроется." : null,
+  ].filter(Boolean);
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -66,14 +71,24 @@ export default async function EditSubcategoryPage({
         </p>
       ) : null}
       {sp.saved === "1" ? (
-        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-          Сохранено.
-        </p>
+        <AdminInlineNotice tone="manual">
+          Изменения сохранены. Публичный сайт может обновиться в течение нескольких минут.
+        </AdminInlineNotice>
       ) : null}
       {sp.msg ? (
         <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
           {sp.msg}
         </p>
+      ) : null}
+      {warnings.length ? (
+        <AdminInlineNotice tone="auto">
+          <p className="font-semibold">Проверьте подкатегорию</p>
+          <ul className="mt-1 list-disc pl-5">
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </AdminInlineNotice>
       ) : null}
 
       <AdminUnsavedChangesGuard>
@@ -86,7 +101,7 @@ export default async function EditSubcategoryPage({
           <input type="hidden" name="categoryId" value={categoryId} />
 
           <div className="space-y-2">
-            <Label htmlFor="name">Название</Label>
+            <Label htmlFor="name">Название <AdminStatusBadge tone="manual" /></Label>
             <input
               id="name"
               name="name"
@@ -96,7 +111,7 @@ export default async function EditSubcategoryPage({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="slug">Slug</Label>
+            <Label htmlFor="slug">Slug <AdminStatusBadge tone="manual" /></Label>
             <input
               id="slug"
               name="slug"
@@ -106,7 +121,7 @@ export default async function EditSubcategoryPage({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sortOrder">Порядок сортировки</Label>
+            <Label htmlFor="sortOrder">Порядок сортировки <AdminStatusBadge tone="manual" /></Label>
             <input
               id="sortOrder"
               name="sortOrder"
@@ -127,7 +142,7 @@ export default async function EditSubcategoryPage({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="seoMetaDescription">SEO description (meta)</Label>
+            <Label htmlFor="seoMetaDescription">SEO description (meta) <AdminStatusBadge tone="manual" /></Label>
             <Textarea
               id="seoMetaDescription"
               name="seoMetaDescription"
@@ -163,7 +178,14 @@ export default async function EditSubcategoryPage({
         </div>
         <DestructiveConfirmForm
           action={deleteSubcategoryAction}
-          confirmMessage="Удалить подкатегорию окончательно? Это можно сделать только если в ней нет товаров."
+          confirmMessage={`Удалить подкатегорию «${sub.name}» окончательно? Это можно сделать только если в ней нет товаров.`}
+          title="Удаление подкатегории"
+          details={
+            <>
+              Будет удалена подкатегория <strong>{sub.name}</strong> (`{sub.slug}`) в категории{" "}
+              <strong>{parent.name}</strong>. Если к ней привязаны товары, удаление будет заблокировано.
+            </>
+          }
         >
           <input type="hidden" name="id" value={String(sub.id)} />
           <input type="hidden" name="categoryId" value={String(parent.id)} />

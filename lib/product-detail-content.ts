@@ -60,13 +60,20 @@ function pickCharacteristics(
   product: PublicCatalogProduct,
   generatedCharacteristics: Array<{ label: string; value: string }> | undefined,
 ): Array<{ label: string; value: string }> {
-  const entries = Object.entries(product.specs ?? {})
+  const adminEntries = Object.entries(product.specs ?? {})
     .map(([label, value]) => ({ label, value: String(value).trim() }))
     .filter((item) => item.label.trim() && item.value);
 
-  if (entries.length > 0) return entries;
-  if (generatedCharacteristics?.length) return generatedCharacteristics;
+  return mergeCharacteristics(
+    buildCoreCharacteristics(product),
+    generatedCharacteristics ?? [],
+    adminEntries,
+  );
+}
 
+function buildCoreCharacteristics(
+  product: PublicCatalogProduct,
+): Array<{ label: string; value: string }> {
   return [
     product.model ? { label: "Маркировка", value: product.model } : null,
     product.dn != null
@@ -85,6 +92,63 @@ function pickCharacteristics(
   ].filter((item): item is { label: string; value: string } => Boolean(item));
 }
 
+function mergeCharacteristics(
+  ...groups: Array<Array<{ label: string; value: string }>>
+): Array<{ label: string; value: string }> {
+  const merged: Array<{ label: string; value: string }> = [];
+  const indexByKey = new Map<string, number>();
+
+  for (const group of groups) {
+    for (const item of group) {
+      const label = item.label.trim();
+      const value = item.value.trim();
+      if (!label || !value) continue;
+
+      const key = normalizeCharacteristicKey(label);
+      const existingIndex = indexByKey.get(key);
+      if (existingIndex == null) {
+        indexByKey.set(key, merged.length);
+        merged.push({ label, value });
+      } else {
+        merged[existingIndex] = { label, value };
+      }
+    }
+  }
+
+  return merged;
+}
+
+function normalizeCharacteristicKey(label: string): string {
+  const normalized = label
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[^a-zа-я0-9]+/g, "");
+
+  if (normalized === "dn" || normalized.includes("условныйпроход") || normalized.startsWith("ду")) {
+    return "dn";
+  }
+  if (
+    normalized === "pn" ||
+    normalized.includes("номинальноедавление") ||
+    normalized.startsWith("ру")
+  ) {
+    return "pn";
+  }
+  if (normalized.includes("маркиров") || normalized.includes("марка") || normalized === "model") {
+    return "model";
+  }
+  if (normalized.includes("материал")) {
+    return "material";
+  }
+  if (normalized.includes("соедин") || normalized.includes("присоедин")) {
+    return "connection";
+  }
+  if (normalized.includes("управ")) {
+    return "control";
+  }
+
+  return normalized;
+}
 function splitParagraphs(value: string | undefined): string[] {
   return (value ?? "")
     .split(/\n{2,}|\r?\n(?=\S)/)

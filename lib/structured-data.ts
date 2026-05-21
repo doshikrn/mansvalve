@@ -194,36 +194,11 @@ export function buildProductJsonLd(product: Product): Record<string, unknown> {
     })
   }
 
-  if (product.dn != null) {
+  for (const item of view.detailContent.characteristics) {
     additionalProperty.push({
       "@type": "PropertyValue",
-      name: "DN",
-      value: String(product.dn),
-    })
-  }
-
-  if (product.pn != null) {
-    additionalProperty.push({
-      "@type": "PropertyValue",
-      name: "PN",
-      value: String(product.pn),
-    })
-  }
-
-  if (product.thread) {
-    additionalProperty.push({
-      "@type": "PropertyValue",
-      name: "Резьба",
-      value: product.thread,
-    })
-  }
-
-  const standard = product.specs["Стандарт"]
-  if (standard) {
-    additionalProperty.push({
-      "@type": "PropertyValue",
-      name: "Стандарт",
-      value: standard,
+      name: item.label,
+      value: item.value,
     })
   }
 

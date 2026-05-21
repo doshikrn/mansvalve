@@ -169,6 +169,36 @@ async function fetchPrimaryImageMap(
   return map;
 }
 
+async function fetchProductSpecsMap(
+  productIds: number[],
+): Promise<Map<number, Record<string, string>>> {
+  const map = new Map<number, Record<string, string>>();
+  if (!productIds.length) return map;
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      productId: productSpecsTable.productId,
+      key: productSpecsTable.key,
+      value: productSpecsTable.value,
+    })
+    .from(productSpecsTable)
+    .where(inArray(productSpecsTable.productId, productIds))
+    .orderBy(
+      asc(productSpecsTable.productId),
+      asc(productSpecsTable.sortOrder),
+      asc(productSpecsTable.id),
+    );
+
+  for (const row of rows) {
+    const specs = map.get(row.productId) ?? {};
+    specs[row.key] = row.value;
+    map.set(row.productId, specs);
+  }
+
+  return map;
+}
+
 function mapProductRow(
   row: ProductRow,
   primaryImage:
@@ -266,12 +296,16 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
 
   async getProducts() {
     const rows = await fetchProductRows();
-    const primaryImageMap = await fetchPrimaryImageMap(
-      rows.map((row) => row.product.id),
-    );
-    return rows.map((row) =>
-      mapProductRow(row, primaryImageMap.get(row.product.id)),
-    );
+    const productIds = rows.map((row) => row.product.id);
+    const [primaryImageMap, specsMap] = await Promise.all([
+      fetchPrimaryImageMap(productIds),
+      fetchProductSpecsMap(productIds),
+    ]);
+    return rows.map((row) => {
+      const mapped = mapProductRow(row, primaryImageMap.get(row.product.id));
+      mapped.specs = specsMap.get(row.product.id) ?? {};
+      return mapped;
+    });
   },
 
   async getCategoryBySlug(slug) {

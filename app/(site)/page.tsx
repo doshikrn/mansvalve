@@ -11,6 +11,8 @@ import { DeliveryCase } from "@/components/sections/DeliveryCase";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { resolveHomePage } from "@/lib/site-content/public";
 
+export const revalidate = 300;
+
 export async function generateMetadata(): Promise<Metadata> {
   const home = await resolveHomePage();
   const title = home.meta.ogTitle;

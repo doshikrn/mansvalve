@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/auth/current-user";
+import { settleRevalidation } from "@/lib/revalidation";
 import { SITE_CONTENT_KEYS } from "@/lib/site-content/keys";
 import {
   aboutCopySchema,
@@ -91,6 +92,7 @@ export async function saveHomeHeroAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin/content");
+  await settleRevalidation();
   redirect("/admin/content?saved=hero");
 }
 
@@ -108,6 +110,7 @@ export async function saveTrustStripAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=trust");
 }
 
@@ -132,6 +135,7 @@ export async function saveHomeProductShowcasesAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin/content");
+  await settleRevalidation();
   redirect("/admin/content?saved=product-showcases");
 }
 
@@ -151,6 +155,7 @@ export async function saveRequestCtaAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=rcta");
 }
 
@@ -178,6 +183,7 @@ export async function saveHomeFaqAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=faq");
 }
 
@@ -196,6 +202,7 @@ export async function saveHomeMetaAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=meta");
 }
 
@@ -323,6 +330,7 @@ export async function saveHeaderTopNavAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/", "layout");
+  await settleRevalidation();
   redirect("/admin/content?saved=header-nav");
 }
 
@@ -349,6 +357,7 @@ export async function saveHomeCategoriesAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=home-categories");
 }
 
@@ -375,6 +384,7 @@ export async function saveHomeWhyUsAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=home-why-us");
 }
 
@@ -401,6 +411,7 @@ export async function saveHomeHowItWorksAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=home-how-it-works");
 }
 
@@ -427,6 +438,7 @@ export async function saveHomeWhoWeSupplyAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=home-who-we-supply");
 }
 
@@ -478,6 +490,7 @@ export async function saveHomeDeliveryCaseAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/");
+  await settleRevalidation();
   redirect("/admin/content?saved=home-delivery-case");
 }
 
@@ -501,6 +514,7 @@ export async function saveFooterPreCtaAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/", "layout");
+  await settleRevalidation();
   redirect("/admin/content?saved=footer-pre-cta");
 }
 
@@ -520,6 +534,7 @@ export async function saveFooterTrustBarAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/", "layout");
+  await settleRevalidation();
   redirect("/admin/content?saved=footer-trust");
 }
 
@@ -968,5 +983,6 @@ export async function saveFooterMainAction(formData: FormData) {
     updatedBy: Number(session.sub) || null,
   });
   revalidatePath("/", "layout");
+  await settleRevalidation();
   redirect("/admin/content?saved=footer-main");
 }

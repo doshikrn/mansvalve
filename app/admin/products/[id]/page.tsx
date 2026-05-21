@@ -77,8 +77,18 @@ export default async function EditProductPage({
         </div>
         <DestructiveConfirmForm
           action={boundDelete}
-          confirmMessage="Удалить товар окончательно? Товар исчезнет с сайта, из поиска, sitemap и витрины. Действие нельзя отменить."
+          confirmMessage={`Удалить товар «${displayName}» окончательно? Он исчезнет с сайта, поиска, sitemap и витрин. Действие нельзя отменить.`}
           className="shrink-0"
+          title="Удаление товара"
+          details={
+            <>
+              Будет удалён товар <strong>{displayName}</strong>. Связанные медиа и документы
+              останутся в медиатеке, но привязки к товару будут сняты.
+              <br />
+              Сейчас привязано изображений: {product.images.length}; документов:{" "}
+              {Object.values(product.documents).filter(Boolean).length}.
+            </>
+          }
         >
           <input type="hidden" name="returnTo" value={listHref} />
           <Button type="submit" variant="destructive" size="sm">

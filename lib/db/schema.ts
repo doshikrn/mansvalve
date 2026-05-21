@@ -279,12 +279,32 @@ export const productImages = pgTable(
   ],
 );
 
+export const productSlugAliases = pgTable(
+  "product_slug_aliases",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    slug: varchar("slug", { length: 200 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("product_slug_aliases_slug_idx").on(table.slug),
+    index("product_slug_aliases_product_idx").on(table.productId),
+  ],
+);
+
 export type Product = typeof products.$inferSelect;
 export type NewProduct = typeof products.$inferInsert;
 export type ProductSpec = typeof productSpecs.$inferSelect;
 export type NewProductSpec = typeof productSpecs.$inferInsert;
 export type ProductImage = typeof productImages.$inferSelect;
 export type NewProductImage = typeof productImages.$inferInsert;
+export type ProductSlugAlias = typeof productSlugAliases.$inferSelect;
+export type NewProductSlugAlias = typeof productSlugAliases.$inferInsert;
 
 /* -------------------------------------------------------------------------- */
 /* Certificates                                                               */

@@ -34,7 +34,7 @@ export function ProductImageFrame({
   return (
     <div
       className={cn(
-        "relative isolate aspect-[4/3] overflow-hidden",
+        "relative isolate aspect-[4/3] w-full overflow-hidden",
         isDark ? "bg-[#0B1728]" : "bg-[#F3F6FA]",
         className,
       )}

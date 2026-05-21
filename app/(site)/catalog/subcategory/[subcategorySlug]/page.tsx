@@ -20,6 +20,8 @@ import {
 } from "@/lib/structured-data";
 import { resolveSubcategorySeoMetaDescription } from "@/lib/services/category-public-content";
 
+export const revalidate = 300;
+
 interface PageProps {
   params: Promise<{ subcategorySlug: string }>;
   searchParams: Promise<CatalogSearchParams>;
@@ -44,6 +46,18 @@ function buildSubcategoryDescription(
   return `${subcategory.name} в категории «${category.name}» — ${productCount} позиций. Промышленная арматура в Казахстане: DN, PN, материал, КП, доставка по РК. Фильтрация в каталоге.`;
 }
 
+async function resolveSubcategoryDescription(
+  category: Category,
+  subcategory: Subcategory,
+  productCount: number,
+): Promise<string> {
+  const manualDescription = await resolveSubcategorySeoMetaDescription(subcategory.slug);
+  return (
+    manualDescription?.trim() ||
+    buildSubcategoryDescription(category, subcategory, productCount)
+  );
+}
+
 export async function generateStaticParams() {
   const categories = await getPublicCatalogCategories();
   return categories.flatMap((category) =>
@@ -61,10 +75,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const productCount = (await getPublicProductsBySubcategory(context.subcategory.id))
     .length;
-  const customMeta = await resolveSubcategorySeoMetaDescription(subcategorySlug);
-  const description =
-    customMeta?.trim() ||
-    buildSubcategoryDescription(context.category, context.subcategory, productCount);
+  const description = await resolveSubcategoryDescription(
+    context.category,
+    context.subcategory,
+    productCount,
+  );
   const canonicalPath = `/catalog/subcategory/${context.subcategory.slug}`;
   const pageTitle = `${context.subcategory.name} — ${context.category.name} · Казахстан`;
 
@@ -101,7 +116,7 @@ export default async function SubcategoryPage({ params, searchParams }: PageProp
     getPublicCatalogCategories(),
     getPublicProductsBySubcategory(context.subcategory.id),
   ]);
-  const description = buildSubcategoryDescription(
+  const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,
     subcategoryProducts.length,
@@ -169,8 +184,8 @@ export default async function SubcategoryPage({ params, searchParams }: PageProp
               {context.category.name} · Казахстан
             </span>
           </h1>
-          <p className="mt-2 text-lg text-slate-500">
-            {subcategoryProducts.length} позиций в каталоге
+          <p className="mt-2 max-w-3xl text-lg leading-relaxed text-slate-500">
+            {description}
           </p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
+import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/button";
 
 export type AdminProductPreviewData = {
@@ -32,11 +33,17 @@ export function AdminProductPreview({ preview }: Props) {
           sizes="(max-width: 1280px) 100vw, 520px"
           className="h-48 rounded-none"
           safeAreaClassName="p-5"
-        />
+        >
+          <div className="absolute left-3 top-3">
+            <AdminStatusBadge tone={preview.imageCount > 0 ? "manual" : "auto"}>
+              {preview.imageCount > 0 ? "PRIMARY IMAGE" : "FALLBACK IMAGE"}
+            </AdminStatusBadge>
+          </div>
+        </ProductImageFrame>
         <div className="space-y-3 p-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Карточка каталога
+            <p className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Карточка каталога <AdminStatusBadge tone="readonly" />
             </p>
             <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug">
               {preview.displayName}

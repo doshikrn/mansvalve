@@ -2,6 +2,9 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { getPublicCatalogProducts, getPublicProductBySlug } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
+
+export const revalidate = 300;
 
 export async function generateStaticParams() {
   const products = await getPublicCatalogProducts();
@@ -22,7 +25,13 @@ export default async function LegacyCatalogProductRedirect({
   const { slug } = await params;
   const query = await searchParams;
   const product = await getPublicProductBySlug(slug);
-  if (!product) notFound();
+  if (!product) {
+    const aliasTarget = await resolveProductSlugAliasTarget(slug);
+    if (aliasTarget) {
+      permanentRedirect(`${aliasTarget}${buildQueryString(query)}`);
+    }
+    notFound();
+  }
 
   const view = buildPublicProductView(product);
   permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);

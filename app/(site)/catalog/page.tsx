@@ -12,6 +12,8 @@ import {
 } from "@/lib/public-catalog";
 import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 
+export const revalidate = 300;
+
 /* ── SEO ──────────────────────────────────────────────────────────── */
 
 const CATALOG_TITLE = "Каталог промышленной арматуры";

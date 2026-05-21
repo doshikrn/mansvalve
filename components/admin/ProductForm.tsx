@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 
@@ -10,6 +10,7 @@ import {
   AdminProductPreview,
   type AdminProductPreviewData,
 } from "@/components/admin/AdminProductPreview";
+import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminSeoPreview } from "@/components/admin/AdminSeoPreview";
 import { AdminSectionCard } from "@/components/admin/AdminSectionCard";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
@@ -40,7 +41,7 @@ type Action = (
   formData: FormData,
 ) => Promise<ProductFormState>;
 
-type Spec = { key: string; value: string };
+type Spec = { id: string; key: string; value: string };
 
 type Props = {
   action: Action;
@@ -83,8 +84,13 @@ export function ProductForm({
   const [categoryId, setCategoryId] = useState<number | "">(
     product?.categoryId ?? "",
   );
+  const specIdRef = useRef(0);
   const [specs, setSpecs] = useState<Spec[]>(
-    product?.specs.map((s) => ({ key: s.key, value: s.value })) ?? [],
+    product?.specs.map((s, index) => ({
+      id: `persisted-${product.id}-${index}-${s.key}`,
+      key: s.key,
+      value: s.value,
+    })) ?? [],
   );
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
@@ -100,6 +106,7 @@ export function ProductForm({
   const [liveImages, setLiveImages] = useState<SelectedMediaItem[]>(
     selectedImages,
   );
+  const [slugDraft, setSlugDraft] = useState<string>(product?.slug ?? "");
   const selectedDocuments = {
     specification: product?.documents.specification ?? null,
     questionnaire: product?.documents.questionnaire ?? null,
@@ -138,6 +145,10 @@ export function ProductForm({
           <input type="hidden" name="returnTo" value={listReturnTo} />
         ) : null}
         <FormDirtyResetAfterSubmit hasError={hasFormError} />
+
+        {state.success ? (
+          <AdminInlineNotice tone="manual">{state.success}</AdminInlineNotice>
+        ) : null}
 
         <ProductSectionNav />
         <ProductValidationWarnings
@@ -188,7 +199,7 @@ export function ProductForm({
             </AdminFieldHint>
             {livePublicPreview ? (
               <p className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                <AutoBadge className="mr-2 align-middle" />
+                <AdminStatusBadge tone="generated" className="mr-2 align-middle" />
                 Автоматическое имя, если «Название на сайте» пустое:{" "}
                 <span className="font-medium text-foreground">
                   {livePublicPreview.generatedDisplayName}
@@ -198,7 +209,11 @@ export function ProductForm({
           </Field>
 
           <Field
-            label="Заголовок H1 на сайте"
+            label={
+              <>
+                Заголовок H1 на сайте <AdminStatusBadge tone="manual" />
+              </>
+            }
             name="h1Override"
             error={state.fieldErrors?.h1Override}
           >
@@ -209,12 +224,39 @@ export function ProductForm({
             </AdminFieldHint>
           </Field>
 
-          <Field label="Slug" name="slug" error={state.fieldErrors?.slug}>
-            <Input name="slug" defaultValue={product?.slug ?? ""} />
+          <Field
+            label={
+              <>
+                Slug{" "}
+                {product ? (
+                  <AdminStatusBadge tone="readonly">URL ЗАФИКСИРОВАН</AdminStatusBadge>
+                ) : (
+                  <AdminStatusBadge tone="auto">AUTO</AdminStatusBadge>
+                )}
+              </>
+            }
+            name="slug"
+            error={state.fieldErrors?.slug}
+          >
+            <Input
+              name="slug"
+              defaultValue={product?.slug ?? ""}
+              onChange={(event) => setSlugDraft(event.target.value)}
+              placeholder={product ? undefined : "Сгенерируется из названия"}
+            />
             <AdminFieldHint>
-              URL товара. После индексации лучше не менять, чтобы не ломать SEO
-              и старые ссылки.
+              {product
+                ? "URL зафиксирован после публикации. Если оставить поле пустым, slug не изменится. При ручном изменении старый URL автоматически перенаправится на новый (301 redirect)."
+                : "Можно оставить пустым — slug сгенерируется из «Внутреннего названия». После публикации URL фиксируется и больше не меняется автоматически при правке названия."}
             </AdminFieldHint>
+            {product && slugDraft.trim() && slugDraft.trim() !== product.slug ? (
+              <AdminInlineNotice tone="auto">
+                Изменение slug меняет публичный URL. Старый адрес{" "}
+                <code className="rounded bg-amber-100 px-1">/{product.slug}</code>{" "}
+                сохранится как alias и будет перенаправлять на новый. Это влияет на SEO —
+                поисковики переиндексируют страницу.
+              </AdminInlineNotice>
+            ) : null}
           </Field>
 
           <div className="grid gap-3 md:grid-cols-2">
@@ -303,7 +345,7 @@ export function ProductForm({
           id="seo"
           title="SEO preview"
           description="Итоговые title, description, H1 и canonical считаются в buildPublicProductView() из названия и параметров товара. Ручных SEO override-полей нет — здесь только preview."
-          badge="автоматически"
+          badge="generated"
         >
           {livePublicPreview ? (
             <div className="space-y-4">
@@ -317,6 +359,7 @@ export function ProductForm({
                 <PreviewValue label="Canonical" value={livePublicPreview.canonicalPath} />
               </dl>
               <AdminFieldHint>
+                <AdminStatusBadge tone="readonly" className="mr-2 align-middle" />
                 Ручные SEO override-поля сейчас намеренно не добавлены. SEO берёт публичное
                 название, описание и canonical из public builder, чтобы админка и сайт не
                 расходились.
@@ -404,6 +447,7 @@ export function ProductForm({
           description="Краткое и полное описание, таблица характеристик и списки ниже — это то, что видит клиент на странице товара (через buildPublicProductView)."
         >
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-relaxed text-blue-950">
+            <AdminStatusBadge tone="auto" className="mr-2 align-middle" />
             Заполненные поля идут на сайт как есть. Пустые списки для задвижек могут
             подставляться из шаблона серии — см. docs/product-content-contract.md.
           </div>
@@ -444,21 +488,26 @@ export function ProductForm({
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setSpecs((s) => [...s, { key: "", value: "" }])}
+                onClick={() =>
+                  setSpecs((s) => [
+                    ...s,
+                    { id: `new-${++specIdRef.current}`, key: "", value: "" },
+                  ])
+                }
               >
                 + Добавить строку
               </Button>
             </div>
             <div className="space-y-2">
-              {specs.map((spec, i) => (
-                <div key={i} className="grid gap-2 md:grid-cols-[240px_1fr_auto]">
+              {specs.map((spec) => (
+                <div key={spec.id} className="grid gap-2 md:grid-cols-[240px_1fr_auto]">
                   <Input
                     name="specKey[]"
                     value={spec.key}
                     onChange={(e) =>
                       setSpecs((curr) =>
-                        curr.map((s, idx) =>
-                          idx === i ? { ...s, key: e.target.value } : s,
+                        curr.map((s) =>
+                          s.id === spec.id ? { ...s, key: e.target.value } : s,
                         ),
                       )
                     }
@@ -469,8 +518,8 @@ export function ProductForm({
                     value={spec.value}
                     onChange={(e) =>
                       setSpecs((curr) =>
-                        curr.map((s, idx) =>
-                          idx === i ? { ...s, value: e.target.value } : s,
+                        curr.map((s) =>
+                          s.id === spec.id ? { ...s, value: e.target.value } : s,
                         ),
                       )
                     }
@@ -481,7 +530,7 @@ export function ProductForm({
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      setSpecs((curr) => curr.filter((_, idx) => idx !== i))
+                      setSpecs((curr) => curr.filter((item) => item.id !== spec.id))
                     }
                   >
                     Убрать
@@ -503,6 +552,7 @@ export function ProductForm({
               </Field>
             ))}
             <AdminFieldHint>
+              <AdminStatusBadge tone="auto" className="mr-2 align-middle" />
               Если строка не заполнена, для задвижек по шаблону серии список может
               дополниться автоматически (см. docs/product-content-contract.md).
             </AdminFieldHint>
@@ -562,8 +612,23 @@ function ProductValidationWarnings({
     imageCount === 0
       ? "Нет изображения товара: публичная карточка будет использовать fallback категории."
       : null,
-    !product?.shortDescription?.trim() && !product?.longDescription?.trim()
-      ? "Нет своего описания: блок «Описание» на сайте заполнится автоматически (шаблон серии или служебный fallback)."
+    product && !product.publicTitle?.trim() && !preview?.generatedDisplayName?.trim()
+      ? "Нет публичного или сгенерированного названия: карточка и SEO будут пустыми."
+      : null,
+    !product?.shortDescription?.trim()
+      ? "Краткое описание пустое: карточки каталога будут брать fallback из полного описания или шаблона."
+      : null,
+    product && !product.slug?.trim()
+      ? "Slug пустой: публичный URL и canonical невозможны."
+      : null,
+    preview && !preview.canonicalPath.trim()
+      ? "Canonical path не сформирован: проверьте slug и категорию."
+      : null,
+    product && !product.categoryId
+      ? "Категория не выбрана: товар не попадёт в нужный публичный раздел."
+      : null,
+    product && !product.subcategoryId
+      ? "Подкатегория не выбрана: фильтры и подбор могут работать хуже."
       : null,
     product && product.dn == null
       ? "DN не указан: фильтры и поиск по диаметру будут работать хуже."
@@ -646,16 +711,6 @@ function Field({
       {children}
       {error ? <p className="text-xs text-destructive">{error}</p> : null}
     </div>
-  );
-}
-
-function AutoBadge({ className }: { className?: string }) {
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground ${className ?? ""}`}
-    >
-      автоматически
-    </span>
   );
 }
 

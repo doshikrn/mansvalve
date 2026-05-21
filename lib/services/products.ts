@@ -2,11 +2,14 @@ import "server-only";
 
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 
+import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
+
 import { getDb } from "@/lib/db/client";
 import {
   categories as categoriesTable,
   mediaAssets as mediaAssetsTable,
   productImages as productImagesTable,
+  productSlugAliases as productSlugAliasesTable,
   productSpecs as productSpecsTable,
   products as productsTable,
   subcategories as subcategoriesTable,
@@ -437,6 +440,13 @@ export async function createProduct(
       core.subcategoryId,
     );
 
+    if (core.slug) {
+      // Reclaim the slug from any prior alias — manual republish wins.
+      await tx
+        .delete(productSlugAliasesTable)
+        .where(eq(productSlugAliasesTable.slug, core.slug));
+    }
+
     const inserted = await tx
       .insert(productsTable)
       .values({ ...core, ...names })
@@ -478,10 +488,36 @@ export async function updateProduct(
       core.subcategoryId,
     );
 
+    const existing = await tx
+      .select({ slug: productsTable.slug })
+      .from(productsTable)
+      .where(eq(productsTable.id, id))
+      .limit(1);
+    const previousSlug = existing[0]?.slug ?? null;
+
     await tx
       .update(productsTable)
       .set({ ...core, ...names, updatedAt: new Date() })
       .where(eq(productsTable.id, id));
+
+    if (previousSlug && core.slug && previousSlug !== core.slug) {
+      // Drop any alias matching the new slug (avoid old aliases shadowing a
+      // newly published slug) and persist the previous slug as alias for
+      // permanent redirects.
+      await tx
+        .delete(productSlugAliasesTable)
+        .where(eq(productSlugAliasesTable.slug, core.slug));
+      try {
+        await tx
+          .insert(productSlugAliasesTable)
+          .values({ productId: id, slug: previousSlug });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (!message.includes("product_slug_aliases_slug_idx")) {
+          throw error;
+        }
+      }
+    }
 
     if (specs) {
       await tx.delete(productSpecsTable).where(eq(productSpecsTable.productId, id));
@@ -510,6 +546,98 @@ export async function deleteProduct(id: number): Promise<void> {
     await tx.delete(productSpecsTable).where(eq(productSpecsTable.productId, id));
     await tx.delete(productsTable).where(eq(productsTable.id, id));
   });
+}
+
+/**
+ * Returns the product id currently owning the given (potentially historical) slug,
+ * resolved via the slug alias table. Used for safe redirects after manual slug edits.
+ */
+export async function findProductIdBySlugAlias(
+  slug: string,
+): Promise<number | null> {
+  const db = getDb();
+  const trimmed = slug.trim();
+  if (!trimmed) return null;
+  const rows = await db
+    .select({ productId: productSlugAliasesTable.productId })
+    .from(productSlugAliasesTable)
+    .where(eq(productSlugAliasesTable.slug, trimmed))
+    .limit(1);
+  return rows[0]?.productId ?? null;
+}
+
+/** Returns the current canonical slug for a product id, or `null` if not found. */
+export async function getProductSlugById(id: number): Promise<string | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ slug: productsTable.slug })
+    .from(productsTable)
+    .where(eq(productsTable.id, id))
+    .limit(1);
+  return rows[0]?.slug ?? null;
+}
+
+/**
+ * Patch `detail_blocks` jsonb for a product, merging only the provided keys
+ * (other keys are preserved). Used by safe bulk operations to fill missing
+ * shared blocks from a series template without touching specs/images.
+ *
+ * Returns the slug of the affected product (for revalidation) or `null` when
+ * the product was not found.
+ */
+export async function patchProductDetailBlocks(
+  productId: number,
+  patch: Partial<ProductDetailBlocks>,
+): Promise<{ slug: string; categorySlug: string | null; subcategorySlug: string | null } | null> {
+  const db = getDb();
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .select({
+        slug: productsTable.slug,
+        detailBlocks: productsTable.detailBlocks,
+        categorySlug: categoriesTable.slug,
+        subcategorySlug: subcategoriesTable.slug,
+      })
+      .from(productsTable)
+      .leftJoin(categoriesTable, eq(categoriesTable.id, productsTable.categoryId))
+      .leftJoin(
+        subcategoriesTable,
+        eq(subcategoriesTable.id, productsTable.subcategoryId),
+      )
+      .where(eq(productsTable.id, productId))
+      .limit(1);
+    if (!rows.length) return null;
+    const current = rows[0].detailBlocks ?? null;
+    const merged: ProductDetailBlocks = {
+      standards: patch.standards ?? current?.standards ?? [],
+      benefits: patch.benefits ?? current?.benefits ?? [],
+      applications: patch.applications ?? current?.applications ?? [],
+      qualityDocuments:
+        patch.qualityDocuments ?? current?.qualityDocuments ?? [],
+      supplyTerms: patch.supplyTerms ?? current?.supplyTerms ?? [],
+    };
+    await tx
+      .update(productsTable)
+      .set({ detailBlocks: merged, updatedAt: new Date() })
+      .where(eq(productsTable.id, productId));
+    return {
+      slug: rows[0].slug,
+      categorySlug: rows[0].categorySlug,
+      subcategorySlug: rows[0].subcategorySlug,
+    };
+  });
+}
+
+export async function listProductSlugAliases(
+  productId: number,
+): Promise<string[]> {
+  const db = getDb();
+  const rows = await db
+    .select({ slug: productSlugAliasesTable.slug })
+    .from(productSlugAliasesTable)
+    .where(eq(productSlugAliasesTable.productId, productId))
+    .orderBy(desc(productSlugAliasesTable.createdAt));
+  return rows.map((r) => r.slug);
 }
 
 export async function countProducts(): Promise<number> {

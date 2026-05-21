@@ -7,6 +7,19 @@ import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
 const SCROLL_THRESHOLDS = [25, 50, 75, 100] as const;
 
+function normalizeSearchParams(searchParams: Iterable<[string, string]>): string {
+  const entries = Array.from(searchParams).sort(([ak, av], [bk, bv]) => {
+    if (ak !== bk) return ak.localeCompare(bk);
+    return av.localeCompare(bv);
+  });
+  const normalized = new URLSearchParams();
+  for (const [key, value] of entries) {
+    normalized.append(key, value);
+  }
+  const search = normalized.toString();
+  return search ? `?${search}` : "";
+}
+
 interface PageVisitContext {
   page: string;
   pathname: string;
@@ -23,8 +36,7 @@ export function PageViewTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const analyticsDisabled = pathname.startsWith("/admin");
-  const searchString = searchParams.toString();
-  const search = searchString ? `?${searchString}` : "";
+  const search = normalizeSearchParams(searchParams);
   const lastTrackedPageRef = useRef<string | null>(null);
   const pageVisitRef = useRef<PageVisitContext | null>(null);
   const scrollRafRef = useRef<number | null>(null);

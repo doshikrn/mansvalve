@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  Activity,
   Award,
   Building2,
   FileCheck,
   FileText,
   FolderTree,
+  GitBranch,
   Home,
   ImageIcon,
   Inbox,
@@ -30,6 +32,8 @@ const PRIMARY: Item[] = [
 
 const CATALOG: Item[] = [
   { href: "/admin/products", label: "Товары", icon: Package },
+  { href: "/admin/products/series", label: "Серии и шаблоны", icon: GitBranch },
+  { href: "/admin/catalog-health", label: "Здоровье каталога", icon: Activity },
   { href: "/admin/categories?view=categories", label: "Категории", icon: FolderTree },
   { href: "/admin/categories?view=subcategories", label: "Подкатегории", icon: Layers },
   { href: "/admin/certificates", label: "Сертификаты", icon: Award },

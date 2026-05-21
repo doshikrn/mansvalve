@@ -14,6 +14,7 @@ import {
 } from "@/lib/product-detail-blocks";
 import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { settleRevalidation } from "@/lib/revalidation";
 import {
   createProduct,
   deleteProduct,
@@ -113,6 +114,7 @@ const productSchema = z.object({
 export type ProductFormState = {
   error?: string;
   fieldErrors?: Record<string, string>;
+  success?: string;
 };
 
 type FormInput = FormData | Record<string, unknown>;
@@ -133,7 +135,10 @@ function readSpecs(form: FormInput): { key: string; value: string }[] {
     .filter((e) => e.key && e.value);
 }
 
-function parseProductForm(formData: FormData) {
+function parseProductForm(
+  formData: FormData,
+  options: { existingSlug?: string } = {},
+) {
   const parsed = productSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
@@ -156,7 +161,15 @@ function parseProductForm(formData: FormData) {
   const detailBlocks = readDetailBlocks(formData);
 
   const data = parsed.data;
-  const slug = slugify(data.slug ?? data.name);
+  // Slug lifecycle:
+  //   1) update with an existing slug — never re-slugify from name; only change
+  //      when the manager explicitly edits the slug field (manual override).
+  //   2) create / empty slug — slugify either the submitted slug or the name.
+  const slug = options.existingSlug
+    ? data.slug
+      ? slugify(data.slug)
+      : options.existingSlug
+    : slugify(data.slug ?? data.name);
 
   const payload: ProductWritePayload = {
     slug,
@@ -302,6 +315,7 @@ export async function createProductAction(
 
   revalidatePath("/admin/products");
   revalidateProductPublicPaths(await getProductById(id));
+  await settleRevalidation();
   const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
   const returnTo = safeReturnTo(rawReturnTo, "");
   const suffix = returnTo
@@ -317,12 +331,13 @@ export async function updateProductAction(
 ): Promise<ProductFormState> {
   await requireAdmin(`/admin/products/${id}`);
 
-  const parsed = parseProductForm(formData);
+  const before = await getProductById(id);
+  const parsed = parseProductForm(formData, {
+    existingSlug: before?.slug ?? undefined,
+  });
   if (!parsed.ok) {
     return { fieldErrors: parsed.fieldErrors, error: "Проверьте форму." };
   }
-
-  const before = await getProductById(id);
 
   try {
     await updateProduct(id, parsed.payload);
@@ -333,8 +348,15 @@ export async function updateProductAction(
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
-  revalidateProductPublicPaths(before, await getProductById(id));
-  return {};
+  const after = await getProductById(id);
+  revalidateProductPublicPaths(before, after);
+  await settleRevalidation();
+  const slugChanged = Boolean(before && after && before.slug !== after.slug);
+  return {
+    success: slugChanged
+      ? "Изменения сохранены. Slug обновлён — старый URL автоматически перенаправляется на новый. Публичный сайт может обновиться в течение нескольких минут."
+      : "Изменения сохранены. Публичный сайт может обновиться в течение нескольких минут.",
+  };
 }
 
 export async function deleteProductAction(
@@ -353,6 +375,7 @@ export async function deleteProductAction(
   }
   revalidatePath("/admin/products");
   revalidateProductPublicPaths(before);
+  await settleRevalidation();
   redirect(withStatusParam(returnTo, "msg", "Товар удалён. Он исчез с сайта, поиска, sitemap и витрины."));
 }
 
@@ -360,6 +383,8 @@ function revalidateProductPublicPaths(
   ...products: Array<ProductDetail | null | undefined>
 ) {
   revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/catalog");
   revalidatePath("/catalog", "layout");
   revalidatePath("/about");
   revalidatePath("/sitemap.xml");
