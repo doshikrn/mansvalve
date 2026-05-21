@@ -31,12 +31,12 @@ import { buildProductBreadcrumbJsonLd, buildProductJsonLd } from "@/lib/structur
 import { COMPANY_BRAND_SEO, buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
-import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
+import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
 import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
 
 export const revalidate = 300;
 
-/** Gate-valve SEO products use `/zadvizhki/[slug]`; this route only serves generic catalog products. */
+/** Series SEO products use dedicated canonical routes; this route serves generic catalog products. */
 export const dynamicParams = true;
 
 /* ── Static generation (non–gate-valve products) ─────────────────── */
@@ -44,7 +44,7 @@ export const dynamicParams = true;
 export async function generateStaticParams() {
   const products = await getPublicCatalogProducts();
   return products
-    .filter((p) => !getGateValveSeoPageForProduct(p))
+    .filter((p) => !getSeriesSeoPageForProduct(p))
     .map((p) => ({ slug: p.slug }));
 }
 
@@ -186,7 +186,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
     notFound();
   }
 
-  if (getGateValveSeoPageForProduct(product)) {
+  if (getSeriesSeoPageForProduct(product)) {
     const query = searchParams ? await searchParams : {};
     const view = buildPublicProductView(product);
     permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);

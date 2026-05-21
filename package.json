@@ -13,6 +13,7 @@
     "db:migrate": "tsx scripts/db/migrate.ts",
     "db:seed": "tsx scripts/db/seed.ts",
     "db:import-catalog": "tsx scripts/db/import-catalog.ts",
+    "db:upsert-product-series": "tsx scripts/db/upsert-product-series.ts",
     "admin:create": "tsx scripts/db/create-admin.ts",
     "catalog:parity-check": "tsx scripts/catalog-parity-check.ts",
     "seo:audit": "tsx scripts/seo-audit.ts",

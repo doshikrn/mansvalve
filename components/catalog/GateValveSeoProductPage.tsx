@@ -11,12 +11,17 @@ import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
-import type { GateValveSeoPage } from "@/lib/seo-product-pages/gate-valves";
+import {
+  getSeriesPageCategoryLabel,
+  getSeriesPageCatalogCategoryId,
+  getSeriesPagePath,
+  type ProductSeriesSeoPage,
+} from "@/lib/seo-product-pages/product-series";
 
 interface Props {
-  page: GateValveSeoPage;
+  page: ProductSeriesSeoPage;
   product?: PublicCatalogProduct;
-  relatedPages: GateValveSeoPage[];
+  relatedPages: ProductSeriesSeoPage[];
 }
 
 const TRUST_ITEMS = [
@@ -43,11 +48,13 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
   const advantagesItems = view ? view.contentSections.advantages : page.benefits;
   const applicationItems = view ? view.contentSections.application : page.applications;
   const deliveryTermsItems = view ? view.contentSections.deliveryTerms : page.supplyTerms;
-  const categoryVisual = getCategoryVisual("zadvizhki");
+  const catalogCategoryId = getSeriesPageCatalogCategoryId(page);
+  const categoryLabel = getSeriesPageCategoryLabel(page);
+  const categoryVisual = getCategoryVisual(catalogCategoryId);
   const displayName = view?.displayName ?? page.title;
   const imageSrc = view?.primaryImageUrl ?? categoryVisual.imageSrc;
   const imageAlt = view?.primaryImageAlt ?? page.imageAlt;
-  const canonicalPath = view?.canonicalPath ?? `/zadvizhki/${page.slug}`;
+  const canonicalPath = view?.canonicalPath ?? getSeriesPagePath(page);
   const waUrl = buildCompanyProductInquiryWhatsAppUrl(displayName, {
     dn: page.dn,
     pn: page.pn,
@@ -83,8 +90,8 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
                 <ChevronRight size={14} className="text-slate-300" />
               </li>
               <li>
-                <Link href="/catalog/category/zadvizhki" className="transition-colors hover:text-slate-900">
-                  Задвижки
+                <Link href={`/catalog/category/${catalogCategoryId}`} className="transition-colors hover:text-slate-900">
+                  {categoryLabel}
                 </Link>
               </li>
               <li aria-hidden="true">
@@ -260,7 +267,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
             {relatedPages.map((related) => (
               <Link
                 key={related.slug}
-                href={`/zadvizhki/${related.slug}`}
+                href={getSeriesPagePath(related)}
                 className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
                   related.slug === page.slug
                     ? "border-site-primary bg-site-primary text-white"
@@ -337,10 +344,12 @@ function normalizeImageUrl(url: string): string {
 }
 
 function buildBreadcrumbJsonLd(
-  page: GateValveSeoPage,
+  page: ProductSeriesSeoPage,
   displayName: string,
   canonicalPath: string,
 ): Record<string, unknown> {
+  const catalogCategoryId = getSeriesPageCatalogCategoryId(page);
+  const categoryLabel = getSeriesPageCategoryLabel(page);
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -350,8 +359,8 @@ function buildBreadcrumbJsonLd(
       {
         "@type": "ListItem",
         position: 3,
-        name: "Задвижки",
-        item: absoluteUrl("/catalog/category/zadvizhki"),
+        name: categoryLabel,
+        item: absoluteUrl(`/catalog/category/${catalogCategoryId}`),
       },
       {
         "@type": "ListItem",
@@ -364,12 +373,12 @@ function buildBreadcrumbJsonLd(
 }
 
 function buildGateValveJsonLd(
-  page: GateValveSeoPage,
+  page: ProductSeriesSeoPage,
   product: PublicCatalogProduct | undefined,
   imageSrc: string,
   view: ReturnType<typeof buildPublicProductView> | null,
 ): Record<string, unknown> {
-  const canonicalPath = view?.canonicalPath ?? `/zadvizhki/${page.slug}`;
+  const canonicalPath = view?.canonicalPath ?? getSeriesPagePath(page);
   const description =
     (view?.fullDescription || view?.shortDescription || page.seoDescription)
       .replace(/\s+/g, " ")

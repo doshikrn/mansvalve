@@ -19,11 +19,12 @@ import {
   buildCollectionPageJsonLd,
 } from "@/lib/structured-data";
 import {
-  findGateValveCatalogProduct,
-  GATE_VALVE_SEO_PAGES,
-  getGateValveSeoPage,
-  getRelatedGateValveSeoPages,
-} from "@/lib/seo-product-pages/gate-valves";
+  findSeriesCatalogProduct,
+  getRelatedSeriesSeoPages,
+  getSeriesPagePath,
+  getSeriesSeoPageByPath,
+  PRODUCT_SERIES_SEO_PAGES,
+} from "@/lib/seo-product-pages/product-series";
 
 export const revalidate = 300;
 
@@ -37,7 +38,10 @@ export function generateStaticParams() {
       categorySlug: page.categorySlug,
       landingSlug: page.slug,
     })),
-    ...GATE_VALVE_SEO_PAGES.map((page) => ({
+    ...PRODUCT_SERIES_SEO_PAGES.filter((page) => {
+      const parts = getSeriesPagePath(page).split("/").filter(Boolean);
+      return parts.length === 2;
+    }).map((page) => ({
       categorySlug: page.categorySlug,
       landingSlug: page.slug,
     })),
@@ -72,21 +76,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const gateValvePage =
-    categorySlug === "zadvizhki" ? getGateValveSeoPage(landingSlug) : undefined;
+  const seriesPage = getSeriesSeoPageByPath(`/${categorySlug}/${landingSlug}`);
 
-  if (!gateValvePage) {
+  if (!seriesPage) {
     return {
       title: "Страница не найдена",
     };
   }
 
   const products = await getPublicCatalogProducts();
-  const product = findGateValveCatalogProduct(products, gateValvePage);
+  const product = findSeriesCatalogProduct(products, seriesPage);
   const view = product ? buildPublicProductView(product) : null;
-  const canonical = view?.canonicalUrl ?? toAbsoluteSiteUrl(`/${gateValvePage.categorySlug}/${gateValvePage.slug}`);
-  const title = view?.seoTitle ?? gateValvePage.seoTitle;
-  const description = view?.seoDescription ?? gateValvePage.seoDescription;
+  const canonical = view?.canonicalUrl ?? toAbsoluteSiteUrl(getSeriesPagePath(seriesPage));
+  const title = view?.seoTitle ?? seriesPage.seoTitle;
+  const description = view?.seoDescription ?? seriesPage.seoDescription;
 
   return {
     title,
@@ -116,18 +119,17 @@ export default async function CatalogLandingPage({ params }: PageProps) {
   const landing = getLandingPage(categorySlug, landingSlug);
 
   if (!landing) {
-    const gateValvePage =
-      categorySlug === "zadvizhki" ? getGateValveSeoPage(landingSlug) : undefined;
+    const seriesPage = getSeriesSeoPageByPath(`/${categorySlug}/${landingSlug}`);
 
-    if (!gateValvePage) notFound();
+    if (!seriesPage) notFound();
 
     const products = await getPublicCatalogProducts();
-    const product = findGateValveCatalogProduct(products, gateValvePage);
-    const relatedPages = getRelatedGateValveSeoPages(gateValvePage);
+    const product = findSeriesCatalogProduct(products, seriesPage);
+    const relatedPages = getRelatedSeriesSeoPages(seriesPage);
 
     return (
       <GateValveSeoProductPage
-        page={gateValvePage}
+        page={seriesPage}
         product={product}
         relatedPages={relatedPages}
       />

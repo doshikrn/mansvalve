@@ -3,6 +3,7 @@ import { formatProductDisplayName, formatProductSeoName } from "@/lib/catalog/pr
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { buildProductDetailContent, type ProductDetailContent } from "@/lib/product-detail-content";
+import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
 
 import type { PublicCatalogProduct } from "./types";
@@ -48,9 +49,10 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   const generatedDisplayName = formatProductDisplayName(product);
   const publicTitle = product.publicTitle?.trim();
   const h1Override = product.h1Override?.trim();
-  const displayName = publicTitle || generatedDisplayName;
-  const h1 = h1Override || publicTitle || generatedDisplayName;
-  const seoName = publicTitle || formatProductSeoName(product);
+  const seriesPage = getSeriesSeoPageForProduct(product);
+  const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
+  const h1 = h1Override || seriesPage?.h1 || publicTitle || generatedDisplayName;
+  const seoName = publicTitle || seriesPage?.title || formatProductSeoName(product);
   const detailContent = buildProductDetailContent(product);
   const fullDescription = detailContent.descriptionParagraphs.join("\n\n");
   const contentSections: PublicProductContentSections = {
@@ -76,8 +78,8 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     generatedDisplayName,
     displayName,
     h1,
-    seoTitle: `Купить ${seoName} в Казахстане | MANSVALVE GROUP`,
-    seoDescription: buildProductMetaDescription(displayName),
+    seoTitle: seriesPage?.seoTitle ?? `Купить ${seoName} в Казахстане | MANSVALVE GROUP`,
+    seoDescription: seriesPage?.seoDescription ?? buildProductMetaDescription(displayName),
     shortDescription: product.shortDescription || detailContent.descriptionParagraphs[0] || "",
     fullDescription,
     contentSections,
@@ -87,7 +89,7 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     canonicalPath,
     canonicalUrl: toAbsoluteSiteUrl(canonicalPath),
     primaryImageUrl: imageUrl,
-    primaryImageAlt: imageAlt,
+    primaryImageAlt: product.primaryImageAlt || product.images?.[0]?.alt || seriesPage?.imageAlt || imageAlt,
     primaryImageUnoptimized: mediaImageNeedsUnoptimized(imageUrl),
     imageCount: product.images?.length ?? (product.primaryImageUrl ? 1 : 0),
   };

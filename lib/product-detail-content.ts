@@ -1,7 +1,10 @@
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { normalizeProductDetailBlocks } from "@/lib/product-detail-blocks";
-import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
+import {
+  getSeriesPagePath,
+  getSeriesSeoPageForProduct,
+} from "@/lib/seo-product-pages/product-series";
 
 export type ProductDetailContent = {
   descriptionParagraphs: string[];
@@ -18,7 +21,7 @@ export type ProductDetailContent = {
 export function buildProductDetailContent(
   product: PublicCatalogProduct,
 ): ProductDetailContent {
-  const seoPage = getGateValveSeoPageForProduct(product);
+  const seoPage = getSeriesSeoPageForProduct(product);
   const customBlocks = product.detailBlocks
     ? normalizeProductDetailBlocks(product.detailBlocks)
     : undefined;
@@ -37,9 +40,7 @@ export function buildProductDetailContent(
     qualityDocuments:
       customBlocks?.qualityDocuments ?? seoPage?.qualityDocuments ?? [],
     supplyTerms: customBlocks?.supplyTerms ?? seoPage?.supplyTerms ?? [],
-    canonicalPath: seoPage
-      ? `/${seoPage.categorySlug}/${seoPage.slug}`
-      : `/tovar/${product.slug}`,
+    canonicalPath: seoPage ? getSeriesPagePath(seoPage) : `/tovar/${product.slug}`,
   };
 }
 

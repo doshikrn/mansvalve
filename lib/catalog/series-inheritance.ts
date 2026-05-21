@@ -6,10 +6,13 @@ import {
   type ProductDetailBlockKey,
 } from "@/lib/product-detail-blocks";
 import {
-  GATE_VALVE_SEO_PAGES,
-  getGateValveSeoPageForProduct,
-  type GateValveSeoPage,
-} from "@/lib/seo-product-pages/gate-valves";
+  getSeriesPageGroupKey,
+  getSeriesPageGroupLabel,
+  getSeriesPagePath,
+  getSeriesSeoPageForProduct,
+  PRODUCT_SERIES_SEO_PAGES,
+  type ProductSeriesSeoPage,
+} from "@/lib/seo-product-pages/product-series";
 
 /**
  * Series inheritance model
@@ -59,7 +62,7 @@ export type SeriesDrift = {
 };
 
 export type ProductSeriesTemplate = {
-  page: GateValveSeoPage;
+  page: ProductSeriesSeoPage;
   blocks: ProductDetailBlocks;
 };
 
@@ -67,13 +70,13 @@ export type ProductSeriesTemplate = {
 export function getProductSeriesTemplate(
   product: PublicCatalogProduct,
 ): ProductSeriesTemplate | null {
-  const page = getGateValveSeoPageForProduct(product);
+  const page = getSeriesSeoPageForProduct(product);
   if (!page) return null;
-  return { page, blocks: gateValvePageToBlocks(page) };
+  return { page, blocks: seriesPageToBlocks(page) };
 }
 
-/** Mirrors `buildProductDetailContent`'s fallback shape for a gate-valve page. */
-export function gateValvePageToBlocks(page: GateValveSeoPage): ProductDetailBlocks {
+/** Mirrors `buildProductDetailContent`'s fallback shape for a series page. */
+export function seriesPageToBlocks(page: ProductSeriesSeoPage): ProductDetailBlocks {
   return {
     standards: page.standards.slice(),
     benefits: page.benefits.slice(),
@@ -137,7 +140,7 @@ export function computeSeriesDrift(
   const isFullFallback = blocks.every((block) => block.state === "inherited");
 
   return {
-    templateSlug: template.page.slug,
+    templateSlug: getSeriesPagePath(template.page),
     templateLabel: `${template.page.model} · DN${template.page.dn} · PN${template.page.pn}`,
     blocks,
     hasDrift,
@@ -149,21 +152,21 @@ export function computeSeriesDrift(
  * Returns a unique key identifying a series group (model + connectionVariant + PN).
  * Used by the admin UI to scope bulk apply operations.
  */
-export function seriesGroupKey(page: GateValveSeoPage): string {
-  return `${page.series}__${page.connectionVariant}__pn${page.pn}`;
+export function seriesGroupKey(page: ProductSeriesSeoPage): string {
+  return getSeriesPageGroupKey(page);
 }
 
 export function listAllSeriesGroups(): {
   key: string;
   label: string;
-  series: GateValveSeoPage["series"];
+  series: string;
   model: string;
-  connectionVariant: GateValveSeoPage["connectionVariant"];
+  connectionVariant: string;
   pn: number;
-  pages: GateValveSeoPage[];
+  pages: ProductSeriesSeoPage[];
 }[] {
-  const map = new Map<string, GateValveSeoPage[]>();
-  for (const page of GATE_VALVE_SEO_PAGES) {
+  const map = new Map<string, ProductSeriesSeoPage[]>();
+  for (const page of PRODUCT_SERIES_SEO_PAGES) {
     const key = seriesGroupKey(page);
     const list = map.get(key) ?? [];
     list.push(page);
@@ -171,13 +174,12 @@ export function listAllSeriesGroups(): {
   }
   return Array.from(map.entries()).map(([key, pages]) => {
     const first = pages[0];
-    const connectionLabel = first.connectionVariant === "welding" ? "под приварку" : "фланцевое";
     return {
       key,
-      label: `${first.model} · ${connectionLabel} · PN${first.pn}`,
+      label: getSeriesPageGroupLabel(first),
       series: first.series,
       model: first.model,
-      connectionVariant: first.connectionVariant,
+      connectionVariant: "connectionVariant" in first ? first.connectionVariant : "default",
       pn: first.pn,
       pages,
     };

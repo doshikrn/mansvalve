@@ -74,6 +74,39 @@ slug, так что индексаторы получают только акт�
 Content Contract (`docs/product-content-contract.md`) уже описывает приоритет
 fallback для каждого поля.
 
+### Дополнительные ТЗ-серии
+
+`lib/seo-product-pages/industrial-series.ts` добавляет две линейки из ТЗ
+заказчика без ручных page-файлов:
+
+| Серия | Route pattern | SKU | Источник размеров |
+| --- | --- | ---: | --- |
+| Компенсаторы сильфонные КСО.К Ру16 | `/compensatory/kso-k-{DN}-16` | 16 | DN, осевой ход и L из `TZ_Kompensatory_Mansvalve.docx` |
+| Клапаны обратные поворотные 19с38нж Ру16 | `/klapany/obratnye/19s38nzh-dn{DN}-pn16` | 11 | DN и L из `TZ_Obratnye_Klapany_Mansvalve.docx` |
+
+Обе серии используют тот же contract, что и задвижки:
+
+- `ProductSeriesSeoPage` в `lib/seo-product-pages/product-series.ts` объединяет
+  gate-valves и новые industrial series.
+- `buildProductDetailContent()` получает template через
+  `getSeriesSeoPageForProduct()` и использует его для intro, specs,
+  shared-блоков и canonical.
+- `buildPublicProductView()` использует template для generated H1, SEO
+  title/description и ALT, если менеджер не задал ручные overrides.
+- `/admin/products/series` и catalog health работают со всеми
+  `PRODUCT_SERIES_SEO_PAGES`.
+
+Для загрузки SKU в БД есть idempotent script:
+
+```bash
+npm run db:upsert-product-series
+```
+
+Скрипт создаёт/обновляет только товары этих серий и таксономию, не трогает
+manager-owned поля (`publicTitle`, `h1Override`, descriptions, `detailBlocks`,
+images/docs). Если существующий товар найден с другим slug, slug не меняется
+молча — строка логируется как `skippedSlugChange`.
+
 ### Series gap audit (admin)
 
 `/admin/products/series` — read-only страница, которая показывает все

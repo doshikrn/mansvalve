@@ -7,20 +7,20 @@ import { requireAdmin } from "@/lib/auth/current-user";
 import {
   buildMissingBlockPatch,
   computeSeriesDrift,
-  gateValvePageToBlocks,
   listAllSeriesGroups,
   SERIES_BLOCK_LABEL,
   SERIES_BLOCK_STATE_LABEL,
   SERIES_SHARED_BLOCK_KEYS,
+  seriesPageToBlocks,
   type SeriesBlockState,
 } from "@/lib/catalog/series-inheritance";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { getPublicCatalogProducts } from "@/lib/public-catalog";
 import {
-  findGateValveCatalogProduct,
-  GATE_VALVE_SEO_PAGES,
-} from "@/lib/seo-product-pages/gate-valves";
+  findSeriesCatalogProduct,
+  PRODUCT_SERIES_SEO_PAGES,
+} from "@/lib/seo-product-pages/product-series";
 import type { ProductDetailBlockKey } from "@/lib/product-detail-blocks";
 
 import { applyMissingSeriesBlocksAction } from "./actions";
@@ -76,9 +76,9 @@ export default async function ProductSeriesAuditPage({
   const products = await getPublicCatalogProducts();
   const groups = listAllSeriesGroups();
 
-  const totals = GATE_VALVE_SEO_PAGES.reduce(
+  const totals = PRODUCT_SERIES_SEO_PAGES.reduce(
     (acc, page) => {
-      const exists = Boolean(findGateValveCatalogProduct(products, page));
+      const exists = Boolean(findSeriesCatalogProduct(products, page));
       return {
         total: acc.total + 1,
         present: acc.present + (exists ? 1 : 0),
@@ -131,8 +131,8 @@ export default async function ProductSeriesAuditPage({
             .slice()
             .sort((a, b) => a.dn - b.dn)
             .map((page) => {
-              const product = findGateValveCatalogProduct(products, page);
-              const templateBlocks = gateValvePageToBlocks(page);
+              const product = findSeriesCatalogProduct(products, page);
+              const templateBlocks = seriesPageToBlocks(page);
               const drift = product
                 ? computeSeriesDrift(product, { page, blocks: templateBlocks })
                 : null;

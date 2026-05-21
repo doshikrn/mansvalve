@@ -9,19 +9,19 @@ import {
   buildMissingBlockPatch,
   listAllSeriesGroups,
   SERIES_SHARED_BLOCK_KEYS,
-  seriesGroupKey,
+  seriesPageToBlocks,
 } from "@/lib/catalog/series-inheritance";
 import { revalidateSingleProductPaths } from "@/lib/catalog/revalidate-products";
 import { getPublicCatalogProducts } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import {
-  findGateValveCatalogProduct,
-  getGateValveSeoPageForProduct,
-} from "@/lib/seo-product-pages/gate-valves";
+  findSeriesCatalogProduct,
+  getSeriesPageGroupKey,
+  getSeriesSeoPageForProduct,
+} from "@/lib/seo-product-pages/product-series";
 import type { ProductDetailBlockKey } from "@/lib/product-detail-blocks";
 import { settleRevalidation } from "@/lib/revalidation";
 import { patchProductDetailBlocks } from "@/lib/services/products";
-import { gateValvePageToBlocks } from "@/lib/catalog/series-inheritance";
 
 const blockKeySchema = z
   .string()
@@ -49,7 +49,7 @@ function returnHref(groupKey?: string): string {
 }
 
 /**
- * Fill **missing** shared blocks for every SKU of a gate-valve series group
+ * Fill **missing** shared blocks for every SKU of a product series group
  * from its template. Never overwrites existing values. Safe to re-run.
  */
 export async function applyMissingSeriesBlocksAction(
@@ -75,15 +75,14 @@ export async function applyMissingSeriesBlocksAction(
 
   let touched = 0;
   let skipped = 0;
-  const affectedSlugs: string[] = [];
 
   for (const page of group.pages) {
-    const product = findGateValveCatalogProduct(products, page);
+    const product = findSeriesCatalogProduct(products, page);
     if (!product) {
       skipped += 1;
       continue;
     }
-    const templateBlocks = gateValvePageToBlocks(page);
+    const templateBlocks = seriesPageToBlocks(page);
     const { patch, filledKeys } = buildMissingBlockPatch(
       product.detailBlocks ?? null,
       templateBlocks,
@@ -99,7 +98,6 @@ export async function applyMissingSeriesBlocksAction(
       continue;
     }
     touched += 1;
-    affectedSlugs.push(updated.slug);
     const view = buildPublicProductView(product);
     revalidateSingleProductPaths({
       slug: updated.slug,
@@ -134,10 +132,10 @@ export async function getSeriesPreviewForProductAction(
   const products = await getPublicCatalogProducts();
   const product = products.find((p) => p.id === productId);
   if (!product) return null;
-  const page = getGateValveSeoPageForProduct(product);
+  const page = getSeriesSeoPageForProduct(product);
   if (!page) return null;
   return {
     slug: page.slug,
-    templateLabel: `${page.model} · DN${page.dn} · PN${page.pn} · ${seriesGroupKey(page)}`,
+    templateLabel: `${page.model} · DN${page.dn} · PN${page.pn} · ${getSeriesPageGroupKey(page)}`,
   };
 }

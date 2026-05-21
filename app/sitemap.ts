@@ -8,9 +8,10 @@ import {
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
 import {
-  findGateValveCatalogProduct,
-  GATE_VALVE_SEO_PAGES,
-} from "@/lib/seo-product-pages/gate-valves";
+  findSeriesCatalogProduct,
+  getSeriesPagePath,
+  PRODUCT_SERIES_SEO_PAGES,
+} from "@/lib/seo-product-pages/product-series";
 
 const STATIC_ROUTES = [
   "/",
@@ -74,10 +75,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  const gateValveSeoPages: MetadataRoute.Sitemap = GATE_VALVE_SEO_PAGES.filter((page) =>
-    findGateValveCatalogProduct(products, page),
+  const seriesSeoPages: MetadataRoute.Sitemap = PRODUCT_SERIES_SEO_PAGES.filter((page) =>
+    findSeriesCatalogProduct(products, page),
   ).map((page) => ({
-    url: absoluteUrl(baseUrl, `/${page.categorySlug}/${page.slug}`),
+    url: absoluteUrl(baseUrl, getSeriesPagePath(page)),
     lastModified,
     changeFrequency: "weekly",
     priority: 0.82,
@@ -96,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return uniqueSitemapEntries([
     ...staticPages,
     ...landingPages,
-    ...gateValveSeoPages,
+    ...seriesSeoPages,
     ...categoryPages,
     ...subcategoryPages,
     ...productPages,
