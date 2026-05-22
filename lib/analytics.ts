@@ -135,11 +135,14 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
   window.setTimeout(() => {
     try {
       window.dataLayer = window.dataLayer || [];
+      // When GTM is enabled, custom events should go through `dataLayer` only — pushing the same
+      // event to both `dataLayer` and `gtag` doubles counts if the container also forwards to GA4.
       if (GTM_CONFIGURED) {
         window.dataLayer.push({
           event: eventName,
           ...analyticsPayload,
         });
+        return;
       }
       if (GA_CONFIGURED && typeof window.gtag === "function") {
         window.gtag("event", eventName, {

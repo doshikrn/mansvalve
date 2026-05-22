@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { isDatabaseConfigured } from "@/lib/db/client";
 
 import { dbCatalogAdapter } from "./db-adapter";
@@ -110,33 +112,38 @@ async function withSafeFallback<T>(call: (adapter: PublicCatalogAdapter) => Prom
   }
 }
 
-export async function getPublicCatalogCategories(): Promise<PublicCatalogCategory[]> {
+/** Per-request memo: layout + page often load the same catalog slices in parallel. */
+export const getPublicCatalogCategories = cache(async function getPublicCatalogCategories(): Promise<
+  PublicCatalogCategory[]
+> {
   return withSafeFallback((adapter) => adapter.getCategories());
-}
+});
 
-export async function getPublicCatalogProducts(): Promise<PublicCatalogProduct[]> {
+export const getPublicCatalogProducts = cache(async function getPublicCatalogProducts(): Promise<
+  PublicCatalogProduct[]
+> {
   return withSafeFallback((adapter) => adapter.getProducts());
-}
+});
 
-export async function getPublicProductBySlug(
+export const getPublicProductBySlug = cache(async function getPublicProductBySlug(
   slug: string,
 ): Promise<PublicCatalogProduct | undefined> {
   return withSafeFallback((adapter) => adapter.getProductBySlug(slug));
-}
+});
 
-export async function getPublicCategoryBySlug(
+export const getPublicCategoryBySlug = cache(async function getPublicCategoryBySlug(
   slug: string,
 ): Promise<PublicCatalogCategory | undefined> {
   return withSafeFallback((adapter) => adapter.getCategoryBySlug(slug));
-}
+});
 
-export async function getPublicCategoryById(
+export const getPublicCategoryById = cache(async function getPublicCategoryById(
   id: string,
 ): Promise<PublicCatalogCategory | undefined> {
   return withSafeFallback((adapter) => adapter.getCategoryById(id));
-}
+});
 
-export async function getPublicSubcategoryBySlug(
+export const getPublicSubcategoryBySlug = cache(async function getPublicSubcategoryBySlug(
   slug: string,
 ): Promise<
   | {
@@ -146,16 +153,16 @@ export async function getPublicSubcategoryBySlug(
   | undefined
 > {
   return withSafeFallback((adapter) => adapter.getSubcategoryBySlug(slug));
-}
+});
 
-export async function getPublicProductsByCategory(
+export const getPublicProductsByCategory = cache(async function getPublicProductsByCategory(
   categoryId: string,
 ): Promise<PublicCatalogProduct[]> {
   return withSafeFallback((adapter) => adapter.getProductsByCategory(categoryId));
-}
+});
 
-export async function getPublicProductsBySubcategory(
+export const getPublicProductsBySubcategory = cache(async function getPublicProductsBySubcategory(
   subcategoryId: string,
 ): Promise<PublicCatalogProduct[]> {
   return withSafeFallback((adapter) => adapter.getProductsBySubcategory(subcategoryId));
-}
+});
