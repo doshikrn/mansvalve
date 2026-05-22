@@ -22,6 +22,15 @@
 | PRA-Q05 | Category/subcategory catalog pages pass only that scope’s products into `CatalogShell` (no global full list + filter) |
 | PRA-Q06 | `getProductsByCategory` / `BySubcategory` in DB run filtered listing queries instead of loading all products |
 
+### 2026: catalog runtime (sprint 2)
+
+| ID      | Change |
+| ------- | ------ |
+| PRA-Q07 | `runCatalogQuery`: no full `items[]` when `omitFullMatchedProductList`; scoring loop without extra `{score:1}` clones; indexed slug/category caches; single-pass facet aggregation; optional `CATALOG_QUERY_DEBUG=1` timing in development |
+| PRA-Q08 | `buildProductDetailContent(product, cachedSeriesPage?)` — avoid duplicate `getSeriesSeoPageForProduct` when building views |
+| PRA-Q09 | `buildPublicProductCardView` + `ProductCard` / header search use it instead of full `buildPublicProductView` |
+| PRA-Q10 | Header search: exact slug match short-circuit + `searchCatalogProducts` uses omitted full list |
+
 **Validation:** `npm run lint` and `npm run build` succeed. There is no `npm test` script in `package.json`.
 
 ---

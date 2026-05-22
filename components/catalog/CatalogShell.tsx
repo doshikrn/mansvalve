@@ -106,6 +106,7 @@ export function CatalogShell({
     sort: parseCatalogSort(searchParams.sort),
     page: parseInt(searchParams.page ?? "1", 10),
     pageSize: PAGE_SIZE,
+    omitFullMatchedProductList: true,
   });
 
   // Compute subcategory labels from the category pool, then let facets decide counts.

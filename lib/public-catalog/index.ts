@@ -23,6 +23,8 @@ export type {
 } from "./types";
 export {
   buildPublicProductView,
+  buildPublicProductCardView,
+  type PublicProductCardView,
   type PublicProductContentSections,
   type PublicProductView,
 } from "./product-view";

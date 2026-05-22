@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
-import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
 import { searchPublicProducts } from "@/lib/search/product-search";
 import type { ProductSearchItemDto } from "@/lib/search/product-search-dto";
 
@@ -29,10 +29,15 @@ export async function GET(request: Request) {
   );
 
   const products = await getPublicCatalogListingProducts();
-  const hits = searchPublicProducts(products, rawQ, limit);
+  const qLower = rawQ.toLowerCase();
+  const slugHit = products.find((p) => p.slug.toLowerCase() === qLower);
+  const pool = slugHit ? products.filter((p) => p.id !== slugHit.id) : products;
+  const limitAfterHit = slugHit ? Math.max(0, limit - 1) : limit;
+  const hits = searchPublicProducts(pool, rawQ, limitAfterHit);
+  const orderedHits = slugHit ? [slugHit, ...hits].slice(0, limit) : hits;
 
-  const out: ProductSearchItemDto[] = hits.map((p) => {
-    const view = buildPublicProductView(p);
+  const out: ProductSearchItemDto[] = orderedHits.map((p) => {
+    const view = buildPublicProductCardView(p);
     return {
       slug: p.slug,
       href: view.canonicalPath,

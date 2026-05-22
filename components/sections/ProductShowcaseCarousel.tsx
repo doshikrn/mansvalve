@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucid
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
-import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
 import { cn } from "@/lib/utils";
 
 type ProductShowcaseCarouselProps = {
@@ -44,7 +44,7 @@ export function ProductShowcaseCarousel({
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion() === true;
   const product = products[active];
-  const view = product ? buildPublicProductView(product) : null;
+  const view = product ? buildPublicProductCardView(product) : null;
   const isHero = variant === "hero";
 
   const goTo = useCallback(

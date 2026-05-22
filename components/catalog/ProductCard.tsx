@@ -6,7 +6,7 @@ import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
-import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 function formatPrice(price: number): string {
@@ -22,7 +22,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const view = buildPublicProductView(product);
+  const view = buildPublicProductCardView(product);
   const detailHref = view.canonicalPath;
   const productName = view.displayName;
   const imageSrc = view.primaryImageUrl;

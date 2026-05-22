@@ -21,8 +21,9 @@ export type ProductDetailContent = {
 /** @see buildPublicProductView — единая точка входа для публичного слоя. */
 export function buildProductDetailContent(
   product: PublicCatalogProduct,
+  cachedSeriesPage?: ReturnType<typeof getSeriesSeoPageForProduct>,
 ): ProductDetailContent {
-  const seoPage = getSeriesSeoPageForProduct(product);
+  const seoPage = cachedSeriesPage ?? getSeriesSeoPageForProduct(product);
   const canonicalPath = resolveProductCanonicalPath(product, seoPage);
   const customBlocks = product.detailBlocks
     ? normalizeProductDetailBlocks(product.detailBlocks)

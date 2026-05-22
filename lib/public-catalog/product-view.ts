@@ -42,6 +42,16 @@ export type PublicProductView = {
   imageCount: number;
 };
 
+export type PublicProductCardView = {
+  displayName: string;
+  canonicalPath: string;
+  primaryImageUrl: string;
+  primaryImageAlt: string;
+  primaryImageUnoptimized: boolean;
+  categoryLabel: string;
+  shortDescription: string;
+};
+
 /**
  * Единственная точка принятия решений для публичного товара: имя, H1, описания,
  * SEO (без ручных override-полей), изображение, canonical и секции контента.
@@ -54,7 +64,7 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
   const h1 = h1Override || seriesPage?.h1 || publicTitle || generatedDisplayName;
   const seoName = publicTitle || seriesPage?.title || formatProductSeoName(product);
-  const detailContent = buildProductDetailContent(product);
+  const detailContent = buildProductDetailContent(product, seriesPage);
   const fullDescription = detailContent.descriptionParagraphs.join("\n\n");
   const contentSections: PublicProductContentSections = {
     standards: detailContent.standards,
@@ -93,5 +103,35 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     primaryImageAlt: product.primaryImageAlt || product.images?.[0]?.alt || seriesPage?.imageAlt || imageAlt,
     primaryImageUnoptimized: mediaImageNeedsUnoptimized(imageUrl),
     imageCount: product.images?.length ?? (product.primaryImageUrl ? 1 : 0),
+  };
+}
+
+/** Карточка каталога / автодополнение: без полной SEO-сборки `PublicProductView`. */
+export function buildPublicProductCardView(product: PublicCatalogProduct): PublicProductCardView {
+  const seriesPage = getSeriesSeoPageForProduct(product);
+  const detailContent = buildProductDetailContent(product, seriesPage);
+  const generatedDisplayName = formatProductDisplayName(product);
+  const publicTitle = product.publicTitle?.trim();
+  const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
+  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
+  const categoryVisual = getCategoryVisual(product.category);
+  const imageUrl = product.primaryImageUrl || product.images?.[0]?.url || categoryVisual.imageSrc;
+  const imageAlt =
+    product.primaryImageAlt ||
+    product.images?.[0]?.alt ||
+    `${categoryLabel} - ${displayName}`;
+  const shortDescription =
+    (product.shortDescription && product.shortDescription.trim()) ||
+    detailContent.descriptionParagraphs[0] ||
+    "";
+
+  return {
+    displayName,
+    canonicalPath: detailContent.canonicalPath,
+    primaryImageUrl: imageUrl,
+    primaryImageAlt: product.primaryImageAlt || product.images?.[0]?.alt || seriesPage?.imageAlt || imageAlt,
+    primaryImageUnoptimized: mediaImageNeedsUnoptimized(imageUrl),
+    categoryLabel,
+    shortDescription,
   };
 }

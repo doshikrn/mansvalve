@@ -57,6 +57,11 @@ export type CatalogQueryInput = {
   sort?: CatalogQuerySort;
   page?: number;
   pageSize?: number;
+  /**
+   * When true, `result.items` stays empty — callers use `pageItems` + `total` only.
+   * Saves a large allocation on big catalogs (e.g. `/catalog` shell).
+   */
+  omitFullMatchedProductList?: boolean;
 };
 
 export type CatalogQueryResult = {
@@ -80,6 +85,10 @@ type IndexedProduct = {
   compact: string;
   latin: string;
   tokens: string[];
+  slugLower: string;
+  slugCompact: string;
+  categoryNormText: string;
+  subcategoryNormText: string;
   score: number;
 };
 
@@ -96,6 +105,10 @@ const EMPTY_FACETS: CatalogQueryFacets = {
 };
 
 export function runCatalogQuery(input: CatalogQueryInput): CatalogQueryResult {
+  const debugTiming =
+    process.env.NODE_ENV === "development" && process.env.CATALOG_QUERY_DEBUG === "1";
+  const t0 = debugTiming ? performance.now() : 0;
+
   const pageSize = Math.max(1, input.pageSize ?? 12);
   const requestedPage = Math.max(1, input.page ?? 1);
   const normalizedQuery = normalizeCatalogQuery(input.q);
@@ -103,30 +116,48 @@ export function runCatalogQuery(input: CatalogQueryInput): CatalogQueryResult {
 
   const indexed = input.products.map(indexProduct);
   const basePool = indexed.filter((item) => matchesBaseFilters(item.product, appliedFilters));
-  const queryMatched = normalizedQuery.text
-    ? basePool
-        .map((item) => ({ ...item, score: scoreProduct(item, normalizedQuery) }))
-        .filter((item) => item.score > 0)
-    : basePool.map((item) => ({ ...item, score: 1 }));
+
+  let queryMatched: IndexedProduct[];
+  if (normalizedQuery.text) {
+    queryMatched = [];
+    for (const item of basePool) {
+      const score = scoreProduct(item, normalizedQuery);
+      if (score > 0) queryMatched.push({ ...item, score });
+    }
+  } else {
+    queryMatched = basePool;
+  }
 
   const sorted = sortIndexedProducts(queryMatched, input.sort ?? "relevance");
-  const items = sorted.map((item) => item.product);
-  const total = items.length;
+  const total = sorted.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const page = Math.min(requestedPage, totalPages);
   const start = (page - 1) * pageSize;
-  const pageItems = items.slice(start, start + pageSize);
+  const pageItems = sorted.slice(start, start + pageSize).map((item) => item.product);
+  const items =
+    input.omitFullMatchedProductList === true ? [] : sorted.map((item) => item.product);
 
-  return {
+  const facetProducts = queryMatched.map((item) => item.product);
+
+  const result: CatalogQueryResult = {
     items,
     pageItems,
     total,
     page,
     totalPages,
-    facets: buildFacets(queryMatched.map((item) => item.product), appliedFilters),
+    facets: buildFacets(facetProducts, appliedFilters),
     appliedFilters,
     normalizedQuery,
   };
+
+  if (debugTiming) {
+    const ms = performance.now() - t0;
+    console.debug(
+      `[catalog-query] products=${input.products.length} base=${basePool.length} matched=${queryMatched.length} ms=${ms.toFixed(1)}`,
+    );
+  }
+
+  return result;
 }
 
 export function searchCatalogProducts(
@@ -140,6 +171,7 @@ export function searchCatalogProducts(
     page: 1,
     pageSize: limit,
     sort: "relevance",
+    omitFullMatchedProductList: true,
   }).pageItems;
 }
 
@@ -147,6 +179,7 @@ function indexProduct(product: PublicCatalogProduct): IndexedProduct {
   const title = buildProductCatalogName(product);
   const queryText = `${title} ${buildProductQueryText(product)}`;
   const text = normalizeText(queryText);
+  const slugLower = product.slug.toLowerCase();
   return {
     product,
     title,
@@ -157,6 +190,10 @@ function indexProduct(product: PublicCatalogProduct): IndexedProduct {
     compact: compactCode(queryText),
     latin: transliterateToLatin(text),
     tokens: text.split(" ").filter(Boolean),
+    slugLower,
+    slugCompact: slugLower.replace(/[^a-z0-9]+/g, ""),
+    categoryNormText: normalizeText(product.categoryName),
+    subcategoryNormText: normalizeText(product.subcategoryName),
     score: 0,
   };
 }
@@ -165,6 +202,7 @@ function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): numb
   let score = 0;
   const requestedConnection = getRequestedConnection(query);
   const requestedCategory = getRequestedCategory(query);
+  const rawLower = query.raw.toLowerCase();
 
   if (query.model && item.model !== query.model && !item.compact.includes(query.model)) return 0;
   if (query.dn != null && item.product.dn !== query.dn) return 0;
@@ -178,8 +216,8 @@ function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): numb
   if (query.dn != null && item.product.dn === query.dn) score += 220;
   if (query.pn != null && item.product.pn === query.pn) score += 220;
 
-  if (item.product.slug.toLowerCase().includes(query.raw.toLowerCase())) score += 520;
-  if (query.compact && item.product.slug.toLowerCase().replace(/[^a-z0-9]+/g, "").includes(query.compact)) {
+  if (rawLower && item.slugLower.includes(rawLower)) score += 520;
+  if (query.compact && item.slugCompact.includes(query.compact)) {
     score += 420;
   }
   if (query.text && item.titleText.includes(query.text)) score += 500;
@@ -197,12 +235,21 @@ function scoreProduct(item: IndexedProduct, query: NormalizedCatalogQuery): numb
     if (item.compact.includes(token)) score += 70;
   }
 
-  if (query.tokens.some((token) => normalizeText(item.product.categoryName).includes(token))) {
-    score += 70;
+  for (const token of query.tokens) {
+    if (token.length <= 1) continue;
+    if (item.categoryNormText.includes(token)) {
+      score += 70;
+      break;
+    }
   }
-  if (query.tokens.some((token) => normalizeText(item.product.subcategoryName).includes(token))) {
-    score += 70;
+  for (const token of query.tokens) {
+    if (token.length <= 1) continue;
+    if (item.subcategoryNormText.includes(token)) {
+      score += 70;
+      break;
+    }
   }
+
   if (query.text && isFuzzyCatalogMatch(query.text, item.text)) {
     score += 20;
   }
@@ -282,40 +329,65 @@ function buildFacets(
   products: PublicCatalogProduct[],
   filters: CatalogQueryFilters,
 ): CatalogQueryFacets {
+  if (products.length === 0) {
+    return { ...EMPTY_FACETS };
+  }
+
+  const categories = new Map<string, { label: string; count: number }>();
+  const subcategories = new Map<string, { label: string; count: number }>();
+  const dn = new Map<number, number>();
+  const pn = new Map<number, number>();
+  const model = new Map<string, { label: string; count: number }>();
+  const thread = new Map<string, { label: string; count: number }>();
+  const material = new Map<string, { label: string; count: number }>();
+  const connectionType = new Map<string, { label: string; count: number }>();
+  const controlType = new Map<string, { label: string; count: number }>();
+
+  for (const p of products) {
+    bumpStringFacet(categories, p.category, p.categoryName);
+    bumpStringFacet(subcategories, p.subcategory, p.subcategoryName || p.subcategory);
+    if (p.dn != null) dn.set(p.dn, (dn.get(p.dn) ?? 0) + 1);
+    if (p.pn != null) pn.set(p.pn, (pn.get(p.pn) ?? 0) + 1);
+    bumpStringFacet(model, (p.model || "").trim(), p.model);
+    bumpStringFacet(thread, (p.thread ?? "").trim(), p.thread ?? "");
+    const matKey = normalizeMaterial(p.material);
+    if (matKey) bumpStringFacet(material, matKey, p.material);
+    const connKey = normalizeConnectionType(p.connectionType);
+    if (connKey) bumpStringFacet(connectionType, connKey, p.connectionType);
+    const ctrlKey = normalizeText(p.controlType);
+    if (ctrlKey) bumpStringFacet(controlType, ctrlKey, p.controlType);
+  }
+
   return {
     ...EMPTY_FACETS,
-    categories: facet(products, (p) => p.category, (p) => p.categoryName, filters.category),
-    subcategories: facet(products, (p) => p.subcategory, (p) => p.subcategoryName, filters.subcategory),
-    dn: numericFacet(products, (p) => p.dn, filters.dn),
-    pn: numericFacet(products, (p) => p.pn, filters.pn),
-    model: facet(products, (p) => p.model, (p) => p.model, filters.model),
-    thread: facet(products, (p) => p.thread ?? "", (p) => p.thread ?? "", filters.thread),
-    material: facet(products, (p) => normalizeMaterial(p.material), (p) => p.material, filters.material),
-    connectionType: facet(
-      products,
-      (p) => normalizeConnectionType(p.connectionType),
-      (p) => p.connectionType,
-      filters.connection ?? filters.connectionType,
-    ),
-    controlType: facet(products, (p) => normalizeText(p.controlType), (p) => p.controlType, filters.controlType),
+    categories: finalizeStringFacet(categories, filters.category),
+    subcategories: finalizeStringFacet(subcategories, filters.subcategory),
+    dn: finalizeNumericFacet(dn, filters.dn),
+    pn: finalizeNumericFacet(pn, filters.pn),
+    model: finalizeStringFacet(model, filters.model),
+    thread: finalizeStringFacet(thread, filters.thread),
+    material: finalizeStringFacet(material, filters.material),
+    connectionType: finalizeStringFacet(connectionType, filters.connection ?? filters.connectionType),
+    controlType: finalizeStringFacet(controlType, filters.controlType),
   };
 }
 
-function facet(
-  products: PublicCatalogProduct[],
-  getValue: (product: PublicCatalogProduct) => string,
-  getLabel: (product: PublicCatalogProduct) => string,
+function bumpStringFacet(
+  map: Map<string, { label: string; count: number }>,
+  value: string,
+  label: string,
+) {
+  const trimmed = value.trim();
+  if (!trimmed) return;
+  const current = map.get(trimmed);
+  if (current) current.count += 1;
+  else map.set(trimmed, { label: (label || trimmed).trim() || trimmed, count: 1 });
+}
+
+function finalizeStringFacet(
+  map: Map<string, { label: string; count: number }>,
   selected?: string | number,
 ): CatalogFacetOption[] {
-  const map = new Map<string, { label: string; count: number }>();
-  for (const product of products) {
-    const value = getValue(product).trim();
-    if (!value) continue;
-    const current = map.get(value);
-    if (current) current.count += 1;
-    else map.set(value, { label: getLabel(product) || value, count: 1 });
-  }
-
   const selectedValue = selected == null ? "" : String(selected);
   if (selectedValue && !map.has(selectedValue)) {
     map.set(selectedValue, { label: selectedValue, count: 0 });
@@ -331,17 +403,10 @@ function facet(
     .sort((a, b) => a.label.localeCompare(b.label, "ru", { numeric: true }));
 }
 
-function numericFacet(
-  products: PublicCatalogProduct[],
-  getValue: (product: PublicCatalogProduct) => number | undefined,
+function finalizeNumericFacet(
+  map: Map<number, number>,
   selected?: string | number,
 ): CatalogFacetOption[] {
-  const map = new Map<number, number>();
-  for (const product of products) {
-    const value = getValue(product);
-    if (value == null) continue;
-    map.set(value, (map.get(value) ?? 0) + 1);
-  }
   const selectedNumber = numberFilter(selected);
   if (selectedNumber != null && !map.has(selectedNumber)) map.set(selectedNumber, 0);
 
