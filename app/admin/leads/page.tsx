@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatAlmatyDateTime } from "@/lib/admin/date-format";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { leadStatusValues, type LeadStatus } from "@/lib/db/schema";
@@ -23,6 +24,11 @@ function badgeVariantForStatus(status: LeadStatus) {
   if (status === "in_progress") return "secondary" as const;
   if (status === "spam") return "destructive" as const;
   return "outline" as const;
+}
+
+function displayValue(value: string | null | undefined): string {
+  const text = value?.trim();
+  return text ? text : "—";
 }
 
 function buildListHref(params: {
@@ -231,20 +237,22 @@ export default async function AdminLeadsPage({
                       className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
                     >
                       <td className="px-4 py-2 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                        {new Date(lead.createdAt).toLocaleString("ru-RU")}
+                        {formatAlmatyDateTime(lead.createdAt)}
                       </td>
                       <td className="px-4 py-2 font-medium">
                         <Link
                           href={`/admin/leads/${lead.id}?returnTo=${encodedReturnTo}`}
                           className="text-foreground hover:text-primary hover:underline"
                         >
-                          {lead.name}
+                          {displayValue(lead.name)}
                         </Link>
                       </td>
-                      <td className="px-4 py-2 tabular-nums whitespace-nowrap">{lead.phone}</td>
+                      <td className="px-4 py-2 tabular-nums whitespace-nowrap">
+                        {displayValue(lead.phone)}
+                      </td>
                       <td className="max-w-[220px] px-4 py-2 text-xs text-muted-foreground">
                         <div className="truncate" title={lead.productName || lead.page || ""}>
-                          {lead.productName || lead.page || "—"}
+                          {displayValue(lead.productName || lead.page)}
                         </div>
                         {lead.comment ? (
                           <div className="truncate text-[11px] text-muted-foreground/80" title={lead.comment}>
@@ -253,7 +261,7 @@ export default async function AdminLeadsPage({
                         ) : null}
                       </td>
                       <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
-                        {lead.source || "—"}
+                        {displayValue(lead.source)}
                       </td>
                       <td className="px-4 py-2">
                         <Badge variant={badgeVariantForStatus(displayStatus)}>

@@ -125,6 +125,17 @@ type RateLimitBucket = {
 
 const rateLimitBuckets = new Map<string, RateLimitBucket>();
 
+function cleanNullableRecord(
+  record: Record<string, string | null>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(record).filter(
+      (entry): entry is [string, string] =>
+        typeof entry[1] === "string" && entry[1].trim().length > 0,
+    ),
+  );
+}
+
 function toTrimmedString(value: unknown, maxLength: number): string {
   if (typeof value !== "string") return "";
   return value.trim().slice(0, maxLength);
@@ -527,7 +538,7 @@ export async function POST(request: Request) {
       productSlug: parsed.data.productSlug || null,
       productCategory: parsed.data.productCategory || null,
       productSubcategory: parsed.data.productSubcategory || null,
-      attribution: {
+      attribution: cleanNullableRecord({
         utm_source: parsed.data.utm_source || null,
         utm_medium: parsed.data.utm_medium || null,
         utm_campaign: parsed.data.utm_campaign || null,
@@ -548,7 +559,7 @@ export async function POST(request: Request) {
         first_referrer: parsed.data.first_referrer || null,
         first_landing_path: parsed.data.first_landing_path || null,
         first_touch_at: parsed.data.first_touch_at || null,
-      },
+      }),
       ip: getClientIp(request),
       userAgent:
         toTrimmedString(request.headers.get("user-agent"), MAX_USER_AGENT_LENGTH) || null,

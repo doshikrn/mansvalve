@@ -10,6 +10,7 @@ import { FormDirtyResetAfterSubmit } from "@/components/admin/FormDirtyResetAfte
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { formatAlmatyDateTime } from "@/lib/admin/date-format";
 import { leadStatusValues, type Lead, type LeadStatus } from "@/lib/db/schema";
 import { LEAD_STATUS_LABEL_RU, normalizeLeadStatus } from "@/lib/leads/lead-status-public";
 
@@ -59,7 +60,7 @@ export function LeadEditForm({ lead, backHref }: Props) {
             ) : null}
           </div>
           <div className="text-xs text-muted-foreground sm:flex sm:flex-col sm:justify-end">
-            <p>Обновлено: {new Date(lead.updatedAt).toLocaleString("ru-RU")}</p>
+            <p>Обновлено: {formatAlmatyDateTime(lead.updatedAt)}</p>
           </div>
         </div>
 

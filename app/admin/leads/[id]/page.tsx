@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { LeadEditForm } from "@/components/admin/LeadEditForm";
+import { formatAlmatyDateTime } from "@/lib/admin/date-format";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
@@ -24,11 +25,70 @@ function badgeVariantForStatus(status: ReturnType<typeof normalizeLeadStatus>) {
   return "outline" as const;
 }
 
-function formatAttribution(value: unknown): string {
+const ATTRIBUTION_LABELS: Record<string, string> = {
+  utm_source: "UTM source",
+  utm_medium: "UTM medium",
+  utm_campaign: "UTM campaign",
+  utm_term: "UTM term",
+  utm_content: "UTM content",
+  gclid: "Google Click ID",
+  yclid: "Yandex Click ID",
+  fbclid: "Facebook Click ID",
+  referrer: "Referrer",
+  first_utm_source: "First UTM source",
+  first_utm_medium: "First UTM medium",
+  first_utm_campaign: "First UTM campaign",
+  first_utm_term: "First UTM term",
+  first_utm_content: "First UTM content",
+  first_gclid: "First Google Click ID",
+  first_yclid: "First Yandex Click ID",
+  first_fbclid: "First Facebook Click ID",
+  first_referrer: "First referrer",
+  first_landing_path: "First landing path",
+  first_touch_at: "First touch",
+};
+
+function displayValue(value: string | number | null | undefined): string {
+  if (value == null) return "—";
+  const text = String(value).trim();
+  return text || "—";
+}
+
+function getFilledAttributionEntries(value: unknown): Array<[string, string]> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+
+  return Object.entries(value as Record<string, unknown>)
+    .filter(([, rawValue]) => {
+      if (rawValue == null) return false;
+      if (typeof rawValue === "string") return rawValue.trim().length > 0;
+      return true;
+    })
+    .map(([key, rawValue]) => [
+      ATTRIBUTION_LABELS[key] ?? key,
+      typeof rawValue === "string" ? rawValue.trim() : JSON.stringify(rawValue),
+    ]);
+}
+
+function formatTechnicalJson(value: unknown): string {
   if (value && typeof value === "object") {
-    return JSON.stringify(value, null, 2);
+    const filledEntries = Object.entries(value as Record<string, unknown>).filter(([, rawValue]) => {
+      if (rawValue == null) return false;
+      if (typeof rawValue === "string") return rawValue.trim().length > 0;
+      return true;
+    });
+
+    return JSON.stringify(Object.fromEntries(filledEntries), null, 2);
   }
-  return String(value ?? "{}");
+  return "{}";
+}
+
+function hasTechnicalJson(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  return Object.values(value as Record<string, unknown>).some((rawValue) => {
+    if (rawValue == null) return false;
+    if (typeof rawValue === "string") return rawValue.trim().length > 0;
+    return true;
+  });
 }
 
 export default async function AdminLeadDetailPage({
@@ -66,6 +126,8 @@ export default async function AdminLeadDetailPage({
     : null;
 
   const displayStatus = normalizeLeadStatus(lead.status);
+  const attributionEntries = getFilledAttributionEntries(lead.attribution);
+  const hasRawAttribution = hasTechnicalJson(lead.attribution);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -85,7 +147,7 @@ export default async function AdminLeadDetailPage({
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
-            Создана {new Date(lead.createdAt).toLocaleString("ru-RU")}
+            Создана {formatAlmatyDateTime(lead.createdAt)}
           </p>
         </div>
         <Button asChild variant="outline" size="sm" className="w-full shrink-0 sm:w-auto">
@@ -100,11 +162,11 @@ export default async function AdminLeadDetailPage({
         <dl className="grid gap-2 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs text-muted-foreground">Имя / организация</dt>
-            <dd className="font-medium">{lead.name}</dd>
+            <dd className="font-medium">{displayValue(lead.name)}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Телефон</dt>
-            <dd className="tabular-nums font-medium">{lead.phone}</dd>
+            <dd className="tabular-nums font-medium">{displayValue(lead.phone)}</dd>
           </div>
           {lead.email ? (
             <div className="sm:col-span-2">
@@ -135,15 +197,15 @@ export default async function AdminLeadDetailPage({
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-xs text-muted-foreground">Источник формы</dt>
-            <dd>{lead.source || "—"}</dd>
+            <dd>{displayValue(lead.source)}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Страница</dt>
-            <dd className="break-all">{lead.page || "—"}</dd>
+            <dd className="break-all">{displayValue(lead.page)}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Товар</dt>
-            <dd>{lead.productName || "—"}</dd>
+            <dd>{displayValue(lead.productName)}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Ссылка товара</dt>
@@ -154,7 +216,7 @@ export default async function AdminLeadDetailPage({
                     {lead.productSlug}
                   </Link>
                 ) : (
-                  <span>{lead.productSlug}</span>
+                  <span>{displayValue(lead.productSlug)}</span>
                 )
               ) : (
                 "—"
@@ -180,9 +242,28 @@ export default async function AdminLeadDetailPage({
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Атрибуция (UTM и first-touch)
         </h2>
-        <pre className="max-h-64 overflow-auto rounded-md bg-muted/50 p-3 text-xs leading-relaxed">
-          {formatAttribution(lead.attribution)}
-        </pre>
+        {attributionEntries.length > 0 ? (
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            {attributionEntries.map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-xs text-muted-foreground">{label}</dt>
+                <dd className="break-all">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="text-sm text-muted-foreground">UTM-метки не зафиксированы.</p>
+        )}
+        {hasRawAttribution ? (
+          <details className="rounded-md border border-border bg-muted/30 p-3 text-xs">
+            <summary className="cursor-pointer font-medium text-muted-foreground">
+              Показать технический JSON
+            </summary>
+            <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap leading-relaxed">
+              {formatTechnicalJson(lead.attribution)}
+            </pre>
+          </details>
+        ) : null}
       </section>
 
       <section className="rounded-xl border border-border bg-background p-4 space-y-3">
@@ -199,12 +280,12 @@ export default async function AdminLeadDetailPage({
             <dd className="break-all font-mono text-xs text-muted-foreground">{lead.userAgent || "—"}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Создана (UTC)</dt>
-            <dd className="tabular-nums text-xs">{lead.createdAt.toISOString()}</dd>
+            <dt className="text-xs text-muted-foreground">Создана</dt>
+            <dd className="tabular-nums text-xs">{formatAlmatyDateTime(lead.createdAt)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Обновлена (UTC)</dt>
-            <dd className="tabular-nums text-xs">{lead.updatedAt.toISOString()}</dd>
+            <dt className="text-xs text-muted-foreground">Обновлена</dt>
+            <dd className="tabular-nums text-xs">{formatAlmatyDateTime(lead.updatedAt)}</dd>
           </div>
         </dl>
       </section>
