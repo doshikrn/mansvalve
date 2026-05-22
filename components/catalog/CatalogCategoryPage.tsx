@@ -43,8 +43,8 @@ export async function getCatalogCategoryMetadata(categorySlug: string): Promise<
   const seoPreset = getCategorySeo(category);
   const customMeta = await resolveCategorySeoMetaDescription(categorySlug);
   const description =
-    seoPreset?.description ||
     customMeta?.trim() ||
+    seoPreset?.description ||
     buildCategoryPageDescription(category, productCount);
 
   const title = seoPreset?.title || `${category.name} — каталог арматуры`;
@@ -94,8 +94,8 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
       resolveCategorySeoMetaDescription(categorySlug),
     ]);
   const metaDescription =
-    getCategorySeo(category)?.description ||
     metaDescriptionOverride?.trim() ||
+    getCategorySeo(category)?.description ||
     buildCategoryPageDescription(category, categoryProducts.length);
   const h1 = getCategorySeo(category)?.h1 ?? category.name;
   const displayCategories = getOrderedCatalogCategories(allCategories);

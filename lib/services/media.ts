@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
 import { getStorageDriver } from "@/lib/storage";
@@ -18,6 +18,8 @@ export type MediaListOptions = {
   page?: number;
   pageSize?: number;
   onlyUnused?: boolean;
+  /** Case-insensitive match on storage_key and url (partial ok). */
+  search?: string;
 };
 
 export type MediaAssetWithUsage = MediaAsset & {
@@ -97,13 +99,25 @@ export async function createMediaAsset(
   return inserted[0];
 }
 
+function mediaSearchFilter(term: string | undefined) {
+  const t = term?.trim().slice(0, 200) ?? "";
+  if (!t) return undefined;
+  const escaped = t.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+  const pattern = `%${escaped}%`;
+  return or(
+    ilike(mediaAssetsTable.storageKey, pattern),
+    ilike(mediaAssetsTable.url, pattern),
+  );
+}
+
 export async function listMediaAssets(
   options: MediaListOptions = {},
 ): Promise<MediaListResult> {
-  const { page = 1, pageSize = 30, onlyUnused = false } = options;
+  const { page = 1, pageSize = 30, onlyUnused = false, search } = options;
   const db = getDb();
   const offset = (Math.max(1, page) - 1) * pageSize;
   const hasDocumentMedia = await hasCertificateDocumentMediaColumn();
+  const searchCond = mediaSearchFilter(search);
 
   const usageCountExpr = sql<number>`count(distinct ${productImagesTable.id})::int`;
   const productDocumentUsageExpr = sql<number>`(
@@ -121,7 +135,7 @@ export async function listMediaAssets(
         where ${certificatesTable.documentMediaId} = ${mediaAssetsTable.id}
       )`
     : sql<number>`0`;
-  const base = db
+  const baseQuery = db
     .select({
       asset: mediaAssetsTable,
       usedInProducts: usageCountExpr,
@@ -138,6 +152,11 @@ export async function listMediaAssets(
       certificatesTable,
       eq(certificatesTable.mediaAssetId, mediaAssetsTable.id),
     )
+    .$dynamic();
+
+  const filteredBase = searchCond ? baseQuery.where(searchCond) : baseQuery;
+
+  const base = filteredBase
     .groupBy(mediaAssetsTable.id)
     .orderBy(desc(mediaAssetsTable.createdAt))
     .limit(pageSize)
@@ -153,11 +172,13 @@ export async function listMediaAssets(
       )
     : await base;
 
-  const countRows = await db
+  const countQuery = db
     .select({
       value: sql<number>`count(*)::int`,
     })
-    .from(mediaAssetsTable);
+    .from(mediaAssetsTable)
+    .$dynamic();
+  const countRows = await (searchCond ? countQuery.where(searchCond) : countQuery);
 
   return {
     items: rows.map((row) => ({

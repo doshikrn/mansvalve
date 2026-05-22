@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminSta
 import { AdminSeoPreview } from "@/components/admin/AdminSeoPreview";
 import { AdminSectionCard } from "@/components/admin/AdminSectionCard";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
-import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
+import { AdminUnsavedChangesGuard, useAdminFormDirty } from "@/components/admin/AdminUnsavedChangesGuard";
 import { FormDirtyResetAfterSubmit } from "@/components/admin/FormDirtyResetAfterSubmit";
 import {
   MediaUpload,
@@ -33,6 +33,7 @@ import {
   PRODUCT_DETAIL_BLOCK_FIELDS,
   type ProductDetailBlocks,
 } from "@/lib/product-detail-blocks";
+import { buildProductSlug } from "@/lib/products-import/slug-builder";
 import type { CategoryWithSubcategories } from "@/lib/services/categories";
 import type { ProductDetail } from "@/lib/services/products";
 
@@ -54,6 +55,8 @@ type Props = {
   backHref: string;
   backLabel?: string;
   listReturnTo?: string | null;
+  /** Server `updated_at` for «last saved» baseline; ISO string updated after successful save. */
+  serverUpdatedAt?: string | Date | null;
 };
 
 const INITIAL: ProductFormState = {};
@@ -79,8 +82,16 @@ export function ProductForm({
   backHref,
   backLabel = "К списку",
   listReturnTo,
+  serverUpdatedAt,
 }: Props) {
   const [state, runAction] = useActionState(action, INITIAL);
+  const initialSavedIso = useMemo(() => {
+    if (!serverUpdatedAt) return null;
+    if (serverUpdatedAt instanceof Date) return serverUpdatedAt.toISOString();
+    const d = new Date(serverUpdatedAt);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }, [serverUpdatedAt]);
+  const lastSavedIso = state.savedAt ?? initialSavedIso;
   const [categoryId, setCategoryId] = useState<number | "">(
     product?.categoryId ?? "",
   );
@@ -106,7 +117,33 @@ export function ProductForm({
   const [liveImages, setLiveImages] = useState<SelectedMediaItem[]>(
     selectedImages,
   );
-  const [slugDraft, setSlugDraft] = useState<string>(product?.slug ?? "");
+  // Auto-slug — только для нового товара. Существующий slug фиксируется
+  // после публикации и переписывается только вручную.
+  const isExisting = Boolean(product);
+  const [manualSlug, setManualSlug] = useState<string | null>(
+    isExisting ? (product?.slug ?? "") : null,
+  );
+  const [nameDraft, setNameDraft] = useState<string>(product?.name ?? "");
+  const [modelDraft, setModelDraft] = useState<string>(product?.model ?? "");
+  const [dnDraft, setDnDraft] = useState<string>(
+    product?.dn != null ? String(product.dn) : "",
+  );
+  const [pnDraft, setPnDraft] = useState<string>(
+    product?.pn != null ? String(product.pn) : "",
+  );
+
+  const autoSlug = useMemo(
+    () =>
+      buildProductSlug({
+        name: nameDraft,
+        model: modelDraft,
+        dn: dnDraft,
+        pn: pnDraft,
+      }),
+    [nameDraft, modelDraft, dnDraft, pnDraft],
+  );
+  const slugDraft = manualSlug ?? autoSlug;
+  const autoSlugActive = manualSlug == null;
   const selectedDocuments = {
     specification: product?.documents.specification ?? null,
     questionnaire: product?.documents.questionnaire ?? null,
@@ -124,6 +161,20 @@ export function ProductForm({
       ),
     [state.error, state.fieldErrors],
   );
+
+  useEffect(() => {
+    if (!state.fieldErrors || Object.keys(state.fieldErrors).length === 0) return;
+    const keys = Object.keys(state.fieldErrors).sort();
+    const first = keys[0];
+    if (!first) return;
+    const root = first.includes(".") ? first.slice(0, first.indexOf(".")) : first;
+    const el =
+      document.getElementById(`admin-field-${root}`) ??
+      document.getElementById(`admin-field-${first}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [state.fieldErrors]);
 
   const livePublicPreview = useMemo(() => {
     if (!publicPreview) return null;
@@ -179,7 +230,12 @@ export function ProductForm({
             name="name"
             error={state.fieldErrors?.name}
           >
-            <Input name="name" defaultValue={product?.name ?? ""} required />
+            <Input
+              name="name"
+              defaultValue={product?.name ?? ""}
+              required
+              onChange={(event) => setNameDraft(event.target.value)}
+            />
             <AdminFieldHint>
               Публичное название формируется автоматически из типа, материала,
               соединения, модели, DN и PN. Это поле можно оставлять коротким
@@ -240,10 +296,19 @@ export function ProductForm({
           >
             <Input
               name="slug"
-              defaultValue={product?.slug ?? ""}
-              onChange={(event) => setSlugDraft(event.target.value)}
-              placeholder={product ? undefined : "Сгенерируется из названия"}
+              value={slugDraft}
+              onChange={(event) => setManualSlug(event.target.value)}
+              placeholder={product ? undefined : "Сгенерируется из названия, модели и DN/PN"}
             />
+            {!isExisting && !autoSlugActive ? (
+              <button
+                type="button"
+                className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                onClick={() => setManualSlug(null)}
+              >
+                Вернуть авто-генерацию slug из названия, модели и DN/PN
+              </button>
+            ) : null}
             <AdminFieldHint>
               {product
                 ? "URL зафиксирован после публикации. Если оставить поле пустым, slug не изменится. При ручном изменении старый URL автоматически перенаправится на новый (301 redirect)."
@@ -379,10 +444,20 @@ export function ProductForm({
         >
           <div className="grid gap-3 md:grid-cols-3">
             <Field label="DN" name="dn">
-              <Input name="dn" type="number" defaultValue={product?.dn ?? ""} />
+              <Input
+                name="dn"
+                type="number"
+                defaultValue={product?.dn ?? ""}
+                onChange={(event) => setDnDraft(event.target.value)}
+              />
             </Field>
             <Field label="PN" name="pn">
-              <Input name="pn" type="number" defaultValue={product?.pn ?? ""} />
+              <Input
+                name="pn"
+                type="number"
+                defaultValue={product?.pn ?? ""}
+                onChange={(event) => setPnDraft(event.target.value)}
+              />
             </Field>
             <Field label="Резьба" name="thread">
               <Input name="thread" defaultValue={product?.thread ?? ""} />
@@ -394,7 +469,11 @@ export function ProductForm({
               <Input name="material" defaultValue={product?.material ?? ""} />
             </Field>
             <Field label="Марка / модель" name="model">
-              <Input name="model" defaultValue={product?.model ?? ""} />
+              <Input
+                name="model"
+                defaultValue={product?.model ?? ""}
+                onChange={(event) => setModelDraft(event.target.value)}
+              />
             </Field>
           </div>
 
@@ -582,6 +661,10 @@ export function ProductForm({
         ) : null}
 
         <AdminStickyActions backHref={backHref} backLabel={backLabel}>
+          <ProductFormSaveStatus
+            lastSavedIso={lastSavedIso}
+            isNewProduct={!product}
+          />
           <SubmitButton isEdit={Boolean(product)} />
           {livePublicPreview ? (
             <Button asChild type="button" variant="outline" size="sm">
@@ -703,7 +786,7 @@ function Field({
   error?: string;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div id={`admin-field-${name}`} className="scroll-mt-28 space-y-1.5">
       <Label htmlFor={name} className="inline-flex flex-wrap items-center gap-x-1">
         {label}
         {required ? <span className="text-destructive"> *</span> : null}
@@ -750,12 +833,51 @@ function CheckboxField({
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} size="sm">
-      {pending
-        ? "Сохранение..."
-        : isEdit
-          ? "Сохранить и продолжить"
-          : "Создать товар"}
+    <Button type="submit" disabled={pending} size="sm" aria-busy={pending}>
+      {pending ? "Сохранение…" : isEdit ? "Сохранить и продолжить" : "Создать товар"}
     </Button>
+  );
+}
+
+function ProductFormSaveStatus({
+  lastSavedIso,
+  isNewProduct,
+}: {
+  lastSavedIso: string | null;
+  isNewProduct: boolean;
+}) {
+  const { isDirty } = useAdminFormDirty();
+  const { pending } = useFormStatus();
+  const savedLabel = useMemo(() => {
+    if (!lastSavedIso) return null;
+    const d = new Date(lastSavedIso);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }, [lastSavedIso]);
+
+  let statusLine: ReactNode;
+  if (pending) {
+    statusLine = <span className="font-medium text-foreground">Сохранение на сервере…</span>;
+  } else if (isDirty) {
+    statusLine = <span className="font-medium text-amber-900">Есть несохранённые изменения</span>;
+  } else if (isNewProduct && !lastSavedIso) {
+    statusLine = (
+      <span className="font-medium text-muted-foreground">Новый товар — сохраните, чтобы зафиксировать</span>
+    );
+  } else {
+    statusLine = <span className="font-medium text-emerald-900">Нет несохранённых изменений</span>;
+  }
+
+  return (
+    <div className="flex min-w-[10rem] max-w-[18rem] flex-col gap-0.5 text-xs leading-snug text-muted-foreground">
+      {statusLine}
+      {savedLabel ? <span>Последнее сохранение: {savedLabel}</span> : null}
+    </div>
   );
 }

@@ -22,7 +22,7 @@ export function AdminStickyActions({
   return (
     <div
       className={cn(
-        "sticky bottom-0 z-20 mt-6 flex flex-col gap-3 border-t border-border bg-background/95 py-3 backdrop-blur-sm supports-[backdrop-filter]:bg-background/85 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+        "sticky bottom-0 z-20 mt-6 flex flex-col gap-3 border-t border-border bg-background/95 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-10px_30px_-18px_rgba(15,23,42,0.18)] backdrop-blur-sm supports-[backdrop-filter]:bg-background/85 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
         className,
       )}
     >

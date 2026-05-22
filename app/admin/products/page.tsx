@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ImageIcon } from "lucide-react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { ProductsListSearchInput } from "@/components/admin/ProductsListSearchInput";
 import { DestructiveConfirmForm } from "@/components/admin/DestructiveConfirmForm";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
@@ -173,6 +175,14 @@ export default async function AdminProductsPage({
           <Button asChild size="sm" variant="outline">
             <Link href="/admin/products/series">Серии и шаблоны</Link>
           </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href="/admin/products/import/template" download>
+              Скачать шаблон
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href="/admin/products/import">Импорт из Excel</Link>
+          </Button>
           <Button asChild size="sm">
             <Link href={withReturnTo("/admin/products/new", listSelfHref)}>
               + Новый товар
@@ -182,6 +192,11 @@ export default async function AdminProductsPage({
       </div>
 
       <PublicCatalogSourceNotice />
+
+      <p className="text-xs text-muted-foreground">
+        Фильтры и поиск хранятся в адресной строке: можно вернуться назад в браузере, обновить
+        страницу или отправить ссылку коллеге.
+      </p>
 
       {params.error ? (
         <div
@@ -205,13 +220,24 @@ export default async function AdminProductsPage({
         <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-6">
           <label className="flex min-w-[180px] flex-col gap-1 text-xs font-medium text-muted-foreground lg:col-span-2">
             Поиск
-            <input
-              type="search"
-              name="q"
-              placeholder="Название, slug, модель…"
-              defaultValue={params.q ?? ""}
-              className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
-            />
+            <Suspense
+              fallback={
+                <input
+                  type="search"
+                  name="q"
+                  placeholder="Название, slug, модель…"
+                  defaultValue={params.q ?? ""}
+                  className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
+                />
+              }
+            >
+              <ProductsListSearchInput
+                name="q"
+                defaultValue={params.q ?? ""}
+                placeholder="Название, slug, модель…"
+                className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
+              />
+            </Suspense>
           </label>
           <label className="flex min-w-[140px] flex-col gap-1 text-xs font-medium text-muted-foreground">
             Категория

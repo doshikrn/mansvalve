@@ -196,7 +196,9 @@ export async function moveCategoryInListAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([a, b]);
   await settleRevalidation();
-  redirect(`/admin/categories?view=${listView}&msg=category_moved`);
+  redirect(
+    `/admin/categories?view=${listView}&msg=category_moved&focus=cat-${parsed.data.id}`,
+  );
 }
 
 export async function quickSetCategorySortOrderAction(formData: FormData) {
@@ -220,7 +222,9 @@ export async function quickSetCategorySortOrderAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([existing]);
   await settleRevalidation();
-  redirect(`/admin/categories?view=${listView}&msg=category_sort_saved`);
+  redirect(
+    `/admin/categories?view=${listView}&msg=category_sort_saved&focus=cat-${parsed.data.id}`,
+  );
 }
 
 export async function moveSubcategoryInListAction(formData: FormData) {
@@ -259,7 +263,9 @@ export async function moveSubcategoryInListAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([parent], [a, b]);
   await settleRevalidation();
-  redirect(`/admin/categories?view=${listView}&msg=subcategory_moved`);
+  redirect(
+    `/admin/categories?view=${listView}&msg=subcategory_moved&focus=sub-${parsed.data.id}`,
+  );
 }
 
 export async function quickSetSubcategorySortOrderAction(formData: FormData) {
@@ -289,7 +295,9 @@ export async function quickSetSubcategorySortOrderAction(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidateCatalogPublicPaths([parent], [existing]);
   await settleRevalidation();
-  redirect(`/admin/categories?view=${listView}&msg=subcategory_sort_saved`);
+  redirect(
+    `/admin/categories?view=${listView}&msg=subcategory_sort_saved&focus=sub-${parsed.data.id}`,
+  );
 }
 
 export async function deleteCategoryAction(formData: FormData) {

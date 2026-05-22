@@ -7,6 +7,7 @@ import {
   Award,
   Building2,
   FileCheck,
+  FileSpreadsheet,
   FileText,
   FolderTree,
   GitBranch,
@@ -32,6 +33,7 @@ const PRIMARY: Item[] = [
 
 const CATALOG: Item[] = [
   { href: "/admin/products", label: "Товары", icon: Package },
+  { href: "/admin/products/import", label: "Импорт Excel", icon: FileSpreadsheet },
   { href: "/admin/products/series", label: "Серии и шаблоны", icon: GitBranch },
   { href: "/admin/catalog-health", label: "Здоровье каталога", icon: Activity },
   { href: "/admin/categories?view=categories", label: "Категории", icon: FolderTree },
@@ -69,10 +71,24 @@ function isActive(pathname: string, href: string, currentSearchParams: URLSearch
     return pathname === path && currentSearchParams.get("section") === section;
   }
   if (view) {
-    return pathname === path && (currentSearchParams.get("view") ?? "categories") === view;
+    if (pathname === path) {
+      return (currentSearchParams.get("view") ?? "categories") === view;
+    }
+    // На подстраницах /admin/categories/[id]/... подсветим «Категории» как
+    // дефолтный раздел, а «Подкатегории» — когда пользователь зашёл в
+    // конкретную подкатегорию.
+    if (path === "/admin/categories") {
+      const inSubcategory = /\/admin\/categories\/\d+\/subcategories(\b|\/)/.test(pathname);
+      if (view === "subcategories" && inSubcategory) return true;
+      if (view === "categories" && pathname.startsWith("/admin/categories/") && !inSubcategory) {
+        return true;
+      }
+    }
+    return false;
   }
-  if (path === "/admin/categories" && pathname.startsWith("/admin/categories")) {
-    return true;
+  // Импорт — отдельный пункт; не подсвечивать общий «Товары» на /admin/products/import.
+  if (href === "/admin/products" && pathname.startsWith("/admin/products/import")) {
+    return false;
   }
   return pathname === path || pathname.startsWith(`${path}/`);
 }

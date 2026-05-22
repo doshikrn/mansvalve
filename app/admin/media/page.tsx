@@ -1,6 +1,9 @@
+import { Suspense } from "react";
+
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { MediaLibrarySearch } from "@/components/admin/MediaLibrarySearch";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { listMediaAssets } from "@/lib/services/media";
 import { Button } from "@/components/ui/button";
@@ -14,7 +17,7 @@ const PAGE_SIZE = 48;
 export default async function AdminMediaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string }>;
 }) {
   await requireAdmin("/admin/media");
   const params = await searchParams;
@@ -29,7 +32,12 @@ export default async function AdminMediaPage({
   }
 
   const page = Math.max(1, Number(params.page ?? "1") || 1);
-  const media = await listMediaAssets({ page, pageSize: PAGE_SIZE });
+  const qRaw = params.q?.trim().slice(0, 200) ?? "";
+  const media = await listMediaAssets({
+    page,
+    pageSize: PAGE_SIZE,
+    search: qRaw || undefined,
+  });
   const lastPage = Math.max(1, Math.ceil(media.total / PAGE_SIZE));
 
   const library = media.items.map((asset) => ({
@@ -47,7 +55,16 @@ export default async function AdminMediaPage({
         ? asset.createdAt.toISOString()
         : String(asset.createdAt),
     usedInProducts: asset.usedInProducts,
+    usedInCertificates: asset.usedInCertificates ?? 0,
   }));
+
+  const buildPageHref = (p: number) => {
+    const sp = new URLSearchParams();
+    if (qRaw) sp.set("q", qRaw);
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return qs ? `/admin/media?${qs}` : "/admin/media";
+  };
 
   return (
     <div className="space-y-4">
@@ -57,12 +74,28 @@ export default async function AdminMediaPage({
           { label: "Медиа" },
         ]}
       />
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight">Медиа</h1>
-        <p className="text-sm text-muted-foreground">
-          Центральная библиотека изображений и документов для товаров, сертификатов и контентных блоков.
-          Всего файлов: {media.total}.
-        </p>
+      <header className="space-y-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Медиа</h1>
+          <p className="text-sm text-muted-foreground">
+            Центральная библиотека изображений и документов для товаров, сертификатов и контентных блоков.
+            {qRaw ? (
+              <>
+                {" "}
+                По запросу «{qRaw}»: найдено {media.total}.
+              </>
+            ) : (
+              <> Всего файлов: {media.total}.</>
+            )}
+          </p>
+        </div>
+        <Suspense
+          fallback={
+            <p className="text-xs text-muted-foreground">Загрузка поиска…</p>
+          }
+        >
+          <MediaLibrarySearch initialQ={qRaw} />
+        </Suspense>
       </header>
 
       <MediaUpload
@@ -81,12 +114,12 @@ export default async function AdminMediaPage({
           <div className="flex gap-2">
             {page > 1 ? (
               <Button asChild variant="outline" size="sm">
-                <Link href={`/admin/media?page=${page - 1}`}>← Назад</Link>
+                <Link href={buildPageHref(page - 1)}>← Назад</Link>
               </Button>
             ) : null}
             {page < lastPage ? (
               <Button asChild variant="outline" size="sm">
-                <Link href={`/admin/media?page=${page + 1}`}>Вперёд →</Link>
+                <Link href={buildPageHref(page + 1)}>Вперёд →</Link>
               </Button>
             ) : null}
           </div>

@@ -7,11 +7,14 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react";
 
 type DirtyContextValue = {
   markClean: () => void;
   markDirty: () => void;
+  /** True after the user changed any field until markClean (e.g. successful save). */
+  isDirty: boolean;
 };
 
 const DirtyContext = createContext<DirtyContextValue | null>(null);
@@ -22,6 +25,7 @@ export function useAdminFormDirty(): DirtyContextValue {
     return {
       markClean: () => {},
       markDirty: () => {},
+      isDirty: false,
     };
   }
   return ctx;
@@ -43,18 +47,23 @@ export function AdminUnsavedChangesGuard({
 }: GuardProps) {
   const dirtyRef = useRef(false);
   const allowNavigationRef = useRef(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   const markClean = useCallback(() => {
     dirtyRef.current = false;
+    setIsDirty(false);
   }, []);
 
   const markDirty = useCallback(() => {
-    if (enabled) dirtyRef.current = true;
+    if (enabled) {
+      dirtyRef.current = true;
+      setIsDirty(true);
+    }
   }, [enabled]);
 
   const value = useMemo(
-    () => ({ markClean, markDirty }),
-    [markClean, markDirty],
+    () => ({ markClean, markDirty, isDirty }),
+    [markClean, markDirty, isDirty],
   );
 
   useEffect(() => {
@@ -97,10 +106,16 @@ export function AdminUnsavedChangesGuard({
       <div
         role="presentation"
         onInputCapture={() => {
-          if (enabled) dirtyRef.current = true;
+          if (enabled) {
+            dirtyRef.current = true;
+            setIsDirty(true);
+          }
         }}
         onChangeCapture={() => {
-          if (enabled) dirtyRef.current = true;
+          if (enabled) {
+            dirtyRef.current = true;
+            setIsDirty(true);
+          }
         }}
         onSubmitCapture={() => {
           allowNavigationRef.current = true;

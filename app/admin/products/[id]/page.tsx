@@ -100,6 +100,8 @@ export default async function EditProductPage({
       <PublicCatalogSourceNotice />
       <ProductForm
         action={boundUpdate}
+        listReturnTo={listHref}
+        serverUpdatedAt={product.updatedAt}
         categories={categories}
         mediaLibrary={mediaAssets.map((asset) => ({
           id: asset.id,

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { CategoryOrderScrollRestore } from "@/components/admin/CategoryOrderScrollRestore";
 import {
   CategoriesOrderTable,
   SubcategoriesOrderTable,
@@ -90,6 +92,10 @@ export default async function AdminCategoriesPage({
           {flash}
         </div>
       ) : null}
+
+      <Suspense fallback={null}>
+        <CategoryOrderScrollRestore />
+      </Suspense>
 
       <div className="inline-flex rounded-xl border border-[#E2E8F0] bg-white p-1 shadow-sm">
         <Link

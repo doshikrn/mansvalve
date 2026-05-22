@@ -31,6 +31,7 @@ export type MediaLibraryItem = {
   driver: string;
   createdAt: string;
   usedInProducts?: number;
+  usedInCertificates?: number;
 };
 
 export type SelectedMediaItem = {
@@ -407,7 +408,12 @@ export function MediaUpload({
                       : "border-border bg-background",
                   ].join(" ")}
                 >
-                  <div className="relative shrink-0">
+                  <div
+                    className={[
+                      "relative shrink-0 rounded-md",
+                      item.isPrimary ? "ring-2 ring-blue-600 ring-offset-2" : "",
+                    ].join(" ")}
+                  >
                     <MediaThumb item={item} className="h-16 w-16" />
                     {item.isPrimary ? (
                       <span className="absolute -left-1 -top-1 rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white shadow-sm">
@@ -503,6 +509,23 @@ export function MediaUpload({
                       {getMediaDisplayName(item)}
                     </p>
                     <p>{formatMediaMeta(item)}</p>
+                    <p className="text-[10px] leading-tight">
+                      {(() => {
+                        const p = item.usedInProducts ?? 0;
+                        const c = item.usedInCertificates ?? 0;
+                        if (p === 0 && c === 0) {
+                          return (
+                            <span className="text-slate-500">Не используется в товарах и сертификатах</span>
+                          );
+                        }
+                        return (
+                          <span className="text-slate-700">
+                            Товары: {p}
+                            {c > 0 ? ` · Сертификаты: ${c}` : ""}
+                          </span>
+                        );
+                      })()}
+                    </p>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     <Button
@@ -550,7 +573,7 @@ export function MediaUpload({
                         disabled={deleting}
                         onClick={() => void handleDeleteAsset(item.id)}
                       >
-                        {deleting ? "..." : "Удалить"}
+                        {deleting ? "Удаление…" : "Удалить"}
                       </Button>
                     ) : null}
                   </div>
