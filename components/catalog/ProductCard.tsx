@@ -47,7 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
           safeAreaClassName="p-3.5 sm:p-4"
         >
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950/28 to-transparent" />
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-white/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 shadow-sm">
+          <span className="site-pill site-pill-success site-pill-on-image absolute left-2 top-2 shadow-sm">
             <CircleDot className="h-2.5 w-2.5" strokeWidth={3} aria-hidden />
             В наличии · под заказ
           </span>

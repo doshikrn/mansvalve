@@ -72,6 +72,34 @@
   --color-site-cta-hover: #c2410c;
   --color-site-whatsapp: #25d366;
   --color-site-whatsapp-hover: #1fb95a;
+  /* Semantic states (single source of truth for badges / banners / alerts) */
+  --color-site-success: #15803d;
+  --color-site-success-soft: #ecfdf5;
+  --color-site-success-border: #a7f3d0;
+  --color-site-warning: #b45309;
+  --color-site-warning-soft: #fffbeb;
+  --color-site-warning-border: #fde68a;
+  --color-site-error: #b91c1c;
+  --color-site-error-soft: #fef2f2;
+  --color-site-error-border: #fecaca;
+  --color-site-info: #1d4ed8;
+  --color-site-info-soft: #eff6ff;
+  --color-site-info-border: #bfdbfe;
+  /* Premium shadows — единые тени под общую палитру (slate-ink с лёгким blue tint) */
+  --shadow-site-soft: 0 1px 2px rgb(15 23 42 / 0.05), 0 1px 1px rgb(15 23 42 / 0.04);
+  --shadow-site-card: 0 4px 12px -4px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-site-lift: 0 14px 40px -16px rgb(47 107 255 / 0.22), 0 4px 10px -6px rgb(15 23 42 / 0.06);
+  --shadow-site-elevated: 0 24px 60px -24px rgb(15 23 42 / 0.22), 0 8px 20px -10px rgb(15 23 42 / 0.08);
+  /* Motion — единая система длительностей и easing для CSS-переходов */
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0.32, 1);
+  --duration-fast: 160ms;
+  --duration-base: 220ms;
+  --duration-slow: 360ms;
+  --duration-hero: 620ms;
+  /* Фокус — общее кольцо во всех публичных кнопках/ссылках */
+  --color-site-focus-ring: rgb(47 107 255 / 0.45);
+  --color-site-focus-ring-soft: rgb(47 107 255 / 0.25);
 }
 
 :root {
@@ -158,6 +186,19 @@
       scroll-behavior: smooth;
     }
   }
+
+  /* Premium focus ring fallback (public site only).
+     Не трогает shadcn Button — у него собственное focus-visible.
+     Применяется к нативным <a> / <button> / role=button, если
+     компонент не задал собственный focus-стиль. */
+  body :where(a, button, [role="button"]):focus-visible {
+    outline: 2px solid var(--color-site-focus-ring, rgb(47 107 255 / 0.45));
+    outline-offset: 2px;
+  }
+
+  body :where(a, button, [role="button"])[data-slot]:focus-visible {
+    outline: none;
+  }
 }
 
 .home-dark-zone {
@@ -230,6 +271,98 @@
 
   .site-primary-cta {
     @apply rounded-lg !border-site-cta-hover !bg-site-cta !text-white shadow-md transition-[background-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[3px] hover:!bg-site-cta-hover hover:shadow-[0_0_28px_rgb(234_88_12_/_.35)] hover:shadow-xl focus-visible:ring-2 focus-visible:ring-site-cta/45 focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 motion-reduce:hover:shadow-md;
+  }
+
+  /* Single source of truth for focus ring on public site (links, custom buttons). */
+  .site-focus-ring {
+    outline: none;
+  }
+
+  .site-focus-ring:focus-visible {
+    outline: 2px solid var(--color-site-focus-ring);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  /* Semantic pills: единая логика для бейджей "В наличии", статусов и т.п. */
+  .site-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  .site-pill-success {
+    background-color: var(--color-site-success-soft);
+    border-color: var(--color-site-success-border);
+    color: var(--color-site-success);
+  }
+
+  .site-pill-warning {
+    background-color: var(--color-site-warning-soft);
+    border-color: var(--color-site-warning-border);
+    color: var(--color-site-warning);
+  }
+
+  .site-pill-error {
+    background-color: var(--color-site-error-soft);
+    border-color: var(--color-site-error-border);
+    color: var(--color-site-error);
+  }
+
+  .site-pill-info {
+    background-color: var(--color-site-info-soft);
+    border-color: var(--color-site-info-border);
+    color: var(--color-site-info);
+  }
+
+  .site-pill-on-image {
+    background-color: rgb(255 255 255 / 0.94);
+    backdrop-filter: blur(2px);
+  }
+}
+
+/* ── Premium skeleton (shimmer) ──────────────────────────────────────
+   Заменяет дешёвый Tailwind animate-pulse: мягкое движение градиента
+   фоном, согласованный с палитрой slate, и аккуратный motion-reduce.
+   ─────────────────────────────────────────────────────────────────── */
+@keyframes site-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.site-skeleton {
+  background-color: rgb(241 245 249);
+  background-image: linear-gradient(
+    90deg,
+    rgb(241 245 249 / 0) 0%,
+    rgb(226 232 240 / 0.85) 50%,
+    rgb(241 245 249 / 0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: site-skeleton-shimmer 1.8s linear infinite;
+}
+
+.site-skeleton-dark {
+  background-color: rgb(255 255 255 / 0.05);
+  background-image: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0) 0%,
+    rgb(255 255 255 / 0.08) 50%,
+    rgb(255 255 255 / 0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: site-skeleton-shimmer 1.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-skeleton,
+  .site-skeleton-dark {
+    animation: none;
+    background-image: none;
   }
 }
 
