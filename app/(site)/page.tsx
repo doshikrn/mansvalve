@@ -4,6 +4,7 @@ import { TrustStrip } from "@/components/sections/TrustStrip";
 import { WhyUs } from "@/components/sections/WhyUs";
 import { Categories } from "@/components/sections/Categories";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { DocumentsTrust } from "@/components/sections/DocumentsTrust";
 import { FAQ } from "@/components/sections/FAQ";
 import { RequestCTA } from "@/components/sections/RequestCTA";
 import { WhoWeSupply } from "@/components/sections/WhoWeSupply";
@@ -53,6 +54,7 @@ export default function HomePage() {
         <WhoWeSupply />
         <DeliveryCase />
         <HowItWorks />
+        <DocumentsTrust />
         <RequestCTA />
         <FAQ />
       </main>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CircleDot } from "lucide-react";
 
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
@@ -30,7 +30,7 @@ export function ProductCard({ product }: ProductCardProps) {
   warnInvalidMediaUrl(imageSrc, `ProductCard:${product.slug}`);
 
   return (
-    <article className="site-card group flex flex-col overflow-hidden p-0 active:scale-[0.98] motion-reduce:active:scale-100">
+    <article className="site-card group relative flex flex-col overflow-hidden p-0 active:scale-[0.98] motion-reduce:active:scale-100">
       <Link
         href={detailHref}
         className="block"
@@ -47,6 +47,10 @@ export function ProductCard({ product }: ProductCardProps) {
           safeAreaClassName="p-3.5 sm:p-4"
         >
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950/28 to-transparent" />
+          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-white/95 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 shadow-sm">
+            <CircleDot className="h-2.5 w-2.5" strokeWidth={3} aria-hidden />
+            В наличии · под заказ
+          </span>
           <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-medium text-site-muted shadow-sm">
             {view.categoryLabel}
           </span>
@@ -87,7 +91,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <Link
           href={detailHref}
-          className="mb-1.5 block text-sm font-semibold leading-snug text-site-ink transition-colors line-clamp-2 hover:text-site-primary-hover"
+          className="mb-2 block text-[15px] font-semibold leading-snug tracking-tight text-site-ink transition-colors line-clamp-2 hover:text-site-primary-hover focus-visible:text-site-primary-hover"
         >
           {productName}
         </Link>
@@ -96,23 +100,33 @@ export function ProductCard({ product }: ProductCardProps) {
           <SpecItem label="Марка" value={product.model} />
           <SpecItem label="Соединение" value={product.connectionType} />
           <SpecItem label="Управление" value={product.controlType} />
-          <SpecItem label="Статус" value="В наличии / под заказ" />
         </dl>
 
-        <p className="mb-3 text-xs text-site-muted leading-relaxed line-clamp-2 flex-1">
+        <p className="mb-3 text-xs leading-relaxed text-site-muted line-clamp-2 flex-1">
           {view.shortDescription}
         </p>
 
-        <div className="mb-3">
+        <div className="mb-3 flex items-end justify-between gap-2">
           {product.price && !product.priceByRequest ? (
-            <p className="text-lg font-bold text-site-ink tracking-tight">
-              {formatPrice(product.price)}
-            </p>
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                Цена от
+              </p>
+              <p className="text-lg font-bold tracking-tight text-site-ink">
+                {formatPrice(product.price)}
+              </p>
+            </div>
           ) : (
-            <p className="text-sm font-semibold text-site-primary">
-              Цена по запросу
-            </p>
+            <div>
+              <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                Цена
+              </p>
+              <p className="text-sm font-semibold text-site-primary">по запросу</p>
+            </div>
           )}
+          <span className="text-[10px] font-medium text-slate-400">
+            КП за 15 мин
+          </span>
         </div>
 
         <div className="flex gap-2">
