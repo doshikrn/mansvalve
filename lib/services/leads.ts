@@ -174,11 +174,28 @@ export async function updateLead(
     .where(eq(leadsTable.id, id));
 }
 
+export async function createLead(payload: NewLead): Promise<number> {
+  if (!isDatabaseConfigured()) {
+    throw new Error("DATABASE_URL is not configured");
+  }
+
+  const db = getDb();
+  const inserted = await db
+    .insert(leadsTable)
+    .values(payload)
+    .returning({ id: leadsTable.id });
+
+  const id = inserted[0]?.id;
+  if (!id) {
+    throw new Error("Lead insert did not return id");
+  }
+
+  return id;
+}
+
 /**
- * Best-effort persistence for incoming leads. Called from POST /api/request.
- * If the database is not configured or the insert fails we swallow the error:
- * Telegram remains the source of truth until the migration is complete and
- * we do not want lead delivery to regress while infra is wired up.
+ * Best-effort persistence helper for non-critical background imports.
+ * Public request forms must use `createLead` so failed DB writes are visible.
  */
 export async function persistLeadSafely(
   payload: NewLead,
@@ -188,45 +205,12 @@ export async function persistLeadSafely(
   }
 
   try {
-    const db = getDb();
-    const inserted = await db
-      .insert(leadsTable)
-      .values(payload)
-      .returning({ id: leadsTable.id });
-    return { id: inserted[0]?.id ?? null, error: null };
+    return { id: await createLead(payload), error: null };
   } catch (error) {
     console.error("[leads] failed to persist lead", error);
     return {
       id: null,
       error: error instanceof Error ? error.message : "unknown_error",
     };
-  }
-}
-
-export async function updateLeadDelivery(
-  id: number,
-  update: {
-    telegramDelivered: boolean;
-    telegramMessageId?: string | null;
-    telegramError?: string | null;
-    status?: LeadStatus | LeadStatusInDb;
-  },
-): Promise<void> {
-  if (!isDatabaseConfigured()) return;
-
-  try {
-    const db = getDb();
-    await db
-      .update(leadsTable)
-      .set({
-        telegramDelivered: update.telegramDelivered,
-        telegramMessageId: update.telegramMessageId ?? null,
-        telegramError: update.telegramError ?? null,
-        ...(update.status ? { status: update.status } : {}),
-        updatedAt: new Date(),
-      })
-      .where(eq(leadsTable.id, id));
-  } catch (error) {
-    console.error("[leads] failed to update lead delivery", error);
   }
 }

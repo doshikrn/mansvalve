@@ -187,34 +187,6 @@ export default async function AdminLeadDetailPage({
 
       <section className="rounded-xl border border-border bg-background p-4 space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Telegram
-        </h2>
-        <dl className="grid gap-2 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-xs text-muted-foreground">Доставлено</dt>
-            <dd>
-              {lead.telegramDelivered ? (
-                <Badge variant="secondary">Да</Badge>
-              ) : (
-                <Badge variant="outline">Нет</Badge>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Message ID</dt>
-            <dd className="tabular-nums break-all">{lead.telegramMessageId || "—"}</dd>
-          </div>
-          {lead.telegramError ? (
-            <div className="sm:col-span-2">
-              <dt className="text-xs text-muted-foreground">Ошибка</dt>
-              <dd className="text-destructive break-all text-sm">{lead.telegramError}</dd>
-            </div>
-          ) : null}
-        </dl>
-      </section>
-
-      <section className="rounded-xl border border-border bg-background p-4 space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Технические данные
         </h2>
         <dl className="grid gap-2 text-sm sm:grid-cols-2">

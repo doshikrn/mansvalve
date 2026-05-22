@@ -4,11 +4,9 @@ import { Phone } from "lucide-react";
 import {
   COMPANY,
   COMPANY_INSTAGRAM_URL,
-  COMPANY_TELEGRAM_PUBLIC_HREF,
   COMPANY_WHATSAPP_BASE_URL,
 } from "@/lib/company";
 import { InstagramBrandIcon } from "@/components/icons/InstagramBrandIcon";
-import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
@@ -106,17 +104,6 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
               {COMPANY.phoneDisplay}
             </span>
           </CopyToClipboard>
-          {COMPANY_TELEGRAM_PUBLIC_HREF ? (
-            <a
-              href={COMPANY_TELEGRAM_PUBLIC_HREF}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-site-muted transition hover:bg-white/70 hover:text-site-ink"
-              aria-label="Telegram"
-            >
-              <TelegramIcon className="h-[22px] w-[22px]" />
-            </a>
-          ) : null}
         </div>
       </div>
     </div>

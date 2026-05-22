@@ -13,12 +13,12 @@
 - **Админка:** товары (в т.ч. Excel import), категории/подкатегории с **sort_order**, медиа, сертификаты, лиды, `content_blocks`, настройки, **catalog health**, **product series** в UI.
 - **CMS:** ключи и merge в `lib/site-content/*`, публичные resolvers, безопасный fallback на defaults.
 - **Медиа:** local / Supabase drivers, публичные URL через `MEDIA_PUBLIC_BASE_URL`.
-- **Заявки:** `POST /api/request`, лиды в БД, Telegram.
+- **Заявки:** `POST /api/request`, лиды в БД и админке.
 - **Аналитика:** GA4 bootstrap в root layout (`send_page_view: false`) + опциональный GTM; события через `dataLayer` / `trackEvent`, `PageViewTracker` для App Router.
 
 ## Основные production flows
 
-1. Пользователь → публичные страницы → каталог/товар → CTA → `POST /api/request` → БД + Telegram.  
+1. Пользователь → публичные страницы → каталог/товар → CTA → `POST /api/request` → БД → админка Заявки.  
 2. Оператор → `/admin/login` → сессия JWT (Edge `proxy.ts`) → правки каталога/CMS → `revalidatePath` / ISR где настроено на страницах каталога.  
 3. Деплой: env из `.env.example` → `npm ci` → `npm run build` → миграции при смене схемы (`npm run db:migrate`).
 

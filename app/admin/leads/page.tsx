@@ -201,7 +201,6 @@ export default async function AdminLeadsPage({
                 <th className="px-4 py-2 font-medium">Телефон</th>
                 <th className="px-4 py-2 font-medium">Контекст</th>
                 <th className="px-4 py-2 font-medium">Источник</th>
-                <th className="px-4 py-2 font-medium">Telegram</th>
                 <th className="px-4 py-2 font-medium">Статус</th>
                 <th className="px-4 py-2 w-10" />
               </tr>
@@ -209,7 +208,7 @@ export default async function AdminLeadsPage({
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
                     {hasSearchOrFilters ? (
                       <span>
                         Заявок по фильтру нет. Попробуйте изменить условия или{" "}
@@ -255,17 +254,6 @@ export default async function AdminLeadsPage({
                       </td>
                       <td className="px-4 py-2 text-xs text-muted-foreground whitespace-nowrap">
                         {lead.source || "—"}
-                      </td>
-                      <td className="px-4 py-2">
-                        {lead.telegramDelivered ? (
-                          <Badge variant="secondary">ok</Badge>
-                        ) : lead.telegramError ? (
-                          <Badge variant="destructive" title={lead.telegramError}>
-                            ошибка
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline">—</Badge>
-                        )}
                       </td>
                       <td className="px-4 py-2">
                         <Badge variant={badgeVariantForStatus(displayStatus)}>

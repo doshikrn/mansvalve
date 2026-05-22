@@ -27,15 +27,6 @@ export const COMPANY_BRAND_SEO = "MANSVALVE Group";
 export const COMPANY_PHONE_HREF = `tel:${COMPANY.phoneE164}`;
 export const COMPANY_EMAIL_HREF = `mailto:${COMPANY.email}`;
 
-/**
- * Public Telegram (channel, bot, or t.me) — optional header link.
- * Set `NEXT_PUBLIC_TELEGRAM_URL` in the environment; leave unset to hide.
- */
-export const COMPANY_TELEGRAM_PUBLIC_HREF: string | undefined = (() => {
-  const u = process.env.NEXT_PUBLIC_TELEGRAM_URL?.trim();
-  return u || undefined;
-})();
-
 /** Публичный профиль Instagram — ссылки в шапке и мобильном меню. */
 export const COMPANY_INSTAGRAM_URL = "https://www.instagram.com/mansvalve/" as const;
 export const COMPANY_INSTAGRAM_HANDLE = "@mansvalve" as const;

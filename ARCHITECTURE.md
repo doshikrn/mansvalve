@@ -15,7 +15,7 @@
 - SEO-инфраструктуру: metadata, JSON-LD, `sitemap.xml`, `robots.txt`, favicon/app icons;
 - аналитику GA4/GTM и событийный трекинг;
 - админ-панель для товаров, категорий, медиа, заявок, сертификатов и контент-блоков;
-- интеграции с Telegram, Postgres/Drizzle, local/Supabase storage.
+- интеграции с админка, Postgres/Drizzle, local/Supabase storage.
 
 ## 2. Стек
 
@@ -451,9 +451,9 @@ API: `app/api/request/route.ts`
 QuickRequestForm
   -> POST /api/request
   -> validation / honeypot / rate limit
-  -> persistLeadSafely
-  -> Telegram delivery
-  -> updateLeadDelivery
+  -> createLead
+  -> Postgres leads table
+  -> admin leads list
 ```
 
 Lead services:
@@ -661,7 +661,6 @@ Contains:
 - phone/email/address;
 - WhatsApp URL builders;
 - product inquiry text builders;
-- optional public Telegram URL;
 - SEO brand constants.
 
 Rule: CTA links should use helpers from this file, not duplicate raw phone/WhatsApp URLs in UI.
@@ -754,9 +753,6 @@ ADMIN_SESSION_SECRET
 ADMIN_SESSION_TTL_HOURS
 NEXT_PUBLIC_GA_MEASUREMENT_ID
 NEXT_PUBLIC_GTM_ID
-NEXT_PUBLIC_TELEGRAM_URL
-TELEGRAM_BOT_TOKEN
-TELEGRAM_CHAT_ID
 MEDIA_DRIVER
 MEDIA_PUBLIC_BASE_URL
 SUPABASE_URL
@@ -808,7 +804,7 @@ User browser
     -> UI components render
     -> Client components handle filters/search/forms/tracking
     -> API routes/server actions validate and call services
-    -> DB/storage/Telegram/analytics integrations
+    -> DB/storage/analytics integrations
 ```
 
 ## 25. Catalog request flow
@@ -834,8 +830,8 @@ QuickRequestForm
     -> validate payload
     -> rate limit / honeypot
     -> create lead
-    -> send Telegram notification
-    -> update delivery status
+    -> save lead in Postgres
+    -> show lead in admin
     -> return success/error
 ```
 

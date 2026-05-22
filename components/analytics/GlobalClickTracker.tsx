@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
 const WHATSAPP_PATTERN = /wa\.me|api\.whatsapp\.com|whatsapp/i;
-const TELEGRAM_PATTERN = /t\.me|telegram/i;
 
 export function GlobalClickTracker() {
   const pathname = usePathname();
@@ -48,9 +47,6 @@ export function GlobalClickTracker() {
         return;
       }
 
-      if (TELEGRAM_PATTERN.test(href)) {
-        trackEvent("telegram_click", basePayload);
-      }
     };
 
     document.addEventListener("click", onDocumentClick);

@@ -52,8 +52,8 @@ export default async function AdminSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-600">
           <p>
-            Telegram-бот для заявок: переменные из документации проекта (токен и chat id). Без них заявки всё равно
-            сохраняются в базу.
+            Заявки с публичных форм сохраняются в Postgres и отображаются в разделе «Заявки».
+            Для уведомлений менеджеры используют админку, телефон, WhatsApp и email компании.
           </p>
           <p>
             Медиафайлы: драйвер задаётся через <code className="rounded bg-slate-100 px-1 text-xs">MEDIA_DRIVER</code>{" "}

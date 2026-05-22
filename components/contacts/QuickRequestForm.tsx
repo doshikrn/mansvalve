@@ -287,7 +287,7 @@ function getFirstTouchAttribution(currentTouch: AttributionContext): Attribution
 
 export function QuickRequestForm({
   variant = "light",
-  source = "quick-request-form",
+  source = "commercial_offer_form",
   productContext,
 }: QuickRequestFormProps) {
   const s = STYLES[variant];
@@ -415,7 +415,7 @@ export function QuickRequestForm({
 
       if (!response.ok || result?.ok !== true) {
         throw new Error(
-          result?.error ?? "Не удалось отправить заявку через сайт. Попробуйте WhatsApp.",
+          result?.error ?? "Не удалось отправить заявку через сайт. Проверьте данные и попробуйте ещё раз.",
         );
       }
 
@@ -439,7 +439,7 @@ export function QuickRequestForm({
       const message =
         error instanceof Error
           ? error.message
-          : "Ошибка отправки. Попробуйте написать нам в WhatsApp.";
+          : "Ошибка отправки. Проверьте данные и попробуйте ещё раз.";
       const page = `${window.location.pathname}${window.location.search}`;
       const pageContext = getPageAnalyticsContext(window.location.pathname);
       trackEvent("request_form_submit_error", {
@@ -453,18 +453,6 @@ export function QuickRequestForm({
       setSubmitState("error");
       setSubmitError(message);
 
-      trackEvent("whatsapp_click", {
-        source: `${source}-fallback`,
-        page,
-        product_slug: productContext?.productSlug ?? pageContext.product_slug,
-        product_name: productContext?.productName,
-        category: productContext?.productCategory ?? pageContext.category,
-      });
-      window.open(
-        buildWhatsAppUrl(values, productContext),
-        "_blank",
-        "noopener,noreferrer",
-      );
     }
   }
 
@@ -612,8 +600,8 @@ export function QuickRequestForm({
       </Button>
 
       <p className={`text-center text-xs ${s.footer}`}>
-        Заявка отправляется напрямую менеджеру. Если доставка не сработает,
-        автоматически предложим WhatsApp.
+        Заявка будет сохранена и передана менеджеру. Менеджер свяжется с вами по указанному телефону,
+        коммерческое предложение подготовим в рабочее время.
       </p>
       <p className={`text-center text-xs ${s.footer}`}>
         Отправляя форму, вы соглашаетесь с обработкой персональных данных

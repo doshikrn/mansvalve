@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { COMPANY } from "@/lib/company";
-import { persistLeadSafely, updateLeadDelivery } from "@/lib/services/leads";
+import { createLead } from "@/lib/services/leads";
 
 export const runtime = "nodejs";
 
@@ -139,15 +138,6 @@ function normalizeIsoTimestamp(value: unknown): string {
   if (Number.isNaN(date.getTime())) return "";
 
   return date.toISOString();
-}
-
-function escapeHtml(input: string): string {
-  return input
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function extractAuditFields(payload: unknown): AuditFields {
@@ -407,59 +397,6 @@ function validatePayload(payload: unknown): { ok: true; data: ValidPayload } | {
   };
 }
 
-function buildTelegramMessage(data: Omit<ValidPayload, "website">): string {
-  const lines = [
-    `<b>Новая заявка с сайта ${escapeHtml(COMPANY.name)}</b>`,
-    "",
-    `<b>Имя / организация:</b> ${escapeHtml(data.name)}`,
-    `<b>Телефон:</b> ${escapeHtml(data.phone)}`,
-    data.comment
-      ? `<b>Комментарий:</b> ${escapeHtml(data.comment)}`
-      : "<b>Комментарий:</b> -",
-    data.productName ? `<b>Товар:</b> ${escapeHtml(data.productName)}` : null,
-    data.productSlug ? `<b>Slug:</b> ${escapeHtml(data.productSlug)}` : null,
-    data.productCategory ? `<b>Категория:</b> ${escapeHtml(data.productCategory)}` : null,
-    data.productSubcategory
-      ? `<b>Подкатегория:</b> ${escapeHtml(data.productSubcategory)}`
-      : null,
-    data.utm_source ? `<b>UTM Source:</b> ${escapeHtml(data.utm_source)}` : null,
-    data.utm_medium ? `<b>UTM Medium:</b> ${escapeHtml(data.utm_medium)}` : null,
-    data.utm_campaign ? `<b>UTM Campaign:</b> ${escapeHtml(data.utm_campaign)}` : null,
-    data.utm_term ? `<b>UTM Term:</b> ${escapeHtml(data.utm_term)}` : null,
-    data.utm_content ? `<b>UTM Content:</b> ${escapeHtml(data.utm_content)}` : null,
-    data.gclid ? `<b>GCLID:</b> ${escapeHtml(data.gclid)}` : null,
-    data.yclid ? `<b>YCLID:</b> ${escapeHtml(data.yclid)}` : null,
-    data.fbclid ? `<b>FBCLID:</b> ${escapeHtml(data.fbclid)}` : null,
-    data.referrer ? `<b>Referrer:</b> ${escapeHtml(data.referrer)}` : null,
-    data.first_utm_source
-      ? `<b>First UTM Source:</b> ${escapeHtml(data.first_utm_source)}`
-      : null,
-    data.first_utm_medium
-      ? `<b>First UTM Medium:</b> ${escapeHtml(data.first_utm_medium)}`
-      : null,
-    data.first_utm_campaign
-      ? `<b>First UTM Campaign:</b> ${escapeHtml(data.first_utm_campaign)}`
-      : null,
-    data.first_utm_term ? `<b>First UTM Term:</b> ${escapeHtml(data.first_utm_term)}` : null,
-    data.first_utm_content
-      ? `<b>First UTM Content:</b> ${escapeHtml(data.first_utm_content)}`
-      : null,
-    data.first_gclid ? `<b>First GCLID:</b> ${escapeHtml(data.first_gclid)}` : null,
-    data.first_yclid ? `<b>First YCLID:</b> ${escapeHtml(data.first_yclid)}` : null,
-    data.first_fbclid ? `<b>First FBCLID:</b> ${escapeHtml(data.first_fbclid)}` : null,
-    data.first_referrer ? `<b>First Referrer:</b> ${escapeHtml(data.first_referrer)}` : null,
-    data.first_landing_path
-      ? `<b>First Landing Path:</b> ${escapeHtml(data.first_landing_path)}`
-      : null,
-    data.first_touch_at ? `<b>First Touch At:</b> ${escapeHtml(data.first_touch_at)}` : null,
-    data.source ? `<b>Источник:</b> ${escapeHtml(data.source)}` : null,
-    data.page ? `<b>Страница:</b> ${escapeHtml(data.page)}` : null,
-    `<b>Время:</b> ${escapeHtml(new Date().toISOString())}`,
-  ];
-
-  return lines.filter(Boolean).join("\n");
-}
-
 export async function POST(request: Request) {
   const rateLimit = checkRateLimit(request);
   if (rateLimit.limited) {
@@ -579,123 +516,53 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-
-  if (!botToken || !chatId) {
-    console.error("Request API misconfigured: TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID is missing.");
-    logAudit("failed", fields, "telegram_env_missing");
-    return NextResponse.json(
-      { ok: false, error: "Сервис заявок временно недоступен. Напишите нам в WhatsApp." },
-      { status: 500 },
-    );
-  }
-
-  const { website, ...messageData } = parsed.data;
-  void website;
-  const message = buildTelegramMessage(messageData);
-
-  const persisted = await persistLeadSafely({
-    name: parsed.data.name,
-    phone: parsed.data.phone,
-    comment: parsed.data.comment || null,
-    source: parsed.data.source || null,
-    page: parsed.data.page || null,
-    productName: parsed.data.productName || null,
-    productSlug: parsed.data.productSlug || null,
-    productCategory: parsed.data.productCategory || null,
-    productSubcategory: parsed.data.productSubcategory || null,
-    attribution: {
-      utm_source: parsed.data.utm_source || null,
-      utm_medium: parsed.data.utm_medium || null,
-      utm_campaign: parsed.data.utm_campaign || null,
-      utm_term: parsed.data.utm_term || null,
-      utm_content: parsed.data.utm_content || null,
-      gclid: parsed.data.gclid || null,
-      yclid: parsed.data.yclid || null,
-      fbclid: parsed.data.fbclid || null,
-      referrer: parsed.data.referrer || null,
-      first_utm_source: parsed.data.first_utm_source || null,
-      first_utm_medium: parsed.data.first_utm_medium || null,
-      first_utm_campaign: parsed.data.first_utm_campaign || null,
-      first_utm_term: parsed.data.first_utm_term || null,
-      first_utm_content: parsed.data.first_utm_content || null,
-      first_gclid: parsed.data.first_gclid || null,
-      first_yclid: parsed.data.first_yclid || null,
-      first_fbclid: parsed.data.first_fbclid || null,
-      first_referrer: parsed.data.first_referrer || null,
-      first_landing_path: parsed.data.first_landing_path || null,
-      first_touch_at: parsed.data.first_touch_at || null,
-    },
-    ip: getClientIp(request),
-    userAgent:
-      toTrimmedString(request.headers.get("user-agent"), MAX_USER_AGENT_LENGTH) || null,
-    status: "new",
-  });
-
   try {
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const leadId = await createLead({
+      name: parsed.data.name,
+      phone: parsed.data.phone,
+      comment: parsed.data.comment || null,
+      source: parsed.data.source || "commercial_offer_form",
+      page: parsed.data.page || null,
+      productName: parsed.data.productName || null,
+      productSlug: parsed.data.productSlug || null,
+      productCategory: parsed.data.productCategory || null,
+      productSubcategory: parsed.data.productSubcategory || null,
+      attribution: {
+        utm_source: parsed.data.utm_source || null,
+        utm_medium: parsed.data.utm_medium || null,
+        utm_campaign: parsed.data.utm_campaign || null,
+        utm_term: parsed.data.utm_term || null,
+        utm_content: parsed.data.utm_content || null,
+        gclid: parsed.data.gclid || null,
+        yclid: parsed.data.yclid || null,
+        fbclid: parsed.data.fbclid || null,
+        referrer: parsed.data.referrer || null,
+        first_utm_source: parsed.data.first_utm_source || null,
+        first_utm_medium: parsed.data.first_utm_medium || null,
+        first_utm_campaign: parsed.data.first_utm_campaign || null,
+        first_utm_term: parsed.data.first_utm_term || null,
+        first_utm_content: parsed.data.first_utm_content || null,
+        first_gclid: parsed.data.first_gclid || null,
+        first_yclid: parsed.data.first_yclid || null,
+        first_fbclid: parsed.data.first_fbclid || null,
+        first_referrer: parsed.data.first_referrer || null,
+        first_landing_path: parsed.data.first_landing_path || null,
+        first_touch_at: parsed.data.first_touch_at || null,
       },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }),
+      ip: getClientIp(request),
+      userAgent:
+        toTrimmedString(request.headers.get("user-agent"), MAX_USER_AGENT_LENGTH) || null,
+      status: "new",
     });
 
-    const telegramBody = (await telegramResponse.json().catch(() => null)) as
-      | { ok?: boolean; description?: string; result?: { message_id?: number } }
-      | null;
-
-    if (!telegramResponse.ok || telegramBody?.ok === false) {
-      console.error("Telegram sendMessage failed", {
-        status: telegramResponse.status,
-        description: telegramBody?.description,
-      });
-      const errorDetail =
-        telegramBody?.description
-          ? `telegram_send_failed:${telegramBody.description}`
-          : `telegram_send_failed_status_${telegramResponse.status}`;
-      logAudit("failed", fields, errorDetail);
-      if (persisted.id) {
-        await updateLeadDelivery(persisted.id, {
-          telegramDelivered: false,
-          telegramError: errorDetail,
-        });
-      }
-      return NextResponse.json(
-        { ok: false, error: "Не удалось отправить заявку через сайт. Попробуйте WhatsApp." },
-        { status: 502 },
-      );
-    }
-
-    if (persisted.id) {
-      await updateLeadDelivery(persisted.id, {
-        telegramDelivered: true,
-        telegramMessageId: telegramBody?.result?.message_id
-          ? String(telegramBody.result.message_id)
-          : null,
-      });
-    }
-
     logAudit("success", fields);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id: leadId });
   } catch (error) {
     console.error("Unexpected request API error", error);
-    logAudit("failed", fields, "telegram_network_error");
-    if (persisted.id) {
-      await updateLeadDelivery(persisted.id, {
-        telegramDelivered: false,
-        telegramError: "telegram_network_error",
-      });
-    }
+    logAudit("failed", fields, "lead_persist_failed");
     return NextResponse.json(
-      { ok: false, error: "Ошибка сети при отправке заявки. Попробуйте WhatsApp." },
-      { status: 502 },
+      { ok: false, error: "Не удалось сохранить заявку. Проверьте данные и попробуйте ещё раз." },
+      { status: 500 },
     );
   }
 }

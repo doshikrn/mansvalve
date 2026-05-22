@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
-import { COMPANY, COMPANY_TELEGRAM_PUBLIC_HREF, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
-import { TelegramIcon } from "@/components/icons/TelegramIcon";
+import { COMPANY, COMPANY_WHATSAPP_BASE_URL } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
@@ -135,17 +134,6 @@ export function Header({ categoryLinks = [], topBarLinks }: HeaderProps) {
             </div>
             <p className="px-3 pt-2 text-[10px] font-medium uppercase text-site-muted">Связь</p>
             <div className="mt-1 flex flex-wrap items-center gap-2 px-3">
-              {COMPANY_TELEGRAM_PUBLIC_HREF ? (
-                <a
-                  href={COMPANY_TELEGRAM_PUBLIC_HREF}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-site-border px-3 text-sm font-medium text-site-muted"
-                >
-                  <TelegramIcon className="h-4 w-4" />
-                  Telegram
-                </a>
-              ) : null}
               <a
                 href={COMPANY_WHATSAPP_BASE_URL}
                 target="_blank"

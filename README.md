@@ -15,7 +15,7 @@
 | Карточка товара: канон `/tovar/[slug]`, вложенные URL, серии SEO, `buildPublicProductView` | ✅ Готово |
 | Legacy `/catalog/[slug]` для товара → редирект на канон; slug aliases | ✅ Готово |
 | Админка: товары, категории (**sort_order**), импорт Excel, медиа, лиды, catalog health, серии | ✅ Готово |
-| Форма заявки + `POST /api/request` + лиды в БД + Telegram | ✅ Готово |
+| Форма заявки + `POST /api/request` + лиды в БД + админка | ✅ Готово |
 | SEO: metadata, JSON-LD, sitemap, robots | ✅ Готово |
 | Аналитика: GA4 (`gtag`, `send_page_view: false`) + опциональный GTM + `PageViewTracker` / `trackEvent` | ✅ Готово |
 | Фотографии товаров | ⏳ По мере загрузки в медиатеку |
@@ -65,8 +65,6 @@ Copy-Item .env.example .env.local
 - `SITE_URL` — публичный базовый URL сайта (canonical/OG, `sitemap.xml`, `robots.txt`). Для production задайте канонический домен с `https` (сейчас: `https://mansvalve-group.kz`), **не** IP-адрес сервера.
 - `DATABASE_URL` — строка подключения Postgres для admin/cms/leads.
 - `ADMIN_SESSION_SECRET` — секрет подписи админ-сессий (длинная случайная строка).
-- `TELEGRAM_BOT_TOKEN` — server-only токен Telegram-бота для `POST /api/request`.
-- `TELEGRAM_CHAT_ID` — server-only chat ID для получения заявок.
 - `NEXT_PUBLIC_GTM_ID` — публичный ID контейнера GTM (`GTM-XXXXXXX`).
 - `NEXT_PUBLIC_GA_MEASUREMENT_ID` — опционально; по умолчанию в коде задан измерительный ID GA4 (см. `lib/analytics-config.ts`).
 - `PUBLIC_CATALOG_SOURCE` — `json` или `db` (источник публичного каталога; см. `.env.example`).
@@ -89,7 +87,7 @@ Media storage (обязательно выбрать и настроить):
 Важно:
 
 - Если `NEXT_PUBLIC_GTM_ID` пустой: GTM не грузится, analytics events безопасно no-op.
-- Если Telegram-переменные не заданы: форма может открыть WhatsApp fallback, но это не замена рабочей server delivery.
+- Если `DATABASE_URL` не задан: форма вернёт ошибку, потому что source of truth для заявок — Postgres и раздел `/admin/leads`.
 - Если `DATABASE_URL`/`ADMIN_SESSION_SECRET` не заданы: админка и управление контентом не готовы к production.
 
 Локальная совместимость (для старых инсталляций):
@@ -148,7 +146,7 @@ Media storage (обязательно выбрать и настроить):
 - [ ] **Product pages**: канон **`/tovar/[slug]`**; убедиться, что старый `/catalog/[slug]` для товара **редиректит** на канон, метаданные и цена корректны.
 - [ ] **Forms**: отправка заявки через сайт, валидация, fallback в WhatsApp при ошибке.
 - [ ] **Admin login**: `/admin/login` авторизация проходит, сессия сохраняется.
-- [ ] **Lead creation**: после формы лид появляется в `/admin/leads`, Telegram delivery статус корректен.
+- [ ] **Lead creation**: после формы лид появляется в `/admin/leads`, админка delivery статус корректен.
 - [ ] **GTM Preview**: Tag Assistant видит контейнер, ключевые события (`page_view`, `catalog_view`, `product_view`, `request_form_*`, `whatsapp_click`, `phone_click`) приходят.
 
 ---

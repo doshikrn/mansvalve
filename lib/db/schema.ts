@@ -390,11 +390,6 @@ export const leads = pgTable(
       .$type<LeadStatusInDb>()
       .default("new"),
 
-    /** Telegram delivery bookkeeping. */
-    telegramDelivered: boolean("telegram_delivered").notNull().default(false),
-    telegramMessageId: varchar("telegram_message_id", { length: 64 }),
-    telegramError: text("telegram_error"),
-
     /** Operator ownership. */
     assignedTo: integer("assigned_to").references(() => adminUsers.id, {
       onDelete: "set null",
