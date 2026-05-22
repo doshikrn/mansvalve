@@ -14,7 +14,7 @@
 
 ### Топ-5 runtime risks
 
-1. **R-CACHE-01** — публичные страницы каталога не имеют ни `revalidate`, ни `force-dynamic`; полностью полагаются на `revalidatePath()` из админских actions. При промахах invalidation (например, изменения в JSON-источнике вне actions, фейл `redirect()`, edge-кэш CDN) пользователь видит stale данные сколь угодно долго.
+1. **R-CACHE-01** — часть публичных страниц каталога использует **`export const revalidate = 300`** (`/catalog`, `/tovar/[slug]`, вложенные товарные URL), но лендинги и часть вспомогательных маршрутов всё ещё полагаются на **`revalidatePath()`** из админских actions. При изменении данных вне actions (ручный прав JSON, миграция без revalidate, edge CDN) возможен **устаревший** контент до истечения TTL или следующего save из админки.
 2. **H-IMG-01** — отсутствует фиксированная высота / `width`/`height` для `<Image fill>` в hero и карточках без `aspect-*` (например, `app/(site)/tovar/[slug]/page.tsx` LEFT-фрейм `min-h-[280px]` без явного аспекта, `GateValveSeoProductPage` `min-h-[320px]`). При медленных сетях/SSR-fallback это даёт CLS / прыжок макета.
 3. **H-CAROUSEL-01** — `ProductShowcaseCarousel` рендерится client-only с `framer-motion` поверх SSR-разметки; первый кадр (initial opacity 0) после гидрации может «моргнуть». Плюс `setInterval(7000)` стартует сразу — на iOS Safari при выходе во вкладку/возвращении интервал может «двойнуть» (несколько слайдов за секунду).
 4. **H-CACHE-02** — admin actions делают `redirect()` сразу после `revalidatePath()`. В Next 16 Turbopack `revalidatePath` отрабатывает асинхронно; при возврате на `/admin/categories` сразу после save периодически видна **прошлая версия списка** (одно нажатие F5 чинит).
@@ -41,12 +41,9 @@
 - **Suggested minimal fix:** обернуть `GlobalClickTracker` в `<Suspense>` или сделать обоих ленивыми; не вносить логику в Suspense boundary, оставить как есть.
 - **Risk:** низкий (визуально не виден, но мешает корректному measurement).
 
-#### H-HYD-02 — `DemoNotice` рендерится по `process.env.NODE_ENV` (L)
-- **Symptoms:** в dev появляется липкий баннер, в проде — нет. Сам по себе SSR/CSR совпадает. Но компонент **не подключён в `layout.tsx`** (`Get-ChildItem` не находит usages кроме самого файла) — мёртвый код.
-- **Likely cause:** оставлен от прежней версии.
-- **Affected files:** `components/DemoNotice.tsx`.
-- **Suggested minimal fix:** удалить файл или забыть.
-- **Risk:** нулевой.
+#### H-HYD-02 — удалён неиспользуемый `DemoNotice` (L, resolved 2026-05-22)
+- **Было:** компонент не импортировался ни в одном layout.
+- **Сделано:** файл `components/DemoNotice.tsx` удалён при cleanup sprint.
 
 #### H-HYD-03 — `Date.now()` / `crypto.randomUUID()` только в `trackEvent` (L)
 - **Symptoms:** теоретическая возможность mismatch, если кто-то вызовет `trackEvent` в render-фазе.
@@ -57,11 +54,11 @@
 
 ### 2. Revalidate / cache timing
 
-#### R-CACHE-01 — публичные страницы без `revalidate` / `force-dynamic` (H)
-- **Symptoms:** на `/catalog`, `/catalog/category/[slug]`, `/tovar/[slug]`, `/zadvizhki/[slug]` после изменения админ-данных можно увидеть устаревшую версию до следующего билда/визита.
-- **Likely cause:** ни в одной публичной странице нет `export const dynamic` или `export const revalidate`. Полагаемся на `revalidatePath` из admin actions; если действие сделано не через action (например, прямой импорт каталога, ручной запуск миграции, hot-reload), кэш не сбрасывается.
+#### R-CACHE-01 — смесь ISR и `revalidatePath` (H)
+- **Symptoms:** на лендингах или редких маршрутах после изменения админ-данных можно увидеть устаревшую версию до следующего билда/сохранения; на `/catalog` и `/tovar/[slug]` максимальная задержка ≈ **5 минут** (`revalidate = 300`), если `revalidatePath` не сработал.
+- **Likely cause:** не все публичные страницы имеют одинаковую политику кэша. Часть страниц использует `export const revalidate = 300`, часть — только `revalidatePath` из admin actions; при действиях вне actions (например, прямой импорт каталога, ручной запуск миграции, hot-reload) кэш может не сброситься.
 - **Affected files:** `app/(site)/catalog/page.tsx`, `app/(site)/catalog/category/[categorySlug]/page.tsx`, `app/(site)/catalog/subcategory/[subcategorySlug]/page.tsx`, `app/(site)/tovar/[slug]/page.tsx`, `app/(site)/[categorySlug]/[landingSlug]/page.tsx`, `app/admin/categories/actions.ts`, `app/admin/products/actions.ts`, `app/admin/content/actions.ts`.
-- **Suggested minimal fix:** добавить `export const revalidate = 300` на публичные страницы или явно `force-static` + tag-based revalidate. Альтернатива — единственный `revalidateTag("public-catalog")` + `unstable_cache`.
+- **Suggested minimal fix:** расширить единый `revalidate`/`tags` на все публичные listing/product routes или ввести `revalidateTag("public-catalog")` + `unstable_cache` в адаптере.
 - **Risk:** средний (нужна аккуратность чтоб не сломать SSR).
 
 #### R-CACHE-02 — `redirect()` сразу после `revalidatePath()` (H)
@@ -138,11 +135,11 @@
 - **Suggested minimal fix:** на админ-странице добавить нижний spacer = высоте bar.
 - **Risk:** низкий.
 
-#### UI-SHIFT-02 — `ProductSectionNav` (sticky top) и `DemoNotice` (если включат) накладываются (L)
-- **Symptoms:** на dev будет два sticky подряд.
-- **Likely cause:** оба ставят `top-0 z-50` (DemoNotice) и `top-0 z-10` (nav). При активации DemoNotice nav будет «прятаться».
-- **Affected files:** `components/DemoNotice.tsx`, `components/admin/ProductForm.tsx`.
-- **Suggested minimal fix:** не критично; учесть при возврате DemoNotice.
+#### UI-SHIFT-02 — `ProductSectionNav` (sticky top) (L)
+- **Symptoms:** на узких экранах sticky-навигация в длинных формах может перекрывать контент при скролле.
+- **Likely cause:** фиксированный `top-0` + z-index у `ProductSectionNav`.
+- **Affected files:** `components/admin/ProductForm.tsx`.
+- **Suggested minimal fix:** при необходимости добавить `scroll-margin-top` секциям или ослабить sticky.
 - **Risk:** низкий.
 
 #### UI-SHIFT-03 — `object-cover` для технических изображений (M)

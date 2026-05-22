@@ -10,22 +10,18 @@
 
 | Блок | Статус |
 |---|---|
-| Главная страница (hero, УТП, схема работы, FAQ, форма) | ✅ Готово |
-| Каталог товаров — 303 позиции с ценами в тенге | ✅ Готово |
-| Структура категорий (6 кат., 15 подкатегорий) | ✅ Готово |
-| Карточки товаров (DN, PN, материал, вес, specs) | ✅ Данные готовы |
-| Форма заявки | ✅ Вёрстка готова |
-| WhatsApp-кнопка (фиксированная на всех страницах) | ✅ Готово |
-| SEO-метаданные (title, description, OG) | ✅ Готово |
-| Адаптивный дизайн (мобильная версия) | ✅ Готово |
-| Шрифт Inter + профессиональная типографика | ✅ Готово |
-| Демо-плашка в dev-режиме | ✅ Готово |
-| Фотографии товаров | ⏳ Нужны реальные фото |
-| Реальный номер телефона и WhatsApp | ⏳ Заменить плейсхолдер |
-| Страница /catalog (маршрутизация) | ⏳ Роуты в разработке |
-| Страница /catalog/[slug] (карточка товара) | ⏳ В разработке |
-| Отправка формы заявки (backend / Supabase) | ⏳ В разработке |
-| Google Analytics / Google Ads пиксель | ⏳ После деплоя |
+| Главная, маркетинговые страницы, CMS (`content_blocks`), сертификаты | ✅ Готово |
+| Каталог: листинг, фильтры, URL state, поиск в шапке, JSON или Postgres (`PUBLIC_CATALOG_SOURCE`) | ✅ Готово |
+| Карточка товара: канон `/tovar/[slug]`, вложенные URL, серии SEO, `buildPublicProductView` | ✅ Готово |
+| Legacy `/catalog/[slug]` для товара → редирект на канон; slug aliases | ✅ Готово |
+| Админка: товары, категории (**sort_order**), импорт Excel, медиа, лиды, catalog health, серии | ✅ Готово |
+| Форма заявки + `POST /api/request` + лиды в БД + Telegram | ✅ Готово |
+| SEO: metadata, JSON-LD, sitemap, robots | ✅ Готово |
+| Аналитика: GA4 (`gtag`, `send_page_view: false`) + опциональный GTM + `PageViewTracker` / `trackEvent` | ✅ Готово |
+| Фотографии товаров | ⏳ По мере загрузки в медиатеку |
+| Реальный номер телефона и WhatsApp в `lib/company` | ⏳ Проверить прод-значения |
+
+Полная карта маршрутов, кэша и архитектуры: **`ARCHITECTURE.md`**. Индекс документации: **`docs/README.md`**, статус спринта: **`docs/project-status.md`**.
 
 ---
 
@@ -72,6 +68,8 @@ Copy-Item .env.example .env.local
 - `TELEGRAM_BOT_TOKEN` — server-only токен Telegram-бота для `POST /api/request`.
 - `TELEGRAM_CHAT_ID` — server-only chat ID для получения заявок.
 - `NEXT_PUBLIC_GTM_ID` — публичный ID контейнера GTM (`GTM-XXXXXXX`).
+- `NEXT_PUBLIC_GA_MEASUREMENT_ID` — опционально; по умолчанию в коде задан измерительный ID GA4 (см. `lib/analytics-config.ts`).
+- `PUBLIC_CATALOG_SOURCE` — `json` или `db` (источник публичного каталога; см. `.env.example`).
 
 Media storage (обязательно выбрать и настроить):
 
@@ -146,8 +144,8 @@ Media storage (обязательно выбрать и настроить):
 ### Post-deploy QA checklist
 
 - [ ] **Homepage**: `/` рендерится без ошибок, CTA и навигация работают.
-- [ ] **Catalog**: `/catalog`, `/catalog/category/...`, `/catalog/subcategory/...` открываются и фильтры работают.
-- [ ] **Product pages**: `/catalog/[slug]` корректно рендерит SEO, цену/“по запросу”, CTA.
+- [ ] **Catalog**: `/catalog`, `/catalog/category/...`, `/catalog/subcategory/...`, вложенные `/catalog/.../.../...` при необходимости.
+- [ ] **Product pages**: канон **`/tovar/[slug]`**; убедиться, что старый `/catalog/[slug]` для товара **редиректит** на канон, метаданные и цена корректны.
 - [ ] **Forms**: отправка заявки через сайт, валидация, fallback в WhatsApp при ошибке.
 - [ ] **Admin login**: `/admin/login` авторизация проходит, сессия сохраняется.
 - [ ] **Lead creation**: после формы лид появляется в `/admin/leads`, Telegram delivery статус корректен.
@@ -157,14 +155,14 @@ Media storage (обязательно выбрать и настроить):
 
 ## Проверка аналитики (GTM / GA4) перед/после хостинга
 
-Убедитесь, что в окружении задан `NEXT_PUBLIC_GTM_ID` (см. `.env.example`), затем пройдите чеклист в **GTM Preview** (Tag Assistant) на целевом домене.
+Убедитесь, что при необходимости заданы `NEXT_PUBLIC_GTM_ID` и/или `NEXT_PUBLIC_GA_MEASUREMENT_ID` (см. `.env.example`), затем пройдите чеклист в **GTM Preview** (Tag Assistant) на целевом домене.
 
 | Шаг | Что проверить |
 |-----|----------------|
 | 1 | **GTM Preview** подключён к контейнеру, сайт открыт без блокировщиков; в консоли нет ошибок от `googletagmanager.com`. |
 | 2 | **`page_view`** — на первом заходе и при **переходах SPA** (главная → каталог → товар); в payload есть `page`, `pathname`, `source: app-router`. |
 | 3 | **`catalog_view`** — на `/catalog` и на `/catalog/category/...` (см. `PageViewTracker`). |
-| 4 | **`product_view`** — на странице товара `/catalog/[slug]` (дополняет `page_view`, есть `product_slug`). |
+| 4 | **`product_view`** — на канонической странице товара (обычно `/tovar/[slug]` или вложенный URL; дополняет `page_view`, есть `product_slug`). |
 | 5 | **`request_form_view`** — форма заявки попала в зону видимости (IntersectionObserver; прокрутите к форме). |
 | 6 | **`request_form_submit_success`** — успешная отправка `POST /api/request`. |
 | 7 | **`request_form_submit_error`** — ответ с ошибкой от API (или имитация). |
@@ -174,7 +172,7 @@ Media storage (обязательно выбрать и настроить):
 | 11 | **`catalog_filter_change`** — смена фильтра (категория, подкатегория, сортировка и т.д., см. `CatalogFilters`). |
 | 12 | Для событий из `lib/analytics.ts` в dataLayer: на каждом событии есть **`event_id`**, **`session_id`**, **`page`**, **`pathname`**, при необходимости **`product_slug`** / **`category`** / **`source`**. Настройте в GTM триггеры и теги GA4 / Google Ads по этим именам `event`. |
 
-**Readiness:** без `NEXT_PUBLIC_GTM_ID` клиентский слой событий отключён, сайт не падает. С GTM — bootstrap в `app/layout.tsx`, события **только** в `dataLayer` (без дублирования через `gtag` в коде приложения).
+**Readiness:** без GTM/GA скриптов из env сайт не падает: при пустом `NEXT_PUBLIC_GTM_ID` GTM не грузится; `trackEvent` пишет в `dataLayer` только если он создан GTM. В `app/layout.tsx` дополнительно подключается **GA4 `gtag.js`** (с `send_page_view: false` — просмотры страниц идут через `PageViewTracker`).
 
 ## Analytics / Ads / Retargeting handoff
 
@@ -184,9 +182,9 @@ Media storage (обязательно выбрать и настроить):
 |---|-----|
 | **GTM (контейнер)** | `GTM-NJZFLQSV` |
 | **GA4 (поток)** | `G-K08PEJC569` |
-| **Env в приложении** | `NEXT_PUBLIC_GTM_ID=GTM-NJZFLQSV` (публичная переменная) |
+| **Env в приложении** | `NEXT_PUBLIC_GTM_ID=GTM-NJZFLQSV`; опционально `NEXT_PUBLIC_GA_MEASUREMENT_ID` (иначе дефолт в `lib/analytics-config.ts`) |
 
-**Важно:** в репозитории **нет** прямых скриптов Google Ads / gtag / GA4 — только GTM. Ремаркетинг, конверсии и теги GA4 настраиваются **в GTM и интерфейсе Google Ads** маркетологом. Код пушит события в `dataLayer`; дальше маршрутизация — на стороне GTM.
+**Важно:** отдельного скрипта **Google Ads** в репозитории нет. **GA4** подключается напрямую через `gtag.js` в `app/layout.tsx` (`send_page_view: false`); **GTM** — опционально. Пользовательские события из `lib/analytics.ts` и трекеры пушат в **`dataLayer`** (удобно для маршрутизации в GTM). Ремаркетинг и конверсии Ads — на стороне GTM/интерфейса маркетолога.
 
 **События `dataLayer` (имя `event`), которые эмитит фронтенд:**
 
@@ -194,7 +192,7 @@ Media storage (обязательно выбрать и настроить):
 |---------|------------|
 | `page_view` | Просмотр страницы (в т.ч. при навигации в App Router) |
 | `catalog_view` | Витрина каталога: `/catalog`, `/catalog/category/...` |
-| `product_view` | Карточка товара `/catalog/[slug]` |
+| `product_view` | Каноническая карточка товара (например `/tovar/[slug]`) |
 | `request_form_view` | Форма заявки вошла в зону видимости |
 | `request_form_submit_success` | **Основная конверсия (lead):** успешный `POST /api/request` |
 | `request_form_submit_error` | Ошибка отправки формы |
@@ -224,7 +222,7 @@ Media storage (обязательно выбрать и настроить):
 | **Best Practices** | отсутствие ошибок в консоли, HTTPS, актуальные политики для сторонних скриптов (GTM/GA4). |
 | **SEO** | `meta` / canonical на ключевых URL, индексируемые страницы, корректный `robots.txt` при `SITE_URL`. |
 
-**Ключевые URL для прогона:** `/` (главная), `/catalog`, типичная `/catalog/[slug]`, `/contacts`, `/about`, а также **одна** страница категории и подкатегории из каталога. После смены изображений или шрифтов — повторить выборочно.
+**Ключевые URL для прогона:** `/` (главная), `/catalog`, типичная **`/tovar/[slug]`**, `/contacts`, `/about`, одна страница категории и подкатегории, один SEO-лендинг (например `/zadvizhki/...` если включён в конфиге).
 
 ---
 
@@ -237,10 +235,9 @@ Media storage (обязательно выбрать и настроить):
    - Блок «Почему MANSVALVE» — 4 преимущества
    - Превью каталога — 6 категорий
 
-2. **Каталог товаров** (`/catalog`) ← *в разработке, показать структуру*
-   - 303 реальных товара с ценами в тенге
-   - Правильные названия: «Задвижка чугунная 30ч6бр DN150 PN16»
-   - Фильтрация по DN, PN, материалу, категории
+2. **Каталог товаров** (`/catalog`)
+   - Фильтры, сортировка, пагинация, поиск
+   - Переход в каноническую карточку **`/tovar/[slug]`** (или вложенный URL для отдельных категорий)
 
 3. **Схема работы** (прокрутить на главной)
    - 5 шагов, взятых дословно из брифа клиента
@@ -253,17 +250,13 @@ Media storage (обязательно выбрать и настроить):
 
 ---
 
-### 🔧 Что будет доработано перед запуском
+### 🔧 Перед запуском проверить
 
-- [ ] Заменить номер телефона `+7 (700) 123-45-67` на реальный
-- [ ] Заменить ссылку WhatsApp на реальный номер
-- [ ] Добавить реальные фотографии товаров (или качественные стоковые)
-- [ ] Создать страницы каталога (`/catalog`, `/catalog/[category]`, `/catalog/[category]/[slug]`)
-- [ ] Подключить отправку заявок (Supabase / email / Telegram-бот)
-- [ ] Добавить логотип компании вместо иконки
-- [ ] Заполнить страницы «О компании» и «Контакты»
-- [ ] Настроить Google Analytics и Google Ads конверсии
-- [ ] SSL + хостинг (Vercel или собственный сервер)
+- [ ] Контакты и WhatsApp в `lib/company` / настройках — боевые значения
+- [ ] `SITE_URL`, `DATABASE_URL`, `PUBLIC_CATALOG_SOURCE=db` на production
+- [ ] Миграции БД применены (`npm run db:migrate`), каталог импортирован при необходимости
+- [ ] Медиа-драйвер production (`MEDIA_DRIVER=supabase`) и bucket
+- [ ] GTM/GA env заданы на хостинге
 
 ---
 
@@ -273,33 +266,30 @@ Media storage (обязательно выбрать и настроить):
 - **Styling:** Tailwind CSS v4
 - **UI Components:** shadcn/ui (Button, Card, Dialog, etc.)
 - **Icons:** lucide-react
-- **Database:** Supabase (подключён, настройка заявок — в разработке)
-- **Font:** Inter (Cyrillic subset)
-- **SEO:** next-seo
+- **Database:** Postgres (часто Supabase) + Drizzle ORM
+- **SEO / metadata:** Next.js `Metadata` API, JSON-LD в `lib/structured-data.ts`
 
-## Структура проекта
+## Структура проекта (кратко)
 
 ```
 mansvalve/
-├── app/
-│   ├── layout.tsx       # Root layout: Inter font, metadata, DemoNotice
-│   ├── page.tsx         # Главная страница
-│   └── globals.css      # Tailwind + shadcn theme
-├── components/
-│   ├── DemoNotice.tsx   # Плашка "демо-версия" (только в dev)
-│   └── ui/              # shadcn компоненты
-└── lib/
-    └── catalog-data.ts  # 303 товара из Excel + категории + хелперы
+├── app/                    # App Router: (site), admin, api, sitemap, robots
+├── components/             # UI: catalog, admin, sections, analytics, seo
+├── lib/                    # Каталог, БД, CMS, поиск, аналитика, storage
+├── data/                   # JSON снимок каталога (режим json)
+├── docs/                   # Документация (см. docs/README.md)
+├── scripts/                # Импорт, миграции, иконки, аудиты
+└── public/                 # Статика, uploads (local media)
 ```
+
+Подробная карта файлов и потоков: **`ARCHITECTURE.md`**.
 
 ## Каталог данных
 
-Файл `lib/catalog-data.ts` содержит:
-- **303 уникальных товара** с реальными ценами из Excel
-- Правильный формат названий: `Тип + модель + DN + PN`
-- Поля: `id, name, slug, category, subcategory, dn, pn, material, price, priceByRequest, weight, specs, shortDescription`
-- **125 товаров** с `priceByRequest: true` (цена < 50 000 ₸ или не указана)
-- Хелперы: `getProductsByCategory()`, `getProductBySlug()`, `searchProducts()`
+- **Режим `PUBLIC_CATALOG_SOURCE=json`:** чтение из `data/catalog-products.json` (+ overrides) через адаптер в `lib/public-catalog`.
+- **Режим `PUBLIC_CATALOG_SOURCE=db`:** категории/товары из Postgres (см. `lib/db/schema.ts`, импорт `npm run db:import-catalog`).
+- Публичный код **не** читает каталог напрямую из `lib/catalog-data.ts` — только через **`lib/public-catalog`** (`buildPublicProductView`, listing DTO и т.д.).
+- Утилиты совместимости и типы для JSON-миграций могут жить в `lib/catalog-data.ts` / смежных модулях — см. код адаптера.
 
 ---
 

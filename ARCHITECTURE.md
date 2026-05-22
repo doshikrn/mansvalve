@@ -1,6 +1,6 @@
 # Архитектура проекта MANSVALVE GROUP
 
-Обновлено: 2026-05-06  
+Обновлено: 2026-05-22  
 Статус: AS-IS, актуально по текущему коду проекта.  
 Аудитория: владелец проекта, техлид, разработчик, подрядчик по SEO/Ads.
 
@@ -26,7 +26,7 @@
 - DB: Postgres, Drizzle ORM, postgres driver.
 - Auth: JWT в httpOnly cookie, jose, bcryptjs.
 - Validation: zod.
-- Analytics: GA4 `G-K08PEJC569`, optional GTM через `NEXT_PUBLIC_GTM_ID`.
+- Analytics: GA4 `gtag.js` (measurement id по умолчанию `G-K08PEJC569` или `NEXT_PUBLIC_GA_MEASUREMENT_ID`), optional GTM через `NEXT_PUBLIC_GTM_ID`.
 - Media: local storage или Supabase storage.
 - Catalog source: JSON или DB через единый public adapter.
 
@@ -75,14 +75,19 @@ mansvalve/
 │   │   ├── catalog/
 │   │   │   ├── page.tsx
 │   │   │   ├── [slug]/page.tsx
+│   │   │   ├── [slug]/[subcategorySlug]/page.tsx
+│   │   │   ├── [slug]/[subcategorySlug]/[productSlug]/page.tsx
 │   │   │   ├── category/[categorySlug]/page.tsx
 │   │   │   └── subcategory/[subcategorySlug]/page.tsx
+│   │   ├── tovar/[slug]/page.tsx
+│   │   ├── klapany/obratnye/[landingSlug]/page.tsx
 │   │   └── [categorySlug]/[landingSlug]/page.tsx
 │   ├── admin/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   ├── login/
-│   │   ├── products/
+│   │   ├── catalog-health/
+│   │   ├── products/ (+ import/, series/)
 │   │   ├── categories/
 │   │   ├── certificates/
 │   │   ├── content/
@@ -147,7 +152,7 @@ mansvalve/
 │   ├── build-app-icons.mjs
 │   ├── smoke-site-content.ts
 │   └── db/
-├── proxy.ts
+├── proxy.ts                 # Edge guard для /admin/* (Next.js 16, бывший middleware)
 ├── next.config.ts
 ├── drizzle.config.ts
 ├── package.json
@@ -165,8 +170,8 @@ mansvalve/
 - global metadata и favicon/app icons;
 - `metadataBase` через `getSiteBaseUrl()`;
 - Inter font;
-- GA4 `gtag.js`;
-- optional GTM bootstrap;
+- GA4 `gtag.js` + inline bootstrap (`send_page_view: false`);
+- optional GTM bootstrap + noscript iframe;
 - global JSON-LD `Organization` и `WebSite`;
 - глобальные клиентские трекеры;
 - toaster.
@@ -204,11 +209,15 @@ mansvalve/
 | `/delivery` | Доставка |
 | `/privacy` | Политика конфиденциальности |
 | `/terms` | Пользовательские условия |
-| `/catalog` | Общий каталог с фильтрами |
-| `/catalog/[slug]` | Карточка товара |
-| `/catalog/category/[categorySlug]` | Категория каталога |
-| `/catalog/subcategory/[subcategorySlug]` | Подкатегория каталога |
-| `/[categorySlug]/[landingSlug]` | SEO landing pages для коммерческих запросов |
+| `/catalog` | Общий листинг каталога с фильтрами и пагинацией |
+| `/catalog/category/[categorySlug]` | Листинг по категории (канонический путь категории) |
+| `/catalog/subcategory/[subcategorySlug]` | Листинг по подкатегории |
+| `/catalog/[categorySlug]` | **Диспетчер:** если `slug` — товар → **308** на канонический URL товара; если категория → листинг категории (см. `CatalogCategoryPage`) |
+| `/catalog/[categorySlug]/[subcategorySlug]` | Листинг в контексте вложенной структуры URL |
+| `/catalog/[categorySlug]/[subcategorySlug]/[productSlug]` | Карточка товара во вложенном URL; при несовпадении с `buildPublicProductView().canonicalPath` → **308** на канон |
+| `/tovar/[slug]` | Основной публичный шаблон карточки товара для типового канона `/tovar/...` |
+| `/[categorySlug]/[landingSlug]` | SEO landing pages (фильтры из конфига) |
+| `/klapany/obratnye/[landingSlug]` | Отдельная ветка SEO-страниц для обратных клапанов |
 | `/robots.txt` | Metadata route `app/robots.ts` |
 | `/sitemap.xml` | Metadata route `app/sitemap.ts` |
 
@@ -254,6 +263,7 @@ interface CatalogLandingPage {
 ### Ключевые файлы
 
 - `components/catalog/CatalogShell.tsx` — server-side orchestration: фильтрация, пагинация, JSON-LD item list.
+- `lib/catalog-query/*` — движок запросов листинга (фасеты, DTO) при DB-режиме.
 - `components/catalog/CatalogFilters.tsx` — client UI фильтров, URL state, debounce search.
 - `components/catalog/ProductGrid.tsx` — список товаров.
 - `components/catalog/ProductCard.tsx` — карточка товара.
@@ -262,6 +272,20 @@ interface CatalogLandingPage {
 - `lib/catalog-seo.ts` — SEO/taxonomy/filter constants, product title builder, landing pages.
 - `lib/public-catalog/*` — единый adapter для JSON/DB.
 - `lib/search/*` — поиск, fuzzy, DTO.
+
+### Канонический URL товара
+
+Единая логика: `buildPublicProductView()` в `lib/public-catalog/product-view.ts` → `buildProductDetailContent()` → `resolveProductCanonicalPath()` в `lib/product-detail-content.ts`:
+
+- если товар привязан к **серии** (`getSeriesSeoPageForProduct`) → канон = путь серии (`getSeriesPagePath`);
+- если категория `klapany` и задана подкатегория → канон = вложенный путь `catalogNestedProductPath("klapany", subcategory, slug)`;
+- иначе → **`/tovar/[productSlug]`**.
+
+Любой legacy URL (в т.ч. `/catalog/[slug]` только с slug товара) отдаёт **308** на `canonicalPath` + сохранение query string где применимо.
+
+### Slug aliases
+
+Файл: `lib/public-catalog/slug-aliases.ts`. При смене slug в админке старый slug может храниться в таблице алиасов; резолвер вычисляет текущий канонический путь и страницы товара выполняют **permanent redirect**.
 
 ### Фильтры
 
@@ -311,27 +335,17 @@ page
 - в WhatsApp inquiry text;
 - в product metadata.
 
-### Product SEO
+### Product SEO и страницы товара
 
-Файл: `app/(site)/catalog/[slug]/page.tsx`
+Основные route handlers:
 
-Title:
+- `app/(site)/tovar/[slug]/page.tsx` — канон для `/tovar/...`;
+- `app/(site)/catalog/[slug]/[subcategorySlug]/[productSlug]/page.tsx` — вложенный URL;
+- `app/(site)/catalog/[slug]/page.tsx` — диспетчер категории vs legacy товарный slug → редирект.
 
-```text
-Купить [название товара] в Казахстане | MANSVALVE GROUP
-```
+Title / description / H1 собираются из `buildPublicProductView` (серии могут переопределять SEO).
 
-Description:
-
-```text
-[Название товара] с поставкой по Казахстану. Работаем с НДС, предоставляем сертификаты, паспорт изделия и гарантию. КП за 15 минут.
-```
-
-H1:
-
-```text
-[Название товара]
-```
+Ключевые публичные страницы каталога/товара используют **`export const revalidate = 300`** (ISR ~5 минут), чтобы снизить нагрузку на БД и ускорить TTFB; после публикации в админке применяется точечный **`revalidatePath`** из server actions (см. действия сохранения товаров/категорий).
 
 ### Category SEO
 
@@ -363,6 +377,7 @@ H1:
 ```text
 getPublicCatalogCategories()
 getPublicCatalogProducts()
+getPublicCatalogListingProducts()
 getPublicProductBySlug()
 getPublicCategoryBySlug()
 getPublicSubcategoryBySlug()
@@ -372,8 +387,8 @@ getPublicProductsBySubcategory()
 
 Source selection:
 
-- `PUBLIC_CATALOG_SOURCE=json` — `data/catalog-products.json`;
-- `PUBLIC_CATALOG_SOURCE=db` — Postgres через Drizzle;
+- `PUBLIC_CATALOG_SOURCE=json` — `data/catalog-products.json` (+ overrides); режим **recovery / dev** когда БД недоступна или нужен зафиксированный снимок.
+- `PUBLIC_CATALOG_SOURCE=db` — Postgres через Drizzle (рекомендуется для production после импорта и parity-check).
 - legacy `PUBLIC_CATALOG_FROM_DB=true` тоже поддерживается.
 
 JSON adapter:
@@ -454,7 +469,7 @@ Admin routes находятся в `app/admin`.
 
 ### Auth
 
-- `proxy.ts` защищает `/admin/*`;
+- `proxy.ts` защищает `/admin/*` на Edge (JWT verify);
 - `lib/auth/session.ts` — JWT session;
 - `lib/auth/current-user.ts` — текущий admin;
 - `lib/auth/password.ts` — bcrypt;
@@ -466,7 +481,8 @@ Admin routes находятся в `app/admin`.
 |---|---|
 | Login | `app/admin/login/*` |
 | Dashboard | `app/admin/page.tsx` |
-| Products | `app/admin/products/*`, `components/admin/ProductForm.tsx` |
+| Catalog health | `app/admin/catalog-health/page.tsx` |
+| Products | `app/admin/products/*`, `import/`, `series/`, `components/admin/ProductForm.tsx` |
 | Categories | `app/admin/categories/*`, `CategorySeoFields.tsx` |
 | Certificates | `app/admin/certificates/*`, `CertificateForm.tsx` |
 | Leads | `app/admin/leads/*`, `LeadEditForm.tsx` |
@@ -565,13 +581,11 @@ Builders: `lib/structured-data.ts`
 
 В sitemap входят:
 
-- static pages;
+- статические страницы;
 - SEO landing pages;
-- catalog category pages;
-- catalog subcategory pages;
-- product pages.
-
-Дедупликация URL: `uniqueSitemapEntries()`.
+- страницы категорий/подкатегорий каталога;
+- канонические URL товаров (**`/tovar/[slug]`**, вложенные `/catalog/.../.../...` при необходимости);
+- дедупликация через `uniqueSitemapEntries()`.
 
 Base URL: `lib/site-url.ts`, default `https://mansvalve-group.kz`.
 
