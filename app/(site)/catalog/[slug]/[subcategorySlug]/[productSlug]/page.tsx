@@ -1,9 +1,16 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
+import { CatalogProductTovarView } from "@/components/catalog/CatalogProductTovarView";
 import { GateValveSeoProductPage } from "@/components/catalog/GateValveSeoProductPage";
-import { getPublicProductBySlug } from "@/lib/public-catalog";
+import { prepareTovarProductPageData } from "@/components/catalog/tovar-product-presentation";
+import {
+  getPublicCatalogCategories,
+  getPublicCatalogProducts,
+  getPublicProductBySlug,
+} from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
 import {
   getRelatedSeriesSeoPages,
@@ -43,6 +50,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: view.seoDescription,
       type: "website",
       url: view.canonicalUrl,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       images: [{ url: view.primaryImageUrl, alt: view.primaryImageAlt }],
     },
@@ -69,13 +77,27 @@ export default async function CatalogNestedProductPage({ params, searchParams }:
   }
 
   const seriesPage = getSeriesSeoPageForProduct(product);
-  if (!seriesPage) {
-    notFound();
+  if (seriesPage) {
+    const relatedPages = getRelatedSeriesSeoPages(seriesPage);
+    return (
+      <GateValveSeoProductPage page={seriesPage} product={product} relatedPages={relatedPages} />
+    );
   }
 
-  const relatedPages = getRelatedSeriesSeoPages(seriesPage);
+  if (
+    slug === "klapany" &&
+    product.category === "klapany" &&
+    product.subcategory === subcategorySlug
+  ) {
+    const [categories, allProducts] = await Promise.all([
+      getPublicCatalogCategories(),
+      getPublicCatalogProducts(),
+    ]);
+    const data = await prepareTovarProductPageData(product, categories, allProducts);
+    return <CatalogProductTovarView {...data} />;
+  }
 
-  return <GateValveSeoProductPage page={seriesPage} product={product} relatedPages={relatedPages} />;
+  notFound();
 }
 
 function buildQueryString(query: Record<string, string | string[] | undefined>) {

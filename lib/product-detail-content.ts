@@ -1,4 +1,5 @@
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import { catalogNestedProductPath } from "@/lib/catalog-routes";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { normalizeProductDetailBlocks } from "@/lib/product-detail-blocks";
 import {
@@ -22,6 +23,7 @@ export function buildProductDetailContent(
   product: PublicCatalogProduct,
 ): ProductDetailContent {
   const seoPage = getSeriesSeoPageForProduct(product);
+  const canonicalPath = resolveProductCanonicalPath(product, seoPage);
   const customBlocks = product.detailBlocks
     ? normalizeProductDetailBlocks(product.detailBlocks)
     : undefined;
@@ -40,8 +42,19 @@ export function buildProductDetailContent(
     qualityDocuments:
       customBlocks?.qualityDocuments ?? seoPage?.qualityDocuments ?? [],
     supplyTerms: customBlocks?.supplyTerms ?? seoPage?.supplyTerms ?? [],
-    canonicalPath: seoPage ? getSeriesPagePath(seoPage) : `/tovar/${product.slug}`,
+    canonicalPath,
   };
+}
+
+function resolveProductCanonicalPath(
+  product: PublicCatalogProduct,
+  seoPage: ReturnType<typeof getSeriesSeoPageForProduct>,
+): string {
+  if (seoPage) return getSeriesPagePath(seoPage);
+  if (product.category === "klapany" && product.subcategory?.trim()) {
+    return catalogNestedProductPath("klapany", product.subcategory, product.slug);
+  }
+  return `/tovar/${product.slug}`;
 }
 
 function pickDescriptionParagraphs(
