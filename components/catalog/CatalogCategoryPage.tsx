@@ -6,9 +6,8 @@ import { ChevronRight, ShieldCheck, Truck, BadgeCheck, FileText } from "lucide-r
 
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
-  getPublicCategoryBySlug,
   getPublicProductsByCategory,
+  getPublicCategoryBySlug,
   type PublicCatalogCategory as Category,
 } from "@/lib/public-catalog";
 import {
@@ -84,9 +83,8 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
   if (!category) notFound();
 
   const resolvedSearch = await searchParams;
-  const [allProducts, allCategories, categoryProducts, seo, heroImageUrl, metaDescriptionOverride] =
+  const [allCategories, categoryProducts, seo, heroImageUrl, metaDescriptionOverride] =
     await Promise.all([
-      getPublicCatalogProducts(),
       getPublicCatalogCategories(),
       getPublicProductsByCategory(category.id),
       resolveCategorySeoForPublicPage(categorySlug),
@@ -241,7 +239,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <CatalogShell
-          products={allProducts}
+          products={categoryProducts}
           categories={displayCategories}
           searchParams={resolvedSearch}
           lockedCategoryId={category.id}

@@ -15,6 +15,7 @@ import type {
   PublicCatalogProduct,
   PublicCatalogSubcategory,
 } from "./types";
+import { toCatalogListProduct } from "./catalog-list-product";
 
 function toPublicCategory(
   category: (typeof jsonCategories)[number],
@@ -51,6 +52,10 @@ export const jsonCatalogAdapter: PublicCatalogAdapter = {
     return jsonProducts.map(toPublicProduct);
   },
 
+  async getListingProducts() {
+    return jsonProducts.map((p) => toCatalogListProduct(toPublicProduct(p)));
+  },
+
   async getCategoryBySlug(slug) {
     const category = jsonGetCategoryBySlug(slug);
     return category ? toPublicCategory(category) : undefined;
@@ -85,10 +90,14 @@ export const jsonCatalogAdapter: PublicCatalogAdapter = {
   },
 
   async getProductsByCategory(categoryId) {
-    return jsonGetProductsByCategory(categoryId).map(toPublicProduct);
+    return jsonGetProductsByCategory(categoryId).map((p) =>
+      toCatalogListProduct(toPublicProduct(p)),
+    );
   },
 
   async getProductsBySubcategory(subcategoryId) {
-    return jsonGetProductsBySubcategory(subcategoryId).map(toPublicProduct);
+    return jsonGetProductsBySubcategory(subcategoryId).map((p) =>
+      toCatalogListProduct(toPublicProduct(p)),
+    );
   },
 };

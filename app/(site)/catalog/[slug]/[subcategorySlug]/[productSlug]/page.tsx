@@ -6,7 +6,7 @@ import { GateValveSeoProductPage } from "@/components/catalog/GateValveSeoProduc
 import { prepareTovarProductPageData } from "@/components/catalog/tovar-product-presentation";
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
+  getPublicCatalogListingProducts,
   getPublicProductBySlug,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
@@ -91,7 +91,7 @@ export default async function CatalogNestedProductPage({ params, searchParams }:
   ) {
     const [categories, allProducts] = await Promise.all([
       getPublicCatalogCategories(),
-      getPublicCatalogProducts(),
+      getPublicCatalogListingProducts(),
     ]);
     const data = await prepareTovarProductPageData(product, categories, allProducts);
     return <CatalogProductTovarView {...data} />;

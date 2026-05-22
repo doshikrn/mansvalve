@@ -2,14 +2,14 @@ import Link from "next/link";
 import { ArrowRight, Clock, FileText, MapPin, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductShowcaseCarousel } from "@/components/sections/ProductShowcaseCarousel";
-import { getPublicCatalogProducts } from "@/lib/public-catalog";
+import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
 import { pickProductsBySlugs } from "@/lib/product-showcase";
 import { resolveHomeHero, resolveHomeProductShowcases } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
 export async function Hero() {
   const [prods, showcaseContent] = await Promise.all([
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
     resolveHomeProductShowcases(),
   ]);
   const heroContent = await resolveHomeHero(prods.length);

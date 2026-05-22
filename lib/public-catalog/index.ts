@@ -27,6 +27,8 @@ export {
   type PublicProductView,
 } from "./product-view";
 
+export { toCatalogListProduct } from "./catalog-list-product";
+
 export function getPublicCatalogSource(): PublicCatalogSource {
   const explicit = process.env.PUBLIC_CATALOG_SOURCE?.trim().toLowerCase();
   if (explicit === "json" || explicit === "db") {
@@ -123,6 +125,13 @@ export const getPublicCatalogProducts = cache(async function getPublicCatalogPro
   PublicCatalogProduct[]
 > {
   return withSafeFallback((adapter) => adapter.getProducts());
+});
+
+/** Listing, filters, search: lighter rows (no long bodies / documents / galleries). */
+export const getPublicCatalogListingProducts = cache(async function getPublicCatalogListingProducts(): Promise<
+  PublicCatalogProduct[]
+> {
+  return withSafeFallback((adapter) => adapter.getListingProducts());
 });
 
 export const getPublicProductBySlug = cache(async function getPublicProductBySlug(

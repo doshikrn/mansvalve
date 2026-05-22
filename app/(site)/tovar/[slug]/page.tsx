@@ -5,7 +5,7 @@ import { CatalogProductTovarView } from "@/components/catalog/CatalogProductTova
 import { prepareTovarProductPageData } from "@/components/catalog/tovar-product-presentation";
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
+  getPublicCatalogListingProducts,
   getPublicProductBySlug,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
@@ -20,7 +20,7 @@ export const dynamicParams = true;
 const tovarPathForSlug = (slug: string) => `/tovar/${slug}`;
 
 export async function generateStaticParams() {
-  const products = await getPublicCatalogProducts();
+  const products = await getPublicCatalogListingProducts();
   return products
     .filter((p) => buildPublicProductView(p).canonicalPath === tovarPathForSlug(p.slug))
     .map((p) => ({ slug: p.slug }));
@@ -91,7 +91,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
   const [product, categories, allProducts] = await Promise.all([
     getPublicProductBySlug(slug),
     getPublicCatalogCategories(),
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
   ]);
 
   if (!product) {

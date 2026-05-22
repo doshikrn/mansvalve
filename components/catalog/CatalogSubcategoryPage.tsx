@@ -5,7 +5,6 @@ import { ChevronRight } from "lucide-react";
 
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
   getPublicProductsBySubcategory,
   getPublicSubcategoryBySlug,
   type PublicCatalogCategory as Category,
@@ -116,8 +115,7 @@ export async function CatalogSubcategoryPage({
   if (!context) notFound();
 
   const resolvedSearch = await searchParams;
-  const [allProducts, allCategories, subcategoryProducts] = await Promise.all([
-    getPublicCatalogProducts(),
+  const [allCategories, subcategoryProducts] = await Promise.all([
     getPublicCatalogCategories(),
     getPublicProductsBySubcategory(context.subcategory.id),
   ]);
@@ -197,7 +195,7 @@ export async function CatalogSubcategoryPage({
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <CatalogShell
-          products={allProducts}
+          products={subcategoryProducts}
           categories={allCategories}
           searchParams={resolvedSearch}
           lockedCategoryId={context.category.id}

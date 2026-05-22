@@ -1,11 +1,11 @@
 import { CategoriesClient } from "@/components/sections/CategoriesClient";
-import { getPublicCatalogProducts } from "@/lib/public-catalog";
+import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
 import { pickProductsBySlugs } from "@/lib/product-showcase";
 import { resolveHomeCategories, resolveHomeProductShowcases } from "@/lib/site-content/public";
 
 export async function Categories() {
   const [products, showcaseContent, copy] = await Promise.all([
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
     resolveHomeProductShowcases(),
     resolveHomeCategories(),
   ]);

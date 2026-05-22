@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPublicCatalogProducts } from "@/lib/public-catalog";
+import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { searchPublicProducts } from "@/lib/search/product-search";
 import type { ProductSearchItemDto } from "@/lib/search/product-search-dto";
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     Math.max(1, limitParam ? parseInt(limitParam, 10) || DEFAULT_LIMIT : DEFAULT_LIMIT),
   );
 
-  const products = await getPublicCatalogProducts();
+  const products = await getPublicCatalogListingProducts();
   const hits = searchPublicProducts(products, rawQ, limit);
 
   const out: ProductSearchItemDto[] = hits.map((p) => {

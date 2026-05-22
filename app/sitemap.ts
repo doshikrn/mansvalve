@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
+  getPublicCatalogListingProducts,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteBaseUrl();
   const lastModified = new Date();
   const [products, categories] = await Promise.all([
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
     getPublicCatalogCategories(),
   ]);
 

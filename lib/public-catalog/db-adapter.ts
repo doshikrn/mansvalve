@@ -125,6 +125,107 @@ async function fetchProductRows(): Promise<ProductRow[]> {
     );
 }
 
+type ListingProductRow = {
+  product: {
+    id: number;
+    slug: string;
+    name: string;
+    publicTitle: string | null;
+    h1Override: string | null;
+    categoryName: string;
+    subcategoryName: string | null;
+    dn: number | null;
+    pn: number | null;
+    thread: string | null;
+    material: string | null;
+    connectionType: string | null;
+    controlType: string | null;
+    model: string | null;
+    price: (typeof productsTable.$inferSelect)["price"];
+    priceByRequest: boolean;
+    weight: (typeof productsTable.$inferSelect)["weight"];
+    shortDescription: string | null;
+    sortOrder: number;
+  };
+  category: {
+    slug: string;
+    name: string;
+  };
+  subcategory: {
+    slug: string;
+    name: string;
+  } | null;
+};
+
+async function fetchListingProductRows(filters?: {
+  categorySlug?: string;
+  subcategorySlug?: string;
+}): Promise<ListingProductRow[]> {
+  const db = getDb();
+  return db
+    .select({
+      product: {
+        id: productsTable.id,
+        slug: productsTable.slug,
+        name: productsTable.name,
+        publicTitle: productsTable.publicTitle,
+        h1Override: productsTable.h1Override,
+        categoryName: productsTable.categoryName,
+        subcategoryName: productsTable.subcategoryName,
+        dn: productsTable.dn,
+        pn: productsTable.pn,
+        thread: productsTable.thread,
+        material: productsTable.material,
+        connectionType: productsTable.connectionType,
+        controlType: productsTable.controlType,
+        model: productsTable.model,
+        price: productsTable.price,
+        priceByRequest: productsTable.priceByRequest,
+        weight: productsTable.weight,
+        shortDescription: productsTable.shortDescription,
+        sortOrder: productsTable.sortOrder,
+      },
+      category: {
+        slug: categoriesTable.slug,
+        name: categoriesTable.name,
+      },
+      subcategory: {
+        slug: subcategoriesTable.slug,
+        name: subcategoriesTable.name,
+      },
+    })
+    .from(productsTable)
+    .innerJoin(categoriesTable, eq(categoriesTable.id, productsTable.categoryId))
+    .leftJoin(
+      subcategoriesTable,
+      eq(subcategoriesTable.id, productsTable.subcategoryId),
+    )
+    .where(
+      and(
+        eq(productsTable.isActive, true),
+        eq(categoriesTable.isActive, true),
+        ...(filters?.categorySlug ? [eq(categoriesTable.slug, filters.categorySlug)] : []),
+        ...(filters?.subcategorySlug ? [eq(subcategoriesTable.slug, filters.subcategorySlug)] : []),
+      ),
+    )
+    .orderBy(
+      asc(categoriesTable.sortOrder),
+      asc(productsTable.sortOrder),
+      asc(productsTable.name),
+    );
+}
+
+async function buildListingProductsFromRows(rows: ListingProductRow[]): Promise<PublicCatalogProduct[]> {
+  const productIds = rows.map((row) => row.product.id);
+  const [primaryImageMap, specsMap] = await Promise.all([
+    fetchPrimaryImageMap(productIds),
+    fetchProductSpecsMap(productIds),
+  ]);
+  return rows.map((row) =>
+    mapListingProductRow(row, primaryImageMap.get(row.product.id), specsMap.get(row.product.id) ?? {}),
+  );
+}
+
 async function fetchPrimaryImageMap(
   productIds: number[],
 ): Promise<Map<number, { url: string; alt: string }>> {
@@ -248,6 +349,45 @@ function mapProductRow(
   };
 }
 
+function mapListingProductRow(
+  row: ListingProductRow,
+  primaryImage: { url: string; alt: string } | undefined,
+  specs: Record<string, string>,
+): PublicCatalogProduct {
+  const product = row.product;
+  const category = row.category;
+  const subcategory = row.subcategory;
+  return {
+    id: String(product.id),
+    name: product.name,
+    publicTitle: product.publicTitle ?? undefined,
+    h1Override: product.h1Override ?? undefined,
+    slug: product.slug,
+    category: category.slug,
+    subcategory: subcategory?.slug ?? "",
+    subcategoryName: subcategory?.name ?? product.subcategoryName ?? "",
+    categoryName: category.name,
+    dn: product.dn ?? undefined,
+    pn: product.pn ?? undefined,
+    thread: product.thread ?? undefined,
+    material: product.material || "Не указан",
+    connectionType: product.connectionType || "Не указано",
+    controlType: product.controlType || "Не указано",
+    model: product.model || "",
+    price: toNumber(product.price),
+    priceByRequest: product.priceByRequest || product.price == null,
+    weight: toNumber(product.weight),
+    specs,
+    shortDescription: product.shortDescription || "",
+    longDescription: undefined,
+    detailBlocks: undefined,
+    primaryImageUrl: primaryImage?.url,
+    primaryImageAlt: primaryImage?.alt || undefined,
+    documents: undefined,
+    images: undefined,
+  };
+}
+
 function toNumber(value: string | number | null): number | undefined {
   if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
   if (typeof value === "string") {
@@ -306,6 +446,11 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
       mapped.specs = specsMap.get(row.product.id) ?? {};
       return mapped;
     });
+  },
+
+  async getListingProducts() {
+    const rows = await fetchListingProductRows();
+    return buildListingProductsFromRows(rows);
   },
 
   async getCategoryBySlug(slug) {
@@ -427,12 +572,12 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
   },
 
   async getProductsByCategory(categoryId) {
-    const products = await this.getProducts();
-    return products.filter((product) => product.category === categoryId);
+    const rows = await fetchListingProductRows({ categorySlug: categoryId });
+    return buildListingProductsFromRows(rows);
   },
 
   async getProductsBySubcategory(subcategoryId) {
-    const products = await this.getProducts();
-    return products.filter((product) => product.subcategory === subcategoryId);
+    const rows = await fetchListingProductRows({ subcategorySlug: subcategoryId });
+    return buildListingProductsFromRows(rows);
   },
 };

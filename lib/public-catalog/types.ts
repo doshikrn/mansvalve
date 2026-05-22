@@ -67,6 +67,8 @@ export interface PublicCatalogCategory {
 export interface PublicCatalogAdapter {
   getCategories(): Promise<PublicCatalogCategory[]>;
   getProducts(): Promise<PublicCatalogProduct[]>;
+  /** Listing / filters / search: no long bodies, documents, or image galleries. */
+  getListingProducts(): Promise<PublicCatalogProduct[]>;
   getCategoryBySlug(slug: string): Promise<PublicCatalogCategory | undefined>;
   getCategoryById(id: string): Promise<PublicCatalogCategory | undefined>;
   getSubcategoryBySlug(

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { COMPANY, COMPANY_BRAND_SEO } from "@/lib/company";
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
+  getPublicCatalogListingProducts,
 } from "@/lib/public-catalog";
 import {
   applyAboutCounts,
@@ -48,7 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AboutPage() {
   const [categories, products, about] = await Promise.all([
     getPublicCatalogCategories(),
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
     resolveAboutPage(),
   ]);
 

@@ -14,6 +14,14 @@
 | PRA-Q02 | `trackEvent`: if GTM is configured, push **only** to `dataLayer`; otherwise use `gtag` — avoids double-counting when GA4 is also wired via GTM | `lib/analytics.ts`             |
 | PRA-Q03 | Tuned `next/image` `sizes` on catalog cards for multi-column layouts                                                                      | `components/catalog/ProductCard.tsx` |
 
+### 2026 follow-up: catalog listing slice
+
+| ID      | Change |
+| ------- | ------ |
+| PRA-Q04 | `getListingProducts()` + `getPublicCatalogListingProducts()` — strip heavy product fields; DB uses narrower `SELECT` (no `longDescription` / `detailBlocks` / document columns) |
+| PRA-Q05 | Category/subcategory catalog pages pass only that scope’s products into `CatalogShell` (no global full list + filter) |
+| PRA-Q06 | `getProductsByCategory` / `BySubcategory` in DB run filtered listing queries instead of loading all products |
+
 **Validation:** `npm run lint` and `npm run build` succeed. There is no `npm test` script in `package.json`.
 
 ---

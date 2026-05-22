@@ -8,7 +8,7 @@ import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { buildCollectionPageJsonLd } from "@/lib/structured-data";
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
+  getPublicCatalogListingProducts,
 } from "@/lib/public-catalog";
 import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
 
@@ -50,7 +50,7 @@ interface PageProps {
 export default async function CatalogPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const [products, categories] = await Promise.all([
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
     getPublicCatalogCategories(),
   ]);
   const orderedCategories = getOrderedCatalogCategories(categories);

@@ -9,7 +9,7 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { CATALOG_LANDING_PAGES, getLandingPage } from "@/lib/catalog-seo";
 import {
   getPublicCatalogCategories,
-  getPublicCatalogProducts,
+  getPublicCatalogListingProducts,
   getPublicCategoryById,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const products = await getPublicCatalogProducts();
+  const products = await getPublicCatalogListingProducts();
   const product = findSeriesCatalogProduct(products, seriesPage);
   const view = product ? buildPublicProductView(product) : null;
   const canonical = view?.canonicalUrl ?? toAbsoluteSiteUrl(getSeriesPagePath(seriesPage));
@@ -123,7 +123,7 @@ export default async function CatalogLandingPage({ params }: PageProps) {
 
     if (!seriesPage) notFound();
 
-    const products = await getPublicCatalogProducts();
+    const products = await getPublicCatalogListingProducts();
     const product = findSeriesCatalogProduct(products, seriesPage);
     const relatedPages = getRelatedSeriesSeoPages(seriesPage);
 
@@ -137,7 +137,7 @@ export default async function CatalogLandingPage({ params }: PageProps) {
   }
 
   const [products, categories, category] = await Promise.all([
-    getPublicCatalogProducts(),
+    getPublicCatalogListingProducts(),
     getPublicCatalogCategories(),
     getPublicCategoryById(landing.filters.categoryId),
   ]);
