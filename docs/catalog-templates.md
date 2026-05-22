@@ -177,26 +177,29 @@ Server action `applyMissingSeriesBlocksAction`
 
 ## 7. Catalog health dashboard
 
-`/admin/catalog-health` + `lib/catalog/health.ts` → `getCatalogHealthReport()`.
+`/admin/catalog-health` + `lib/catalog/health.ts` → `getCatalogHealthPageModel()` (шапка +
+карточки метрик; каждая метрика в своём `try/catch`, сбой одной не блокирует остальные).
 
-Метрики:
+Метрики (внутренние id для кода; в интерфейсе — человекочитаемые подписи):
 
-| ID | Severity | Что проверяет |
+| ID | Уровень | Что проверяет |
 | --- | --- | --- |
-| `missing_image` | warn | нет primary image |
-| `missing_public_title` | info | `publicTitle` пустой (fallback на автоген) |
-| `missing_short_description` | warn | `short_description` пустой |
-| `missing_specs_and_blocks` | warn | нет ни одной spec и нет `detail_blocks` |
-| `missing_subcategory` | warn | подкатегория не указана |
-| `fallback_only_series` | info | в серии, все shared блоки = template fallback |
-| `series_drift` | info | override/partial хотя бы по одному shared блоку |
-| `duplicate_canonical` | critical | два или более товара имеют одинаковый `view.canonicalPath` |
-| `duplicate_seo_title` | warn | одинаковый `view.seoTitle` (lowercased) |
-| `orphan_alias` | critical | строка в `product_slug_aliases` без существующего товара |
+| `hidden_products` | info | товары со статусом «не на сайте» |
+| `missing_image` | warn | нет основного изображения |
+| `missing_public_title` | info | публичное имя не задано вручную |
+| `missing_short_description` | warn | нет краткого описания |
+| `missing_category_context` | warn | нет привязки к разделу каталога |
+| `missing_specs_and_blocks` | warn | нет ни specs, ни текстовых блоков |
+| `missing_subcategory` | warn | не выбрана подкатегория |
+| `fallback_only_series` | info | в линейке только текст из образца |
+| `series_drift` | info | текст карточки отличается от образца линейки |
+| `duplicate_canonical` | critical | совпадает основной адрес карточки |
+| `duplicate_seo_title` | warn | совпадает заголовок для поиска |
+| `orphan_alias` | critical | старая ссылка без карточки товара |
 
-Performance: один проход по `getPublicCatalogProducts()` + 3 индексированных
-COUNT-запроса + один LEFT JOIN на aliases. Никаких N+1. force-dynamic на
-admin-странице исключает кеш ISR.
+Производительность: при успешной загрузке списка — один проход по
+`getPublicCatalogProducts()` + отдельные запросы для скрытых товаров и «осиротевших»
+алиасов. Страница `force-dynamic`.
 
 ## 8. Что НЕ сделано (out of scope)
 

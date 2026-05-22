@@ -1,6 +1,6 @@
 import "server-only";
 
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/client";
 import {
@@ -16,17 +16,25 @@ import {
   getProductSeriesTemplate,
 } from "./series-inheritance";
 
+const HEALTH_ROUTE = "/admin/catalog-health";
+
+function logHealth(metric: string, err: unknown, extra?: Record<string, unknown>) {
+  console.error(`[admin/catalog-health] ${HEALTH_ROUTE}`, metric, extra ?? {}, err);
+}
+
 export type HealthIssueId =
   | "missing_image"
   | "missing_public_title"
   | "missing_short_description"
   | "missing_specs_and_blocks"
   | "missing_subcategory"
+  | "missing_category_context"
   | "fallback_only_series"
   | "duplicate_canonical"
   | "duplicate_seo_title"
   | "series_drift"
-  | "orphan_alias";
+  | "orphan_alias"
+  | "hidden_products";
 
 export type HealthIssue = {
   id: HealthIssueId;
@@ -44,13 +52,18 @@ export type HealthMetric = {
   samples: HealthIssue[];
 };
 
-export type CatalogHealthReport = {
+export type CatalogHealthHeadline = {
   totalProducts: number;
   inactiveProducts: number;
   totalAliases: number;
-  metrics: HealthMetric[];
   generatedAt: string;
+  /** Когда не удалось получить сводные цифры из хранилища */
+  summaryUnavailable?: boolean;
 };
+
+export type CatalogHealthMetricRow =
+  | { kind: "ok"; metric: HealthMetric; hint: string }
+  | { kind: "failed"; title: string; message: string };
 
 const SAMPLE_LIMIT = 8;
 
@@ -70,181 +83,337 @@ function describeProduct(product: PublicCatalogProduct): {
   };
 }
 
-/**
- * Lightweight catalog audit. Does not stream — runs a handful of indexed counts
- * + one in-memory pass over the active product list to compute per-product
- * issues. Admin-only.
- */
-export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
-  const db = getDb();
+function safeBuildView(product: PublicCatalogProduct) {
+  try {
+    return buildPublicProductView(product);
+  } catch (err) {
+    logHealth("buildPublicProductView", err, { slug: product.slug });
+    return null;
+  }
+}
 
-  const [totalRow] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(productsTable);
-  const totalProducts = totalRow?.value ?? 0;
+async function wrapMetric(
+  metricKey: string,
+  title: string,
+  fn: () => HealthMetric | Promise<HealthMetric>,
+  hint: string,
+): Promise<CatalogHealthMetricRow> {
+  try {
+    const metric = await fn();
+    return { kind: "ok", metric, hint };
+  } catch (err) {
+    logHealth(metricKey, err, { action: "metric" });
+    return {
+      kind: "failed",
+      title,
+      message: "Эту проверку временно не удалось выполнить. Остальные блоки ниже должны открываться как обычно.",
+    };
+  }
+}
 
-  const [inactiveRow] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(productsTable)
-    .where(sql`${productsTable.isActive} = false`);
-  const inactiveProducts = inactiveRow?.value ?? 0;
+async function loadHeadline(): Promise<CatalogHealthHeadline> {
+  const generatedAt = new Date().toISOString();
+  try {
+    const db = getDb();
+    const [totalRow] = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(productsTable);
+    const totalProducts = totalRow?.value ?? 0;
 
-  const [aliasRow] = await db
-    .select({ value: sql<number>`count(*)::int` })
-    .from(productSlugAliasesTable);
-  const totalAliases = aliasRow?.value ?? 0;
+    const [inactiveRow] = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(productsTable)
+      .where(eq(productsTable.isActive, false));
+    const inactiveProducts = inactiveRow?.value ?? 0;
 
-  const products = await getPublicCatalogProducts();
+    const [aliasRow] = await db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(productSlugAliasesTable);
+    const totalAliases = aliasRow?.value ?? 0;
 
-  const buckets: Record<HealthIssueId, HealthIssue[]> = {
-    missing_image: [],
-    missing_public_title: [],
-    missing_short_description: [],
-    missing_specs_and_blocks: [],
-    missing_subcategory: [],
-    fallback_only_series: [],
-    duplicate_canonical: [],
-    duplicate_seo_title: [],
-    series_drift: [],
-    orphan_alias: [],
-  };
-  const counts: Record<HealthIssueId, number> = {
-    missing_image: 0,
-    missing_public_title: 0,
-    missing_short_description: 0,
-    missing_specs_and_blocks: 0,
-    missing_subcategory: 0,
-    fallback_only_series: 0,
-    duplicate_canonical: 0,
-    duplicate_seo_title: 0,
-    series_drift: 0,
-    orphan_alias: 0,
-  };
+    return {
+      totalProducts,
+      inactiveProducts,
+      totalAliases,
+      generatedAt,
+    };
+  } catch (err) {
+    logHealth("headline_counts", err);
+    return {
+      totalProducts: 0,
+      inactiveProducts: 0,
+      totalAliases: 0,
+      generatedAt,
+      summaryUnavailable: true,
+    };
+  }
+}
 
-  const canonicalMap = new Map<string, HealthIssue[]>();
-  const seoTitleMap = new Map<string, HealthIssue[]>();
+async function loadProducts(): Promise<PublicCatalogProduct[] | null> {
+  try {
+    return await getPublicCatalogProducts();
+  } catch (err) {
+    logHealth("getPublicCatalogProducts", err);
+    return null;
+  }
+}
 
+function computeMissingImage(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
   for (const product of products) {
-    const meta = describeProduct(product);
-    const view = buildPublicProductView(product);
-
     if (!product.primaryImageUrl) {
-      counts.missing_image += 1;
-      if (buckets.missing_image.length < SAMPLE_LIMIT) {
-        buckets.missing_image.push({ id: "missing_image", ...meta });
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({ id: "missing_image", ...describeProduct(product) });
       }
     }
-    if (!product.publicTitle?.trim()) {
-      counts.missing_public_title += 1;
-      if (buckets.missing_public_title.length < SAMPLE_LIMIT) {
-        buckets.missing_public_title.push({
-          id: "missing_public_title",
-          ...meta,
-          detail: "Используется автогенерируемое имя",
-        });
-      }
-    }
+  }
+  return {
+    id: "missing_image",
+    label: "Товары без изображения",
+    severity: "warn",
+    count,
+    samples,
+  };
+}
+
+function computeMissingShortDescription(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
     if (!product.shortDescription?.trim()) {
-      counts.missing_short_description += 1;
-      if (buckets.missing_short_description.length < SAMPLE_LIMIT) {
-        buckets.missing_short_description.push({
-          id: "missing_short_description",
-          ...meta,
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({ id: "missing_short_description", ...describeProduct(product) });
+      }
+    }
+  }
+  return {
+    id: "missing_short_description",
+    label: "Товары без краткого описания",
+    severity: "warn",
+    count,
+    samples,
+  };
+}
+
+function computeMissingCategoryContext(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
+    const noCategory = !product.category?.trim() || !product.categoryName?.trim();
+    if (noCategory) {
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({
+          id: "missing_category_context",
+          ...describeProduct(product),
+          detail: "Не указан раздел каталога",
         });
       }
     }
+  }
+  return {
+    id: "missing_category_context",
+    label: "Товары без раздела каталога",
+    severity: "warn",
+    count,
+    samples,
+  };
+}
+
+function computeMissingSubcategory(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
+    if (!product.subcategory?.trim()) {
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({ id: "missing_subcategory", ...describeProduct(product) });
+      }
+    }
+  }
+  return {
+    id: "missing_subcategory",
+    label: "Не выбрана подкатегория",
+    severity: "warn",
+    count,
+    samples,
+  };
+}
+
+function computeMissingSpecsAndBlocks(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
     const specsCount = Object.keys(product.specs ?? {}).length;
     const detailBlocksHasContent =
       product.detailBlocks &&
-      Object.values(product.detailBlocks).some(
-        (v) => Array.isArray(v) && v.length > 0,
-      );
+      Object.values(product.detailBlocks).some((v) => Array.isArray(v) && v.length > 0);
     if (specsCount === 0 && !detailBlocksHasContent) {
-      counts.missing_specs_and_blocks += 1;
-      if (buckets.missing_specs_and_blocks.length < SAMPLE_LIMIT) {
-        buckets.missing_specs_and_blocks.push({
-          id: "missing_specs_and_blocks",
-          ...meta,
-        });
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({ id: "missing_specs_and_blocks", ...describeProduct(product) });
       }
-    }
-    if (!product.subcategory) {
-      counts.missing_subcategory += 1;
-      if (buckets.missing_subcategory.length < SAMPLE_LIMIT) {
-        buckets.missing_subcategory.push({
-          id: "missing_subcategory",
-          ...meta,
-        });
-      }
-    }
-
-    const template = getProductSeriesTemplate(product);
-    if (template) {
-      const drift = computeSeriesDrift(product, template);
-      if (drift.isFullFallback) {
-        counts.fallback_only_series += 1;
-        if (buckets.fallback_only_series.length < SAMPLE_LIMIT) {
-          buckets.fallback_only_series.push({
-            id: "fallback_only_series",
-            ...meta,
-            detail: drift.templateLabel,
-          });
-        }
-      } else if (drift.hasDrift) {
-        counts.series_drift += 1;
-        if (buckets.series_drift.length < SAMPLE_LIMIT) {
-          const overridden = drift.blocks
-            .filter((b) => b.state === "override" || b.state === "partial")
-            .map((b) => b.key)
-            .join(", ");
-          buckets.series_drift.push({
-            id: "series_drift",
-            ...meta,
-            detail: overridden
-              ? `Отличается от шаблона: ${overridden}`
-              : "Отличается от шаблона",
-          });
-        }
-      }
-    }
-
-    // Canonical / SEO title duplicates: aggregate first, count after.
-    const canonicalBucket = canonicalMap.get(view.canonicalPath) ?? [];
-    canonicalBucket.push({ id: "duplicate_canonical", ...meta });
-    canonicalMap.set(view.canonicalPath, canonicalBucket);
-
-    const seoTitleKey = view.seoTitle.trim().toLowerCase();
-    if (seoTitleKey) {
-      const seoBucket = seoTitleMap.get(seoTitleKey) ?? [];
-      seoBucket.push({ id: "duplicate_seo_title", ...meta });
-      seoTitleMap.set(seoTitleKey, seoBucket);
     }
   }
+  return {
+    id: "missing_specs_and_blocks",
+    label: "Нет таблицы параметров и текстовых блоков",
+    severity: "warn",
+    count,
+    samples,
+  };
+}
 
+function computeAutoTitle(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
+    if (!product.publicTitle?.trim()) {
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({
+          id: "missing_public_title",
+          ...describeProduct(product),
+          detail: "Подставляется автоматически из параметров",
+        });
+      }
+    }
+  }
+  return {
+    id: "missing_public_title",
+    label: "Название на сайте не задано вручную",
+    severity: "info",
+    count,
+    samples,
+  };
+}
+
+function computeSeriesTemplateOnly(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
+    const template = getProductSeriesTemplate(product);
+    if (!template) continue;
+    const drift = computeSeriesDrift(product, template);
+    if (drift.isFullFallback) {
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        samples.push({
+          id: "fallback_only_series",
+          ...describeProduct(product),
+          detail: "Тексты подставляются из общего образца линейки",
+        });
+      }
+    }
+  }
+  return {
+    id: "fallback_only_series",
+    label: "Только текст из общего образца линейки",
+    severity: "info",
+    count,
+    samples,
+  };
+}
+
+function computeSeriesDiffers(products: PublicCatalogProduct[]): HealthMetric {
+  const samples: HealthIssue[] = [];
+  let count = 0;
+  for (const product of products) {
+    const template = getProductSeriesTemplate(product);
+    if (!template) continue;
+    const drift = computeSeriesDrift(product, template);
+    if (!drift.isFullFallback && drift.hasDrift) {
+      count += 1;
+      if (samples.length < SAMPLE_LIMIT) {
+        const keys = drift.blocks
+          .filter((b) => b.state === "override" || b.state === "partial")
+          .map((b) => b.key)
+          .join(", ");
+        samples.push({
+          id: "series_drift",
+          ...describeProduct(product),
+          detail: keys ? `Отличается от образца: ${keys}` : "Отличается от образца",
+        });
+      }
+    }
+  }
+  return {
+    id: "series_drift",
+    label: "Текст отличается от образца линейки",
+    severity: "info",
+    count,
+    samples,
+  };
+}
+
+function computeDuplicateLinks(products: PublicCatalogProduct[]): HealthMetric {
+  const canonicalMap = new Map<string, HealthIssue[]>();
+  for (const product of products) {
+    const view = safeBuildView(product);
+    if (!view) continue;
+    const meta = describeProduct(product);
+    const bucket = canonicalMap.get(view.canonicalPath) ?? [];
+    bucket.push({ id: "duplicate_canonical", ...meta });
+    canonicalMap.set(view.canonicalPath, bucket);
+  }
+  const samples: HealthIssue[] = [];
+  let count = 0;
   for (const [path, occurrences] of canonicalMap) {
     if (occurrences.length < 2) continue;
-    counts.duplicate_canonical += occurrences.length;
+    count += occurrences.length;
     for (const occurrence of occurrences) {
-      if (buckets.duplicate_canonical.length >= SAMPLE_LIMIT) break;
-      buckets.duplicate_canonical.push({ ...occurrence, detail: `Один адрес для карточки: ${path}` });
+      if (samples.length >= SAMPLE_LIMIT) break;
+      samples.push({ ...occurrence, detail: `Один адрес для карточки: ${path}` });
     }
   }
+  return {
+    id: "duplicate_canonical",
+    label: "Повторяющиеся основные ссылки",
+    severity: "critical",
+    count,
+    samples,
+  };
+}
 
+function computeDuplicateSearchTitles(products: PublicCatalogProduct[]): HealthMetric {
+  const seoTitleMap = new Map<string, HealthIssue[]>();
+  for (const product of products) {
+    const view = safeBuildView(product);
+    if (!view) continue;
+    const key = view.seoTitle.trim().toLowerCase();
+    if (!key) continue;
+    const meta = describeProduct(product);
+    const bucket = seoTitleMap.get(key) ?? [];
+    bucket.push({ id: "duplicate_seo_title", ...meta });
+    seoTitleMap.set(key, bucket);
+  }
+  const samples: HealthIssue[] = [];
+  let count = 0;
   for (const [title, occurrences] of seoTitleMap) {
     if (occurrences.length < 2) continue;
-    counts.duplicate_seo_title += occurrences.length;
+    count += occurrences.length;
     for (const occurrence of occurrences) {
-      if (buckets.duplicate_seo_title.length >= SAMPLE_LIMIT) break;
-      buckets.duplicate_seo_title.push({
+      if (samples.length >= SAMPLE_LIMIT) break;
+      samples.push({
         ...occurrence,
         detail: `Один заголовок для поиска: ${title.slice(0, 80)}`,
       });
     }
   }
+  return {
+    id: "duplicate_seo_title",
+    label: "Повторяющиеся названия для поиска",
+    severity: "warn",
+    count,
+    samples,
+  };
+}
 
-  // Orphan slug aliases: alias whose product no longer exists. FK CASCADE
-  // should prevent it, but if a row sneaks in (e.g. via direct SQL or schema
-  // skew), surface it here.
+async function computeOrphanLinks(): Promise<HealthMetric> {
+  const db = getDb();
   const orphanAliasRows = await db
     .select({
       slug: productSlugAliasesTable.slug,
@@ -254,92 +423,164 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
     .leftJoin(productsTable, sql`${productsTable.id} = ${productSlugAliasesTable.productId}`)
     .where(sql`${productsTable.id} IS NULL`)
     .limit(SAMPLE_LIMIT * 4);
-  counts.orphan_alias = orphanAliasRows.length;
+
+  const samples: HealthIssue[] = [];
   for (const row of orphanAliasRows.slice(0, SAMPLE_LIMIT)) {
-    buckets.orphan_alias.push({
+    samples.push({
       id: "orphan_alias",
-      detail: `Ссылка «${row.slug}» ведёт в никуда — товар удалён или не найден`,
+      detail: `Ссылка «${row.slug}» ведёт в никуда — карточка не найдена`,
     });
   }
+  return {
+    id: "orphan_alias",
+    label: "Проблемы со старыми ссылками",
+    severity: "critical",
+    count: orphanAliasRows.length,
+    samples,
+  };
+}
 
-  const metrics: HealthMetric[] = [
-    {
-      id: "missing_image",
-      label: "Товары без изображения",
-      severity: "warn",
-      count: counts.missing_image,
-      samples: buckets.missing_image,
-    },
-    {
-      id: "missing_public_title",
-      label: "Без своего названия на сайте (подставится автоматически)",
-      severity: "info",
-      count: counts.missing_public_title,
-      samples: buckets.missing_public_title,
-    },
-    {
-      id: "missing_short_description",
-      label: "Без краткого описания",
-      severity: "warn",
-      count: counts.missing_short_description,
-      samples: buckets.missing_short_description,
-    },
-    {
-      id: "missing_specs_and_blocks",
-      label: "Нет таблицы характеристик и текстовых блоков",
-      severity: "warn",
-      count: counts.missing_specs_and_blocks,
-      samples: buckets.missing_specs_and_blocks,
-    },
-    {
-      id: "missing_subcategory",
-      label: "Товары без подкатегории",
-      severity: "warn",
-      count: counts.missing_subcategory,
-      samples: buckets.missing_subcategory,
-    },
-    {
-      id: "fallback_only_series",
-      label: "Только текст из общего шаблона серии (поля в карточке пустые)",
-      severity: "info",
-      count: counts.fallback_only_series,
-      samples: buckets.fallback_only_series,
-    },
-    {
-      id: "series_drift",
-      label: "Текст отличается от шаблона серии",
-      severity: "info",
-      count: counts.series_drift,
-      samples: buckets.series_drift,
-    },
-    {
-      id: "duplicate_canonical",
-      label: "У разных товаров совпадает основная ссылка на сайте",
-      severity: "critical",
-      count: counts.duplicate_canonical,
-      samples: buckets.duplicate_canonical,
-    },
-    {
-      id: "duplicate_seo_title",
-      label: "Одинаковый заголовок для поиска у разных товаров",
-      severity: "warn",
-      count: counts.duplicate_seo_title,
-      samples: buckets.duplicate_seo_title,
-    },
-    {
-      id: "orphan_alias",
-      label: "Старые ссылки без товара (остались после удаления)",
-      severity: "critical",
-      count: counts.orphan_alias,
-      samples: buckets.orphan_alias,
-    },
-  ];
+async function computeHiddenProducts(): Promise<HealthMetric> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: productsTable.id,
+      slug: productsTable.slug,
+      name: productsTable.name,
+      publicTitle: productsTable.publicTitle,
+    })
+    .from(productsTable)
+    .where(eq(productsTable.isActive, false))
+    .limit(SAMPLE_LIMIT);
+
+  const [countRow] = await db
+    .select({ value: sql<number>`count(*)::int` })
+    .from(productsTable)
+    .where(eq(productsTable.isActive, false));
+  const count = countRow?.value ?? 0;
+
+  const samples: HealthIssue[] = rows.map((row) => ({
+    id: "hidden_products" as const,
+    productId: String(row.id),
+    productSlug: row.slug,
+    productName: row.publicTitle?.trim() || row.name || row.slug,
+  }));
 
   return {
-    totalProducts,
-    inactiveProducts,
-    totalAliases,
-    metrics,
-    generatedAt: new Date().toISOString(),
+    id: "hidden_products",
+    label: "Скрытые на сайте",
+    severity: "info",
+    count,
+    samples,
   };
+}
+
+/**
+ * Проверки каталога: каждая метрика считается отдельно; сбой одной не рушит остальные.
+ */
+export async function getCatalogHealthPageModel(): Promise<{
+  headline: CatalogHealthHeadline;
+  metrics: CatalogHealthMetricRow[];
+}> {
+  const headline = await loadHeadline();
+  const products = await loadProducts();
+
+  const rows: CatalogHealthMetricRow[] = [];
+
+  rows.push(
+    await wrapMetric(
+      "hidden_products",
+      "Скрытые на сайте",
+      () => computeHiddenProducts(),
+      "Клиент не видит эти карточки в каталоге.",
+    ),
+  );
+
+  if (!products) {
+    const fallbackMsg =
+      "Список товаров для проверки сейчас недоступен. Обновите страницу через несколько секунд.";
+    const blockedTitles = [
+      "Товары без изображения",
+      "Товары без краткого описания",
+      "Товары без раздела каталога",
+      "Не выбрана подкатегория",
+      "Нет таблицы параметров и текстовых блоков",
+      "Название на сайте не задано вручную",
+      "Только текст из общего образца линейки",
+      "Текст отличается от образца линейки",
+      "Повторяющиеся основные ссылки",
+      "Повторяющиеся названия для поиска",
+    ];
+    for (const title of blockedTitles) {
+      rows.push({
+        kind: "failed",
+        title,
+        message: fallbackMsg,
+      });
+    }
+  } else {
+    rows.push(
+      await wrapMetric("missing_image", "Товары без изображения", () => computeMissingImage(products), "В карточке может показываться картинка из раздела."),
+      await wrapMetric(
+        "missing_short_description",
+        "Товары без краткого описания",
+        () => computeMissingShortDescription(products),
+        "В списке товаров текст может подставляться автоматически.",
+      ),
+      await wrapMetric(
+        "missing_category_context",
+        "Товары без раздела каталога",
+        () => computeMissingCategoryContext(products),
+        "Проверьте привязку к категории.",
+      ),
+      await wrapMetric(
+        "missing_subcategory",
+        "Не выбрана подкатегория",
+        () => computeMissingSubcategory(products),
+        "Уточняет место в каталоге и фильтры.",
+      ),
+      await wrapMetric(
+        "missing_specs_and_blocks",
+        "Нет таблицы параметров и текстовых блоков",
+        () => computeMissingSpecsAndBlocks(products),
+        "На странице товара нечего показать в таблице и списках.",
+      ),
+      await wrapMetric(
+        "missing_public_title",
+        "Название на сайте не задано вручную",
+        () => computeAutoTitle(products),
+        "Имя для клиента собирается автоматически из параметров.",
+      ),
+      await wrapMetric(
+        "fallback_only_series",
+        "Только текст из общего образца линейки",
+        () => computeSeriesTemplateOnly(products),
+        "Собственные поля карточки пустые — на сайте подставляется образец.",
+      ),
+      await wrapMetric(
+        "series_drift",
+        "Текст отличается от образца линейки",
+        () => computeSeriesDiffers(products),
+        "Часть текста изменена вручную относительно образца.",
+      ),
+      await wrapMetric(
+        "duplicate_canonical",
+        "Повторяющиеся основные ссылки",
+        () => computeDuplicateLinks(products),
+        "Две карточки не должны вести на один адрес.",
+      ),
+      await wrapMetric(
+        "duplicate_seo_title",
+        "Повторяющиеся названия для поиска",
+        () => computeDuplicateSearchTitles(products),
+        "Поисковикам сложнее различать страницы.",
+      ),
+    );
+  }
+
+  rows.push(
+    await wrapMetric("orphan_alias", "Проблемы со старыми ссылками", () => computeOrphanLinks(), "Обычно после удаления товара."),
+  );
+
+  return { headline, metrics: rows };
 }
