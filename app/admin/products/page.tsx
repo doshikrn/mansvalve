@@ -225,7 +225,7 @@ export default async function AdminProductsPage({
                 <input
                   type="search"
                   name="q"
-                  placeholder="Название, slug, модель…"
+                  placeholder="Название, ссылка, модель…"
                   defaultValue={params.q ?? ""}
                   className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
                 />
@@ -234,7 +234,7 @@ export default async function AdminProductsPage({
               <ProductsListSearchInput
                 name="q"
                 defaultValue={params.q ?? ""}
-                placeholder="Название, slug, модель…"
+                placeholder="Название, ссылка, модель…"
                 className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
               />
             </Suspense>

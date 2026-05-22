@@ -219,8 +219,8 @@ export const SERIES_BLOCK_LABEL: Record<ProductDetailBlockKey, string> = {
 };
 
 export const SERIES_BLOCK_STATE_LABEL: Record<SeriesBlockState, string> = {
-  inherited: "из шаблона",
-  match: "совпадает",
-  partial: "частичный override",
-  override: "override",
+  inherited: "Заполнено автоматически",
+  match: "Как в шаблоне",
+  partial: "Частично отличается от шаблона",
+  override: "Изменено вручную",
 };

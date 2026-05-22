@@ -146,7 +146,7 @@ export default async function AdminLeadDetailPage({
             <dd>{lead.productName || "—"}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Slug товара</dt>
+            <dt className="text-xs text-muted-foreground">Ссылка товара</dt>
             <dd className="break-all">
               {lead.productSlug ? (
                 catalogProductHref ? (

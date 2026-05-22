@@ -35,7 +35,7 @@ const slugSchema = z
   .trim()
   .min(1)
   .max(160)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug: латиница, цифры и дефисы.");
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Ссылка: только латиница, цифры и дефисы.");
 
 function nullableTrimmed(max: number) {
   return z
@@ -414,7 +414,7 @@ export async function createCategoryAction(formData: FormData) {
   }
 
   if (await isCategorySlugTaken(parsed.data.slug)) {
-    redirect(`/admin/categories/new?error=${encodeURIComponent("Такой slug уже занят.")}`);
+    redirect(`/admin/categories/new?error=${encodeURIComponent("Такая ссылка уже занята.")}`);
   }
 
   const id = await createCategory({
@@ -461,7 +461,7 @@ export async function updateCategoryAction(formData: FormData) {
   }
 
   if (await isCategorySlugTaken(parsed.data.slug, id)) {
-    redirect(`/admin/categories/${id}/edit?error=${encodeURIComponent("Такой slug уже занят.")}`);
+    redirect(`/admin/categories/${id}/edit?error=${encodeURIComponent("Такая ссылка уже занята.")}`);
   }
 
   const existing = await getCategoryById(id);
@@ -531,7 +531,7 @@ export async function createSubcategoryAction(formData: FormData) {
 
   if (await isSubcategorySlugTaken(parsed.data.slug)) {
     redirect(
-      `/admin/categories/${categoryId}/subcategories/new?error=${encodeURIComponent("Такой slug уже занят.")}`,
+      `/admin/categories/${categoryId}/subcategories/new?error=${encodeURIComponent("Такая ссылка уже занята.")}`,
     );
   }
 
@@ -586,7 +586,7 @@ export async function updateSubcategoryAction(formData: FormData) {
 
   if (await isSubcategorySlugTaken(parsed.data.slug, id)) {
     redirect(
-      `/admin/categories/${categoryId}/subcategories/${id}/edit?error=${encodeURIComponent("Такой slug уже занят.")}`,
+      `/admin/categories/${categoryId}/subcategories/${id}/edit?error=${encodeURIComponent("Такая ссылка уже занята.")}`,
     );
   }
 

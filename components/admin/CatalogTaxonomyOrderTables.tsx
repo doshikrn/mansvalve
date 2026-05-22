@@ -47,7 +47,7 @@ export function CategoriesOrderTable({
               </span>
             </th>
             <th className="px-4 py-2">Категория</th>
-            <th className="px-4 py-2 font-medium">Slug</th>
+            <th className="px-4 py-2 font-medium">Ссылка</th>
             <th className="px-4 py-2 font-medium">Статус</th>
             <th className="px-4 py-2 font-medium">Подкатегории</th>
             <th className="w-28 px-4 py-2" />
@@ -199,7 +199,7 @@ export function SubcategoriesOrderTable({
             </th>
             <th className="px-4 py-2">Подкатегория</th>
             <th className="px-4 py-2">Категория</th>
-            <th className="px-4 py-2">Slug</th>
+            <th className="px-4 py-2">Ссылка</th>
             <th className="px-4 py-2">Статус</th>
             <th className="w-28 px-4 py-2" />
           </tr>

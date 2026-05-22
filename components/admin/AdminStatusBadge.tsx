@@ -10,10 +10,10 @@ const TONE_CLASS: Record<Tone, string> = {
 };
 
 const TONE_LABEL: Record<Tone, string> = {
-  generated: "GENERATED",
-  readonly: "READ ONLY",
-  manual: "MANUAL OVERRIDE",
-  auto: "AUTO",
+  generated: "Заполняется автоматически",
+  readonly: "Только просмотр",
+  manual: "Изменено вручную",
+  auto: "Автоматически",
 };
 
 export function AdminStatusBadge({

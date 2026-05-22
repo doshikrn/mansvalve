@@ -309,7 +309,8 @@ export function MediaUpload({
           <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
           {allowAttach ? (
             <p className="mt-1 text-xs text-muted-foreground">
-              Первое/основное изображение идёт на публичную карточку. Если файлов нет, сайт покажет fallback категории.
+              Первое/основное изображение идёт на карточку товара. Если файлов нет, на сайте
+              подставится картинка из раздела каталога.
             </p>
           ) : null}
         </div>

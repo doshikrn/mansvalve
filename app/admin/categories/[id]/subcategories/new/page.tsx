@@ -83,7 +83,7 @@ export default async function NewSubcategoryPage({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="slug">Slug</Label>
+            <Label htmlFor="slug">Ссылка подраздела (латиница)</Label>
             <input
               id="slug"
               name="slug"

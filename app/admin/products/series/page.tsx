@@ -93,22 +93,30 @@ export default async function ProductSeriesAuditPage({
       <AdminBreadcrumbs
         items={[
           { label: "Товары", href: "/admin/products" },
-          { label: "Серии и шаблоны" },
+          { label: "Массовое заполнение" },
         ]}
       />
 
-      <header className="space-y-2">
+      <header className="space-y-3">
         <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-          Серии задвижек: аудит и bulk-операции
+          Массовое заполнение по линейкам задвижек
         </h1>
-        <p className="text-sm text-slate-600">
-          Read-only обзор шаблонов серий + безопасное заполнение пустых
-          shared-блоков из шаблона. Никакие override-значения не перезаписываются.
-        </p>
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm">
+          <p>
+            Для одной марки и линейки DN/PN у товаров часто одинаковые блоки
+            текста (стандарты, преимущества, применение). Здесь можно{" "}
+            <strong>одним действием</strong> подставить в пустые поля тексты из
+            общего образца — уже заполненные строки не трогаем.
+          </p>
+          <p className="mt-2 text-slate-600">
+            Сначала нажмите «Посмотреть изменения», убедитесь в списке товаров,
+            затем «Заполнить товары».
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <AdminStatusBadge tone="manual">{totals.present} в БД</AdminStatusBadge>
-          <AdminStatusBadge tone="auto">{missingCount} нет SKU</AdminStatusBadge>
-          <span className="text-xs text-slate-500">шаблонных страниц: {totals.total}</span>
+          <AdminStatusBadge tone="manual">{totals.present} товаров в каталоге</AdminStatusBadge>
+          <AdminStatusBadge tone="auto">{missingCount} без карточки в базе</AdminStatusBadge>
+          <span className="text-xs text-slate-500">Линеек по шаблону: {totals.total}</span>
         </div>
       </header>
 
@@ -120,9 +128,10 @@ export default async function ProductSeriesAuditPage({
       ) : null}
 
       <AdminInlineNotice tone="auto">
-        Apply-to-series заполняет только <strong>пустые</strong> блоки SKU из шаблона.
-        Если у товара уже есть значение в выбранном блоке — оно сохранится без изменений.
-        Документация: <code>docs/catalog-templates.md</code>.
+        Подставляются только <strong>пустые</strong> поля. Если текст уже введён
+        вручную — он не меняется. Подробная схема блоков:{" "}
+        <code className="rounded bg-slate-100 px-1">docs/catalog-templates.md</code>
+        .
       </AdminInlineNotice>
 
       <div className="space-y-6">
@@ -172,26 +181,30 @@ export default async function ProductSeriesAuditPage({
               <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] bg-slate-50/60 px-4 py-3">
                 <div className="space-y-1">
                   <h2 className="text-sm font-semibold text-slate-900">{group.label}</h2>
-                  <p className="text-xs text-slate-500">
-                    series: <code>{group.series}</code> · model:{" "}
-                    <code>{group.model}</code>
-                  </p>
+                  <details className="text-xs text-slate-400">
+                    <summary className="cursor-pointer select-none hover:text-slate-600">
+                      Внутренние коды линейки
+                    </summary>
+                    <p className="mt-1 break-all font-mono text-[11px] text-slate-500">
+                      {group.series} · {group.model}
+                    </p>
+                  </details>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {groupFallback > 0 ? (
                     <AdminStatusBadge tone="auto">
-                      {groupFallback} fallback-only
+                      Без своего текста: {groupFallback}
                     </AdminStatusBadge>
                   ) : null}
                   {groupDrift > 0 ? (
                     <AdminStatusBadge tone="manual">
-                      {groupDrift} drift
+                      Отличается от образца: {groupDrift}
                     </AdminStatusBadge>
                   ) : null}
                   <AdminStatusBadge tone={groupMissing > 0 ? "auto" : "readonly"}>
                     {groupMissing > 0
-                      ? `${groupMissing} без SKU`
-                      : `${rows.length} в БД`}
+                      ? `${groupMissing} без карточки в каталоге`
+                      : `${rows.length} в каталоге`}
                   </AdminStatusBadge>
                 </div>
               </header>
@@ -203,8 +216,8 @@ export default async function ProductSeriesAuditPage({
               >
                 <input type="hidden" name="previewSeries" value={group.key} />
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Apply-to-series:
+                  <span className="text-xs font-medium text-slate-600">
+                    Какие блоки заполнить из образца:
                   </span>
                   {SERIES_SHARED_BLOCK_KEYS.map((key) => (
                     <label
@@ -222,7 +235,7 @@ export default async function ProductSeriesAuditPage({
                     </label>
                   ))}
                   <Button type="submit" size="sm" variant="outline">
-                    Превью
+                    Посмотреть изменения
                   </Button>
                 </div>
               </form>
@@ -235,8 +248,8 @@ export default async function ProductSeriesAuditPage({
                     </p>
                   ) : previewRows.length === 0 ? (
                     <p className="text-xs text-emerald-900">
-                      Заполнять нечего: все SKU серии уже содержат значения в
-                      выбранных блоках, либо в серии нет товаров.
+                      Заполнять нечего: у всех товаров линейки уже есть текст в выбранных
+                      блоках, либо в линейке нет товаров.
                     </p>
                   ) : (
                     <form action={applyMissingSeriesBlocksAction} className="space-y-3">
@@ -246,7 +259,7 @@ export default async function ProductSeriesAuditPage({
                       ))}
                       <div className="space-y-1.5 text-xs text-amber-950">
                         <p className="font-semibold">
-                          Будет заполнено {previewRows.length} SKU. Поля:{" "}
+                          Будет обновлено товаров: {previewRows.length}. Блоки:{" "}
                           {previewFields.map((f) => SERIES_BLOCK_LABEL[f]).join(", ")}.
                         </p>
                         <ul className="ml-4 list-disc space-y-0.5">
@@ -267,7 +280,7 @@ export default async function ProductSeriesAuditPage({
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Button type="submit" size="sm">
-                          Применить ({previewRows.length})
+                          Заполнить товары ({previewRows.length})
                         </Button>
                         <Button asChild size="sm" variant="ghost">
                           <Link href="/admin/products/series">Отмена</Link>
@@ -284,7 +297,7 @@ export default async function ProductSeriesAuditPage({
                     <th className="px-4 py-2">DN/PN</th>
                     <th className="px-4 py-2">SEO-страница</th>
                     <th className="px-4 py-2">Товар</th>
-                    <th className="px-4 py-2">Inheritance / drift</th>
+                    <th className="px-4 py-2">Совпадение с образцом</th>
                     <th className="px-4 py-2 text-right">Действия</th>
                   </tr>
                 </thead>
@@ -315,7 +328,7 @@ export default async function ProductSeriesAuditPage({
                             <code className="text-xs text-slate-500">/{product.slug}</code>
                           </div>
                         ) : (
-                          <AdminStatusBadge tone="auto">FALLBACK</AdminStatusBadge>
+                          <AdminStatusBadge tone="auto">Только страница-образец</AdminStatusBadge>
                         )}
                       </td>
                       <td className="px-4 py-2">
@@ -359,8 +372,8 @@ export default async function ProductSeriesAuditPage({
       </div>
 
       <p className="text-xs text-slate-400">
-        Используйте «Превью» → «Применить», чтобы заполнить пустые блоки SKU из
-        шаблона серии. Ручные значения не перезаписываются.
+        Сначала «Посмотреть изменения», затем «Заполнить товары». Уже введённые
+        тексты не перезаписываются.
       </p>
     </div>
   );

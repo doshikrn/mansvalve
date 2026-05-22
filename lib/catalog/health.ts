@@ -200,7 +200,9 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
           buckets.series_drift.push({
             id: "series_drift",
             ...meta,
-            detail: `override: ${overridden}`,
+            detail: overridden
+              ? `Отличается от шаблона: ${overridden}`
+              : "Отличается от шаблона",
           });
         }
       }
@@ -224,7 +226,7 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
     counts.duplicate_canonical += occurrences.length;
     for (const occurrence of occurrences) {
       if (buckets.duplicate_canonical.length >= SAMPLE_LIMIT) break;
-      buckets.duplicate_canonical.push({ ...occurrence, detail: path });
+      buckets.duplicate_canonical.push({ ...occurrence, detail: `Один адрес для карточки: ${path}` });
     }
   }
 
@@ -235,7 +237,7 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
       if (buckets.duplicate_seo_title.length >= SAMPLE_LIMIT) break;
       buckets.duplicate_seo_title.push({
         ...occurrence,
-        detail: title.slice(0, 80),
+        detail: `Один заголовок для поиска: ${title.slice(0, 80)}`,
       });
     }
   }
@@ -256,7 +258,7 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
   for (const row of orphanAliasRows.slice(0, SAMPLE_LIMIT)) {
     buckets.orphan_alias.push({
       id: "orphan_alias",
-      detail: `${row.slug} (product_id=${row.productId})`,
+      detail: `Ссылка «${row.slug}» ведёт в никуда — товар удалён или не найден`,
     });
   }
 
@@ -270,7 +272,7 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
     },
     {
       id: "missing_public_title",
-      label: "Без «Названия на сайте» (используется автоген)",
+      label: "Без своего названия на сайте (подставится автоматически)",
       severity: "info",
       count: counts.missing_public_title,
       samples: buckets.missing_public_title,
@@ -284,49 +286,49 @@ export async function getCatalogHealthReport(): Promise<CatalogHealthReport> {
     },
     {
       id: "missing_specs_and_blocks",
-      label: "Без specs и без detail_blocks",
+      label: "Нет таблицы характеристик и текстовых блоков",
       severity: "warn",
       count: counts.missing_specs_and_blocks,
       samples: buckets.missing_specs_and_blocks,
     },
     {
       id: "missing_subcategory",
-      label: "Без подкатегории",
+      label: "Товары без подкатегории",
       severity: "warn",
       count: counts.missing_subcategory,
       samples: buckets.missing_subcategory,
     },
     {
       id: "fallback_only_series",
-      label: "В серии, полностью на шаблонном fallback",
+      label: "Только текст из общего шаблона серии (поля в карточке пустые)",
       severity: "info",
       count: counts.fallback_only_series,
       samples: buckets.fallback_only_series,
     },
     {
       id: "series_drift",
-      label: "Расхождения с шаблоном серии (drift)",
+      label: "Текст отличается от шаблона серии",
       severity: "info",
       count: counts.series_drift,
       samples: buckets.series_drift,
     },
     {
       id: "duplicate_canonical",
-      label: "Дубликаты canonical URL",
+      label: "У разных товаров совпадает основная ссылка на сайте",
       severity: "critical",
       count: counts.duplicate_canonical,
       samples: buckets.duplicate_canonical,
     },
     {
       id: "duplicate_seo_title",
-      label: "Дубликаты SEO title",
+      label: "Одинаковый заголовок для поиска у разных товаров",
       severity: "warn",
       count: counts.duplicate_seo_title,
       samples: buckets.duplicate_seo_title,
     },
     {
       id: "orphan_alias",
-      label: "Сиротские slug-алиасы (orphan)",
+      label: "Старые ссылки без товара (остались после удаления)",
       severity: "critical",
       count: counts.orphan_alias,
       samples: buckets.orphan_alias,

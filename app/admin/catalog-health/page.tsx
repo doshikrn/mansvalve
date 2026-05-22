@@ -18,10 +18,11 @@ const SEVERITY_TONE: Record<HealthMetric["severity"], "auto" | "manual" | "reado
   critical: "manual",
 };
 
+/** Короткие подписи для менеджера (не технические коды). */
 const SEVERITY_LABEL: Record<HealthMetric["severity"], string> = {
-  info: "INFO",
-  warn: "WARN",
-  critical: "CRITICAL",
+  info: "Справка",
+  warn: "Обратите внимание",
+  critical: "Нужно исправить",
 };
 
 export default async function CatalogHealthPage() {
@@ -45,49 +46,61 @@ export default async function CatalogHealthPage() {
 
   return (
     <div className="space-y-5">
-      <AdminBreadcrumbs items={[{ label: "Здоровье каталога" }]} />
+      <AdminBreadcrumbs items={[{ label: "Проверка каталога" }]} />
 
-      <header className="space-y-2">
+      <header className="space-y-3">
         <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-          Здоровье каталога
+          Проверка каталога
         </h1>
-        <p className="text-sm text-slate-600">
-          Server-side аудит SKU и SEO-консистентности. Запускается по запросу
-          (force-dynamic), не влияет на ISR публичного сайта.
-        </p>
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-sm">
+          <p>
+            Здесь собраны подсказки по товарам: что не заполнено, что может
+            путать клиента или поиск. Отчёт строится при открытии страницы из
+            актуальных данных каталога.
+          </p>
+          <p className="mt-2 text-slate-600">
+            Ничего из списка не блокирует сохранение — это напоминания для
+            менеджера, что стоит довести до конца.
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-3 text-sm">
           <AdminStatusBadge tone="readonly">
             {report.totalProducts} товаров
           </AdminStatusBadge>
           <AdminStatusBadge tone="auto">
-            {report.inactiveProducts} скрыты
+            {report.inactiveProducts} скрыто на сайте
           </AdminStatusBadge>
           <AdminStatusBadge tone="readonly">
-            {report.totalAliases} slug-алиасов
+            {report.totalAliases} переходов со старых ссылок
           </AdminStatusBadge>
           {criticalCount > 0 ? (
             <AdminStatusBadge tone="manual">
-              {criticalCount} critical
+              {criticalCount}{" "}
+              {criticalCount === 1 ? "важная тема" : "важных тем"}
             </AdminStatusBadge>
           ) : null}
           {warnCount > 0 ? (
-            <AdminStatusBadge tone="auto">{warnCount} warn</AdminStatusBadge>
+            <AdminStatusBadge tone="auto">
+              {warnCount}{" "}
+              {warnCount === 1 ? "замечание" : "замечаний"}
+            </AdminStatusBadge>
           ) : null}
         </div>
         <p className="text-xs text-slate-400">
-          Снимок от {new Date(report.generatedAt).toLocaleString("ru-RU")}.
+          Данные на {new Date(report.generatedAt).toLocaleString("ru-RU")}.
         </p>
       </header>
 
       {criticalCount === 0 && warnCount === 0 ? (
         <AdminInlineNotice tone="manual">
-          Критичных и предупреждающих проблем не найдено. Информационные метрики
-          (drift, fallback) показаны ниже для общей картины.
+          Важных и средних замечаний нет. Ниже — справочные блоки: например,
+          сколько товаров используют только общий текст серии или автоматическое
+          название.
         </AdminInlineNotice>
       ) : (
         <AdminInlineNotice tone="auto">
-          Это soft-аудит. Метрики не блокируют публикации, но дают понятный
-          список SKU, которые стоит дополнить или поправить.
+          Ниже — список товаров и тем, которые лучше поправить в первую очередь.
+          Сохранение и публикация по-прежнему доступны.
         </AdminInlineNotice>
       )}
 
@@ -98,13 +111,18 @@ export default async function CatalogHealthPage() {
             className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-white shadow-sm"
           >
             <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] px-4 py-3">
-              <div className="space-y-1">
+              <div className="min-w-0 space-y-1">
                 <h2 className="text-sm font-semibold text-slate-900">
                   {metric.label}
                 </h2>
-                <p className="text-xs text-slate-500">id: <code>{metric.id}</code></p>
+                <details className="text-xs text-slate-400">
+                  <summary className="cursor-pointer select-none hover:text-slate-600">
+                    Техническая метка
+                  </summary>
+                  <code className="mt-1 block break-all text-[11px]">{metric.id}</code>
+                </details>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 <AdminStatusBadge tone={SEVERITY_TONE[metric.severity]}>
                   {SEVERITY_LABEL[metric.severity]}
                 </AdminStatusBadge>
@@ -126,10 +144,11 @@ export default async function CatalogHealthPage() {
             </header>
             <div className="px-4 py-3">
               {metric.count === 0 ? (
-                <p className="text-xs text-emerald-700">Чисто.</p>
+                <p className="text-xs text-emerald-700">Замечаний нет.</p>
               ) : metric.samples.length === 0 ? (
                 <p className="text-xs text-slate-500">
-                  Найдено {metric.count}, но без подробностей в этом срезе.
+                  Найдено {metric.count} — подробный список в этом отчёте не
+                  показан.
                 </p>
               ) : (
                 <ul className="space-y-1.5 text-xs">

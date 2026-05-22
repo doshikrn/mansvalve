@@ -62,12 +62,12 @@ type Props = {
 const INITIAL: ProductFormState = {};
 
 const SECTION_LINKS = [
-  { id: "preview", label: "Preview" },
+  { id: "preview", label: "Предпросмотр" },
   { id: "main", label: "Основное" },
   { id: "images", label: "Изображения" },
-  { id: "seo", label: "SEO preview" },
+  { id: "seo", label: "Поиск и сниппет" },
   { id: "parameters", label: "Параметры" },
-  { id: "description", label: "Контент" },
+  { id: "description", label: "Описание на сайте" },
   { id: "documents", label: "Документы" },
 ] as const;
 
@@ -212,8 +212,7 @@ export function ProductForm({
           <AdminSectionCard
             id="preview"
             title="Как товар отображается на сайте"
-            description="Этот блок строится только через buildPublicProductView и должен совпадать с карточкой, страницей товара, SEO и JSON-LD."
-            badge="публичный слой"
+            description="Так же увидит клиент карточку в каталоге и на странице товара (название, картинка, краткий текст)."
           >
             <AdminProductPreview preview={livePublicPreview} />
           </AdminSectionCard>
@@ -222,7 +221,7 @@ export function ProductForm({
         <AdminSectionCard
           id="main"
           title="Основное"
-          description="Внутренние поля товара, публикация, категория и короткие параметры для менеджера."
+          description="Названия, ссылка на сайте, раздел каталога и видимость. Внутреннее название удобно для себя; клиент чаще видит «Название на сайте»."
         >
           <Field
             label="Внутреннее название"
@@ -283,11 +282,11 @@ export function ProductForm({
           <Field
             label={
               <>
-                Slug{" "}
+                Ссылка товара{" "}
                 {product ? (
-                  <AdminStatusBadge tone="readonly">URL ЗАФИКСИРОВАН</AdminStatusBadge>
+                  <AdminStatusBadge tone="readonly">адрес сохранён</AdminStatusBadge>
                 ) : (
-                  <AdminStatusBadge tone="auto">AUTO</AdminStatusBadge>
+                  <AdminStatusBadge tone="auto" />
                 )}
               </>
             }
@@ -298,7 +297,7 @@ export function ProductForm({
               name="slug"
               value={slugDraft}
               onChange={(event) => setManualSlug(event.target.value)}
-              placeholder={product ? undefined : "Сгенерируется из названия, модели и DN/PN"}
+              placeholder={product ? undefined : "Заполнится из названия, модели и DN/PN"}
             />
             {!isExisting && !autoSlugActive ? (
               <button
@@ -306,20 +305,20 @@ export function ProductForm({
                 className="text-xs text-muted-foreground underline-offset-2 hover:underline"
                 onClick={() => setManualSlug(null)}
               >
-                Вернуть авто-генерацию slug из названия, модели и DN/PN
+                Снова собрать ссылку из названия, модели и DN/PN
               </button>
             ) : null}
             <AdminFieldHint>
               {product
-                ? "URL зафиксирован после публикации. Если оставить поле пустым, slug не изменится. При ручном изменении старый URL автоматически перенаправится на новый (301 redirect)."
-                : "Можно оставить пустым — slug сгенерируется из «Внутреннего названия». После публикации URL фиксируется и больше не меняется автоматически при правке названия."}
+                ? "После появления товара на сайте адрес обычно не меняют. Если всё же поменять ссылку — старый адрес начнёт вести на новый (для закладок и поиска)."
+                : "Можно оставить пустым — ссылка соберётся из «Внутреннего названия», модели и DN/PN. После сохранения товара адрес лучше не менять без нужды."}
             </AdminFieldHint>
             {product && slugDraft.trim() && slugDraft.trim() !== product.slug ? (
               <AdminInlineNotice tone="auto">
                 Изменение slug меняет публичный URL. Старый адрес{" "}
                 <code className="rounded bg-amber-100 px-1">/{product.slug}</code>{" "}
-                сохранится как alias и будет перенаправлять на новый. Это влияет на SEO —
-                поисковики переиндексируют страницу.
+                сохранится и будет перенаправлять на новый. Поисковики обновят страницу
+                с задержкой.
               </AdminInlineNotice>
             ) : null}
           </Field>
@@ -392,7 +391,7 @@ export function ProductForm({
         <AdminSectionCard
           id="images"
           title="Изображения"
-          description="Основное изображение и порядок галереи. Preview выше показывает финальную картинку, которую увидит клиент."
+          description="Главное фото и галерея на карточке товара. В блоке «Предпросмотр» выше видно, какой снимок пойдёт на сайт."
         >
           <MediaUpload
             title="Изображения товара"
@@ -408,8 +407,8 @@ export function ProductForm({
 
         <AdminSectionCard
           id="seo"
-          title="SEO preview"
-          description="Итоговые title, description, H1 и canonical считаются в buildPublicProductView() из названия и параметров товара. Ручных SEO override-полей нет — здесь только preview."
+          title="Как выглядит в поиске"
+          description="Заголовок и описание для Google — из названия на сайте, описаний и параметров. Отдельных полей «для поиска» нет: здесь только предпросмотр, как сейчас соберётся страница."
           badge="generated"
         >
           {livePublicPreview ? (
@@ -421,26 +420,25 @@ export function ProductForm({
               />
               <dl className="grid gap-3 rounded-lg border border-border bg-muted/30 p-3 text-sm sm:grid-cols-2">
                 <PreviewValue label="H1" value={livePublicPreview.h1} />
-                <PreviewValue label="Canonical" value={livePublicPreview.canonicalPath} />
+                <PreviewValue label="Основная ссылка" value={livePublicPreview.canonicalPath} />
               </dl>
               <AdminFieldHint>
                 <AdminStatusBadge tone="readonly" className="mr-2 align-middle" />
-                Ручные SEO override-поля сейчас намеренно не добавлены. SEO берёт публичное
-                название, описание и canonical из public builder, чтобы админка и сайт не
-                расходились.
+                Отдельные поля «только для поиска» не заводим — чтобы текст на сайте и
+                в поиске всегда совпадал.
               </AdminFieldHint>
             </div>
           ) : (
             <AdminFieldHint>
-              SEO preview появится после создания товара.
+              Предпросмотр для поиска появится после первого сохранения товара.
             </AdminFieldHint>
           )}
         </AdminSectionCard>
 
         <AdminSectionCard
           id="parameters"
-          title="Характеристики"
-          description="DN, PN, материал, модель и соединение участвуют в фильтрах, поиске, публичном названии и SEO."
+          title="Параметры и цена"
+          description="DN, PN, материал, модель и соединение — в фильтрах каталога и в автоматическом названии. Цена и вес — в карточке и в заявках."
         >
           <div className="grid gap-3 md:grid-cols-3">
             <Field label="DN" name="dn">
@@ -522,13 +520,14 @@ export function ProductForm({
 
         <AdminSectionCard
           id="description"
-          title="Контент страницы товара"
-          description="Краткое и полное описание, таблица характеристик и списки ниже — это то, что видит клиент на странице товара (через buildPublicProductView)."
+          title="Тексты на странице товара"
+          description="Краткое и полное описание, таблица «Маркировка / DN / …» и блоки списков — всё уходит на публичную страницу. Для линеек задвижек пустые списки могут подставиться из общего образца."
         >
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-relaxed text-blue-950">
             <AdminStatusBadge tone="auto" className="mr-2 align-middle" />
-            Заполненные поля идут на сайт как есть. Пустые списки для задвижек могут
-            подставляться из шаблона серии — см. docs/product-content-contract.md.
+            Заполненные поля идут на сайт как есть. Для задвижек пустые списки иногда
+            дополняются из общего образца линейки — подробнее в{" "}
+            <code className="rounded bg-white/60 px-1">docs/product-content-contract.md</code>.
           </div>
 
           <Field label="Краткое описание" name="shortDescription">
@@ -632,8 +631,10 @@ export function ProductForm({
             ))}
             <AdminFieldHint>
               <AdminStatusBadge tone="auto" className="mr-2 align-middle" />
-              Если строка не заполнена, для задвижек по шаблону серии список может
-              дополниться автоматически (см. docs/product-content-contract.md).
+              Если блок пустой, для задвижек текст может подставиться из общего образца
+              линейки (см.{" "}
+              <code className="rounded bg-muted px-1">docs/product-content-contract.md</code>
+              ).
             </AdminFieldHint>
           </div>
         </AdminSectionCard>
@@ -693,19 +694,19 @@ function ProductValidationWarnings({
       ? "Товар скрыт: изменения сохранятся, но клиент не увидит товар в публичном каталоге."
       : null,
     imageCount === 0
-      ? "Нет изображения товара: публичная карточка будет использовать fallback категории."
+      ? "Нет своего фото: на сайте подставится картинка из раздела каталога."
       : null,
     product && !product.publicTitle?.trim() && !preview?.generatedDisplayName?.trim()
-      ? "Нет публичного или сгенерированного названия: карточка и SEO будут пустыми."
+      ? "Нет названия для сайта и не из чего собрать автоматически: карточка будет пустой."
       : null,
     !product?.shortDescription?.trim()
-      ? "Краткое описание пустое: карточки каталога будут брать fallback из полного описания или шаблона."
+      ? "Краткое описание пустое: в списке товаров может подставиться начало полного текста или образца."
       : null,
     product && !product.slug?.trim()
-      ? "Slug пустой: публичный URL и canonical невозможны."
+      ? "Ссылка товара пустая: страница на сайте не откроется."
       : null,
     preview && !preview.canonicalPath.trim()
-      ? "Canonical path не сформирован: проверьте slug и категорию."
+      ? "Не удалось собрать основную ссылку: проверьте «Ссылку товара» и категорию."
       : null,
     product && !product.categoryId
       ? "Категория не выбрана: товар не попадёт в нужный публичный раздел."
@@ -720,24 +721,24 @@ function ProductValidationWarnings({
       ? "PN не указан: фильтры и поиск по давлению будут работать хуже."
       : null,
     preview && !preview.seoTitle.trim()
-      ? "SEO title пустой: проверьте название, модель, DN и PN."
+      ? "Заголовок для поиска пустой: проверьте название, модель, DN и PN."
       : null,
     preview && !preview.seoDescription.trim()
-      ? "SEO description пустой: заполните описание или характеристики."
+      ? "Описание для поиска пустое: добавьте текст в описание или характеристики."
       : null,
     preview && preview.seoTitle.length > 70
-      ? "SEO title длиннее 70 символов: в Google он может обрезаться."
+      ? "Заголовок для поиска длиннее 70 знаков — в выдаче может обрезаться."
       : null,
     preview && preview.seoDescription.length > 170
-      ? "SEO description длиннее 170 символов: в Google он может обрезаться."
+      ? "Описание для поиска длиннее 170 знаков — в выдаче может обрезаться."
       : null,
   ].filter(Boolean);
 
   if (!warnings.length) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-        Карточка выглядит готовой для публикации: есть базовые параметры, SEO
-        preview и публичный view.
+        Карточка выглядит готовой к публикации: есть параметры, тексты и предпросмотр
+        для клиента.
       </div>
     );
   }

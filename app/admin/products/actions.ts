@@ -357,7 +357,7 @@ export async function updateProductAction(
   const slugChanged = Boolean(before && after && before.slug !== after.slug);
   return {
     success: slugChanged
-      ? "Изменения сохранены. Slug обновлён — старый URL автоматически перенаправляется на новый. Публичный сайт может обновиться в течение нескольких минут."
+      ? "Изменения сохранены. Ссылка товара обновлена — старый адрес автоматически ведёт на новый. Сайт может обновиться в течение нескольких минут."
       : "Изменения сохранены. Публичный сайт может обновиться в течение нескольких минут.",
     savedAt: new Date().toISOString(),
   };
@@ -451,7 +451,7 @@ function withStatusParam(href: string, key: "msg" | "error", value: string): str
 function humanizeError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
   if (msg.includes("products_slug_idx")) {
-    return "Товар с таким slug уже существует.";
+    return "Товар с такой ссылкой уже есть.";
   }
   if (msg.includes("selected images do not exist")) {
     return "Некоторые изображения были удалены. Обновите страницу и попробуйте снова.";

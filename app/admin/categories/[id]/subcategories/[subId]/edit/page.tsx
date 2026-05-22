@@ -42,7 +42,9 @@ export default async function EditSubcategoryPage({
   if (!parent || !sub || sub.categoryId !== categoryId) notFound();
   const warnings = [
     !sub.name.trim() ? "Название подкатегории пустое." : null,
-    !sub.slug.trim() ? "Slug пустой: публичная страница подкатегории не откроется." : null,
+    !sub.slug.trim()
+      ? "Ссылка подраздела пустая: страница в каталоге не откроется."
+      : null,
   ].filter(Boolean);
 
   return (
@@ -61,7 +63,7 @@ export default async function EditSubcategoryPage({
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{sub.name}</h1>
         <p className="text-sm text-muted-foreground">
-          Категория: {parent.name} · slug: <code className="text-xs">{sub.slug}</code>
+          Категория: {parent.name} · ссылка: <code className="text-xs">{sub.slug}</code>
         </p>
       </div>
 
@@ -111,7 +113,9 @@ export default async function EditSubcategoryPage({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="slug">Slug <AdminStatusBadge tone="manual" /></Label>
+            <Label htmlFor="slug">
+              Ссылка подраздела <AdminStatusBadge tone="manual" />
+            </Label>
             <input
               id="slug"
               name="slug"

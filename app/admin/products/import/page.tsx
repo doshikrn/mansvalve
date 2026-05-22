@@ -38,7 +38,7 @@ export default async function ProductsImportPage() {
           <h1 className="text-xl font-semibold tracking-tight">Импорт товаров из Excel</h1>
           <p className="text-sm text-muted-foreground">
             Скачайте шаблон, заполните до {MAX_IMPORT_ROWS} строк и загрузите файл. Перед записью
-            появится превью с действиями, slug и SEO.
+            появится превью с действиями, ссылкой и заголовком для поиска.
           </p>
         </div>
         <div className="flex gap-2">
@@ -68,7 +68,8 @@ export default async function ProductsImportPage() {
           ))}
         </ul>
         <p className="text-xs text-muted-foreground">
-          Slug формируется автоматически из модели и DN/PN (например, <code>19s38nzh-dn50-pn16</code>).
+          Ссылка товара (латиница) собирается автоматически из модели и DN/PN, например{" "}
+          <code>19s38nzh-dn50-pn16</code>.
           SEO title и description берутся из <code>buildPublicProductView()</code> — отдельный SEO
           билдер не дублируем.
         </p>

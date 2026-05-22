@@ -62,13 +62,13 @@ export async function applyMissingSeriesBlocksAction(
     fields: formData.getAll("field").map((v) => String(v ?? "")),
   });
   if (!parsed.success) {
-    redirect(withStatus(returnHref(), "error", "Не выбраны поля для применения."));
+    redirect(withStatus(returnHref(), "error", "Не выбраны блоки для заполнения."));
   }
 
   const { groupKey: targetGroupKey, fields } = parsed.data;
   const group = listAllSeriesGroups().find((g) => g.key === targetGroupKey);
   if (!group) {
-    redirect(withStatus(returnHref(), "error", "Серия не найдена."));
+    redirect(withStatus(returnHref(), "error", "Линейка не найдена."));
   }
 
   const products = await getPublicCatalogProducts();
@@ -116,8 +116,8 @@ export async function applyMissingSeriesBlocksAction(
 
   const message =
     touched === 0
-      ? `Изменений не потребовалось. Все SKU серии уже имеют выбранные блоки (пропущено ${skipped}).`
-      : `Заполнено ${touched} SKU (поля: ${fields.join(", ")}). Пропущено: ${skipped}. Изменения применятся на сайте в течение нескольких минут.`;
+      ? `Нечего менять: у всех товаров линейки выбранные блоки уже заполнены (пропущено ${skipped}).`
+      : `Обновлено товаров: ${touched}. Блоки: ${fields.join(", ")}. Без изменений: ${skipped}. На сайте обновление может занять несколько минут.`;
 
   redirect(withStatus(returnHref(targetGroupKey), "msg", message));
 }

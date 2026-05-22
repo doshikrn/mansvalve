@@ -50,7 +50,9 @@ export default async function EditCategoryPage({
   const seoDefaults = categorySeoToFormDefaults(category.seoContent);
   const warnings = [
     !category.name.trim() ? "Название категории пустое." : null,
-    !category.slug.trim() ? "Slug пустой: публичная страница категории не откроется." : null,
+    !category.slug.trim()
+      ? "Ссылка раздела пустая: страница в каталоге не откроется."
+      : null,
   ].filter(Boolean);
 
   return (
@@ -65,7 +67,7 @@ export default async function EditCategoryPage({
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Категория: {category.name}</h1>
         <p className="text-sm text-muted-foreground">
-          id={category.id} · slug публичного URL: <code className="text-xs">{category.slug}</code>
+          id={category.id} · ссылка в каталоге: <code className="text-xs">{category.slug}</code>
         </p>
       </div>
 
@@ -115,7 +117,9 @@ export default async function EditCategoryPage({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="slug">Slug <AdminStatusBadge tone="manual" /></Label>
+              <Label htmlFor="slug">
+                Ссылка раздела <AdminStatusBadge tone="manual" />
+              </Label>
               <input
                 id="slug"
                 name="slug"
@@ -237,7 +241,7 @@ export default async function EditCategoryPage({
           <h2 className="text-sm font-semibold text-red-950">Опасная зона</h2>
           <p className="mt-1 text-sm text-red-900">
             Категорию можно удалить только если в ней нет товаров и подкатегорий.
-            Slug и старый публичный URL после удаления перестанут открываться.
+            Ссылка и старый адрес в каталоге после удаления перестанут открываться.
           </p>
         </div>
         <DestructiveConfirmForm

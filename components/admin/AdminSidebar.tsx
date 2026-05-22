@@ -34,8 +34,8 @@ const PRIMARY: Item[] = [
 const CATALOG: Item[] = [
   { href: "/admin/products", label: "Товары", icon: Package },
   { href: "/admin/products/import", label: "Импорт Excel", icon: FileSpreadsheet },
-  { href: "/admin/products/series", label: "Серии и шаблоны", icon: GitBranch },
-  { href: "/admin/catalog-health", label: "Здоровье каталога", icon: Activity },
+  { href: "/admin/products/series", label: "Массовое заполнение", icon: GitBranch },
+  { href: "/admin/catalog-health", label: "Проверка каталога", icon: Activity },
   { href: "/admin/categories?view=categories", label: "Категории", icon: FolderTree },
   { href: "/admin/categories?view=subcategories", label: "Подкатегории", icon: Layers },
   { href: "/admin/certificates", label: "Сертификаты", icon: Award },

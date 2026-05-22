@@ -6,23 +6,33 @@ export function PublicCatalogSourceNotice() {
   if (info.adminChangesVisibleOnPublicSite) {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-        Публичный каталог читает данные из БД. Изменения товаров, изображений,
-        категорий и документов после сохранения будут попадать на сайт.
+        Сайт сейчас показывает каталог из <strong>вашей базы данных</strong>. После
+        сохранения товара или раздела изменения уходят на публичные страницы.
       </div>
     );
   }
 
-  const reason =
+  const technicalReason =
     info.configuredSource === "db" && !info.databaseConfigured
-      ? "PUBLIC_CATALOG_SOURCE=db задан, но DATABASE_URL не настроен, поэтому публичный сайт перешел на JSON fallback."
-      : "Публичный каталог сейчас использует JSON-источник.";
+      ? "В настройках выбрана база данных, но подключение не настроено — сайт временно берёт сохранённый файл каталога."
+      : "Сайт сейчас читает каталог из сохранённого файла, а не из базы, с которой работает эта админка.";
 
   return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-      <strong className="font-semibold">Внимание:</strong> {reason} Изменения
-      товаров в БД могут не отображаться на сайте до переключения
-      <code className="mx-1 rounded bg-white/70 px-1 py-0.5">PUBLIC_CATALOG_SOURCE=db</code>
-      или экспорта данных в JSON.
+      <p>
+        <strong className="font-semibold">Внимание:</strong> {technicalReason}{" "}
+        Правки здесь могут не совпадать с тем, что видит клиент, пока не переключат
+        источник данных на сервере.
+      </p>
+      <details className="mt-2 text-xs text-amber-900/80">
+        <summary className="cursor-pointer select-none hover:underline">
+          Подробности для разработчика
+        </summary>
+        <p className="mt-1.5 rounded-md bg-white/50 p-2 font-mono text-[11px] leading-relaxed">
+          configuredSource={info.configuredSource}; effectiveSource={info.effectiveSource};
+          databaseConfigured={String(info.databaseConfigured)}.
+        </p>
+      </details>
     </div>
   );
 }

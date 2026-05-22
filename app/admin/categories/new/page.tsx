@@ -70,7 +70,7 @@ export default async function NewCategoryPage({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="slug">Slug (латиница)</Label>
+              <Label htmlFor="slug">Ссылка раздела (латиница)</Label>
               <input
                 id="slug"
                 name="slug"

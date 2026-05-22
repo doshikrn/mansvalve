@@ -72,12 +72,13 @@ export default async function EditProductPage({
             {displayName}
           </h1>
           <p className="text-xs text-muted-foreground">
-            id {product.id} · {product.slug}
+            Запись {product.id} · ссылка на сайте:{" "}
+            <code className="rounded bg-muted px-1">{product.slug}</code>
           </p>
         </div>
         <DestructiveConfirmForm
           action={boundDelete}
-          confirmMessage={`Удалить товар «${displayName}» окончательно? Он исчезнет с сайта, поиска, sitemap и витрин. Действие нельзя отменить.`}
+          confirmMessage={`Удалить товар «${displayName}» окончательно? Он исчезнет с сайта и из каталога. Действие нельзя отменить.`}
           className="shrink-0"
           title="Удаление товара"
           details={

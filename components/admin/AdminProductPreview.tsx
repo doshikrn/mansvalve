@@ -36,14 +36,14 @@ export function AdminProductPreview({ preview }: Props) {
         >
           <div className="absolute left-3 top-3">
             <AdminStatusBadge tone={preview.imageCount > 0 ? "manual" : "auto"}>
-              {preview.imageCount > 0 ? "PRIMARY IMAGE" : "FALLBACK IMAGE"}
+              {preview.imageCount > 0 ? "Своё фото" : "Фото из раздела"}
             </AdminStatusBadge>
           </div>
         </ProductImageFrame>
         <div className="space-y-3 p-4">
           <div>
             <p className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Карточка каталога <AdminStatusBadge tone="readonly" />
+              Карточка в каталоге <AdminStatusBadge tone="readonly" />
             </p>
             <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug">
               {preview.displayName}

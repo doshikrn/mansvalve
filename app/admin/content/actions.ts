@@ -123,7 +123,7 @@ export async function saveHomeProductShowcasesAction(formData: FormData) {
 
   const parsed = homeProductShowcasesSchema.safeParse(data);
   if (!parsed.success) {
-    err("Популярные товары: укажите от 1 до 12 slug в каждом списке.");
+    err("Популярные товары: в каждом списке укажите от 1 до 12 ссылок на товары (латиница, как в адресе карточки).");
   }
 
   await upsertContentBlock({
