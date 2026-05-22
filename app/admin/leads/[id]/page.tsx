@@ -25,7 +25,7 @@ function badgeVariantForStatus(status: ReturnType<typeof normalizeLeadStatus>) {
   return "outline" as const;
 }
 
-const ATTRIBUTION_LABELS: Record<string, string> = {
+const MARKETING_ATTRIBUTION_LABELS: Record<string, string> = {
   utm_source: "UTM source",
   utm_medium: "UTM medium",
   utm_campaign: "UTM campaign",
@@ -34,19 +34,18 @@ const ATTRIBUTION_LABELS: Record<string, string> = {
   gclid: "Google Click ID",
   yclid: "Yandex Click ID",
   fbclid: "Facebook Click ID",
-  referrer: "Referrer",
-  first_utm_source: "First UTM source",
-  first_utm_medium: "First UTM medium",
-  first_utm_campaign: "First UTM campaign",
-  first_utm_term: "First UTM term",
-  first_utm_content: "First UTM content",
-  first_gclid: "First Google Click ID",
-  first_yclid: "First Yandex Click ID",
-  first_fbclid: "First Facebook Click ID",
-  first_referrer: "First referrer",
-  first_landing_path: "First landing path",
-  first_touch_at: "First touch",
 };
+
+const INTERNAL_REFERRER_HOSTS = new Set([
+  "localhost",
+  "127.0.0.1",
+  "chatgpt.com",
+  "www.chatgpt.com",
+  "mansvalve.kz",
+  "www.mansvalve.kz",
+  "mansvalve-group.kz",
+  "www.mansvalve-group.kz",
+]);
 
 function displayValue(value: string | number | null | undefined): string {
   if (value == null) return "—";
@@ -54,41 +53,75 @@ function displayValue(value: string | number | null | undefined): string {
   return text || "—";
 }
 
-function getFilledAttributionEntries(value: unknown): Array<[string, string]> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+function getAttributionRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
+}
 
-  return Object.entries(value as Record<string, unknown>)
-    .filter(([, rawValue]) => {
-      if (rawValue == null) return false;
-      if (typeof rawValue === "string") return rawValue.trim().length > 0;
-      return true;
-    })
-    .map(([key, rawValue]) => [
-      ATTRIBUTION_LABELS[key] ?? key,
-      typeof rawValue === "string" ? rawValue.trim() : JSON.stringify(rawValue),
-    ]);
+function getStringField(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text || null;
+}
+
+function getMarketingAttributionEntries(record: Record<string, unknown>): Array<[string, string]> {
+  return Object.entries(MARKETING_ATTRIBUTION_LABELS).flatMap(([key, label]) => {
+    const value = getStringField(record, key);
+    return value ? [[label, value] as [string, string]] : [];
+  });
+}
+
+function getUsefulReferrer(value: string | null): string | null {
+  if (!value) return null;
+
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (INTERNAL_REFERRER_HOSTS.has(host)) return null;
+    return value;
+  } catch {
+    return null;
+  }
+}
+
+function formatLandingPath(value: string | null): string | null {
+  if (!value) return null;
+
+  let path = value;
+  try {
+    path = new URL(value).pathname;
+  } catch {
+    path = value.split("?")[0] || value;
+  }
+
+  if (path === "/") return "Главная";
+  if (path.startsWith("/catalog")) return "Каталог";
+  return path;
 }
 
 function formatTechnicalJson(value: unknown): string {
-  if (value && typeof value === "object") {
-    const filledEntries = Object.entries(value as Record<string, unknown>).filter(([, rawValue]) => {
-      if (rawValue == null) return false;
-      if (typeof rawValue === "string") return rawValue.trim().length > 0;
-      return true;
-    });
+  const record = getAttributionRecord(value);
+  const filledEntries = Object.entries(record).flatMap(([key, rawValue]) => {
+    if (rawValue == null) return [];
+    if (typeof rawValue === "string" && rawValue.trim().length === 0) return [];
 
-    return JSON.stringify(Object.fromEntries(filledEntries), null, 2);
-  }
-  return "{}";
+    if ((key === "referrer" || key === "first_referrer") && !getUsefulReferrer(String(rawValue))) {
+      return [];
+    }
+
+    if (key === "first_touch_at") {
+      return [[key, formatAlmatyDateTime(String(rawValue))] as [string, string]];
+    }
+
+    return [[key, rawValue] as [string, unknown]];
+  });
+
+  return JSON.stringify(Object.fromEntries(filledEntries), null, 2);
 }
 
 function hasTechnicalJson(value: unknown): boolean {
-  if (!value || typeof value !== "object") return false;
-  return Object.values(value as Record<string, unknown>).some((rawValue) => {
-    if (rawValue == null) return false;
-    if (typeof rawValue === "string") return rawValue.trim().length > 0;
-    return true;
-  });
+  return formatTechnicalJson(value) !== "{}";
 }
 
 export default async function AdminLeadDetailPage({
@@ -126,7 +159,13 @@ export default async function AdminLeadDetailPage({
     : null;
 
   const displayStatus = normalizeLeadStatus(lead.status);
-  const attributionEntries = getFilledAttributionEntries(lead.attribution);
+  const attribution = getAttributionRecord(lead.attribution);
+  const marketingEntries = getMarketingAttributionEntries(attribution);
+  const usefulReferrer = getUsefulReferrer(getStringField(attribution, "referrer"));
+  const landingPath =
+    formatLandingPath(getStringField(attribution, "landing_path")) ??
+    formatLandingPath(getStringField(attribution, "first_landing_path")) ??
+    formatLandingPath(lead.page);
   const hasRawAttribution = hasTechnicalJson(lead.attribution);
 
   return (
@@ -240,11 +279,11 @@ export default async function AdminLeadDetailPage({
 
       <section className="rounded-xl border border-border bg-background p-4 space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Атрибуция (UTM и first-touch)
+          Атрибуция
         </h2>
-        {attributionEntries.length > 0 ? (
+        {marketingEntries.length > 0 ? (
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            {attributionEntries.map(([label, value]) => (
+            {marketingEntries.map(([label, value]) => (
               <div key={label}>
                 <dt className="text-xs text-muted-foreground">{label}</dt>
                 <dd className="break-all">{value}</dd>
@@ -254,6 +293,16 @@ export default async function AdminLeadDetailPage({
         ) : (
           <p className="text-sm text-muted-foreground">UTM-метки не зафиксированы.</p>
         )}
+        <dl className="grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="text-xs text-muted-foreground">Внешний источник</dt>
+            <dd className="break-all">{usefulReferrer ?? "Внешний источник не зафиксирован"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Первая страница</dt>
+            <dd className="break-all">{landingPath ?? "—"}</dd>
+          </div>
+        </dl>
         {hasRawAttribution ? (
           <details className="rounded-md border border-border bg-muted/30 p-3 text-xs">
             <summary className="cursor-pointer font-medium text-muted-foreground">
