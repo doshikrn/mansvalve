@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
 import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
-import { searchPublicProducts } from "@/lib/search/product-search";
+import { searchHeaderProducts } from "@/lib/search/header-product-search";
 import type { ProductSearchItemDto } from "@/lib/search/product-search-dto";
 
 const MAX_LEN = 120;
@@ -28,13 +27,7 @@ export async function GET(request: Request) {
     Math.max(1, limitParam ? parseInt(limitParam, 10) || DEFAULT_LIMIT : DEFAULT_LIMIT),
   );
 
-  const products = await getPublicCatalogListingProducts();
-  const qLower = rawQ.toLowerCase();
-  const slugHit = products.find((p) => p.slug.toLowerCase() === qLower);
-  const pool = slugHit ? products.filter((p) => p.id !== slugHit.id) : products;
-  const limitAfterHit = slugHit ? Math.max(0, limit - 1) : limit;
-  const hits = searchPublicProducts(pool, rawQ, limitAfterHit);
-  const orderedHits = slugHit ? [slugHit, ...hits].slice(0, limit) : hits;
+  const orderedHits = await searchHeaderProducts(rawQ, limit);
 
   const out: ProductSearchItemDto[] = orderedHits.map((p) => {
     const view = buildPublicProductCardView(p);
