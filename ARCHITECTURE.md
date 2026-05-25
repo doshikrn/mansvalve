@@ -26,7 +26,7 @@
 - DB: Postgres, Drizzle ORM, postgres driver.
 - Auth: JWT в httpOnly cookie, jose, bcryptjs.
 - Validation: zod.
-- Analytics: GA4 `gtag.js` (measurement id по умолчанию `G-K08PEJC569` или `NEXT_PUBLIC_GA_MEASUREMENT_ID`), optional GTM через `NEXT_PUBLIC_GTM_ID`.
+- Analytics: Google tag `gtag.js` (measurement id по умолчанию `AW-18163182394` или `NEXT_PUBLIC_GOOGLE_TAG_ID`), optional GTM через `NEXT_PUBLIC_GTM_ID`.
 - Media: local storage или Supabase storage.
 - Catalog source: JSON или DB через единый public adapter.
 
@@ -170,7 +170,7 @@ mansvalve/
 - global metadata и favicon/app icons;
 - `metadataBase` через `getSiteBaseUrl()`;
 - Inter font;
-- GA4 `gtag.js` + inline bootstrap (`send_page_view: false`);
+- Google tag `gtag.js` + inline bootstrap (`send_page_view: false`);
 - optional GTM bootstrap + noscript iframe;
 - global JSON-LD `Organization` и `WebSite`;
 - глобальные клиентские трекеры;
@@ -626,19 +626,19 @@ Generated public files:
 Config: `lib/analytics-config.ts`
 
 ```ts
-GA_MEASUREMENT_ID = NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-K08PEJC569"
+GOOGLE_TAG_ID = NEXT_PUBLIC_GOOGLE_TAG_ID || "AW-18163182394"
 GTM_ID = NEXT_PUBLIC_GTM_ID || ""
 ```
 
 Transport:
 
-- GA4 direct via `gtag.js`;
+- Google tag direct via `gtag.js`;
 - optional GTM via `dataLayer`;
 - custom events через `trackEvent()`.
 
 Files:
 
-- `app/layout.tsx` — loads GA4/GTM scripts;
+- `app/layout.tsx` — loads Google tag/GTM scripts;
 - `lib/analytics.ts` — `trackEvent`, payload normalization, session/event IDs;
 - `components/analytics/PageViewTracker.tsx` — page_view, engagement, scroll depth, funnel steps;
 - `components/analytics/GlobalClickTracker.tsx` — tel/WhatsApp/etc click tracking;
@@ -646,10 +646,10 @@ Files:
 
 Important:
 
-- `send_page_view: false` in GA config;
+- `send_page_view: false` in Google tag config;
 - page views отправляются `PageViewTracker`;
-- if GTM absent, GA4 still works;
-- if GA4 absent but GTM present, dataLayer still works.
+- if GTM absent, direct Google tag still works;
+- if direct Google tag is disabled but GTM present, dataLayer still works.
 
 ## 17. Company config
 
@@ -751,7 +751,7 @@ PUBLIC_CATALOG_SOURCE
 PUBLIC_CATALOG_FROM_DB
 ADMIN_SESSION_SECRET
 ADMIN_SESSION_TTL_HOURS
-NEXT_PUBLIC_GA_MEASUREMENT_ID
+NEXT_PUBLIC_GOOGLE_TAG_ID
 NEXT_PUBLIC_GTM_ID
 MEDIA_DRIVER
 MEDIA_PUBLIC_BASE_URL
@@ -763,7 +763,7 @@ SUPABASE_STORAGE_BUCKET
 Defaults:
 
 - `SITE_URL` fallback: `https://mansvalve-group.kz`;
-- `NEXT_PUBLIC_GA_MEASUREMENT_ID` fallback: `G-K08PEJC569`;
+- `NEXT_PUBLIC_GOOGLE_TAG_ID` fallback: `AW-18163182394`;
 - catalog fallback: JSON.
 
 ## 22. Build and quality
@@ -846,4 +846,3 @@ Code/config update
 ```
 
 For favicon specifically: index the page, not `/favicon.ico`; favicon just must be crawlable and linked from page metadata.
-

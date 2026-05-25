@@ -1,4 +1,4 @@
-import { GA_CONFIGURED, GA_MEASUREMENT_ID, GTM_CONFIGURED } from "@/lib/analytics-config";
+import { GOOGLE_TAG_CONFIGURED, GOOGLE_TAG_ID, GTM_CONFIGURED } from "@/lib/analytics-config";
 
 type AnalyticsValue = string | number | boolean | null | undefined;
 
@@ -117,11 +117,11 @@ function getDefaultDataLayerContext(): AnalyticsPayload {
 
 /**
  * Pushes a single custom event to analytics transports.
- * GTM receives dataLayer events; direct GA4 receives the same events through gtag.
+ * GTM receives dataLayer events; direct Google tag receives the same events through gtag.
  */
 export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
   if (typeof window === "undefined") return;
-  if (!GTM_CONFIGURED && !GA_CONFIGURED) return;
+  if (!GTM_CONFIGURED && !GOOGLE_TAG_CONFIGURED) return;
 
   const defaults = getDefaultDataLayerContext();
   const merged: AnalyticsPayload = { ...defaults, ...payload };
@@ -136,7 +136,7 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
     try {
       window.dataLayer = window.dataLayer || [];
       // When GTM is enabled, custom events should go through `dataLayer` only — pushing the same
-      // event to both `dataLayer` and `gtag` doubles counts if the container also forwards to GA4.
+      // event to both `dataLayer` and `gtag` doubles counts if the container also forwards events.
       if (GTM_CONFIGURED) {
         window.dataLayer.push({
           event: eventName,
@@ -144,10 +144,10 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
         });
         return;
       }
-      if (GA_CONFIGURED && typeof window.gtag === "function") {
+      if (GOOGLE_TAG_CONFIGURED && typeof window.gtag === "function") {
         window.gtag("event", eventName, {
           ...analyticsPayload,
-          send_to: GA_MEASUREMENT_ID,
+          send_to: GOOGLE_TAG_ID,
         });
       }
     } catch {

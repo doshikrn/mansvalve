@@ -7,7 +7,7 @@ import { ToasterClient } from "@/components/providers/ToasterClient";
 import { GlobalClickTracker } from "@/components/analytics/GlobalClickTracker";
 import { PageViewTracker } from "@/components/analytics/PageViewTracker";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { GA_MEASUREMENT_ID, GTM_ID, GA_CONFIGURED, GTM_CONFIGURED } from "@/lib/analytics-config";
+import { GOOGLE_TAG_ID, GTM_ID, GOOGLE_TAG_CONFIGURED, GTM_CONFIGURED } from "@/lib/analytics-config";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import { buildOrganizationJsonLd, buildWebSiteJsonLd } from "@/lib/structured-data";
@@ -60,15 +60,15 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        {GA_CONFIGURED && (
+        {GOOGLE_TAG_CONFIGURED && (
           <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`}
             strategy="afterInteractive"
           />
         )}
-        {GA_CONFIGURED && (
-          <Script id="ga4-bootstrap" strategy="afterInteractive">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false});`}
+        {GOOGLE_TAG_CONFIGURED && (
+          <Script id="google-tag-bootstrap" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GOOGLE_TAG_ID}',{send_page_view:false});`}
           </Script>
         )}
         {GTM_CONFIGURED && (

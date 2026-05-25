@@ -59,7 +59,7 @@ _No production-breaking defects identified in this pass._
 | PRA-M02 | Analytics         | `page_view` + `product_view` + funnel `catalog_view` — multiple events per navigation   | Intentional funnel; verify GTM container maps once  | Document in GTM; optional dedupe flag in env       | Low    |
 | PRA-M03 | Admin tables      | Large DOM on products / import preview / media                                        | Long lists without windowing                        | Virtualize or stricter default page size           | Medium |
 | PRA-M04 | ISR vs dynamic    | `/catalog` is `ƒ` dynamic (expected with `searchParams`)                              | Search/filter query string                          | Acceptable; optional `loading.tsx` skeleton          | Low    |
-| PRA-M05 | Config            | Default `NEXT_PUBLIC_GA_MEASUREMENT_ID` fallback in code                              | Analytics always “configured” unless overridden     | Require explicit env in production                   | Low–policy |
+| PRA-M05 | Config            | Default `NEXT_PUBLIC_GOOGLE_TAG_ID` fallback in code                              | Analytics always “configured” unless overridden     | Require explicit env in production                   | Low–policy |
 
 ---
 

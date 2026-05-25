@@ -17,7 +17,7 @@
 | Админка: товары, категории (**sort_order**), импорт Excel, медиа, лиды, catalog health, серии | ✅ Готово |
 | Форма заявки + `POST /api/request` + лиды в БД + админка | ✅ Готово |
 | SEO: metadata, JSON-LD, sitemap, robots | ✅ Готово |
-| Аналитика: GA4 (`gtag`, `send_page_view: false`) + опциональный GTM + `PageViewTracker` / `trackEvent` | ✅ Готово |
+| Аналитика: Google tag (`gtag`, `send_page_view: false`) + опциональный GTM + `PageViewTracker` / `trackEvent` | ✅ Готово |
 | Фотографии товаров | ⏳ По мере загрузки в медиатеку |
 | Реальный номер телефона и WhatsApp в `lib/company` | ⏳ Проверить прод-значения |
 
@@ -66,7 +66,7 @@ Copy-Item .env.example .env.local
 - `DATABASE_URL` — строка подключения Postgres для admin/cms/leads.
 - `ADMIN_SESSION_SECRET` — секрет подписи админ-сессий (длинная случайная строка).
 - `NEXT_PUBLIC_GTM_ID` — публичный ID контейнера GTM (`GTM-XXXXXXX`).
-- `NEXT_PUBLIC_GA_MEASUREMENT_ID` — опционально; по умолчанию в коде задан измерительный ID GA4 (см. `lib/analytics-config.ts`).
+- `NEXT_PUBLIC_GOOGLE_TAG_ID` — опционально; по умолчанию в коде задан Google tag ID `AW-18163182394` (см. `lib/analytics-config.ts`).
 - `PUBLIC_CATALOG_SOURCE` — `json` или `db` (источник публичного каталога; см. `.env.example`).
 
 Media storage (обязательно выбрать и настроить):
@@ -153,7 +153,7 @@ Media storage (обязательно выбрать и настроить):
 
 ## Проверка аналитики (GTM / GA4) перед/после хостинга
 
-Убедитесь, что при необходимости заданы `NEXT_PUBLIC_GTM_ID` и/или `NEXT_PUBLIC_GA_MEASUREMENT_ID` (см. `.env.example`), затем пройдите чеклист в **GTM Preview** (Tag Assistant) на целевом домене.
+Убедитесь, что при необходимости заданы `NEXT_PUBLIC_GTM_ID` и/или `NEXT_PUBLIC_GOOGLE_TAG_ID` (см. `.env.example`), затем пройдите чеклист в **GTM Preview** (Tag Assistant) на целевом домене.
 
 | Шаг | Что проверить |
 |-----|----------------|
@@ -170,7 +170,7 @@ Media storage (обязательно выбрать и настроить):
 | 11 | **`catalog_filter_change`** — смена фильтра (категория, подкатегория, сортировка и т.д., см. `CatalogFilters`). |
 | 12 | Для событий из `lib/analytics.ts` в dataLayer: на каждом событии есть **`event_id`**, **`session_id`**, **`page`**, **`pathname`**, при необходимости **`product_slug`** / **`category`** / **`source`**. Настройте в GTM триггеры и теги GA4 / Google Ads по этим именам `event`. |
 
-**Readiness:** без GTM/GA скриптов из env сайт не падает: при пустом `NEXT_PUBLIC_GTM_ID` GTM не грузится; `trackEvent` пишет в `dataLayer` только если он создан GTM. В `app/layout.tsx` дополнительно подключается **GA4 `gtag.js`** (с `send_page_view: false` — просмотры страниц идут через `PageViewTracker`).
+**Readiness:** без GTM/GA скриптов из env сайт не падает: при пустом `NEXT_PUBLIC_GTM_ID` GTM не грузится; `trackEvent` пишет в `dataLayer` только если он создан GTM. В `app/layout.tsx` дополнительно подключается **Google tag `gtag.js`** (с `send_page_view: false` — просмотры страниц идут через `PageViewTracker`).
 
 ## Analytics / Ads / Retargeting handoff
 
@@ -179,10 +179,10 @@ Media storage (обязательно выбрать и настроить):
 | | ID |
 |---|-----|
 | **GTM (контейнер)** | `GTM-NJZFLQSV` |
-| **GA4 (поток)** | `G-K08PEJC569` |
-| **Env в приложении** | `NEXT_PUBLIC_GTM_ID=GTM-NJZFLQSV`; опционально `NEXT_PUBLIC_GA_MEASUREMENT_ID` (иначе дефолт в `lib/analytics-config.ts`) |
+| **Google tag / Ads** | `AW-18163182394` |
+| **Env в приложении** | опционально `NEXT_PUBLIC_GOOGLE_TAG_ID=AW-18163182394`; `NEXT_PUBLIC_GTM_ID` используется только как fallback, если прямой Google tag отключён |
 
-**Важно:** отдельного скрипта **Google Ads** в репозитории нет. **GA4** подключается напрямую через `gtag.js` в `app/layout.tsx` (`send_page_view: false`); **GTM** — опционально. Пользовательские события из `lib/analytics.ts` и трекеры пушат в **`dataLayer`** (удобно для маршрутизации в GTM). Ремаркетинг и конверсии Ads — на стороне GTM/интерфейса маркетолога.
+**Важно:** прямой **Google tag / Ads** подключается через `gtag.js` в `app/layout.tsx` (`send_page_view: false`); **GTM** — только optional fallback. Пользовательские события из `lib/analytics.ts` отправляются в `gtag` напрямую, либо в **`dataLayer`**, если включён GTM.
 
 **События `dataLayer` (имя `event`), которые эмитит фронтенд:**
 
