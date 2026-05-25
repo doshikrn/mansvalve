@@ -190,7 +190,7 @@ export const CATALOG_LANDING_PAGES: CatalogLandingPage[] = [
     },
   },
   {
-    categorySlug: "flancy",
+    categorySlug: "flansy-i-otvody",
     slug: "ru16",
     title: "Фланцы Ру16 купить в Казахстане | MANSVALVE GROUP",
     description:
@@ -202,6 +202,11 @@ export const CATALOG_LANDING_PAGES: CatalogLandingPage[] = [
     },
   },
 ];
+
+/** Former `categorySlug` on SEO landings → current category.slug (308 redirects). */
+export const LEGACY_CATALOG_LANDING_CATEGORY_SLUGS: Record<string, string> = {
+  flancy: "flansy-i-otvody",
+};
 
 export function getOrderedCatalogCategories(
   categories: PublicCatalogCategory[],
