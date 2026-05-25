@@ -11,6 +11,7 @@ import {
   getPublicCatalogCategories,
   getPublicCatalogListingProducts,
   getPublicCategoryById,
+  getPublicProductsByCategory,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
@@ -136,13 +137,20 @@ export default async function CatalogLandingPage({ params }: PageProps) {
     );
   }
 
+  const categoryId = landing.filters.categoryId;
   const [products, categories, category] = await Promise.all([
-    getPublicCatalogListingProducts(),
+    getPublicProductsByCategory(categoryId),
     getPublicCatalogCategories(),
-    getPublicCategoryById(landing.filters.categoryId),
+    getPublicCategoryById(categoryId),
   ]);
 
   if (!category) notFound();
+
+  if (process.env.NODE_ENV === "development" && process.env.CATALOG_QUERY_DEBUG === "1") {
+    console.debug(
+      `[catalog-landing] /${landing.categorySlug}/${landing.slug} products=${products.length} pool=category:${categoryId}`,
+    );
+  }
 
   const searchParams = buildLandingSearchParams(landing);
   const canonical = `/${landing.categorySlug}/${landing.slug}`;
