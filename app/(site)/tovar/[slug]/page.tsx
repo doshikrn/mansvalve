@@ -10,6 +10,7 @@ import {
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
+import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
 import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
 
 export const revalidate = 300;
@@ -69,21 +70,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-function buildQueryString(query: Record<string, string | string[] | undefined>) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item) params.append(key, item);
-      }
-      continue;
-    }
-    if (value) params.set(key, value);
-  }
-  const search = params.toString();
-  return search ? `?${search}` : "";
-}
-
 export default async function ProductPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const query = searchParams ? await searchParams : {};
@@ -97,14 +83,14 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
   if (!product) {
     const aliasTarget = await resolveProductSlugAliasTarget(slug);
     if (aliasTarget) {
-      permanentRedirect(`${aliasTarget}${buildQueryString(query)}`);
+      permanentRedirect(buildCleanProductRedirectUrl(aliasTarget, query));
     }
     notFound();
   }
 
   const view = buildPublicProductView(product);
   if (view.canonicalPath !== tovarPathForSlug(product.slug)) {
-    permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);
+    permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath, query));
   }
 
   const data = await prepareTovarProductPageData(product, categories, allProducts);

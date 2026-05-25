@@ -8,6 +8,7 @@ import {
   getPublicProductBySlug,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
 import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
 import {
   CatalogCategoryPage,
@@ -73,7 +74,7 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
 
   if (product) {
     const view = buildPublicProductView(product);
-    permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);
+    permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath, { ...query }));
   }
 
   if (category) {
@@ -82,23 +83,8 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
 
   const aliasTarget = await resolveProductSlugAliasTarget(slug);
   if (aliasTarget) {
-    permanentRedirect(`${aliasTarget}${buildQueryString(query)}`);
+    permanentRedirect(buildCleanProductRedirectUrl(aliasTarget, { ...query }));
   }
 
   notFound();
-}
-
-function buildQueryString(query: Record<string, string | string[] | undefined> | CatalogSearchParams) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item) params.append(key, item);
-      }
-      continue;
-    }
-    if (value) params.set(key, value);
-  }
-  const search = params.toString();
-  return search ? `?${search}` : "";
 }

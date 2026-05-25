@@ -12,6 +12,7 @@ import {
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
+import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
 import {
   getRelatedSeriesSeoPages,
   getSeriesSeoPageForProduct,
@@ -73,7 +74,7 @@ export default async function CatalogNestedProductPage({ params, searchParams }:
   const view = buildPublicProductView(product);
   const expectedPath = `/catalog/${slug}/${subcategorySlug}/${productSlug}`;
   if (view.canonicalPath !== expectedPath) {
-    permanentRedirect(`${view.canonicalPath}${buildQueryString(query)}`);
+    permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath, query));
   }
 
   const seriesPage = getSeriesSeoPageForProduct(product);
@@ -98,19 +99,4 @@ export default async function CatalogNestedProductPage({ params, searchParams }:
   }
 
   notFound();
-}
-
-function buildQueryString(query: Record<string, string | string[] | undefined>) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item) params.append(key, item);
-      }
-      continue;
-    }
-    if (value) params.set(key, value);
-  }
-  const search = params.toString();
-  return search ? `?${search}` : "";
 }
