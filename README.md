@@ -180,9 +180,10 @@ Media storage (обязательно выбрать и настроить):
 |---|-----|
 | **GTM (контейнер)** | `GTM-NJZFLQSV` |
 | **Google tag / Ads** | `AW-18163182394` |
+| **Ads conversion default** | `AW-18163182394/BBtnCPz4nLMcELrW8NRD` |
 | **Env в приложении** | опционально `NEXT_PUBLIC_GOOGLE_TAG_ID=AW-18163182394`; `NEXT_PUBLIC_GTM_ID` используется только как fallback, если прямой Google tag отключён |
 
-**Важно:** прямой **Google tag / Ads** подключается через `gtag.js` в `app/layout.tsx` (`send_page_view: false`); **GTM** — только optional fallback. Пользовательские события из `lib/analytics.ts` отправляются в `gtag` напрямую, либо в **`dataLayer`**, если включён GTM.
+**Важно:** прямой **Google tag / Ads** подключается через `gtag.js` в `app/layout.tsx` (`send_page_view: false`); **GTM** — только optional fallback. Пользовательские события из `lib/analytics.ts` отправляются в `gtag` напрямую, либо в **`dataLayer`**, если включён GTM. Конверсии Ads отправляются для `phone_click`, `whatsapp_click` и `request_form_submit_success`; отдельные labels можно задать через `NEXT_PUBLIC_GOOGLE_ADS_PHONE_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_FORM_CONVERSION_SEND_TO`.
 
 **События `dataLayer` (имя `event`), которые эмитит фронтенд:**
 

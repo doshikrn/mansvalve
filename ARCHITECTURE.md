@@ -628,6 +628,7 @@ Config: `lib/analytics-config.ts`
 ```ts
 GOOGLE_TAG_ID = NEXT_PUBLIC_GOOGLE_TAG_ID || "AW-18163182394"
 GTM_ID = NEXT_PUBLIC_GTM_ID || ""
+GOOGLE_ADS_*_CONVERSION_SEND_TO = env || "AW-18163182394/BBtnCPz4nLMcELrW8NRD"
 ```
 
 Transport:
@@ -635,6 +636,7 @@ Transport:
 - Google tag direct via `gtag.js`;
 - optional GTM via `dataLayer`;
 - custom events через `trackEvent()`.
+- Google Ads `conversion` events for `phone_click`, `whatsapp_click`, `request_form_submit_success`.
 
 Files:
 

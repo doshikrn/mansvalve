@@ -1,4 +1,11 @@
-import { GOOGLE_TAG_CONFIGURED, GOOGLE_TAG_ID, GTM_CONFIGURED } from "@/lib/analytics-config";
+import {
+  GOOGLE_ADS_FORM_CONVERSION_SEND_TO,
+  GOOGLE_ADS_PHONE_CONVERSION_SEND_TO,
+  GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO,
+  GOOGLE_TAG_CONFIGURED,
+  GOOGLE_TAG_ID,
+  GTM_CONFIGURED,
+} from "@/lib/analytics-config";
 
 type AnalyticsValue = string | number | boolean | null | undefined;
 
@@ -20,6 +27,11 @@ export interface PageAnalyticsContext {
   product_slug?: string;
   category?: string;
 }
+
+type TrackEventOptions = {
+  conversionCallback?: () => void;
+  conversionTimeoutMs?: number;
+};
 
 declare global {
   interface Window {
@@ -115,13 +127,27 @@ function getDefaultDataLayerContext(): AnalyticsPayload {
   return out;
 }
 
+function getGoogleAdsConversionSendTo(eventName: string): string | null {
+  if (eventName === "phone_click") return GOOGLE_ADS_PHONE_CONVERSION_SEND_TO;
+  if (eventName === "whatsapp_click") return GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO;
+  if (eventName === "request_form_submit_success") return GOOGLE_ADS_FORM_CONVERSION_SEND_TO;
+  return null;
+}
+
 /**
  * Pushes a single custom event to analytics transports.
  * GTM receives dataLayer events; direct Google tag receives the same events through gtag.
  */
-export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
+export function trackEvent(
+  eventName: string,
+  payload: AnalyticsPayload = {},
+  options: TrackEventOptions = {},
+) {
   if (typeof window === "undefined") return;
-  if (!GTM_CONFIGURED && !GOOGLE_TAG_CONFIGURED) return;
+  if (!GTM_CONFIGURED && !GOOGLE_TAG_CONFIGURED) {
+    options.conversionCallback?.();
+    return;
+  }
 
   const defaults = getDefaultDataLayerContext();
   const merged: AnalyticsPayload = { ...defaults, ...payload };
@@ -130,6 +156,14 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
     ...normalizedPayload,
     session_id: getSessionId(),
     event_id: createId(),
+  };
+  const conversionSendTo = getGoogleAdsConversionSendTo(eventName);
+  let conversionCallbackCalled = false;
+
+  const runConversionCallback = () => {
+    if (conversionCallbackCalled) return;
+    conversionCallbackCalled = true;
+    options.conversionCallback?.();
   };
 
   window.setTimeout(() => {
@@ -142,6 +176,7 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
           event: eventName,
           ...analyticsPayload,
         });
+        runConversionCallback();
         return;
       }
       if (GOOGLE_TAG_CONFIGURED && typeof window.gtag === "function") {
@@ -149,8 +184,21 @@ export function trackEvent(eventName: string, payload: AnalyticsPayload = {}) {
           ...analyticsPayload,
           send_to: GOOGLE_TAG_ID,
         });
+        if (conversionSendTo) {
+          window.setTimeout(runConversionCallback, options.conversionTimeoutMs ?? 1200);
+          window.gtag("event", "conversion", {
+            ...analyticsPayload,
+            send_to: conversionSendTo,
+            value: 1.0,
+            currency: "USD",
+            event_callback: runConversionCallback,
+          });
+          return;
+        }
       }
+      runConversionCallback();
     } catch {
+      runConversionCallback();
       // Ignore analytics transport errors.
     }
   }, 0);

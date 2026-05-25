@@ -7,6 +7,10 @@ import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 
 const WHATSAPP_PATTERN = /wa\.me|api\.whatsapp\.com|whatsapp/i;
 
+function navigateAfterConversion(href: string) {
+  window.location.href = href;
+}
+
 export function GlobalClickTracker() {
   const pathname = usePathname();
 
@@ -33,7 +37,10 @@ export function GlobalClickTracker() {
       };
 
       if (href.startsWith("tel:")) {
-        trackEvent("phone_click", basePayload);
+        event.preventDefault();
+        trackEvent("phone_click", basePayload, {
+          conversionCallback: () => navigateAfterConversion(href),
+        });
         return;
       }
 
@@ -43,7 +50,10 @@ export function GlobalClickTracker() {
       }
 
       if (WHATSAPP_PATTERN.test(href)) {
-        trackEvent("whatsapp_click", basePayload);
+        event.preventDefault();
+        trackEvent("whatsapp_click", basePayload, {
+          conversionCallback: () => navigateAfterConversion(href),
+        });
         return;
       }
 
