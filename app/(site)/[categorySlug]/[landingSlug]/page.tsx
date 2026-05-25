@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import { GateValveSeoProductPage } from "@/components/catalog/GateValveSeoProductPage";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { CATALOG_LANDING_PAGES, getLandingPage } from "@/lib/catalog-seo";
@@ -137,20 +139,34 @@ export default async function CatalogLandingPage({ params }: PageProps) {
     );
   }
 
+  const route = `/${landing.categorySlug}/${landing.slug}`;
   const categoryId = landing.filters.categoryId;
-  const [products, categories, category] = await Promise.all([
-    getPublicProductsByCategory(categoryId),
-    getPublicCatalogCategories(),
-    getPublicCategoryById(categoryId),
-  ]);
+  const loaded = await withCatalogRouteLoad(
+    {
+      route,
+      categorySlug: landing.categorySlug,
+      landingSlug: landing.slug,
+    },
+    async () => {
+      const [products, categories, category] = await Promise.all([
+        getPublicProductsByCategory(categoryId),
+        getPublicCatalogCategories(),
+        getPublicCategoryById(categoryId),
+      ]);
+      return { products, categories, category };
+    },
+    (data) => ({
+      productsCount: data.products.length,
+      categoriesCount: data.categories.length,
+    }),
+  );
 
-  if (!category) notFound();
-
-  if (process.env.NODE_ENV === "development" && process.env.CATALOG_QUERY_DEBUG === "1") {
-    console.debug(
-      `[catalog-landing] /${landing.categorySlug}/${landing.slug} products=${products.length} pool=category:${categoryId}`,
-    );
+  if (!loaded.ok) {
+    return <CatalogRouteError route={route} />;
   }
+
+  const { products, categories, category } = loaded.data;
+  if (!category) notFound();
 
   const searchParams = buildLandingSearchParams(landing);
   const canonical = `/${landing.categorySlug}/${landing.slug}`;

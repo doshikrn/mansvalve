@@ -14,6 +14,8 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { Button } from "@/components/ui/button";
 import { buildCompanyWhatsAppUrl, COMPANY_BRAND_SEO } from "@/lib/company";
 import { buildCollectionPageJsonLd } from "@/lib/structured-data";
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import {
   getPublicCatalogCategories,
   getPublicCatalogListingProducts,
@@ -67,10 +69,26 @@ interface PageProps {
 
 export default async function CatalogPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const [products, categories] = await Promise.all([
-    getPublicCatalogListingProducts(),
-    getPublicCatalogCategories(),
-  ]);
+  const loaded = await withCatalogRouteLoad(
+    { route: "/catalog" },
+    async () => {
+      const [products, categories] = await Promise.all([
+        getPublicCatalogListingProducts(),
+        getPublicCatalogCategories(),
+      ]);
+      return { products, categories };
+    },
+    (data) => ({
+      productsCount: data.products.length,
+      categoriesCount: data.categories.length,
+    }),
+  );
+
+  if (!loaded.ok) {
+    return <CatalogRouteError route="/catalog" />;
+  }
+
+  const { products, categories } = loaded.data;
   const orderedCategories = getOrderedCatalogCategories(categories);
   const collectionPageJsonLd = buildCollectionPageJsonLd({
     name: CATALOG_TITLE,

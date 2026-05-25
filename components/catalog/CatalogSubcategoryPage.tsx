@@ -11,7 +11,9 @@ import {
   type PublicCatalogCategory as Category,
   type PublicCatalogSubcategory as Subcategory,
 } from "@/lib/public-catalog";
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { COMPANY } from "@/lib/company";
 import {
@@ -111,14 +113,39 @@ export async function CatalogSubcategoryPage({
   subcategorySlug,
   searchParams,
 }: CatalogSubcategoryPageProps) {
-  const context = await getSubcategoryContext(categorySlug, subcategorySlug);
-  if (!context) notFound();
+  const route = `/catalog/${categorySlug}/${subcategorySlug}`;
+  const loaded = await withCatalogRouteLoad(
+    { route, categorySlug, subcategorySlug },
+    async () => {
+      const context = await getSubcategoryContext(categorySlug, subcategorySlug);
+      if (!context) return null;
 
-  const resolvedSearch = await searchParams;
-  const [allCategories, subcategoryProducts] = await Promise.all([
-    getPublicCatalogCategories(),
-    getPublicProductsBySubcategory(context.subcategory.id),
-  ]);
+      const resolvedSearch = await searchParams;
+      const [allCategories, subcategoryProducts] = await Promise.all([
+        getPublicCatalogCategories(),
+        getPublicProductsBySubcategory(context.subcategory.id),
+      ]);
+
+      return { context, resolvedSearch, allCategories, subcategoryProducts };
+    },
+    (data) =>
+      data
+        ? {
+            productsCount: data.subcategoryProducts.length,
+            categoriesCount: data.allCategories.length,
+          }
+        : {},
+  );
+
+  if (!loaded.ok) {
+    return <CatalogRouteError route={route} />;
+  }
+
+  if (!loaded.data) {
+    notFound();
+  }
+
+  const { context, resolvedSearch, allCategories, subcategoryProducts } = loaded.data;
   const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,

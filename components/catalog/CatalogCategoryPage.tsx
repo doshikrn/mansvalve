@@ -16,7 +16,9 @@ import {
   resolveCategorySeoForPublicPage,
   resolveCategorySeoMetaDescription,
 } from "@/lib/services/category-public-content";
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
@@ -79,19 +81,59 @@ interface CatalogCategoryPageProps {
 }
 
 export async function CatalogCategoryPage({ categorySlug, searchParams }: CatalogCategoryPageProps) {
-  const category = await getPublicCategoryBySlug(categorySlug);
+  const route = `/catalog/${categorySlug}`;
+  const loaded = await withCatalogRouteLoad(
+    { route, categorySlug },
+    async () => {
+      const category = await getPublicCategoryBySlug(categorySlug);
+      if (!category) return null;
 
-  if (!category) notFound();
+      const resolvedSearch = await searchParams;
+      const [allCategories, categoryProducts, seo, heroImageUrl, metaDescriptionOverride] =
+        await Promise.all([
+          getPublicCatalogCategories(),
+          getPublicProductsByCategory(category.id),
+          resolveCategorySeoForPublicPage(categorySlug),
+          resolveCategoryHeroImageUrl(categorySlug),
+          resolveCategorySeoMetaDescription(categorySlug),
+        ]);
 
-  const resolvedSearch = await searchParams;
-  const [allCategories, categoryProducts, seo, heroImageUrl, metaDescriptionOverride] =
-    await Promise.all([
-      getPublicCatalogCategories(),
-      getPublicProductsByCategory(category.id),
-      resolveCategorySeoForPublicPage(categorySlug),
-      resolveCategoryHeroImageUrl(categorySlug),
-      resolveCategorySeoMetaDescription(categorySlug),
-    ]);
+      return {
+        category,
+        resolvedSearch,
+        allCategories,
+        categoryProducts,
+        seo,
+        heroImageUrl,
+        metaDescriptionOverride,
+      };
+    },
+    (data) =>
+      data
+        ? {
+            productsCount: data.categoryProducts.length,
+            categoriesCount: data.allCategories.length,
+          }
+        : {},
+  );
+
+  if (!loaded.ok) {
+    return <CatalogRouteError route={route} />;
+  }
+
+  if (!loaded.data) {
+    notFound();
+  }
+
+  const {
+    category,
+    resolvedSearch,
+    allCategories,
+    categoryProducts,
+    seo,
+    heroImageUrl,
+    metaDescriptionOverride,
+  } = loaded.data;
   const metaDescription =
     metaDescriptionOverride?.trim() ||
     getCategorySeo(category)?.description ||
