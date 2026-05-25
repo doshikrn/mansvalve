@@ -83,6 +83,10 @@ export interface PublicCatalogAdapter {
   getProductBySlug(slug: string): Promise<PublicCatalogProduct | undefined>;
   getProductsByCategory(categoryId: string): Promise<PublicCatalogProduct[]>;
   getProductsBySubcategory(subcategoryId: string): Promise<PublicCatalogProduct[]>;
+  /** Active listing products in category (id/slug). */
+  countProductsByCategory(categoryIdOrSlug: string): Promise<number>;
+  /** Active listing products in subcategory (id/slug). */
+  countProductsBySubcategory(subcategoryIdOrSlug: string): Promise<number>;
 }
 
 export type PublicCatalogSource = "json" | "db";

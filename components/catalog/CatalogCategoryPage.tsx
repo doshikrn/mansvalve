@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronRight, ShieldCheck, Truck, BadgeCheck, FileText } from "lucide-react";
 
 import {
+  countPublicProductsByCategory,
   getPublicCatalogCategories,
   getPublicProductsByCategory,
   getPublicCategoryBySlug,
@@ -38,7 +39,7 @@ export async function getCatalogCategoryMetadata(categorySlug: string): Promise<
 
   if (!category) return { title: "Категория не найдена" };
 
-  const productCount = (await getPublicProductsByCategory(category.id)).length;
+  const productCount = await countPublicProductsByCategory(category.id);
   const seoPreset = getCategorySeo(category);
   const customMeta = await resolveCategorySeoMetaDescription(categorySlug);
   const description =

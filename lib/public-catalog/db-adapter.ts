@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/drizzle-core";
 import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
@@ -579,5 +579,42 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
   async getProductsBySubcategory(subcategoryId) {
     const rows = await fetchListingProductRows({ subcategorySlug: subcategoryId });
     return buildListingProductsFromRows(rows);
+  },
+
+  async countProductsByCategory(categoryIdOrSlug) {
+    const db = getDb();
+    const [row] = await db
+      .select({ value: count() })
+      .from(productsTable)
+      .innerJoin(categoriesTable, eq(categoriesTable.id, productsTable.categoryId))
+      .where(
+        and(
+          eq(productsTable.isActive, true),
+          eq(categoriesTable.isActive, true),
+          eq(categoriesTable.slug, categoryIdOrSlug),
+        ),
+      );
+    return Number(row?.value ?? 0);
+  },
+
+  async countProductsBySubcategory(subcategoryIdOrSlug) {
+    const db = getDb();
+    const [row] = await db
+      .select({ value: count() })
+      .from(productsTable)
+      .innerJoin(categoriesTable, eq(categoriesTable.id, productsTable.categoryId))
+      .innerJoin(
+        subcategoriesTable,
+        eq(subcategoriesTable.id, productsTable.subcategoryId),
+      )
+      .where(
+        and(
+          eq(productsTable.isActive, true),
+          eq(categoriesTable.isActive, true),
+          eq(subcategoriesTable.isActive, true),
+          eq(subcategoriesTable.slug, subcategoryIdOrSlug),
+        ),
+      );
+    return Number(row?.value ?? 0);
   },
 };

@@ -100,4 +100,12 @@ export const jsonCatalogAdapter: PublicCatalogAdapter = {
       toCatalogListProduct(toPublicProduct(p)),
     );
   },
+
+  async countProductsByCategory(categoryIdOrSlug) {
+    return jsonGetProductsByCategory(categoryIdOrSlug).length;
+  },
+
+  async countProductsBySubcategory(subcategoryIdOrSlug) {
+    return jsonGetProductsBySubcategory(subcategoryIdOrSlug).length;
+  },
 };

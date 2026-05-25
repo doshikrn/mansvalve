@@ -177,3 +177,15 @@ export const getPublicProductsBySubcategory = cache(async function getPublicProd
 ): Promise<PublicCatalogProduct[]> {
   return withSafeFallback((adapter) => adapter.getProductsBySubcategory(subcategoryId));
 });
+
+export const countPublicProductsByCategory = cache(async function countPublicProductsByCategory(
+  categoryIdOrSlug: string,
+): Promise<number> {
+  return withSafeFallback((adapter) => adapter.countProductsByCategory(categoryIdOrSlug));
+});
+
+export const countPublicProductsBySubcategory = cache(async function countPublicProductsBySubcategory(
+  subcategoryIdOrSlug: string,
+): Promise<number> {
+  return withSafeFallback((adapter) => adapter.countProductsBySubcategory(subcategoryIdOrSlug));
+});

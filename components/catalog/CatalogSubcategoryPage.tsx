@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import {
+  countPublicProductsBySubcategory,
   getPublicCatalogCategories,
   getPublicProductsBySubcategory,
   getPublicSubcategoryBySlug,
@@ -63,8 +64,7 @@ export async function getCatalogSubcategoryMetadata(
 
   if (!context) return { title: "Подкатегория не найдена" };
 
-  const productCount = (await getPublicProductsBySubcategory(context.subcategory.id))
-    .length;
+  const productCount = await countPublicProductsBySubcategory(context.subcategory.id);
   const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,
