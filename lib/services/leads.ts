@@ -24,6 +24,18 @@ import {
 
 const DONE_STATUSES: LeadStatusInDb[] = ["done", "won", "lost"];
 
+/** Soft dedup window for public request forms (double-submit protection). */
+export const LEAD_DEDUP_WINDOW_MS = 15 * 60 * 1000;
+
+export function normalizeLeadPhoneDigits(phone: string): string {
+  return phone.replace(/\D/g, "");
+}
+
+export function leadPhoneTail(phone: string): string {
+  const digits = normalizeLeadPhoneDigits(phone);
+  return digits.length >= 4 ? digits.slice(-4) : digits;
+}
+
 export type LeadListOptions = {
   status?: LeadStatus;
   source?: string;
@@ -191,6 +203,63 @@ export async function createLead(payload: NewLead): Promise<number> {
   }
 
   return id;
+}
+
+export type CreateLeadWithDedupResult = {
+  id: number;
+  duplicate: boolean;
+};
+
+/**
+ * Returns a recent lead with the same normalized phone (digits only) if created within the window.
+ */
+export async function findRecentLeadByPhone(options: {
+  phone: string;
+  withinMs?: number;
+}): Promise<Lead | undefined> {
+  if (!isDatabaseConfigured()) {
+    return undefined;
+  }
+
+  const digits = normalizeLeadPhoneDigits(options.phone);
+  if (digits.length < 11) {
+    return undefined;
+  }
+
+  const since = new Date(Date.now() - (options.withinMs ?? LEAD_DEDUP_WINDOW_MS));
+  const db = getDb();
+
+  const rows = await db
+    .select()
+    .from(leadsTable)
+    .where(
+      and(
+        gte(leadsTable.createdAt, since),
+        sql`regexp_replace(${leadsTable.phone}, '[^0-9]', '', 'g') = ${digits}`,
+      ),
+    )
+    .orderBy(desc(leadsTable.createdAt))
+    .limit(1);
+
+  return rows[0];
+}
+
+/** Inserts a lead unless the same phone was submitted within the dedup window. */
+export async function createLeadWithDedup(
+  payload: NewLead,
+  options?: { withinMs?: number },
+): Promise<CreateLeadWithDedupResult> {
+  const existing = await findRecentLeadByPhone({
+    phone: payload.phone,
+    withinMs: options?.withinMs,
+  });
+
+  if (existing?.id) {
+    return { id: existing.id, duplicate: true };
+  }
+
+  const id = await createLead(payload);
+  return { id, duplicate: false };
 }
 
 /**

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MessageCircle, Phone } from "lucide-react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +8,13 @@ import { formatAlmatyDateTime } from "@/lib/admin/date-format";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { leadStatusValues, type LeadStatus } from "@/lib/db/schema";
+import {
+  buildLeadTelHref,
+  buildLeadWhatsAppHref,
+} from "@/lib/leads/lead-contact-links";
 import { LEAD_STATUS_LABEL_RU, normalizeLeadStatus } from "@/lib/leads/lead-status-public";
 import { listLeadSourceOptions, listLeads } from "@/lib/services/leads";
+import { cn } from "@/lib/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -110,9 +116,20 @@ export default async function AdminLeadsPage({
             Всего по фильтру: {total}. Откройте строку для деталей и заметок.
           </p>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/admin/leads">Сбросить фильтры</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            asChild
+            variant={status === "new" ? "default" : "outline"}
+            size="sm"
+          >
+            <Link href={buildListHref({ ...currentFilters, status: "new", page: 1 })}>
+              Только новые
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/leads">Сбросить фильтры</Link>
+          </Button>
+        </div>
       </header>
 
       <form
@@ -231,10 +248,19 @@ export default async function AdminLeadsPage({
               ) : (
                 items.map((lead) => {
                   const displayStatus = normalizeLeadStatus(lead.status);
+                  const telHref = buildLeadTelHref(lead.phone);
+                  const whatsappHref = buildLeadWhatsAppHref(lead.phone, {
+                    leadName: lead.name,
+                    leadId: lead.id,
+                  });
+                  const isNew = displayStatus === "new";
                   return (
                     <tr
                       key={lead.id}
-                      className="border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90"
+                      className={cn(
+                        "border-b border-[#E2E8F0] transition-colors last:border-0 hover:bg-slate-50/90",
+                        isNew && "bg-sky-50/70 hover:bg-sky-50",
+                      )}
                     >
                       <td className="px-4 py-2 text-xs text-muted-foreground tabular-nums whitespace-nowrap">
                         {formatAlmatyDateTime(lead.createdAt)}
@@ -247,8 +273,32 @@ export default async function AdminLeadsPage({
                           {displayValue(lead.name)}
                         </Link>
                       </td>
-                      <td className="px-4 py-2 tabular-nums whitespace-nowrap">
-                        {displayValue(lead.phone)}
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="tabular-nums">{displayValue(lead.phone)}</span>
+                          {telHref ? (
+                            <a
+                              href={telHref}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                              title="Позвонить"
+                              aria-label={`Позвонить ${lead.name}`}
+                            >
+                              <Phone className="h-3.5 w-3.5" aria-hidden />
+                            </a>
+                          ) : null}
+                          {whatsappHref ? (
+                            <a
+                              href={whatsappHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100"
+                              title="Написать в WhatsApp"
+                              aria-label={`WhatsApp ${lead.name}`}
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+                            </a>
+                          ) : null}
+                        </div>
                       </td>
                       <td className="max-w-[220px] px-4 py-2 text-xs text-muted-foreground">
                         <div className="truncate" title={lead.productName || lead.page || ""}>
@@ -264,7 +314,10 @@ export default async function AdminLeadsPage({
                         {displayValue(lead.source)}
                       </td>
                       <td className="px-4 py-2">
-                        <Badge variant={badgeVariantForStatus(displayStatus)}>
+                        <Badge
+                          variant={badgeVariantForStatus(displayStatus)}
+                          className={isNew ? "ring-1 ring-sky-300" : undefined}
+                        >
                           {LEAD_STATUS_LABEL_RU[displayStatus]}
                         </Badge>
                       </td>

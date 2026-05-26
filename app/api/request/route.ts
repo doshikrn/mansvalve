@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createLead } from "@/lib/services/leads";
+import {
+  createLeadWithDedup,
+  leadPhoneTail,
+} from "@/lib/services/leads";
 
 export const runtime = "nodejs";
 
@@ -89,7 +92,7 @@ type ValidPayload = {
   first_touch_at: string;
 };
 
-type AuditStatus = "success" | "failed" | "spam" | "rate_limited";
+type AuditStatus = "success" | "failed" | "spam" | "rate_limited" | "duplicate";
 
 type AuditFields = {
   source: string;
@@ -248,7 +251,16 @@ function logAudit(
     error: error ?? null,
   };
 
-  console.info("[request_api_audit]", JSON.stringify(entry));
+  const line = `[request_api_audit] ${JSON.stringify(entry)}`;
+  if (status === "success" || status === "duplicate") {
+    console.info(line);
+    return;
+  }
+  if (status === "spam") {
+    console.warn(line);
+    return;
+  }
+  console.error(line);
 }
 
 function getClientIp(request: Request): string {
@@ -443,7 +455,11 @@ export async function POST(request: Request) {
     );
 
     return NextResponse.json(
-      { ok: false, error: "Слишком много запросов. Попробуйте немного позже." },
+      {
+        ok: false,
+        error: "Слишком много запросов. Попробуйте немного позже.",
+        code: "rate_limit_exceeded",
+      },
       {
         status: 429,
         headers: {
@@ -528,7 +544,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const leadId = await createLead({
+    const leadResult = await createLeadWithDedup({
       name: parsed.data.name,
       phone: parsed.data.phone,
       comment: parsed.data.comment || null,
@@ -566,13 +582,42 @@ export async function POST(request: Request) {
       status: "new",
     });
 
+    if (leadResult.duplicate) {
+      console.info("[request_api] duplicate_lead_detected", {
+        existingLeadId: leadResult.id,
+        phoneTail: leadPhoneTail(parsed.data.phone),
+        source: fields.source,
+        page: fields.page,
+      });
+      logAudit("duplicate", fields, `existing_lead_id:${leadResult.id}`);
+      return NextResponse.json({
+        ok: true,
+        duplicate: true,
+        id: leadResult.id,
+      });
+    }
+
     logAudit("success", fields);
-    return NextResponse.json({ ok: true, id: leadId });
+    return NextResponse.json({ ok: true, id: leadResult.id });
   } catch (error) {
-    console.error("Unexpected request API error", error);
-    logAudit("failed", fields, "lead_persist_failed");
+    const persistError =
+      error instanceof Error ? error.message : "unknown_persist_error";
+    console.error("[request_api] lead_persist_failed", {
+      source: fields.source,
+      page: fields.page,
+      phone: fields.phone,
+      error: persistError,
+    });
+    if (error instanceof Error && error.stack) {
+      console.error(error.stack);
+    }
+    logAudit("failed", fields, `lead_persist_failed:${persistError}`);
     return NextResponse.json(
-      { ok: false, error: "Не удалось сохранить заявку. Проверьте данные и попробуйте ещё раз." },
+      {
+        ok: false,
+        error: "Не удалось сохранить заявку. Проверьте данные и попробуйте ещё раз.",
+        code: "lead_persist_failed",
+      },
       { status: 500 },
     );
   }

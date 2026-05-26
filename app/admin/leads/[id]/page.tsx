@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MessageCircle, Phone } from "lucide-react";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,10 @@ import { formatAlmatyDateTime } from "@/lib/admin/date-format";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { isDatabaseConfigured } from "@/lib/db/client";
+import {
+  buildLeadTelHref,
+  buildLeadWhatsAppHref,
+} from "@/lib/leads/lead-contact-links";
 import { LEAD_STATUS_LABEL_RU, normalizeLeadStatus } from "@/lib/leads/lead-status-public";
 import { getPublicProductBySlug } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
@@ -159,6 +164,11 @@ export default async function AdminLeadDetailPage({
     : null;
 
   const displayStatus = normalizeLeadStatus(lead.status);
+  const telHref = buildLeadTelHref(lead.phone);
+  const whatsappHref = buildLeadWhatsAppHref(lead.phone, {
+    leadName: lead.name,
+    leadId: lead.id,
+  });
   const attribution = getAttributionRecord(lead.attribution);
   const marketingEntries = getMarketingAttributionEntries(attribution);
   const usefulReferrer = getUsefulReferrer(getStringField(attribution, "referrer"));
@@ -181,7 +191,10 @@ export default async function AdminLeadDetailPage({
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight">Заявка #{lead.id}</h1>
-            <Badge variant={badgeVariantForStatus(displayStatus)}>
+            <Badge
+              variant={badgeVariantForStatus(displayStatus)}
+              className={displayStatus === "new" ? "ring-1 ring-sky-300" : undefined}
+            >
               {LEAD_STATUS_LABEL_RU[displayStatus]}
             </Badge>
           </div>
@@ -205,7 +218,29 @@ export default async function AdminLeadDetailPage({
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Телефон</dt>
-            <dd className="tabular-nums font-medium">{displayValue(lead.phone)}</dd>
+            <dd className="space-y-2">
+              <span className="tabular-nums font-medium">{displayValue(lead.phone)}</span>
+              {telHref || whatsappHref ? (
+                <div className="flex flex-wrap gap-2">
+                  {telHref ? (
+                    <Button asChild variant="outline" size="sm">
+                      <a href={telHref}>
+                        <Phone className="mr-1.5 h-4 w-4" aria-hidden />
+                        Позвонить
+                      </a>
+                    </Button>
+                  ) : null}
+                  {whatsappHref ? (
+                    <Button asChild size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                      <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden />
+                        WhatsApp
+                      </a>
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </dd>
           </div>
           {lead.email ? (
             <div className="sm:col-span-2">
