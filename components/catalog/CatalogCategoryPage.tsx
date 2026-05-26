@@ -17,7 +17,8 @@ import {
   resolveCategorySeoMetaDescription,
 } from "@/lib/services/category-public-content";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
-import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { CatalogShellSuspense } from "@/components/catalog/CatalogShellSuspense";
+import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -88,7 +89,6 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
       const category = await getPublicCategoryBySlug(categorySlug);
       if (!category) return null;
 
-      const resolvedSearch = await searchParams;
       const [allCategories, categoryProducts, seo, heroImageUrl, metaDescriptionOverride] =
         await Promise.all([
           getPublicCatalogCategories(),
@@ -100,7 +100,6 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
 
       return {
         category,
-        resolvedSearch,
         allCategories,
         categoryProducts,
         seo,
@@ -127,7 +126,6 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
 
   const {
     category,
-    resolvedSearch,
     allCategories,
     categoryProducts,
     seo,
@@ -282,10 +280,10 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
       )}
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <CatalogShell
+        <CatalogShellSuspense
           products={categoryProducts}
           categories={displayCategories}
-          searchParams={resolvedSearch}
+          searchParams={searchParams}
           lockedCategoryId={category.id}
         />
       </div>

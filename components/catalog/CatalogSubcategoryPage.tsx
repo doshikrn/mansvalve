@@ -12,7 +12,8 @@ import {
   type PublicCatalogSubcategory as Subcategory,
 } from "@/lib/public-catalog";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
-import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { CatalogShellSuspense } from "@/components/catalog/CatalogShellSuspense";
+import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { COMPANY } from "@/lib/company";
@@ -120,13 +121,12 @@ export async function CatalogSubcategoryPage({
       const context = await getSubcategoryContext(categorySlug, subcategorySlug);
       if (!context) return null;
 
-      const resolvedSearch = await searchParams;
       const [allCategories, subcategoryProducts] = await Promise.all([
         getPublicCatalogCategories(),
         getPublicProductsBySubcategory(context.subcategory.id),
       ]);
 
-      return { context, resolvedSearch, allCategories, subcategoryProducts };
+      return { context, allCategories, subcategoryProducts };
     },
     (data) =>
       data
@@ -145,7 +145,7 @@ export async function CatalogSubcategoryPage({
     notFound();
   }
 
-  const { context, resolvedSearch, allCategories, subcategoryProducts } = loaded.data;
+  const { context, allCategories, subcategoryProducts } = loaded.data;
   const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,
@@ -221,10 +221,10 @@ export async function CatalogSubcategoryPage({
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <CatalogShell
+        <CatalogShellSuspense
           products={subcategoryProducts}
           categories={allCategories}
-          searchParams={resolvedSearch}
+          searchParams={searchParams}
           lockedCategoryId={context.category.id}
           lockedSubcategoryId={context.subcategory.id}
         />

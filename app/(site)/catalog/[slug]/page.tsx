@@ -65,7 +65,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  */
 export default async function CatalogSlugPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const query = await searchParams;
 
   const [product, category] = await Promise.all([
     getPublicProductBySlug(slug),
@@ -73,6 +72,7 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
   ]);
 
   if (product) {
+    const query = await searchParams;
     const view = buildPublicProductView(product);
     permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath, { ...query }));
   }
@@ -83,6 +83,7 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
 
   const aliasTarget = await resolveProductSlugAliasTarget(slug);
   if (aliasTarget) {
+    const query = await searchParams;
     permanentRedirect(buildCleanProductRedirectUrl(aliasTarget, { ...query }));
   }
 
