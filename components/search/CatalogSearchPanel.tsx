@@ -196,7 +196,7 @@ export function CatalogSearchPanel({
                 {p.primaryImageUrl && isMediaUrlValid(p.primaryImageUrl) ? (
                   <ProductImageFrame
                     src={p.primaryImageUrl}
-                    alt=""
+                    alt={p.name}
                     sizes="48px"
                     unoptimized={mediaImageNeedsUnoptimized(p.primaryImageUrl)}
                     className="h-12 w-12 rounded-lg"

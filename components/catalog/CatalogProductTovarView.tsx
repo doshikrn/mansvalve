@@ -113,7 +113,7 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
             src={heroImageSrc}
             alt={heroImageAlt}
             priority
-            quality={95}
+            quality={88}
             unoptimized={view.primaryImageUnoptimized}
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="min-h-[280px] rounded-2xl border border-site-border lg:min-h-[400px]"

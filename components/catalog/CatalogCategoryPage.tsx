@@ -208,9 +208,10 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
               alt={heroAlt}
               fill
               priority
+              loading="eager"
               unoptimized={Boolean(heroImageUrl)}
-              quality={95}
-              sizes="(max-width: 640px) 100vw, 1200px"
+              quality={88}
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 80vw, 1200px"
               className="object-cover"
             />
             <div className="pointer-events-none absolute inset-0 bg-slate-900/25" />

@@ -5,7 +5,15 @@ import { cn } from "@/lib/utils";
 
 type ProductImageFrameProps = Pick<
   ImageProps,
-  "src" | "alt" | "sizes" | "quality" | "priority" | "placeholder" | "blurDataURL" | "unoptimized"
+  | "src"
+  | "alt"
+  | "sizes"
+  | "quality"
+  | "priority"
+  | "loading"
+  | "placeholder"
+  | "blurDataURL"
+  | "unoptimized"
 > & {
   className?: string;
   imageClassName?: string;
@@ -18,8 +26,9 @@ export function ProductImageFrame({
   src,
   alt,
   sizes,
-  quality = 90,
+  quality = 85,
   priority,
+  loading,
   placeholder,
   blurDataURL,
   unoptimized,
@@ -55,6 +64,7 @@ export function ProductImageFrame({
             fill
             quality={quality}
             priority={priority}
+            loading={loading ?? (priority ? undefined : "lazy")}
             placeholder={placeholder}
             blurDataURL={blurDataURL}
             unoptimized={unoptimized}

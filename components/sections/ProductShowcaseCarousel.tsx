@@ -194,7 +194,8 @@ export function ProductShowcaseCarousel({
                   <ProductImageFrame
                     src={view.primaryImageUrl}
                     alt={view.primaryImageAlt}
-                    quality={100}
+                    priority={isHero && active === 0}
+                    quality={isHero ? 88 : 85}
                     sizes={imgSizes}
                     unoptimized={view.primaryImageUnoptimized}
                     tone="dark"

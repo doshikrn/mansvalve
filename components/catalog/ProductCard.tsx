@@ -40,7 +40,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <ProductImageFrame
           src={imageSrc}
           alt={imageAlt}
-          quality={90}
+          quality={85}
           unoptimized={view.primaryImageUnoptimized}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="rounded-t-[inherit]"
