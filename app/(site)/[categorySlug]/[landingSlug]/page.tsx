@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
+import { CatalogLandingConversion } from "@/components/catalog/CatalogLandingConversion";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { CatalogShell, type CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
@@ -230,6 +231,8 @@ export default async function CatalogLandingPage({ params }: PageProps) {
           <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
             {landing.description}
           </p>
+
+          <CatalogLandingConversion landingTitle={landing.h1} categoryName={category.name} />
         </div>
       </div>
 
