@@ -1,12 +1,36 @@
+import { isTrustedMediaUrl } from "@/lib/media-image-trusted-hosts";
+
+function isSvgUrl(url: string): boolean {
+  const path = url.split(/[?#]/, 1)[0] ?? url;
+  return /\.svgz?$/i.test(path);
+}
+
 /**
- * Remote / protocol-relative URLs use the Next Image component without
- * a host allowlist in next.config; match MediaUpload / ProductCard pattern.
+ * When `true`, `next/image` serves the asset as-is (`unoptimized`).
+ *
+ * Optimized (returns `false`):
+ * - same-origin paths (`/uploads/…`, `/images/…`) — Next reads from `public/`;
+ * - Supabase public storage URLs from `SUPABASE_URL` / `MEDIA_PUBLIC_BASE_URL`;
+ * - absolute `/uploads/…` on `SITE_URL` host.
+ *
+ * Stays unoptimized:
+ * - unknown external hosts;
+ * - SVG, `data:`, `blob:`.
  */
 export function mediaImageNeedsUnoptimized(url: string): boolean {
-  return (
-    url.startsWith("/uploads/") ||
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("//")
-  );
+  const trimmed = url.trim();
+  if (!trimmed) return true;
+
+  if (/^data:/i.test(trimmed) || /^blob:/i.test(trimmed)) return true;
+  if (isSvgUrl(trimmed)) return true;
+
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
+    return false;
+  }
+
+  if (trimmed.startsWith("//") || /^https?:\/\//i.test(trimmed)) {
+    return !isTrustedMediaUrl(trimmed);
+  }
+
+  return true;
 }

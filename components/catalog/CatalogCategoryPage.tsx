@@ -24,6 +24,7 @@ import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { getCategoryVisual } from "@/lib/category-visuals";
+import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import {
   getCategoryQuickLinks,
   getCategorySeo,
@@ -207,7 +208,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
               fill
               priority
               loading="eager"
-              unoptimized={Boolean(heroImageUrl)}
+              unoptimized={mediaImageNeedsUnoptimized(heroSrc)}
               quality={88}
               sizes="(max-width: 640px) 100vw, (max-width: 1280px) 80vw, 1200px"
               className="object-cover"
