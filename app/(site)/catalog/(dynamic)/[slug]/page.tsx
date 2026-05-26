@@ -2,14 +2,14 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import {
-  getPublicCatalogCategories,
   getPublicCatalogProducts,
+  getPublicCatalogCategories,
   getPublicCategoryBySlug,
   getPublicProductBySlug,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
-import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
+import { redirectLegacyCatalogProductIfNeeded } from "@/lib/catalog-legacy-product-redirect";
 import {
   CatalogCategoryPage,
   getCatalogCategoryMetadata,
@@ -18,18 +18,23 @@ import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 
 export const revalidate = 300;
 
+/**
+ * Pre-render category listings only. Legacy product slugs under `/catalog/[slug]`
+ * must stay dynamic so `permanentRedirect` returns a real HTTP 308 at request time
+ * (SSG product entries were served as 200 + "Перенаправление…" HTML).
+ */
 export async function generateStaticParams() {
   const [products, categories] = await Promise.all([
     getPublicCatalogProducts(),
     getPublicCatalogCategories(),
   ]);
   const productSlugSet = new Set(products.map((p) => p.slug));
-  const categoryParams = categories
+  return categories
     .filter((c) => !productSlugSet.has(c.slug))
     .map((c) => ({ slug: c.slug }));
-  const productParams = products.map((p) => ({ slug: p.slug }));
-  return [...productParams, ...categoryParams];
 }
+
+export const dynamicParams = true;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -38,22 +43,19 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const [product, category] = await Promise.all([
-    getPublicProductBySlug(slug),
-    getPublicCategoryBySlug(slug),
-  ]);
 
+  const product = await getPublicProductBySlug(slug);
   if (product) {
     const view = buildPublicProductView(product);
-    return {
-      title: "Перенаправление…",
-      alternates: { canonical: view.canonicalUrl },
-    };
+    permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath));
   }
 
+  const category = await getPublicCategoryBySlug(slug);
   if (category) {
     return getCatalogCategoryMetadata(slug);
   }
+
+  await redirectLegacyCatalogProductIfNeeded(slug);
 
   return { title: "Страница не найдена" };
 }
@@ -65,26 +67,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  */
 export default async function CatalogSlugPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const query = await searchParams;
 
-  const [product, category] = await Promise.all([
-    getPublicProductBySlug(slug),
-    getPublicCategoryBySlug(slug),
-  ]);
+  await redirectLegacyCatalogProductIfNeeded(slug, { ...query });
 
-  if (product) {
-    const query = await searchParams;
-    const view = buildPublicProductView(product);
-    permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath, { ...query }));
-  }
-
+  const category = await getPublicCategoryBySlug(slug);
   if (category) {
     return <CatalogCategoryPage categorySlug={slug} searchParams={searchParams} />;
-  }
-
-  const aliasTarget = await resolveProductSlugAliasTarget(slug);
-  if (aliasTarget) {
-    const query = await searchParams;
-    permanentRedirect(buildCleanProductRedirectUrl(aliasTarget, { ...query }));
   }
 
   notFound();
