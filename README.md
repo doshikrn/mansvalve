@@ -170,7 +170,7 @@ Media storage (обязательно выбрать и настроить):
 | 11 | **`catalog_filter_change`** — смена фильтра (категория, подкатегория, сортировка и т.д., см. `CatalogFilters`). |
 | 12 | Для событий из `lib/analytics.ts` в dataLayer: на каждом событии есть **`event_id`**, **`session_id`**, **`page`**, **`pathname`**, при необходимости **`product_slug`** / **`category`** / **`source`**. Настройте в GTM триггеры и теги GA4 / Google Ads по этим именам `event`. |
 
-**Readiness:** без GTM/GA скриптов из env сайт не падает: при пустом `NEXT_PUBLIC_GTM_ID` GTM не грузится; `trackEvent` пишет в `dataLayer` только если он создан GTM. В `app/layout.tsx` дополнительно подключается **Google tag `gtag.js`** (с `send_page_view: false` — просмотры страниц идут через `PageViewTracker`).
+**Readiness:** GTM-контейнер `GTM-KHXXZS38` задан в коде по умолчанию; `NEXT_PUBLIC_GTM_ID` нужен только для явной замены контейнера. `trackEvent` пишет события в `dataLayer`, а просмотры страниц идут через `PageViewTracker`.
 
 ## Analytics / Ads / Retargeting handoff
 
@@ -178,12 +178,12 @@ Media storage (обязательно выбрать и настроить):
 
 | | ID |
 |---|-----|
-| **GTM (контейнер)** | `GTM-NJZFLQSV` |
+| **GTM (контейнер)** | `GTM-KHXXZS38` |
 | **Google tag / Ads** | `AW-18163182394` |
 | **Ads conversion default** | `AW-18163182394/BBtnCPz4nLMcELrW8NRD` |
-| **Env в приложении** | опционально `NEXT_PUBLIC_GOOGLE_TAG_ID=AW-18163182394`; `NEXT_PUBLIC_GTM_ID` используется только как fallback, если прямой Google tag отключён |
+| **Env в приложении** | `NEXT_PUBLIC_GTM_ID=GTM-KHXXZS38`; `NEXT_PUBLIC_GOOGLE_TAG_ID=AW-18163182394` используется только как fallback, если GTM отключён |
 
-**Важно:** прямой **Google tag / Ads** подключается через `gtag.js` в `app/layout.tsx` (`send_page_view: false`); **GTM** — только optional fallback. Пользовательские события из `lib/analytics.ts` отправляются в `gtag` напрямую, либо в **`dataLayer`**, если включён GTM. Конверсии Ads отправляются для `phone_click`, `whatsapp_click` и `request_form_submit_success`; отдельные labels можно задать через `NEXT_PUBLIC_GOOGLE_ADS_PHONE_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_FORM_CONVERSION_SEND_TO`.
+**Важно:** **GTM** подключается через `next/script` в `app/layout.tsx` и является основным транспортом аналитики. Прямой **Google tag / Ads** через `gtag.js` используется только как fallback, если GTM отключён. Пользовательские события из `lib/analytics.ts` отправляются в **`dataLayer`**. Конверсии Ads настраиваются в GTM по событиям `phone_click`, `whatsapp_click` и `request_form_submit_success`; отдельные labels для fallback-gtag можно задать через `NEXT_PUBLIC_GOOGLE_ADS_PHONE_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_FORM_CONVERSION_SEND_TO`.
 
 **События `dataLayer` (имя `event`), которые эмитит фронтенд:**
 

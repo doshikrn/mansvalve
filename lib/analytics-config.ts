@@ -1,8 +1,8 @@
+export const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID?.trim() || "GTM-KHXXZS38";
+
 export const GOOGLE_TAG_ID =
   process.env.NEXT_PUBLIC_GOOGLE_TAG_ID?.trim() ||
   "AW-18163182394";
-
-export const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID?.trim() || "";
 
 const DEFAULT_GOOGLE_ADS_CONVERSION_SEND_TO = "AW-18163182394/BBtnCPz4nLMcELrW8NRD";
 
@@ -18,6 +18,6 @@ export const GOOGLE_ADS_FORM_CONVERSION_SEND_TO =
   process.env.NEXT_PUBLIC_GOOGLE_ADS_FORM_CONVERSION_SEND_TO?.trim() ||
   DEFAULT_GOOGLE_ADS_CONVERSION_SEND_TO;
 
-export const GOOGLE_TAG_CONFIGURED = Boolean(GOOGLE_TAG_ID);
+export const GTM_CONFIGURED = Boolean(GTM_ID);
 
-export const GTM_CONFIGURED = Boolean(GTM_ID) && !GOOGLE_TAG_CONFIGURED;
+export const GOOGLE_TAG_CONFIGURED = Boolean(GOOGLE_TAG_ID) && !GTM_CONFIGURED;

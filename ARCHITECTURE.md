@@ -626,15 +626,15 @@ Generated public files:
 Config: `lib/analytics-config.ts`
 
 ```ts
+GTM_ID = NEXT_PUBLIC_GTM_ID || "GTM-KHXXZS38"
 GOOGLE_TAG_ID = NEXT_PUBLIC_GOOGLE_TAG_ID || "AW-18163182394"
-GTM_ID = NEXT_PUBLIC_GTM_ID || ""
 GOOGLE_ADS_*_CONVERSION_SEND_TO = env || "AW-18163182394/BBtnCPz4nLMcELrW8NRD"
 ```
 
 Transport:
 
-- Google tag direct via `gtag.js`;
-- optional GTM via `dataLayer`;
+- GTM via `dataLayer`;
+- direct Google tag via `gtag.js` only when GTM is disabled;
 - custom events через `trackEvent()`.
 - Google Ads `conversion` events for `phone_click`, `whatsapp_click`, `request_form_submit_success`.
 
@@ -650,8 +650,8 @@ Important:
 
 - `send_page_view: false` in Google tag config;
 - page views отправляются `PageViewTracker`;
-- if GTM absent, direct Google tag still works;
-- if direct Google tag is disabled but GTM present, dataLayer still works.
+- GTM is the primary transport;
+- if GTM is disabled, direct Google tag still works.
 
 ## 17. Company config
 

@@ -136,7 +136,7 @@ function getGoogleAdsConversionSendTo(eventName: string): string | null {
 
 /**
  * Pushes a single custom event to analytics transports.
- * GTM receives dataLayer events; direct Google tag receives the same events through gtag.
+ * GTM receives dataLayer events; direct Google tag is used only when GTM is disabled.
  */
 export function trackEvent(
   eventName: string,
@@ -169,14 +169,23 @@ export function trackEvent(
   window.setTimeout(() => {
     try {
       window.dataLayer = window.dataLayer || [];
-      // When GTM is enabled, custom events should go through `dataLayer` only — pushing the same
-      // event to both `dataLayer` and `gtag` doubles counts if the container also forwards events.
+      // When GTM is enabled, custom events should go through `dataLayer` only.
+      // Pushing the same event to both `dataLayer` and `gtag` doubles counts if GTM forwards it.
       if (GTM_CONFIGURED) {
+        const timeoutMs = options.conversionTimeoutMs ?? 1200;
         window.dataLayer.push({
           event: eventName,
           ...analyticsPayload,
+          ...(options.conversionCallback
+            ? {
+                eventCallback: runConversionCallback,
+                eventTimeout: timeoutMs,
+              }
+            : {}),
         });
-        runConversionCallback();
+        if (options.conversionCallback) {
+          window.setTimeout(runConversionCallback, timeoutMs);
+        }
         return;
       }
       if (GOOGLE_TAG_CONFIGURED && typeof window.gtag === "function") {
