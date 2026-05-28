@@ -387,7 +387,9 @@ getPublicProductsBySubcategory()
 
 Source selection:
 
+- unset `PUBLIC_CATALOG_SOURCE` — DB when `DATABASE_URL` is configured, otherwise JSON fallback.
 - `PUBLIC_CATALOG_SOURCE=json` — `data/catalog-products.json` (+ overrides); режим **recovery / dev** когда БД недоступна или нужен зафиксированный снимок.
+- In production with `DATABASE_URL`, `PUBLIC_CATALOG_SOURCE=json` is ignored unless `PUBLIC_CATALOG_RECOVERY_MODE=json` or `PUBLIC_CATALOG_ALLOW_JSON_FALLBACK=true` is set.
 - `PUBLIC_CATALOG_SOURCE=db` — Postgres через Drizzle (рекомендуется для production после импорта и parity-check).
 - legacy `PUBLIC_CATALOG_FROM_DB=true` тоже поддерживается.
 

@@ -544,6 +544,7 @@ export async function deleteProduct(id: number): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.delete(productImagesTable).where(eq(productImagesTable.productId, id));
     await tx.delete(productSpecsTable).where(eq(productSpecsTable.productId, id));
+    await tx.delete(productSlugAliasesTable).where(eq(productSlugAliasesTable.productId, id));
     await tx.delete(productsTable).where(eq(productsTable.id, id));
   });
 }
