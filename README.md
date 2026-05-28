@@ -147,7 +147,7 @@ Media storage (обязательно выбрать и настроить):
 - [ ] **Forms**: отправка заявки через сайт, валидация, fallback в WhatsApp при ошибке.
 - [ ] **Admin login**: `/admin/login` авторизация проходит, сессия сохраняется.
 - [ ] **Lead creation**: после формы лид появляется в `/admin/leads`, админка delivery статус корректен.
-- [ ] **GTM Preview**: Tag Assistant видит контейнер, ключевые события (`page_view`, `catalog_view`, `product_view`, `request_form_*`, `whatsapp_click`, `phone_click`) приходят.
+- [ ] **GTM Preview**: Tag Assistant видит контейнер, ключевые события (`page_view`, `catalog_view`, `product_view`, `request_form_*`, `whatsapp_click`, `phone_click`, `email_click`) приходят.
 
 ---
 
@@ -166,7 +166,8 @@ Media storage (обязательно выбрать и настроить):
 | 7 | **`request_form_submit_error`** — ответ с ошибкой от API (или имитация). |
 | 8 | **`whatsapp_click`** — клик по ссылке `wa.me` / WhatsApp (также дублируется при программном fallback в форме). |
 | 9 | **`phone_click`** — клик по `tel:`. |
-| 10 | **`catalog_search`** — поиск в каталоге. |
+| 10 | **`email_click`** — клик по `mailto:` / email-ссылке. |
+| 11 | **`catalog_search`** — поиск в каталоге. |
 | 11 | **`catalog_filter_change`** — смена фильтра (категория, подкатегория, сортировка и т.д., см. `CatalogFilters`). |
 | 12 | Для событий из `lib/analytics.ts` в dataLayer: на каждом событии есть **`event_id`**, **`session_id`**, **`page`**, **`pathname`**, при необходимости **`product_slug`** / **`category`** / **`source`**. Настройте в GTM триггеры и теги GA4 / Google Ads по этим именам `event`. |
 
@@ -183,7 +184,7 @@ Media storage (обязательно выбрать и настроить):
 | **Ads conversion default** | `AW-18163182394/BBtnCPz4nLMcELrW8NRD` |
 | **Env в приложении** | `NEXT_PUBLIC_GTM_ID=GTM-KHXXZS38`; `NEXT_PUBLIC_GOOGLE_TAG_ID=AW-18163182394` используется только как fallback, если GTM отключён |
 
-**Важно:** **GTM** подключается через `next/script` в `app/layout.tsx` и является основным транспортом аналитики. Прямой **Google tag / Ads** через `gtag.js` используется только как fallback, если GTM отключён. Пользовательские события из `lib/analytics.ts` отправляются в **`dataLayer`**. Конверсии Ads настраиваются в GTM по событиям `phone_click`, `whatsapp_click` и `request_form_submit_success`; отдельные labels для fallback-gtag можно задать через `NEXT_PUBLIC_GOOGLE_ADS_PHONE_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_FORM_CONVERSION_SEND_TO`.
+**Важно:** **GTM** подключается через `next/script` в `app/layout.tsx` и является основным транспортом аналитики. Прямой **Google tag / Ads** через `gtag.js` используется только как fallback, если GTM отключён. Пользовательские события из `lib/analytics.ts` отправляются в **`dataLayer`**. Конверсии Ads настраиваются в GTM по событиям `phone_click`, `whatsapp_click`, `email_click` и `request_form_submit_success`; отдельные labels для fallback-gtag можно задать через `NEXT_PUBLIC_GOOGLE_ADS_PHONE_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_EMAIL_CONVERSION_SEND_TO`, `NEXT_PUBLIC_GOOGLE_ADS_FORM_CONVERSION_SEND_TO`.
 
 **События `dataLayer` (имя `event`), которые эмитит фронтенд:**
 
@@ -197,6 +198,7 @@ Media storage (обязательно выбрать и настроить):
 | `request_form_submit_error` | Ошибка отправки формы |
 | `whatsapp_click` | Клик по ссылке WhatsApp (и программный fallback в форме) |
 | `phone_click` | Клик по `tel:` |
+| `email_click` | Клик по `mailto:` / email-ссылке |
 | `catalog_search` | Поиск в каталоге (debounce) |
 | `catalog_filter_change` | Смена фильтра / таба категории / сброс |
 | *Дополнительно* | `scroll_depth`, `page_engagement` — вовлечённость, не обязательны для конверсий |
@@ -206,7 +208,7 @@ Media storage (обязательно выбрать и настроить):
 **Конверсии:**
 
 - **Основная (macro):** `request_form_submit_success` — настройка цели/конверсии в GA4 и, при необходимости, импорт в Google Ads.
-- **Микроконверсии:** `whatsapp_click`, `phone_click` — полезны для воронки и аукциона, не заменяют lead.
+- **Микроконверсии:** `whatsapp_click`, `phone_click`, `email_click` — полезны для воронки и аукциона, не заменяют lead.
 
 ---
 

@@ -638,7 +638,7 @@ Transport:
 - GTM via `dataLayer`;
 - direct Google tag via `gtag.js` only when GTM is disabled;
 - custom events через `trackEvent()`.
-- Google Ads `conversion` events for `phone_click`, `whatsapp_click`, `request_form_submit_success`.
+- Google Ads `conversion` events for `phone_click`, `whatsapp_click`, `email_click`, `request_form_submit_success`.
 
 Files:
 

@@ -45,7 +45,10 @@ export function GlobalClickTracker() {
       }
 
       if (href.startsWith("mailto:") || href.includes("mail.google.com/mail/")) {
-        trackEvent("email_click", basePayload);
+        event.preventDefault();
+        trackEvent("email_click", basePayload, {
+          conversionCallback: () => navigateAfterConversion(href),
+        });
         return;
       }
 

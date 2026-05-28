@@ -1,4 +1,5 @@
 import {
+  GOOGLE_ADS_EMAIL_CONVERSION_SEND_TO,
   GOOGLE_ADS_FORM_CONVERSION_SEND_TO,
   GOOGLE_ADS_PHONE_CONVERSION_SEND_TO,
   GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO,
@@ -130,6 +131,7 @@ function getDefaultDataLayerContext(): AnalyticsPayload {
 function getGoogleAdsConversionSendTo(eventName: string): string | null {
   if (eventName === "phone_click") return GOOGLE_ADS_PHONE_CONVERSION_SEND_TO;
   if (eventName === "whatsapp_click") return GOOGLE_ADS_WHATSAPP_CONVERSION_SEND_TO;
+  if (eventName === "email_click") return GOOGLE_ADS_EMAIL_CONVERSION_SEND_TO;
   if (eventName === "request_form_submit_success") return GOOGLE_ADS_FORM_CONVERSION_SEND_TO;
   return null;
 }
