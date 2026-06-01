@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Send } from "lucide-react";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
@@ -283,6 +284,11 @@ function getFirstTouchAttribution(currentTouch: AttributionContext): Attribution
   return next;
 }
 
+function buildThankYouPagePath(): string {
+  const query = window.location.search || "";
+  return `/thank-you-page${query}`;
+}
+
 /* ── Component ────────────────────────────────────────────────────── */
 
 export function QuickRequestForm({
@@ -290,6 +296,7 @@ export function QuickRequestForm({
   source = "commercial_offer_form",
   productContext,
 }: QuickRequestFormProps) {
+  const router = useRouter();
   const s = STYLES[variant];
   const formRef = useRef<HTMLFormElement | null>(null);
   const hasTrackedFormViewRef = useRef(false);
@@ -419,13 +426,6 @@ export function QuickRequestForm({
         );
       }
 
-      trackEvent("request_form_submit_success", {
-        source,
-        page,
-        product_slug: productContext?.productSlug ?? pageContext.product_slug,
-        product_name: productContext?.productName,
-        category: productContext?.productCategory ?? pageContext.category,
-      });
       trackEvent("generate_lead", {
         source,
         page,
@@ -435,6 +435,19 @@ export function QuickRequestForm({
         category: productContext?.productCategory ?? pageContext.category,
       });
       setSubmitState("success");
+      trackEvent(
+        "request_form_submit_success",
+        {
+          source,
+          page,
+          product_slug: productContext?.productSlug ?? pageContext.product_slug,
+          product_name: productContext?.productName,
+          category: productContext?.productCategory ?? pageContext.category,
+        },
+        {
+          conversionCallback: () => router.push(buildThankYouPagePath()),
+        },
+      );
     } catch (error) {
       const message =
         error instanceof Error
