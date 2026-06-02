@@ -39,10 +39,20 @@ import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-route
 const TRUST_ICONS = [ShieldCheck, BadgeCheck, Truck, FileText] as const;
 
 export async function getCatalogCategoryMetadata(categorySlug: string): Promise<Metadata> {
-  const category = await getPublicCategoryBySlug(categorySlug);
+  let category: Category | undefined;
+  try {
+    category = await getPublicCategoryBySlug(categorySlug);
+  } catch (error) {
+    console.error("[catalog-category] metadata load failed", {
+      categorySlug,
+      error,
+    });
+    return { title: "Каталог MANSVALVE GROUP" };
+  }
 
   if (!category) return { title: "Категория не найдена" };
 
+  try {
   const productCount = await countPublicProductsByCategory(category.id);
   const seoPreset = getCategorySeo(category);
   const customMeta = await resolveCategorySeoMetaDescription(categorySlug);
@@ -75,6 +85,13 @@ export async function getCatalogCategoryMetadata(categorySlug: string): Promise<
       description,
     },
   };
+  } catch (error) {
+    console.error("[catalog-category] metadata resolve failed", {
+      categorySlug,
+      error,
+    });
+    return { title: category.name };
+  }
 }
 
 interface CatalogCategoryPageProps {

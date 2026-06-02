@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db/drizzle-core";
 import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
@@ -10,8 +10,10 @@ import {
   products as productsTable,
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
+import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
 import { normalizeProductDetailBlocks } from "@/lib/product-detail-blocks";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
+import { getProductOptionalColumns, type ProductOptionalColumns } from "@/lib/services/product-schema";
 
 import type {
   PublicCatalogAdapter,
@@ -22,8 +24,35 @@ import type {
   PublicCatalogSubcategory,
 } from "./types";
 
+type ProductDbRow = {
+  id: number;
+  slug: string;
+  name: string;
+  publicTitle: string | null;
+  h1Override: string | null;
+  categoryName: string;
+  subcategoryName: string | null;
+  dn: number | null;
+  pn: number | null;
+  thread: string | null;
+  material: string | null;
+  connectionType: string | null;
+  controlType: string | null;
+  model: string | null;
+  price: (typeof productsTable.$inferSelect)["price"];
+  priceByRequest: boolean;
+  weight: (typeof productsTable.$inferSelect)["weight"];
+  shortDescription: string | null;
+  longDescription: string | null;
+  detailBlocks: ProductDetailBlocks | null;
+  specificationMediaId: string | null;
+  questionnaireMediaId: string | null;
+  documentationMediaId: string | null;
+  sortOrder: number;
+};
+
 type ProductRow = {
-  product: typeof productsTable.$inferSelect;
+  product: ProductDbRow;
   category: {
     slug: string;
     name: string;
@@ -33,6 +62,50 @@ type ProductRow = {
     name: string;
   } | null;
 };
+
+function productOptionalSelects(optionalColumns: ProductOptionalColumns) {
+  return {
+    publicTitle: optionalColumns.publicTitle
+      ? productsTable.publicTitle
+      : sql<string | null>`null`,
+    h1Override: optionalColumns.h1Override
+      ? productsTable.h1Override
+      : sql<string | null>`null`,
+    detailBlocks: optionalColumns.detailBlocks
+      ? productsTable.detailBlocks
+      : sql<ProductDetailBlocks | null>`null::jsonb`,
+  };
+}
+
+function productBaseSelect(optionalColumns: ProductOptionalColumns) {
+  const optional = productOptionalSelects(optionalColumns);
+  return {
+    id: productsTable.id,
+    slug: productsTable.slug,
+    name: productsTable.name,
+    publicTitle: optional.publicTitle,
+    h1Override: optional.h1Override,
+    categoryName: productsTable.categoryName,
+    subcategoryName: productsTable.subcategoryName,
+    dn: productsTable.dn,
+    pn: productsTable.pn,
+    thread: productsTable.thread,
+    material: productsTable.material,
+    connectionType: productsTable.connectionType,
+    controlType: productsTable.controlType,
+    model: productsTable.model,
+    price: productsTable.price,
+    priceByRequest: productsTable.priceByRequest,
+    weight: productsTable.weight,
+    shortDescription: productsTable.shortDescription,
+    longDescription: productsTable.longDescription,
+    detailBlocks: optional.detailBlocks,
+    specificationMediaId: productsTable.specificationMediaId,
+    questionnaireMediaId: productsTable.questionnaireMediaId,
+    documentationMediaId: productsTable.documentationMediaId,
+    sortOrder: productsTable.sortOrder,
+  };
+}
 
 async function fetchCategories(): Promise<PublicCatalogCategory[]> {
   const db = getDb();
@@ -97,9 +170,10 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
 
 async function fetchProductRows(): Promise<ProductRow[]> {
   const db = getDb();
+  const optionalColumns = await getProductOptionalColumns();
   return db
     .select({
-      product: productsTable,
+      product: productBaseSelect(optionalColumns),
       category: {
         slug: categoriesTable.slug,
         name: categoriesTable.name,
@@ -126,27 +200,14 @@ async function fetchProductRows(): Promise<ProductRow[]> {
 }
 
 type ListingProductRow = {
-  product: {
-    id: number;
-    slug: string;
-    name: string;
-    publicTitle: string | null;
-    h1Override: string | null;
-    categoryName: string;
-    subcategoryName: string | null;
-    dn: number | null;
-    pn: number | null;
-    thread: string | null;
-    material: string | null;
-    connectionType: string | null;
-    controlType: string | null;
-    model: string | null;
-    price: (typeof productsTable.$inferSelect)["price"];
-    priceByRequest: boolean;
-    weight: (typeof productsTable.$inferSelect)["weight"];
-    shortDescription: string | null;
-    sortOrder: number;
-  };
+  product: Omit<
+    ProductDbRow,
+    | "longDescription"
+    | "detailBlocks"
+    | "specificationMediaId"
+    | "questionnaireMediaId"
+    | "documentationMediaId"
+  >;
   category: {
     slug: string;
     name: string;
@@ -162,14 +223,16 @@ async function fetchListingProductRows(filters?: {
   subcategorySlug?: string;
 }): Promise<ListingProductRow[]> {
   const db = getDb();
+  const optionalColumns = await getProductOptionalColumns();
+  const optional = productOptionalSelects(optionalColumns);
   return db
     .select({
       product: {
         id: productsTable.id,
         slug: productsTable.slug,
         name: productsTable.name,
-        publicTitle: productsTable.publicTitle,
-        h1Override: productsTable.h1Override,
+        publicTitle: optional.publicTitle,
+        h1Override: optional.h1Override,
         categoryName: productsTable.categoryName,
         subcategoryName: productsTable.subcategoryName,
         dn: productsTable.dn,
@@ -474,9 +537,10 @@ export const dbCatalogAdapter: PublicCatalogAdapter = {
 
   async getProductBySlug(slug) {
     const db = getDb();
+    const optionalColumns = await getProductOptionalColumns();
     const row = await db
       .select({
-        product: productsTable,
+        product: productBaseSelect(optionalColumns),
         category: {
           slug: categoriesTable.slug,
           name: categoriesTable.name,

@@ -63,10 +63,21 @@ export async function getCatalogSubcategoryMetadata(
   categorySlug: string,
   subcategorySlug: string,
 ): Promise<Metadata> {
-  const context = await getSubcategoryContext(categorySlug, subcategorySlug);
+  let context: SubcategoryContext | undefined;
+  try {
+    context = await getSubcategoryContext(categorySlug, subcategorySlug);
+  } catch (error) {
+    console.error("[catalog-subcategory] metadata load failed", {
+      categorySlug,
+      subcategorySlug,
+      error,
+    });
+    return { title: "Каталог MANSVALVE GROUP" };
+  }
 
   if (!context) return { title: "Подкатегория не найдена" };
 
+  try {
   const productCount = await countPublicProductsBySubcategory(context.subcategory.id);
   const description = await resolveSubcategoryDescription(
     context.category,
@@ -101,6 +112,14 @@ export async function getCatalogSubcategoryMetadata(
       description,
     },
   };
+  } catch (error) {
+    console.error("[catalog-subcategory] metadata resolve failed", {
+      categorySlug,
+      subcategorySlug,
+      error,
+    });
+    return { title: context.subcategory.name };
+  }
 }
 
 interface CatalogSubcategoryPageProps {

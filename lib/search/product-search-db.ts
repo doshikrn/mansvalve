@@ -11,6 +11,7 @@ import {
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
+import { getProductOptionalColumns } from "@/lib/services/product-schema";
 import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
 
 const TRGM_SIMILARITY_THRESHOLD = 0.12;
@@ -197,6 +198,7 @@ export async function searchProductsInDatabase(
   const qLower = q.toLowerCase();
   const pattern = `%${escapeIlikePattern(q)}%`;
   const useTrgm = await isPgTrgmEnabled();
+  const optionalColumns = await getProductOptionalColumns();
 
   const rows = (await db
     .select({
@@ -204,8 +206,12 @@ export async function searchProductsInDatabase(
         id: productsTable.id,
         slug: productsTable.slug,
         name: productsTable.name,
-        publicTitle: productsTable.publicTitle,
-        h1Override: productsTable.h1Override,
+        publicTitle: optionalColumns.publicTitle
+          ? productsTable.publicTitle
+          : sql<string | null>`null`,
+        h1Override: optionalColumns.h1Override
+          ? productsTable.h1Override
+          : sql<string | null>`null`,
         categoryName: productsTable.categoryName,
         subcategoryName: productsTable.subcategoryName,
         dn: productsTable.dn,

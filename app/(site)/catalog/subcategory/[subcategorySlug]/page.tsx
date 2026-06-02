@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { getPublicSubcategoryBySlug } from "@/lib/public-catalog";
 import { catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { resolveLegacyKlapanySubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 
 export const revalidate = 300;
 
@@ -24,7 +26,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (legacy) {
     return { title: "Перенаправление…", alternates: { canonical: legacy } };
   }
-  const context = await getPublicSubcategoryBySlug(subcategorySlug);
+  let context: Awaited<ReturnType<typeof getPublicSubcategoryBySlug>>;
+  try {
+    context = await getPublicSubcategoryBySlug(subcategorySlug);
+  } catch (error) {
+    console.error("[catalog-subcategory-legacy] metadata load failed", {
+      subcategorySlug,
+      error,
+    });
+    return { title: "Каталог MANSVALVE GROUP" };
+  }
   if (!context) return { title: "Подкатегория не найдена" };
   const canonicalPath = catalogSubcategoryPath(context.category.slug, context.subcategory.slug);
   return { title: "Перенаправление…", alternates: { canonical: canonicalPath } };
@@ -43,7 +54,17 @@ export default async function LegacyCatalogSubcategoryRedirect({
     permanentRedirect(`${legacy}${buildQueryString(query)}`);
   }
 
-  const context = await getPublicSubcategoryBySlug(subcategorySlug);
+  const loaded = await withCatalogRouteLoad(
+    { route: `/catalog/subcategory/${subcategorySlug}`, subcategorySlug },
+    () => getPublicSubcategoryBySlug(subcategorySlug),
+    (context) => ({ categoriesCount: context ? 1 : 0 }),
+  );
+
+  if (!loaded.ok) {
+    return <CatalogRouteError route={`/catalog/subcategory/${subcategorySlug}`} />;
+  }
+
+  const context = loaded.data;
   if (!context) notFound();
 
   permanentRedirect(

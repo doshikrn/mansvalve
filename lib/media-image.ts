@@ -25,10 +25,17 @@ export function mediaImageNeedsUnoptimized(url: string): boolean {
   if (isSvgUrl(trimmed)) return true;
 
   if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
-    return false;
+    return trimmed.startsWith("/uploads/");
   }
 
   if (trimmed.startsWith("//") || /^https?:\/\//i.test(trimmed)) {
+    const normalized = trimmed.startsWith("//") ? `https:${trimmed}` : trimmed;
+    try {
+      const parsed = new URL(normalized);
+      if (parsed.pathname.startsWith("/uploads/")) return true;
+    } catch {
+      return true;
+    }
     return !isTrustedMediaUrl(trimmed);
   }
 

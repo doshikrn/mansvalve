@@ -14,7 +14,9 @@ import {
   CatalogCategoryPage,
   getCatalogCategoryMetadata,
 } from "@/components/catalog/CatalogCategoryPage";
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 
 export const revalidate = 300;
 
@@ -44,13 +46,25 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  const product = await getPublicProductBySlug(slug);
+  let product: Awaited<ReturnType<typeof getPublicProductBySlug>>;
+  try {
+    product = await getPublicProductBySlug(slug);
+  } catch (error) {
+    console.error("[catalog-slug] metadata product load failed", { slug, error });
+    return { title: "Каталог MANSVALVE GROUP" };
+  }
   if (product) {
     const view = buildPublicProductView(product);
     permanentRedirect(buildCleanProductRedirectUrl(view.canonicalPath));
   }
 
-  const category = await getPublicCategoryBySlug(slug);
+  let category: Awaited<ReturnType<typeof getPublicCategoryBySlug>>;
+  try {
+    category = await getPublicCategoryBySlug(slug);
+  } catch (error) {
+    console.error("[catalog-slug] metadata category load failed", { slug, error });
+    return { title: "Каталог MANSVALVE GROUP" };
+  }
   if (category) {
     return getCatalogCategoryMetadata(slug);
   }
@@ -71,7 +85,18 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
 
   await redirectLegacyCatalogProductIfNeeded(slug, { ...query });
 
-  const category = await getPublicCategoryBySlug(slug);
+  const route = `/catalog/${slug}`;
+  const loaded = await withCatalogRouteLoad(
+    { route, categorySlug: slug },
+    () => getPublicCategoryBySlug(slug),
+    (category) => ({ categoriesCount: category ? 1 : 0 }),
+  );
+
+  if (!loaded.ok) {
+    return <CatalogRouteError route={route} />;
+  }
+
+  const category = loaded.data;
   if (category) {
     return <CatalogCategoryPage categorySlug={slug} searchParams={searchParams} />;
   }

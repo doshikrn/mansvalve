@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 
 import { CatalogProductTovarView } from "@/components/catalog/CatalogProductTovarView";
+import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { prepareTovarProductPageData } from "@/components/catalog/tovar-product-presentation";
 import {
   getPublicCatalogCategories,
@@ -12,6 +13,7 @@ import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
 import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
+import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 
 export const revalidate = 300;
 
@@ -34,7 +36,13 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getPublicProductBySlug(slug);
+  let product: Awaited<ReturnType<typeof getPublicProductBySlug>>;
+  try {
+    product = await getPublicProductBySlug(slug);
+  } catch (error) {
+    console.error("[product-page] metadata load failed", { slug, error });
+    return { title: "Товар MANSVALVE GROUP" };
+  }
 
   if (!product) {
     const aliasTarget = await resolveProductSlugAliasTarget(slug);
@@ -74,11 +82,27 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const query = searchParams ? await searchParams : {};
 
-  const [product, categories, allProducts] = await Promise.all([
-    getPublicProductBySlug(slug),
-    getPublicCatalogCategories(),
-    getPublicCatalogListingProducts(),
-  ]);
+  const loaded = await withCatalogRouteLoad(
+    { route: `/tovar/${slug}` },
+    async () => {
+      const [product, categories, allProducts] = await Promise.all([
+        getPublicProductBySlug(slug),
+        getPublicCatalogCategories(),
+        getPublicCatalogListingProducts(),
+      ]);
+      return { product, categories, allProducts };
+    },
+    (data) => ({
+      productsCount: data.product ? 1 : 0,
+      categoriesCount: data.categories.length,
+    }),
+  );
+
+  if (!loaded.ok) {
+    return <CatalogRouteError route={`/tovar/${slug}`} />;
+  }
+
+  const { product, categories, allProducts } = loaded.data;
 
   if (!product) {
     const aliasTarget = await resolveProductSlugAliasTarget(slug);
