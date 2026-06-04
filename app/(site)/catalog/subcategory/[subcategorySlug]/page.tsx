@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 import { getPublicSubcategoryBySlug } from "@/lib/public-catalog";
 import { catalogSubcategoryPath } from "@/lib/catalog-routes";
-import { resolveLegacyKlapanySubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
+import { resolveLegacySubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subcategorySlug } = await params;
-  const legacy = resolveLegacyKlapanySubcategoryCanonicalPath(subcategorySlug);
+  const legacy = resolveLegacySubcategoryCanonicalPath(subcategorySlug);
   if (legacy) {
     return { title: "Перенаправление…", alternates: { canonical: legacy } };
   }
@@ -49,7 +49,7 @@ export default async function LegacyCatalogSubcategoryRedirect({
   const { subcategorySlug } = await params;
   const query = await searchParams;
 
-  const legacy = resolveLegacyKlapanySubcategoryCanonicalPath(subcategorySlug);
+  const legacy = resolveLegacySubcategoryCanonicalPath(subcategorySlug);
   if (legacy) {
     permanentRedirect(`${legacy}${buildQueryString(query)}`);
   }

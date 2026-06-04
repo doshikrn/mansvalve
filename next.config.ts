@@ -11,6 +11,16 @@ const remotePatterns = buildNextImageRemotePatterns();
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.mansvalve-group.kz" }],
+        destination: "https://mansvalve-group.kz/:path*",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     root: projectRoot,
   },
