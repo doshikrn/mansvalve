@@ -43,8 +43,9 @@ interface PageProps {
   searchParams: Promise<CatalogSearchParams>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const query = await searchParams;
 
   let product: Awaited<ReturnType<typeof getPublicProductBySlug>>;
   try {
@@ -66,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Каталог MANSVALVE GROUP" };
   }
   if (category) {
-    return getCatalogCategoryMetadata(slug);
+    return getCatalogCategoryMetadata(slug, query);
   }
 
   await redirectLegacyCatalogProductIfNeeded(slug);

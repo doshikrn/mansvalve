@@ -133,7 +133,7 @@ export function ProductShowcaseCarousel({
     <div
       className={cn(
         "w-full max-w-full",
-        isHero && "relative z-10 max-lg:mx-0 lg:w-[126%] lg:max-w-none lg:self-start",
+        isHero && "relative z-10 max-lg:mx-0 lg:w-full lg:max-w-full lg:self-start",
         isHero ? "showcase-card-hero rounded-2xl" : "showcase-card-catalog rounded-xl",
       )}
     >

@@ -30,6 +30,7 @@ import {
   getCategorySeo,
   getOrderedCatalogCategories,
 } from "@/lib/catalog-seo";
+import { buildPagedMeta } from "@/lib/seo/metadata";
 import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -38,7 +39,10 @@ import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-route
 
 const TRUST_ICONS = [ShieldCheck, BadgeCheck, Truck, FileText] as const;
 
-export async function getCatalogCategoryMetadata(categorySlug: string): Promise<Metadata> {
+export async function getCatalogCategoryMetadata(
+  categorySlug: string,
+  searchParams?: CatalogSearchParams,
+): Promise<Metadata> {
   let category: Category | undefined;
   try {
     category = await getPublicCategoryBySlug(categorySlug);
@@ -61,28 +65,33 @@ export async function getCatalogCategoryMetadata(categorySlug: string): Promise<
     seoPreset?.description ||
     buildCategoryPageDescription(category, productCount);
 
-  const title = seoPreset?.title || `${category.name} — каталог арматуры`;
-
   const canonicalPath = catalogCategoryPath(category.slug);
+  const meta = buildPagedMeta({
+    title: seoPreset?.title || `${category.name} — каталог арматуры`,
+    description,
+    canonicalPath,
+    searchParams,
+  });
 
   return {
-    title,
-    description,
+    title: meta.title,
+    description: meta.description,
+    robots: meta.robots,
     alternates: {
-      canonical: canonicalPath,
+      canonical: meta.canonicalPath,
     },
     openGraph: {
-      title,
-      description,
-      url: canonicalPath,
+      title: meta.title,
+      description: meta.description,
+      url: meta.canonicalPath,
       siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: meta.title,
+      description: meta.description,
     },
   };
   } catch (error) {
@@ -216,6 +225,9 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
             {categoryProducts.length}{" "}
             {pluralProducts(categoryProducts.length)} · {category.subcategories.length}{" "}
             {pluralSubcategories(category.subcategories.length)}
+          </p>
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600">
+            {metaDescription}
           </p>
 
           <div className="relative mt-6 h-40 overflow-hidden rounded-2xl border border-site-border bg-slate-100 sm:h-52">
@@ -378,10 +390,5 @@ function pluralSubcategories(n: number): string {
 }
 
 function buildCategoryPageDescription(category: Category, productCount: number): string {
-  const subcategoryNames = category.subcategories.map((s) => s.name).join(", ");
-  return (
-    `${category.name} — промышленная трубопроводная арматура: ${productCount} позиций в наличии и под заказ. ` +
-    `Подкатегории: ${subcategoryNames}. ` +
-    "Сертификаты ГОСТ/DIN/ISO, КП, доставка по Казахстану."
-  );
+  return `${category.name}: ${productCount} позиций в наличии и под заказ. Подбор по DN/PN, КП, НДС, сертификаты и доставка по Казахстану.`;
 }

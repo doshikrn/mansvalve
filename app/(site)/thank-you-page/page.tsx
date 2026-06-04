@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { COMPANY, COMPANY_BRAND_SEO, buildCompanyWhatsAppUrl } from "@/lib/company";
 
 export const metadata: Metadata = {
-  title: "Спасибо за заявку | MANSVALVE GROUP",
+  title: "Спасибо за заявку",
   description:
     "Спасибо за заявку. Менеджер MANSVALVE GROUP свяжется с вами по указанному телефону и подготовит коммерческое предложение в рабочее время.",
   alternates: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     follow: false,
   },
   openGraph: {
-    title: "Спасибо за заявку | MANSVALVE GROUP",
+    title: "Спасибо за заявку",
     description:
       "Заявка получена и передана менеджеру MANSVALVE GROUP.",
     url: "/thank-you-page",

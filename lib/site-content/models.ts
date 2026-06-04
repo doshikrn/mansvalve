@@ -788,12 +788,12 @@ export const DEFAULT_FOOTER_MAIN: FooterMainContent = {
   privacyLabel: "Политика конфиденциальности",
   catalogLinks: [
     { label: "Задвижки", href: "/catalog/zadvizhki" },
-    { label: "Затворы дисковые", href: "/catalog/subcategory/zatvory-diskovye" },
+    { label: "Затворы дисковые", href: "/catalog/zatvory/zatvory-diskovye" },
     { label: "Краны шаровые", href: "/catalog/krany-sharovye" },
     { label: "Обратные клапаны", href: "/catalog/klapany" },
-    { label: "Фланцы", href: "/catalog/subcategory/flansy" },
+    { label: "Фланцы", href: "/catalog/flansy-i-otvody/flansy" },
     { label: "Электроприводы", href: "/catalog/elektroprivody" },
-    { label: "Фитинги", href: "/catalog" },
+    { label: "Фланцы и отводы", href: "/catalog/flansy-i-otvody" },
     { label: "Другие товары", href: "/catalog" },
   ],
   companyLinks: [
@@ -809,7 +809,22 @@ export const DEFAULT_FOOTER_MAIN: FooterMainContent = {
 export function mergeFooterMain(dbJson: unknown): FooterMainContent {
   const merged = shallowMerge(DEFAULT_FOOTER_MAIN as unknown as Record<string, unknown>, dbJson);
   const parsed = footerMainSchema.safeParse(merged);
-  return parsed.success ? parsed.data : DEFAULT_FOOTER_MAIN;
+  return normalizeFooterMainLinks(parsed.success ? parsed.data : DEFAULT_FOOTER_MAIN);
+}
+
+const LEGACY_FOOTER_LINK_HREFS: Record<string, string> = {
+  "/catalog/subcategory/zatvory-diskovye": "/catalog/zatvory/zatvory-diskovye",
+  "/catalog/subcategory/flansy": "/catalog/flansy-i-otvody/flansy",
+};
+
+function normalizeFooterMainLinks(content: FooterMainContent): FooterMainContent {
+  return {
+    ...content,
+    catalogLinks: content.catalogLinks.map((link) => ({
+      ...link,
+      href: LEGACY_FOOTER_LINK_HREFS[link.href] ?? link.href,
+    })),
+  };
 }
 
 export function applyYearPlaceholder(text: string, year: number): string {

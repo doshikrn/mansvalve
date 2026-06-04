@@ -24,9 +24,10 @@ interface PageProps {
   searchParams: Promise<CatalogSearchParams>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug, subcategorySlug } = await params;
-  return getCatalogSubcategoryMetadata(slug, subcategorySlug);
+  const query = await searchParams;
+  return getCatalogSubcategoryMetadata(slug, subcategorySlug, query);
 }
 
 export default async function CatalogNestedSubcategoryPage({ params, searchParams }: PageProps) {

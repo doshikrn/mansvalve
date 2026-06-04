@@ -24,6 +24,7 @@ import {
 import { resolveSubcategorySeoMetaDescription } from "@/lib/services/category-public-content";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { getKlapanySubcategorySeoTitle } from "@/lib/catalog-klapany-public-seo";
+import { buildPagedMeta } from "@/lib/seo/metadata";
 
 type SubcategoryContext = {
   category: Category;
@@ -44,7 +45,7 @@ function buildSubcategoryDescription(
   subcategory: Subcategory,
   productCount: number,
 ): string {
-  return `${subcategory.name} в категории «${category.name}» — ${productCount} позиций. Промышленная арматура в Казахстане: DN, PN, материал, КП, доставка по РК. Фильтрация в каталоге.`;
+  return `${subcategory.name} в категории «${category.name}»: ${productCount} позиций. Подбор по DN/PN, материалу и типу соединения, КП и доставка по Казахстану.`;
 }
 
 async function resolveSubcategoryDescription(
@@ -62,6 +63,7 @@ async function resolveSubcategoryDescription(
 export async function getCatalogSubcategoryMetadata(
   categorySlug: string,
   subcategorySlug: string,
+  searchParams?: CatalogSearchParams,
 ): Promise<Metadata> {
   let context: SubcategoryContext | undefined;
   try {
@@ -91,25 +93,32 @@ export async function getCatalogSubcategoryMetadata(
       : undefined;
   const pageTitle =
     klapanyTitle ?? `${context.subcategory.name} — ${context.category.name} · Казахстан`;
-
-  return {
+  const meta = buildPagedMeta({
     title: pageTitle,
     description,
+    canonicalPath,
+    searchParams,
+  });
+
+  return {
+    title: meta.title,
+    description: meta.description,
+    robots: meta.robots,
     alternates: {
-      canonical: canonicalPath,
+      canonical: meta.canonicalPath,
     },
     openGraph: {
-      title: `${pageTitle} | ${COMPANY.name}`,
-      description,
-      url: canonicalPath,
+      title: meta.title,
+      description: meta.description,
+      url: meta.canonicalPath,
       siteName: COMPANY.name,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${pageTitle} | ${COMPANY.name}`,
-      description,
+      title: meta.title,
+      description: meta.description,
     },
   };
   } catch (error) {

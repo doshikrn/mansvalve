@@ -22,6 +22,7 @@ import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
 } from "@/lib/structured-data";
+import { normalizeMetaDescription, normalizeMetaTitle } from "@/lib/seo/metadata";
 import {
   findSeriesCatalogProduct,
   getRelatedSeriesSeoPages,
@@ -60,22 +61,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const canonical = `/${landing.categorySlug}/${landing.slug}`;
 
     return {
-      title: landing.title,
-      description: landing.description,
+      title: normalizeMetaTitle(landing.title),
+      description: normalizeMetaDescription(landing.description),
       alternates: {
         canonical,
       },
       openGraph: {
-        title: landing.title,
-        description: landing.description,
+        title: normalizeMetaTitle(landing.title),
+        description: normalizeMetaDescription(landing.description),
         url: canonical,
         locale: "ru_KZ",
         type: "website",
       },
       twitter: {
         card: "summary_large_image",
-        title: landing.title,
-        description: landing.description,
+        title: normalizeMetaTitle(landing.title),
+        description: normalizeMetaDescription(landing.description),
       },
     };
   }
@@ -92,8 +93,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = findSeriesCatalogProduct(products, seriesPage);
   const view = product ? buildPublicProductView(product) : null;
   const canonical = view?.canonicalUrl ?? toAbsoluteSiteUrl(getSeriesPagePath(seriesPage));
-  const title = view?.seoTitle ?? seriesPage.seoTitle;
-  const description = view?.seoDescription ?? seriesPage.seoDescription;
+  const title = view?.seoTitle ?? normalizeMetaTitle(seriesPage.seoTitle);
+  const description = view?.seoDescription ?? normalizeMetaDescription(seriesPage.seoDescription);
 
   return {
     title,

@@ -1,4 +1,4 @@
-import { buildProductMetaDescription, getCatalogCategoryLabel } from "@/lib/catalog-seo";
+import { getCatalogCategoryLabel } from "@/lib/catalog-seo";
 import { formatProductDisplayName, formatProductSeoName } from "@/lib/catalog/product-naming";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
@@ -6,6 +6,11 @@ import { buildProductDetailContent, type ProductDetailContent } from "@/lib/prod
 import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
 import { catalogCategoryPath } from "@/lib/catalog-routes";
+import {
+  normalizeMetaDescription,
+  normalizeMetaTitle,
+  stripBrandFromTitle,
+} from "@/lib/seo/metadata";
 
 import type { PublicCatalogProduct } from "./types";
 
@@ -64,6 +69,7 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
   const h1 = h1Override || seriesPage?.h1 || publicTitle || generatedDisplayName;
   const seoName = publicTitle || seriesPage?.title || formatProductSeoName(product);
+  const compactSeoName = buildCompactProductSeoName(product, seoName);
   const detailContent = buildProductDetailContent(product, seriesPage);
   const fullDescription = detailContent.descriptionParagraphs.join("\n\n");
   const contentSections: PublicProductContentSections = {
@@ -89,8 +95,12 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     generatedDisplayName,
     displayName,
     h1,
-    seoTitle: seriesPage?.seoTitle ?? `Купить ${seoName} в Казахстане | MANSVALVE GROUP`,
-    seoDescription: seriesPage?.seoDescription ?? buildProductMetaDescription(displayName),
+    seoTitle: buildProductSeoTitle(compactSeoName, seriesPage?.seoTitle),
+    seoDescription: buildProductSeoDescription(
+      product,
+      compactSeoName,
+      seriesPage?.seoDescription,
+    ),
     shortDescription: product.shortDescription || detailContent.descriptionParagraphs[0] || "",
     fullDescription,
     contentSections,
@@ -134,4 +144,72 @@ export function buildPublicProductCardView(product: PublicCatalogProduct): Publi
     categoryLabel,
     shortDescription,
   };
+}
+
+function buildProductSeoTitle(
+  compactName: string,
+  manualTitle?: string,
+): string {
+  const normalizedManual = manualTitle ? normalizeMetaTitle(manualTitle) : "";
+  if (manualTitle && stripBrandFromTitle(manualTitle).length <= 60) {
+    return normalizedManual;
+  }
+
+  const buyTitle = normalizeMetaTitle(`Купить ${compactName} в Казахстане`);
+  if (buyTitle.length <= 60) return buyTitle;
+
+  return normalizeMetaTitle(`${compactName} купить в Казахстане`);
+}
+
+function buildProductSeoDescription(
+  product: PublicCatalogProduct,
+  compactName: string,
+  manualDescription?: string,
+): string {
+  if (manualDescription && manualDescription.replace(/\s+/g, " ").trim().length <= 160) {
+    return normalizeMetaDescription(manualDescription);
+  }
+
+  const deliveryRegion =
+    product.category === "flansy-i-otvody" ? "по Казахстану" : "по РК";
+
+  return normalizeMetaDescription(
+    `${compactName} с поставкой ${deliveryRegion}. КП в рабочее время, НДС, сертификаты, паспорт изделия и доставка.`,
+  );
+}
+
+function buildCompactProductSeoName(product: PublicCatalogProduct, fallback: string): string {
+  const productType = getSeoProductType(product, fallback);
+  const model = product.model?.trim();
+  const dn = product.dn ? `DN${product.dn}` : "";
+  const pn = product.pn ? `PN${product.pn}` : "";
+  const parts = [productType, model, dn, pn].filter(Boolean);
+
+  if (!model && !dn && pn && product.slug) {
+    parts.push(`арт. ${product.slug}`);
+  }
+
+  const compact = parts.join(" ").trim();
+  return compact && compact !== productType ? compact : fallback;
+}
+
+function getSeoProductType(product: PublicCatalogProduct, fallback: string): string {
+  switch (product.category) {
+    case "zadvizhki":
+      return "Задвижка";
+    case "zatvory":
+      return "Затвор";
+    case "krany-sharovye":
+      return "Кран шаровой";
+    case "klapany":
+      return "Клапан";
+    case "filtry-i-kompensatory":
+      return "Компенсатор";
+    case "flansy-i-otvody":
+      return "Фланец";
+    case "elektroprivody":
+      return "Электропривод";
+    default:
+      return fallback.split(/\s+/)[0] || "Товар";
+  }
 }

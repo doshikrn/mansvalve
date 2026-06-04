@@ -21,6 +21,7 @@ import {
   getPublicCatalogListingProducts,
 } from "@/lib/public-catalog";
 import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
+import { buildPagedMeta } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
@@ -40,26 +41,37 @@ const CATALOG_TRUST_PILLS = [
   { label: "Документы и НДС", Icon: FileCheck2 },
 ] as const;
 
-export const metadata: Metadata = {
-  title: CATALOG_TITLE,
-  description: CATALOG_DESCRIPTION,
-  alternates: {
-    canonical: "/catalog",
-  },
-  openGraph: {
-    title: `${CATALOG_TITLE} | ${COMPANY_BRAND_SEO}`,
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const query = await searchParams;
+  const meta = buildPagedMeta({
+    title: CATALOG_TITLE,
     description: CATALOG_DESCRIPTION,
-    url: "/catalog",
-    siteName: COMPANY_BRAND_SEO,
-    locale: "ru_KZ",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${CATALOG_TITLE} | ${COMPANY_BRAND_SEO}`,
-    description: CATALOG_DESCRIPTION,
-  },
-};
+    canonicalPath: "/catalog",
+    searchParams: query,
+  });
+
+  return {
+    title: meta.title,
+    description: meta.description,
+    robots: meta.robots,
+    alternates: {
+      canonical: meta.canonicalPath,
+    },
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      url: meta.canonicalPath,
+      siteName: COMPANY_BRAND_SEO,
+      locale: "ru_KZ",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.title,
+      description: meta.description,
+    },
+  };
+}
 
 /* ── Page ─────────────────────────────────────────────────────────── */
 

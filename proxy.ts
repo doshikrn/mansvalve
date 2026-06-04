@@ -17,6 +17,15 @@ import { verifySession } from "@/lib/auth/session";
  */
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const canonicalRedirect = getCanonicalRedirect(request);
+
+  if (canonicalRedirect) {
+    return canonicalRedirect;
+  }
+
+  if (!pathname.startsWith("/admin")) {
+    return NextResponse.next();
+  }
 
   if (pathname === ADMIN_LOGIN_PATH) {
     return NextResponse.next();
@@ -35,7 +44,35 @@ export async function proxy(request: NextRequest) {
   return NextResponse.redirect(loginUrl);
 }
 
+function getCanonicalRedirect(request: NextRequest): NextResponse | null {
+  const url = request.nextUrl.clone();
+  const host = url.hostname.toLowerCase();
+  let changed = false;
+
+  if (host === "www.mansvalve-group.kz") {
+    url.hostname = "mansvalve-group.kz";
+    changed = true;
+  }
+
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const targetHost = url.hostname.toLowerCase();
+  if (
+    targetHost === "mansvalve-group.kz" &&
+    (url.protocol === "http:" || forwardedProto === "http")
+  ) {
+    url.protocol = "https:";
+    changed = true;
+  }
+
+  if (/[A-Z]/.test(url.pathname)) {
+    url.pathname = url.pathname.toLowerCase();
+    changed = true;
+  }
+
+  return changed ? NextResponse.redirect(url, 308) : null;
+}
+
 export const config = {
-  // Protect the full admin surface. The login page short-circuits above.
-  matcher: ["/admin/:path*"],
+  // Canonicalize public page URLs and protect the admin surface.
+  matcher: ["/((?!api/|_next/|.*\\..*).*)"],
 };
