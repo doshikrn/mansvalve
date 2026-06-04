@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { Button } from "@/components/ui/button";
@@ -73,24 +74,12 @@ export default async function NewSubcategoryPage({
           className="space-y-4 rounded-xl border border-border bg-background p-4"
         >
           <input type="hidden" name="categoryId" value={categoryId} />
-          <div className="space-y-2">
-            <Label htmlFor="name">Название</Label>
-            <input
-              id="name"
-              name="name"
-              required
-              className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="slug">Ссылка подраздела (латиница)</Label>
-            <input
-              id="slug"
-              name="slug"
-              placeholder="Пусто — из названия"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm font-mono text-xs"
-            />
-          </div>
+          <AdminNameSlugFields
+            nameLabel="Название"
+            slugLabel="Ссылка подраздела"
+            slugRequired={false}
+            slugPlaceholder="Пусто — из названия"
+          />
           <div className="space-y-2">
             <Label htmlFor="sortOrder">Порядок сортировки</Label>
             <input

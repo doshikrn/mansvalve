@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
@@ -102,28 +103,20 @@ export default async function EditSubcategoryPage({
           <input type="hidden" name="id" value={sub.id} />
           <input type="hidden" name="categoryId" value={categoryId} />
 
-          <div className="space-y-2">
-            <Label htmlFor="name">Название <AdminStatusBadge tone="manual" /></Label>
-            <input
-              id="name"
-              name="name"
-              required
-              defaultValue={sub.name}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="slug">
-              Ссылка подраздела <AdminStatusBadge tone="manual" />
-            </Label>
-            <input
-              id="slug"
-              name="slug"
-              required
-              defaultValue={sub.slug}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm font-mono text-xs"
-            />
-          </div>
+          <AdminNameSlugFields
+            initialName={sub.name}
+            initialSlug={sub.slug}
+            nameLabel={
+              <>
+                Название <AdminStatusBadge tone="manual" />
+              </>
+            }
+            slugLabel={
+              <>
+                Ссылка подраздела <AdminStatusBadge tone="auto" />
+              </>
+            }
+          />
           <div className="space-y-2">
             <Label htmlFor="sortOrder">Порядок сортировки <AdminStatusBadge tone="manual" /></Label>
             <input

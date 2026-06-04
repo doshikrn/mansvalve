@@ -1,4 +1,5 @@
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { CategorySeoFields } from "@/components/admin/CategorySeoFields";
@@ -60,24 +61,14 @@ export default async function NewCategoryPage({
           className="space-y-4 rounded-xl border border-border bg-background p-4"
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="name">Название</Label>
-              <input
-                id="name"
-                name="name"
-                required
-                className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="slug">Ссылка раздела (латиница)</Label>
-              <input
-                id="slug"
-                name="slug"
-                placeholder="Оставьте пустым — сгенерируется из названия"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm font-mono text-xs"
-              />
-            </div>
+            <AdminNameSlugFields
+              nameLabel="Название"
+              slugLabel="Ссылка раздела"
+              slugRequired={false}
+              slugPlaceholder="Оставьте пустым — сгенерируется из названия"
+              nameContainerClassName="space-y-2 sm:col-span-2"
+              slugContainerClassName="space-y-2"
+            />
             <div className="space-y-2">
               <Label htmlFor="sortOrder">Порядок сортировки</Label>
               <input

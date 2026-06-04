@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
@@ -106,28 +107,22 @@ export default async function EditCategoryPage({
           <input type="hidden" name="id" value={category.id} />
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="name">Название <AdminStatusBadge tone="manual" /></Label>
-              <input
-                id="name"
-                name="name"
-                required
-                defaultValue={category.name}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="slug">
-                Ссылка раздела <AdminStatusBadge tone="manual" />
-              </Label>
-              <input
-                id="slug"
-                name="slug"
-                defaultValue={category.slug}
-                required
-                className="flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm font-mono text-xs"
-              />
-            </div>
+            <AdminNameSlugFields
+              initialName={category.name}
+              initialSlug={category.slug}
+              nameLabel={
+                <>
+                  Название <AdminStatusBadge tone="manual" />
+                </>
+              }
+              slugLabel={
+                <>
+                  Ссылка раздела <AdminStatusBadge tone="auto" />
+                </>
+              }
+              nameContainerClassName="space-y-2 sm:col-span-2"
+              slugContainerClassName="space-y-2"
+            />
             <div className="space-y-2">
               <Label htmlFor="sortOrder">Порядок сортировки <AdminStatusBadge tone="manual" /></Label>
               <input
