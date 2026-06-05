@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronRight, ShieldCheck, Truck, BadgeCheck, FileText } from "lucide-react";
+import { ChevronRight, ShieldCheck, Truck, BadgeCheck, FileText, Phone } from "lucide-react";
 
 import {
   countPublicProductsByCategory,
@@ -22,7 +22,13 @@ import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { COMPANY_BRAND_SEO } from "@/lib/company";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import {
+  COMPANY,
+  COMPANY_BRAND_SEO,
+  COMPANY_PHONE_HREF,
+  COMPANY_WHATSAPP_BASE_URL,
+} from "@/lib/company";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import {
@@ -226,11 +232,46 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
             {pluralProducts(categoryProducts.length)} · {category.subcategories.length}{" "}
             {pluralSubcategories(category.subcategories.length)}
           </p>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600 line-clamp-2">
             {metaDescription}
           </p>
 
-          <div className="relative mt-6 h-40 overflow-hidden rounded-2xl border border-site-border bg-slate-100 sm:h-52">
+          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-slate-700">
+            <li className="inline-flex items-center gap-2">
+              <FileText size={16} className="shrink-0 text-site-primary" aria-hidden />
+              КП за 15 минут
+            </li>
+            <li className="inline-flex items-center gap-2">
+              <Truck size={16} className="shrink-0 text-site-primary" aria-hidden />
+              Склад в Алматы
+            </li>
+            <li className="inline-flex items-center gap-2">
+              <BadgeCheck size={16} className="shrink-0 text-site-primary" aria-hidden />
+              Сертификаты ГОСТ и ISO
+            </li>
+          </ul>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href={COMPANY_WHATSAPP_BASE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-site-whatsapp px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-site-whatsapp-hover"
+            >
+              <WhatsappIcon className="h-4 w-4" />
+              Написать в WhatsApp
+            </a>
+            <a
+              href={COMPANY_PHONE_HREF}
+              aria-label={`Позвонить: ${COMPANY.phoneDisplay}`}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-site-border bg-site-card px-5 text-sm font-semibold text-site-primary shadow-sm transition-colors hover:border-site-primary hover:bg-[#EFF6FF]"
+            >
+              <Phone className="h-4 w-4" strokeWidth={2} />
+              Позвонить
+            </a>
+          </div>
+
+          <div className="relative mt-5 h-32 overflow-hidden rounded-2xl border border-site-border bg-slate-100 sm:h-40">
             <Image
               src={heroSrc}
               alt={heroAlt}
@@ -246,13 +287,13 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
           </div>
 
           {(quickLinks.length > 0 || category.subcategories.length > 0) && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {quickLinks.length > 0 ? (
                 quickLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="inline-flex items-center gap-2 rounded-full border border-site-border bg-site-bg px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-site-primary hover:bg-[#EFF6FF] hover:text-site-primary-hover"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-site-border bg-site-bg px-2.5 py-0.5 text-[11px] font-medium text-slate-700 transition-colors hover:border-site-primary hover:bg-[#EFF6FF] hover:text-site-primary-hover"
                   >
                     {link.label}
                   </Link>
@@ -262,10 +303,10 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
                   <Link
                     key={sub.id}
                     href={catalogSubcategoryPath(category.slug, sub.slug)}
-                    className="inline-flex items-center gap-2 rounded-full border border-site-border bg-site-bg px-3 py-1 text-xs font-medium text-slate-700 transition-colors hover:border-site-primary hover:bg-[#EFF6FF] hover:text-site-primary-hover"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-site-border bg-site-bg px-2.5 py-0.5 text-[11px] font-medium text-slate-700 transition-colors hover:border-site-primary hover:bg-[#EFF6FF] hover:text-site-primary-hover"
                   >
                     {sub.name}
-                    <span className="rounded-full bg-slate-200/70 px-2 py-0.5 text-[11px] text-slate-700">
+                    <span className="rounded-full bg-slate-200/70 px-1.5 py-0.5 text-[10px] text-slate-700">
                       {subcategoryCounts.get(sub.id) ?? 0}
                     </span>
                   </Link>
@@ -276,21 +317,18 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
         </div>
       </div>
 
-      {seo && (
-        <section className="border-b border-site-border bg-site-card">
-          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-            <div className="prose prose-slate max-w-3xl">
-              {seo.topSeo.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <CatalogShellSuspense
+          products={categoryProducts}
+          categories={displayCategories}
+          searchParams={searchParams}
+          lockedCategoryId={category.id}
+        />
+      </div>
 
       {seo && (
         <section className="bg-site-bg">
-          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+          <div className="mx-auto max-w-7xl px-4 pt-2 pb-10 sm:px-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {seo.trust.map((text, i) => {
                 const Icon = TRUST_ICONS[i % TRUST_ICONS.length];
@@ -309,21 +347,15 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
         </section>
       )}
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        <CatalogShellSuspense
-          products={categoryProducts}
-          categories={displayCategories}
-          searchParams={searchParams}
-          lockedCategoryId={category.id}
-        />
-      </div>
-
       {seo && (
         <section className="border-t border-site-border bg-site-card">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
             <div className="prose prose-slate max-w-3xl">
-              {seo.bottomSeo.map((p, i) => (
+              {seo.topSeo.map((p, i) => (
                 <p key={i}>{p}</p>
+              ))}
+              {seo.bottomSeo.map((p, i) => (
+                <p key={`bottom-${i}`}>{p}</p>
               ))}
             </div>
           </div>

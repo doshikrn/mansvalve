@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
+import { MobileContactBar } from "@/components/layout/MobileContactBar";
 import { PublicMotionProvider } from "@/components/motion/PublicMotionProvider";
 import { MotionRuntimeCheck } from "@/components/motion/MotionRuntimeCheck";
 import { getPublicCatalogCategories } from "@/lib/public-catalog";
@@ -29,7 +30,10 @@ export default async function SiteLayout({
       <Header categoryLinks={categoryLinks} topBarLinks={topNav.links} />
       <main className="flex-1 bg-site-bg">{children}</main>
       <Footer />
+      {/* Spacer so the fixed mobile contact bar never covers footer content. */}
+      <div aria-hidden className="h-[52px] pb-[env(safe-area-inset-bottom,0px)] sm:hidden" />
       <FloatingWhatsApp />
+      <MobileContactBar />
       <MotionRuntimeCheck />
     </PublicMotionProvider>
   );

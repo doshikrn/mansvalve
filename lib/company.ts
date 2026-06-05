@@ -65,12 +65,17 @@ export function buildCompanyWhatsAppUrl(message?: string): string {
 }
 
 const PRODUCT_INQUIRY_MESSAGE = (name: string, dn?: number | null, pn?: number | null) => {
-  const n = name.trim() || "позиция";
-  const hasDn = dn != null && new RegExp(`\\bDN\\s*${dn}\\b`, "iu").test(n);
-  const hasPn = pn != null && new RegExp(`\\bPN\\s*${pn}\\b`, "iu").test(n);
-  const dnPart = dn != null && !hasDn ? `, DN${dn}` : "";
-  const pnPart = pn != null && !hasPn ? ` PN${pn}` : "";
-  return `Здравствуйте! Интересует: ${n}${dnPart}${pnPart}. Прошу уточнить наличие и стоимость.`;
+  const productName = name.trim() || "позиция";
+  const lines: string[] = ["Здравствуйте.", "", "Интересует товар:", productName];
+
+  if (dn != null || pn != null) {
+    lines.push("");
+    if (dn != null) lines.push(`DN: ${dn}`);
+    if (pn != null) lines.push(`PN: ${pn}`);
+  }
+
+  lines.push("", "Подскажите:", "• цену", "• наличие", "• срок поставки");
+  return lines.join("\n");
 };
 
 /** Каталог: карточка товара и страница товара. */

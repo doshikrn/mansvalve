@@ -4,11 +4,11 @@ import { Phone } from "lucide-react";
 import {
   COMPANY,
   COMPANY_INSTAGRAM_URL,
+  COMPANY_PHONE_HREF,
   COMPANY_WHATSAPP_BASE_URL,
 } from "@/lib/company";
 import { InstagramBrandIcon } from "@/components/icons/InstagramBrandIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
-import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
 import { cn } from "@/lib/utils";
 
@@ -91,19 +91,15 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
           >
             <InstagramBrandIcon className="h-[22px] w-[22px]" />
           </a>
-          <CopyToClipboard
-            variant="minimal"
-            value={COMPANY.phoneDisplay}
-            messageForCopyToast={COMPANY.phoneDisplay}
-            kind="phone"
-            title="Нажмите, чтобы скопировать номер"
-            className="inline-flex items-center gap-1 text-[13px] font-semibold tabular-nums text-site-ink sm:text-[15px] lg:text-base"
+          <a
+            href={COMPANY_PHONE_HREF}
+            title="Позвонить в отдел продаж"
+            aria-label={`Позвонить: ${COMPANY.phoneDisplay}`}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-1 text-[13px] font-semibold tabular-nums text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2 sm:text-[15px] lg:text-base"
           >
-            <span className="inline-flex items-center gap-1">
-              <Phone className="h-3.5 w-3.5 shrink-0 text-site-muted sm:hidden" aria-hidden />
-              {COMPANY.phoneDisplay}
-            </span>
-          </CopyToClipboard>
+            <Phone className="h-4 w-4 shrink-0 text-site-primary" aria-hidden strokeWidth={2} />
+            {COMPANY.phoneDisplay}
+          </a>
         </div>
       </div>
     </div>

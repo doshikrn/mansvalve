@@ -132,7 +132,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
             <Link href={`${detailHref}#request-section`}>
-              Получить КП
+              Узнать цену
               <ArrowRight className="ml-1 h-3.5 w-3.5" />
             </Link>
           </Button>
