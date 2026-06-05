@@ -815,6 +815,7 @@ export function mergeFooterMain(dbJson: unknown): FooterMainContent {
 const LEGACY_FOOTER_LINK_HREFS: Record<string, string> = {
   "/catalog/subcategory/zatvory-diskovye": "/catalog/zatvory/zatvory-diskovye",
   "/catalog/subcategory/flansy": "/catalog/flansy-i-otvody/flansy",
+  "/catalog/subcategory/klapany-obratnye": "/catalog/klapany/podemnye",
 };
 
 function normalizeFooterMainLinks(content: FooterMainContent): FooterMainContent {
