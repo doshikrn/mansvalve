@@ -529,7 +529,7 @@ export function QuickRequestForm({
             if (errors.name) setErrors((err) => ({ ...err, name: undefined }));
           }}
           placeholder="Иван Петров / ТОО «Строй-КЗ»"
-          className={`w-full rounded-lg border px-4 py-3.5 text-sm ${s.inputBase} ${
+          className={`w-full scroll-mt-24 rounded-lg border px-4 py-3.5 text-sm sm:scroll-mt-28 ${s.inputBase} ${
             errors.name ? s.inputError : s.inputNormal
           }`}
         />

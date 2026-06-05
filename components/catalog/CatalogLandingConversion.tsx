@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { ArrowRight, Search, ShieldCheck, Timer, Truck } from "lucide-react";
+import { ArrowDown, Search, ShieldCheck, Timer, Truck } from "lucide-react";
 
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { Button } from "@/components/ui/button";
+import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { buildCompanyWhatsAppUrl } from "@/lib/company";
 
 const TRUST_PILLS = [
@@ -15,6 +15,7 @@ const TRUST_PILLS = [
 export interface CatalogLandingConversionProps {
   landingTitle: string;
   categoryName?: string;
+  source?: string;
 }
 
 function buildLandingWhatsAppMessage(landingTitle: string, categoryName?: string): string {
@@ -29,10 +30,12 @@ function buildLandingWhatsAppMessage(landingTitle: string, categoryName?: string
 export function CatalogLandingConversion({
   landingTitle,
   categoryName,
+  source = "catalog-landing",
 }: CatalogLandingConversionProps) {
   const waUrl = buildCompanyWhatsAppUrl(buildLandingWhatsAppMessage(landingTitle, categoryName));
 
   return (
+    <>
     <div
       className="mt-6 rounded-xl border border-site-border bg-site-bg p-4 sm:mt-8 sm:p-5"
       aria-label="Быстрый запрос по подбору"
@@ -65,10 +68,10 @@ export function CatalogLandingConversion({
           variant="outline"
           className="h-11 w-full border-site-border bg-site-card px-5 font-semibold sm:w-auto sm:min-w-[11rem]"
         >
-          <Link href="/contacts">
+          <a href="#request-name">
             Запросить КП
-            <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Link>
+            <ArrowDown className="ml-1.5 h-4 w-4" />
+          </a>
         </Button>
       </div>
 
@@ -77,5 +80,20 @@ export function CatalogLandingConversion({
         списке. Ответим в рабочее время, подготовим коммерческое предложение за 15 минут.
       </p>
     </div>
+
+    <div
+      id="request-section"
+      className="mt-4 scroll-mt-24 rounded-xl border border-site-border bg-site-card p-4 sm:p-5"
+    >
+      <p className="mb-3 text-sm font-semibold text-slate-900">
+        Оставьте заявку — подберём и пришлём КП за 15 минут
+      </p>
+      <QuickRequestForm
+        variant="light"
+        source={source}
+        productContext={{ productName: landingTitle, productCategory: categoryName }}
+      />
+    </div>
+    </>
   );
 }

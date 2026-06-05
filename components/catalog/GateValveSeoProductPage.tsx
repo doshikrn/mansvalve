@@ -4,6 +4,7 @@ import { BadgeCheck, ChevronRight, FileText, Phone, ShieldCheck, Truck } from "l
 import { Button } from "@/components/ui/button";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
+import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { buildCompanyProductInquiryWhatsAppUrl, COMPANY } from "@/lib/company";
@@ -151,7 +152,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               className="rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
               asChild
             >
-              <a href="#request-section">
+              <a href="#request-name">
                 <Phone className="mr-2 h-4 w-4" />
                 Получить КП
               </a>
@@ -296,26 +297,34 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
       </section>
 
       <section id="request-section" className="scroll-mt-24 bg-site-primary py-12">
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
-          <h2 className="text-2xl font-bold text-white">Нужно коммерческое предложение?</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/85">
-            MANSVALVE GROUP поставляет промышленную трубопроводную арматуру для бизнеса,
-            промышленности и государственных объектов Казахстана.
-          </p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white">Нужно коммерческое предложение?</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/85">
+              MANSVALVE GROUP поставляет промышленную трубопроводную арматуру для бизнеса,
+              промышленности и государственных объектов Казахстана.
+            </p>
+          </div>
+
+          <div className="mt-7 rounded-2xl border border-white/25 bg-white/10 p-5 text-left sm:p-6">
+            <p className="mb-4 text-sm font-semibold text-white">Быстрая заявка по этой позиции</p>
+            <QuickRequestForm
+              variant="dark"
+              source={`series-${page.slug}`}
+              productContext={{
+                productName: displayName,
+                productSlug: product?.slug ?? page.slug,
+                productCategory: categoryLabel,
+              }}
+            />
+          </div>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Button size="lg" className="rounded-xl bg-white text-site-primary hover:bg-white/90" asChild>
               <a href={waUrl} target="_blank" rel="noopener noreferrer">
                 <WhatsappIcon className="mr-2 h-4 w-4" />
                 Написать в WhatsApp
               </a>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-xl border-white/45 text-white hover:bg-white/10"
-              asChild
-            >
-              <Link href="/contacts">Контакты</Link>
             </Button>
           </div>
         </div>

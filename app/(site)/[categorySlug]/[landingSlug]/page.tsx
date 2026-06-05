@@ -233,7 +233,11 @@ export default async function CatalogLandingPage({ params }: PageProps) {
             {landing.description}
           </p>
 
-          <CatalogLandingConversion landingTitle={landing.h1} categoryName={category.name} />
+          <CatalogLandingConversion
+            landingTitle={landing.h1}
+            categoryName={category.name}
+            source={`landing-${landing.categorySlug}-${landing.slug}`}
+          />
         </div>
       </div>
 

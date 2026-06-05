@@ -226,7 +226,7 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
                 className="flex-1 rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
                 asChild
               >
-                <a href="#request-section">
+                <a href="#request-name">
                   <Phone className="mr-2 h-4 w-4" />
                   Запросить КП
                 </a>
@@ -252,6 +252,53 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="request-section"
+        className="scroll-mt-20 bg-site-primary py-14 sm:scroll-mt-24 sm:py-16 md:scroll-mt-32"
+      >
+        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
+          <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">Нужна помощь с подбором?</h2>
+          <p className="mx-auto mb-8 max-w-xl text-lg text-white/90">
+            Наши инженеры помогут выбрать арматуру по рабочим параметрам. Звоните или пишите —
+            ответим быстро.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button
+              size="lg"
+              className="rounded-xl bg-white text-base font-semibold text-site-primary hover:bg-white/90"
+              asChild
+            >
+              <a href="#request-name">Получить предложение</a>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-xl border-white/40 text-base font-semibold text-white hover:bg-white/10"
+              asChild
+            >
+              <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                <WhatsappIcon className="mr-2 h-4 w-4" />
+                Написать в WhatsApp
+              </a>
+            </Button>
+          </div>
+
+          <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-white/25 bg-white/10 p-5 text-left">
+            <p className="mb-4 text-sm font-semibold text-white">Быстрая заявка по этой позиции</p>
+            <QuickRequestForm
+              variant="dark"
+              source={`product-${product.slug}`}
+              productContext={{
+                productName,
+                productSlug: product.slug,
+                productCategory: categoryLabel,
+                productSubcategory: product.subcategoryName,
+              }}
+            />
           </div>
         </div>
       </div>
@@ -363,46 +410,6 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
                 спецификации и опросного листа.
               </p>
             )}
-          </div>
-        </div>
-      </div>
-
-      <div
-        id="request-section"
-        className="scroll-mt-20 bg-site-primary py-14 sm:scroll-mt-24 sm:py-16 md:scroll-mt-32"
-      >
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
-          <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">Нужна помощь с подбором?</h2>
-          <p className="mx-auto mb-8 max-w-xl text-lg text-white/90">
-            Наши инженеры помогут выбрать арматуру по рабочим параметрам. Звоните или пишите —
-            ответим быстро.
-          </p>
-          <div className="flex flex-wrap items-center justify-center">
-            <Button
-              size="lg"
-              variant="outline"
-              className="rounded-xl border-white/40 text-base font-semibold text-white hover:bg-white/10"
-              asChild
-            >
-              <a href={waUrl} target="_blank" rel="noopener noreferrer">
-                <WhatsappIcon className="mr-2 h-4 w-4" />
-                Написать в WhatsApp
-              </a>
-            </Button>
-          </div>
-
-          <div className="mx-auto mt-10 max-w-xl rounded-2xl border border-white/25 bg-white/10 p-5 text-left">
-            <p className="mb-4 text-sm font-semibold text-white">Быстрая заявка по этой позиции</p>
-            <QuickRequestForm
-              variant="dark"
-              source={`product-${product.slug}`}
-              productContext={{
-                productName,
-                productSlug: product.slug,
-                productCategory: categoryLabel,
-                productSubcategory: product.subcategoryName,
-              }}
-            />
           </div>
         </div>
       </div>
