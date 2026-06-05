@@ -31,6 +31,15 @@ type SubcategoryContext = {
   subcategory: Subcategory;
 };
 
+/**
+ * Точечная канонизация дублей: подкатегория с тем же H1/intent, что и более
+ * полный коммерческий SEO-landing, канонизируется на landing. Ключ —
+ * `${categorySlug}/${subcategorySlug}`. Остальные подкатегории остаются self-canonical.
+ */
+const SUBCATEGORY_CANONICAL_OVERRIDES: Record<string, string> = {
+  "zadvizhki/zadvizhki-s-elektroprivodom": "/zadvizhki/s-elektroprivodom",
+};
+
 async function getSubcategoryContext(
   categorySlug: string,
   subcategorySlug: string,
@@ -99,18 +108,21 @@ export async function getCatalogSubcategoryMetadata(
     canonicalPath,
     searchParams,
   });
+  const canonicalForPage =
+    SUBCATEGORY_CANONICAL_OVERRIDES[`${context.category.slug}/${context.subcategory.slug}`] ??
+    meta.canonicalPath;
 
   return {
     title: meta.title,
     description: meta.description,
     robots: meta.robots,
     alternates: {
-      canonical: meta.canonicalPath,
+      canonical: canonicalForPage,
     },
     openGraph: {
       title: meta.title,
       description: meta.description,
-      url: meta.canonicalPath,
+      url: canonicalForPage,
       siteName: COMPANY.name,
       locale: "ru_KZ",
       type: "website",
