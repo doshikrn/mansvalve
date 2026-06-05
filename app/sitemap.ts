@@ -29,6 +29,16 @@ function absoluteUrl(baseUrl: string, path: string): string {
   return new URL(path, `${baseUrl}/`).toString();
 }
 
+/**
+ * Subcategories whose canonical points elsewhere (cross-canonical via
+ * `SUBCATEGORY_CANONICAL_OVERRIDES` in `CatalogSubcategoryPage`). They stay
+ * live but must not appear in the sitemap — only the canonical landing does.
+ * Keep in sync with that override map.
+ */
+const CROSS_CANONICAL_SUBCATEGORY_PATHS = new Set<string>([
+  catalogSubcategoryPath("zadvizhki", "zadvizhki-s-elektroprivodom"),
+]);
+
 function uniqueSitemapEntries(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
   const seen = new Set<string>();
   return entries.filter((entry) => {
@@ -61,12 +71,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const subcategoryPages: MetadataRoute.Sitemap = categories.flatMap((cat) =>
-    cat.subcategories.map((sub) => ({
-      url: absoluteUrl(baseUrl, catalogSubcategoryPath(cat.slug, sub.slug)),
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: 0.75,
-    })),
+    cat.subcategories
+      .map((sub) => catalogSubcategoryPath(cat.slug, sub.slug))
+      .filter((path) => !CROSS_CANONICAL_SUBCATEGORY_PATHS.has(path))
+      .map((path) => ({
+        url: absoluteUrl(baseUrl, path),
+        lastModified,
+        changeFrequency: "weekly" as const,
+        priority: 0.75,
+      })),
   );
 
   const landingPages: MetadataRoute.Sitemap = CATALOG_LANDING_PAGES.map((page) => ({

@@ -10,6 +10,18 @@ import { categories as categoriesTable, subcategories as subcategoriesTable } fr
 import { parseCategorySeoPayload } from "@/lib/services/categories";
 
 /**
+ * A DB SEO payload can be structurally valid yet semantically empty
+ * (e.g. `{ topSeo: [], trust: [], bottomSeo: [] }`), which would render a thin
+ * category page. Treat it as "has content" only when at least one visible
+ * block is present; otherwise fall back to the static preset.
+ */
+function hasMeaningfulCategorySeo(seo: CategorySeoContent): boolean {
+  return (
+    seo.topSeo.length > 0 || seo.trust.length > 0 || seo.bottomSeo.length > 0
+  );
+}
+
+/**
  * Public category pages: load SEO blocks from DB when present and valid,
  * otherwise fall back to `lib/category-content.ts` (static).
  */
@@ -28,7 +40,7 @@ export async function resolveCategorySeoForPublicPage(
       .where(eq(categoriesTable.slug, slug))
       .limit(1);
     const fromDb = parseCategorySeoPayload(rows[0]?.seoContent ?? null);
-    if (fromDb) return fromDb;
+    if (fromDb && hasMeaningfulCategorySeo(fromDb)) return fromDb;
   } catch {
     // ignore and fall back
   }
