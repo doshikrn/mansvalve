@@ -144,6 +144,17 @@ export function ProductForm({
   );
   const slugDraft = manualSlug ?? autoSlug;
   const autoSlugActive = manualSlug == null;
+
+  const regenerateSlugFromCurrentFields = () => {
+    const generated = buildProductSlug({
+      name: nameDraft,
+      model: modelDraft,
+      dn: dnDraft,
+      pn: pnDraft,
+    });
+    if (generated) setManualSlug(generated);
+  };
+
   const selectedDocuments = {
     specification: product?.documents.specification ?? null,
     questionnaire: product?.documents.questionnaire ?? null,
@@ -308,9 +319,26 @@ export function ProductForm({
                 Снова собрать ссылку из названия, модели и DN/PN
               </button>
             ) : null}
+            {isExisting ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs text-muted-foreground">
+                  Меняйте ссылку только если это действительно нужно. После сохранения
+                  старый URL будет работать через редирект.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={regenerateSlugFromCurrentFields}
+                >
+                  Сгенерировать из текущего названия
+                </Button>
+              </div>
+            ) : null}
             <AdminFieldHint>
               {product
-                ? "После появления товара на сайте адрес обычно не меняют. Если всё же поменять ссылку — старый адрес начнёт вести на новый (для закладок и поиска)."
+                ? "Ссылка товара не меняется автоматически после публикации, чтобы не ломать SEO и рекламу. Если нужно изменить URL, отредактируйте поле вручную — старый адрес будет перенаправлен на новый."
                 : "Можно оставить пустым — ссылка соберётся из «Внутреннего названия», модели и DN/PN. После сохранения товара адрес лучше не менять без нужды."}
             </AdminFieldHint>
             {product && slugDraft.trim() && slugDraft.trim() !== product.slug ? (
