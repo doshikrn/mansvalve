@@ -25,7 +25,9 @@ export function mediaImageNeedsUnoptimized(url: string): boolean {
   if (isSvgUrl(trimmed)) return true;
 
   if (trimmed.startsWith("/") && !trimmed.startsWith("//")) {
-    return trimmed.startsWith("/uploads/");
+    // Same-origin asset served by Next from `public/` (`/uploads/…`, `/images/…`).
+    // SVG / data: are handled above; everything else here is safe to optimize.
+    return false;
   }
 
   if (trimmed.startsWith("//") || /^https?:\/\//i.test(trimmed)) {

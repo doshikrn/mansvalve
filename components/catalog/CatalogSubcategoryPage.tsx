@@ -4,11 +4,11 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import {
-  countPublicProductsBySubcategory,
   getPublicCatalogCategories,
   getPublicProductsBySubcategory,
   getPublicSubcategoryBySlug,
   type PublicCatalogCategory as Category,
+  type PublicCatalogProduct as Product,
   type PublicCatalogSubcategory as Subcategory,
 } from "@/lib/public-catalog";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
@@ -49,23 +49,70 @@ async function getSubcategoryContext(
   return ctx;
 }
 
+/** Уникальные непустые значения, отбрасывая плейсхолдеры вида «Не указан(о)». */
+function uniqueMeaningful(values: Array<string | undefined>): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of values) {
+    const value = raw?.trim();
+    if (!value || /^не\s+указан/iu.test(value)) continue;
+    if (seen.has(value)) continue;
+    seen.add(value);
+    result.push(value);
+  }
+  return result;
+}
+
+/** Короткая сводка фактов из товаров подкатегории: DN-диапазон, до 2 PN, до 2 материалов, 1 модель. */
+function buildSubcategoryFacetSummary(products: Product[]): string {
+  const parts: string[] = [];
+
+  const dns = products.map((p) => p.dn).filter((v): v is number => typeof v === "number");
+  if (dns.length > 0) {
+    const min = Math.min(...dns);
+    const max = Math.max(...dns);
+    parts.push(min === max ? `DN${min}` : `DN${min}–${max}`);
+  }
+
+  const pns = [
+    ...new Set(products.map((p) => p.pn).filter((v): v is number => typeof v === "number")),
+  ].sort((a, b) => a - b);
+  if (pns.length > 0) {
+    parts.push(`PN${pns.slice(0, 2).join("/")}`);
+  }
+
+  const materials = uniqueMeaningful(products.map((p) => p.material)).slice(0, 2);
+  if (materials.length > 0) {
+    parts.push(materials.join(", "));
+  }
+
+  const model = uniqueMeaningful(products.map((p) => p.model))[0];
+  if (model) {
+    parts.push(model);
+  }
+
+  return parts.join(", ");
+}
+
 function buildSubcategoryDescription(
   category: Category,
   subcategory: Subcategory,
-  productCount: number,
+  products: Product[],
 ): string {
-  return `${subcategory.name} в категории «${category.name}»: ${productCount} позиций. Подбор по DN/PN, материалу и типу соединения, КП и доставка по Казахстану.`;
+  const facets = buildSubcategoryFacetSummary(products);
+  const facetPart = facets ? ` ${facets}.` : "";
+  return `${subcategory.name} (${category.name}): ${products.length} поз.${facetPart} КП и доставка по РК.`;
 }
 
 async function resolveSubcategoryDescription(
   category: Category,
   subcategory: Subcategory,
-  productCount: number,
+  products: Product[],
 ): Promise<string> {
   const manualDescription = await resolveSubcategorySeoMetaDescription(subcategory.slug);
   return (
     manualDescription?.trim() ||
-    buildSubcategoryDescription(category, subcategory, productCount)
+    buildSubcategoryDescription(category, subcategory, products)
   );
 }
 
@@ -89,11 +136,11 @@ export async function getCatalogSubcategoryMetadata(
   if (!context) return { title: "Подкатегория не найдена" };
 
   try {
-  const productCount = await countPublicProductsBySubcategory(context.subcategory.id);
+  const subcategoryProducts = await getPublicProductsBySubcategory(context.subcategory.id);
   const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,
-    productCount,
+    subcategoryProducts,
   );
   const canonicalPath = catalogSubcategoryPath(context.category.slug, context.subcategory.slug);
   const klapanyTitle =
@@ -189,7 +236,7 @@ export async function CatalogSubcategoryPage({
   const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,
-    subcategoryProducts.length,
+    subcategoryProducts,
   );
   const breadcrumbJsonLd = buildSubcategoryBreadcrumbJsonLd(
     context.category,

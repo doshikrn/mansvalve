@@ -479,11 +479,9 @@ html[data-motion-css-debug="1"] .reveal-up {
 
 @keyframes hero-enter-right {
   from {
-    opacity: 0;
     transform: translateY(12px) scale(0.99);
   }
   to {
-    opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
@@ -495,7 +493,6 @@ html[data-motion-css-debug="1"] .reveal-up {
   }
 
   .hero-enter-right {
-    opacity: 0;
     animation: hero-enter-right 680ms ease-out 75ms forwards;
   }
 }

@@ -41,10 +41,8 @@ export function MainHeader({
                   alt={`${COMPANY.name} — логотип`}
                   width={512}
                   height={512}
-                  priority
-                  quality={100}
+                  quality={85}
                   sizes="(max-width: 1023px) 56px, 84px"
-                  unoptimized
                   className="h-full w-full object-contain object-center"
                 />
               </span>
