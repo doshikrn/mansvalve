@@ -15,6 +15,8 @@ import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
 import { resolveHomeHero } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
+const HERO_VALVE_IMAGE = "/images/hero-valve.webp";
+
 export async function Hero() {
   const prods = await getPublicCatalogListingProducts();
   const heroContent = await resolveHomeHero(prods.length);
@@ -29,18 +31,18 @@ export async function Hero() {
   const trustIcons = [FileText, Truck, BadgeCheck, ShieldCheck] as const;
 
   return (
-    <section className="site-industrial-shell relative overflow-hidden border-b border-white/[0.06]">
+    <section className="site-industrial-shell relative overflow-hidden border-b border-white/[0.06] lg:min-h-[min(700px,92vh)]">
       <Image
         src="/images/category-zadvizhki.png"
         alt=""
         fill
         priority
         sizes="100vw"
-        className="pointer-events-none absolute inset-0 object-cover opacity-[0.16] mix-blend-screen"
+        className="pointer-events-none absolute inset-0 object-cover opacity-[0.14] mix-blend-screen"
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#061024_0%,rgba(6,16,36,0.94)_42%,rgba(6,16,36,0.72)_68%,rgba(6,16,36,0.38)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#061024_0%,rgba(6,16,36,0.96)_38%,rgba(6,16,36,0.62)_58%,rgba(6,16,36,0.22)_78%,rgba(6,16,36,0.06)_100%)]"
         aria-hidden
       />
       <div
@@ -48,7 +50,7 @@ export async function Hero() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.02)_36%,transparent_62%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_58%_72%_at_88%_58%,rgba(47,107,255,0.2)_0%,rgba(47,107,255,0.06)_42%,transparent_72%)]"
         aria-hidden
       />
       <div
@@ -61,32 +63,34 @@ export async function Hero() {
         aria-hidden
       />
 
-      {/* Правая визуальная зона — как в референсе: арматура в кадре hero, без карточки витрины */}
+      {/* Задвижка без фона — как в референсе, справа в кадре hero */}
       <div
-        className="pointer-events-none absolute bottom-0 right-0 hidden h-[min(92%,640px)] w-[min(50vw,620px)] lg:block xl:w-[min(48vw,680px)]"
+        className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-[min(56vw,760px)] lg:block"
         aria-hidden
       >
         <div
-          className="absolute inset-0 opacity-[0.22]"
-          style={{
-            background: "radial-gradient(circle at 58% 42%, #2F6BFF 0%, transparent 58%)",
-          }}
-        />
-        <Image
-          src="/задвижки.png"
-          alt=""
-          fill
-          priority
-          quality={88}
-          sizes="(max-width: 1280px) 50vw, 680px"
-          className="object-contain object-bottom object-right"
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,0.55)_0%,rgba(6,16,36,0.12)_38%,transparent_62%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#061024] to-transparent" />
+          className="absolute bottom-[-2%] right-[-2%] h-[min(104%,760px)] w-[min(100%,700px)]"
+        >
+          <div
+            className="absolute bottom-[10%] right-[8%] h-[72%] w-[72%] rounded-full opacity-40"
+            style={{
+              background: "radial-gradient(circle, rgba(47,107,255,0.55) 0%, rgba(47,107,255,0.12) 42%, transparent 72%)",
+            }}
+          />
+          <Image
+            src={HERO_VALVE_IMAGE}
+            alt=""
+            fill
+            priority
+            quality={92}
+            sizes="(max-width: 1536px) 56vw, 760px"
+            className="object-contain object-bottom object-right drop-shadow-[0_40px_100px_rgba(0,0,0,0.5)]"
+          />
+        </div>
       </div>
 
-      <div className="site-container relative z-10 py-10 sm:py-14 lg:py-16">
-        <div className="hero-enter-left max-w-3xl lg:max-w-[min(100%,680px)] xl:max-w-[min(100%,720px)]">
+      <div className="site-container relative z-10 py-10 sm:py-14 lg:py-16 xl:py-[4.5rem]">
+        <div className="hero-enter-left max-w-3xl lg:max-w-[min(100%,640px)] xl:max-w-[min(100%,680px)]">
           <div className="site-industrial-chip mb-5 px-4 py-2 text-sm font-semibold transition-colors duration-300 hover:border-[#2F6BFF]/35">
             <MapPin className="h-4 w-4 shrink-0 text-[#2F6BFF]" />
             {heroContent.eyebrow}
@@ -101,18 +105,23 @@ export async function Hero() {
             {heroContent.subhead}
           </p>
 
-          {/* Мобильная визуализация — без подписи «Популярные позиции» */}
-          <div className="relative mb-8 aspect-[16/11] w-full overflow-hidden rounded-xl border border-white/[0.08] bg-[#07111f]/60 lg:hidden">
+          <div className="relative mb-8 aspect-[4/5] w-full max-w-[280px] sm:max-w-xs lg:hidden">
+            <div
+              className="absolute inset-0 scale-90 opacity-50"
+              style={{
+                background: "radial-gradient(circle at 50% 62%, rgba(47,107,255,0.35) 0%, transparent 68%)",
+              }}
+              aria-hidden
+            />
             <Image
-              src="/задвижки.png"
-              alt="Промышленная трубопроводная арматура MANSVALVE GROUP"
+              src={HERO_VALVE_IMAGE}
+              alt="Промышленная задвижка MANSVALVE GROUP"
               fill
               priority
-              quality={85}
-              sizes="100vw"
-              className="object-contain object-center p-4"
+              quality={90}
+              sizes="(max-width: 1024px) 72vw, 320px"
+              className="object-contain object-bottom"
             />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(47,107,255,0.12),transparent_55%)]" aria-hidden />
           </div>
 
           <div className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
