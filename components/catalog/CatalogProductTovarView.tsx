@@ -22,6 +22,7 @@ import { buildCompanyProductInquiryEmailUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 import type { TovarProductPageData } from "@/components/catalog/tovar-product-presentation";
+import { CATALOG_COMMERCIAL_FALLBACK, CATALOG_SPEC_HINTS } from "@/lib/catalog/spec-hints";
 
 const TRUST_ITEMS = [
   { icon: ShieldCheck, label: "Гарантия качества", sub: "Сертификаты и паспорта" },
@@ -51,6 +52,12 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
   const heroImageSrc = view.primaryImageUrl;
   const heroImageAlt = view.primaryImageAlt;
   const hasProductDocuments = productDocuments.some((entry) => Boolean(entry.doc?.url));
+  const passportDocument =
+    product.documents?.specification?.url
+      ? { url: product.documents.specification.url, label: "Скачать паспорт" }
+      : product.documents?.documentation?.url
+        ? { url: product.documents.documentation.url, label: "Скачать документацию" }
+        : null;
 
   return (
     <div className="bg-site-card">
@@ -141,16 +148,35 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
               {productH1}
             </h1>
 
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                {CATALOG_COMMERCIAL_FALLBACK.availabilityLabel}
+              </span>
+              <span className="text-sm text-slate-500">
+                {CATALOG_COMMERCIAL_FALLBACK.deliveryHint}
+              </span>
+            </div>
+
             <div className="mb-5 flex flex-wrap gap-2">
               {product.dn != null && (
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700">
-                  <span className="text-xs text-slate-400">DN</span>
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700"
+                  title={CATALOG_SPEC_HINTS.dn}
+                >
+                  <span className="text-xs text-slate-400" aria-label={CATALOG_SPEC_HINTS.dn}>
+                    DN
+                  </span>
                   {product.dn}
                 </span>
               )}
               {product.pn != null && (
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700">
-                  <span className="text-xs text-slate-400">PN</span>
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700"
+                  title={CATALOG_SPEC_HINTS.pn}
+                >
+                  <span className="text-xs text-slate-400" aria-label={CATALOG_SPEC_HINTS.pn}>
+                    PN
+                  </span>
                   {product.pn}
                 </span>
               )}
@@ -160,7 +186,10 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
                   {product.thread}
                 </span>
               )}
-              <span className="inline-flex items-center rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700">
+              <span
+                className="inline-flex items-center rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium text-slate-700"
+                title={CATALOG_SPEC_HINTS.material}
+              >
                 {product.material}
               </span>
               {product.weight != null && (
@@ -223,6 +252,24 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
+              {passportDocument ? (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full rounded-xl border-site-border text-base font-semibold sm:w-auto"
+                  asChild
+                >
+                  <a
+                    href={passportDocument.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    {passportDocument.label}
+                  </a>
+                </Button>
+              ) : null}
               <QuickContactSheet
                 whatsAppUrl={waUrl}
                 emailUrl={buildCompanyProductInquiryEmailUrl(productName, {
@@ -345,7 +392,10 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
                     <tbody>
                       {specsEntries.map(({ label, value }, idx) => (
                         <tr key={label} className={idx % 2 === 0 ? "bg-white" : "bg-site-bg"}>
-                          <td className="w-1/2 border-r border-slate-100 px-5 py-3 text-sm font-medium text-slate-500">
+                          <td
+                            className="w-1/2 border-r border-slate-100 px-5 py-3 text-sm font-medium text-slate-500"
+                            title={getSpecTableHint(label)}
+                          >
                             {label}
                           </td>
                           <td className="px-5 py-3 text-sm font-semibold text-slate-900">{value}</td>
@@ -447,6 +497,17 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
       )}
     </div>
   );
+}
+
+function getSpecTableHint(label: string): string | undefined {
+  const normalized = label.trim().toLowerCase();
+  if (normalized === "dn" || normalized.startsWith("dn ")) return CATALOG_SPEC_HINTS.dn;
+  if (normalized === "pn" || normalized.startsWith("pn ")) return CATALOG_SPEC_HINTS.pn;
+  if (normalized.includes("соединен")) return CATALOG_SPEC_HINTS.connection;
+  if (normalized.includes("управлен")) return CATALOG_SPEC_HINTS.control;
+  if (normalized.includes("материал")) return CATALOG_SPEC_HINTS.material;
+  if (normalized.includes("марка") || normalized.includes("модел")) return CATALOG_SPEC_HINTS.model;
+  return undefined;
 }
 
 function InfoList({ title, items }: { title: string; items: string[] }) {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Send } from "lucide-react";
 import { getPageAnalyticsContext, trackEvent } from "@/lib/analytics";
 import { buildCompanyWhatsAppUrl } from "@/lib/company";
+import { validateLeadAttachmentFile } from "@/lib/leads/lead-attachment-shared";
 const FIRST_TOUCH_STORAGE_KEY = "mansvalve:first-touch-attribution";
 const FIRST_TOUCH_STORAGE_VERSION = 1;
 const FIRST_TOUCH_TTL_MS = 90 * 24 * 60 * 60 * 1000;
@@ -305,6 +306,8 @@ export function QuickRequestForm({
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [website, setWebsite] = useState("");
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   function handlePhoneChange(raw: string) {
     setValues((v) => ({ ...v, phone: maskPhone(raw) }));
@@ -317,6 +320,37 @@ export function QuickRequestForm({
     setSubmitError(null);
     setSubmitState("idle");
     setWebsite("");
+    setAttachmentFile(null);
+    setAttachmentError(null);
+  }
+
+  function buildRequestPayload(
+    page: string,
+    currentTouch: AttributionContext,
+    firstTouch: AttributionContext,
+  ) {
+    return {
+      ...values,
+      source,
+      page,
+      website,
+      productName: productContext?.productName,
+      productSlug: productContext?.productSlug,
+      productCategory: productContext?.productCategory,
+      productSubcategory: productContext?.productSubcategory,
+      ...currentTouch,
+      first_utm_source: firstTouch.utm_source,
+      first_utm_medium: firstTouch.utm_medium,
+      first_utm_campaign: firstTouch.utm_campaign,
+      first_utm_term: firstTouch.utm_term,
+      first_utm_content: firstTouch.utm_content,
+      first_gclid: firstTouch.gclid,
+      first_yclid: firstTouch.yclid,
+      first_fbclid: firstTouch.fbclid,
+      first_referrer: firstTouch.referrer,
+      first_landing_path: firstTouch.landing_path,
+      first_touch_at: firstTouch.first_touch_at,
+    };
   }
 
   useEffect(() => {
@@ -378,43 +412,45 @@ export function QuickRequestForm({
       return;
     }
 
+    if (attachmentFile) {
+      const fileError = validateLeadAttachmentFile(attachmentFile);
+      if (fileError) {
+        setAttachmentError(fileError);
+        return;
+      }
+    }
+
     setSubmitState("submitting");
     setSubmitError(null);
+    setAttachmentError(null);
 
     try {
       const page = `${window.location.pathname}${window.location.search}`;
       const pageContext = getPageAnalyticsContext(window.location.pathname);
       const currentTouch = getAttributionContext();
       const firstTouch = getFirstTouchAttribution(currentTouch);
+      const requestPayload = buildRequestPayload(page, currentTouch, firstTouch);
 
-      const response = await fetch("/api/request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...values,
-          source,
-          page: `${window.location.pathname}${window.location.search}`,
-          website,
-          productName: productContext?.productName,
-          productSlug: productContext?.productSlug,
-          productCategory: productContext?.productCategory,
-          productSubcategory: productContext?.productSubcategory,
-          ...currentTouch,
-          first_utm_source: firstTouch.utm_source,
-          first_utm_medium: firstTouch.utm_medium,
-          first_utm_campaign: firstTouch.utm_campaign,
-          first_utm_term: firstTouch.utm_term,
-          first_utm_content: firstTouch.utm_content,
-          first_gclid: firstTouch.gclid,
-          first_yclid: firstTouch.yclid,
-          first_fbclid: firstTouch.fbclid,
-          first_referrer: firstTouch.referrer,
-          first_landing_path: firstTouch.landing_path,
-          first_touch_at: firstTouch.first_touch_at,
-        }),
-      });
+      const response = await fetch(
+        "/api/request",
+        attachmentFile
+          ? {
+              method: "POST",
+              body: (() => {
+                const formData = new FormData();
+                formData.append("payload", JSON.stringify(requestPayload));
+                formData.append("attachment", attachmentFile);
+                return formData;
+              })(),
+            }
+          : {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(requestPayload),
+            },
+      );
 
       const result = (await response.json().catch(() => null)) as
         | { ok?: boolean; error?: string }
@@ -584,6 +620,40 @@ export function QuickRequestForm({
           placeholder="Что нужно? (DN, PN, количество, тип арматуры — по возможности)"
           className={`w-full resize-none rounded-lg border px-4 py-3.5 text-sm outline-none transition ${s.textarea}`}
         />
+      </div>
+
+      <div>
+        <label
+          htmlFor={`${s.idPrefix}-attachment`}
+          className={`mb-1.5 block text-sm font-medium ${s.label}`}
+        >
+          Прикрепить спецификацию{" "}
+          <span className={`ml-1 text-xs font-normal ${s.labelOptional}`}>
+            (необязательно)
+          </span>
+        </label>
+        <input
+          id={`${s.idPrefix}-attachment`}
+          type="file"
+          accept=".pdf,.xlsx,.xls,.docx,.doc,.txt,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+          disabled={submitState === "submitting"}
+          onChange={(event) => {
+            const file = event.target.files?.[0] ?? null;
+            setAttachmentFile(file);
+            setAttachmentError(file ? validateLeadAttachmentFile(file) : null);
+          }}
+          className={`block w-full cursor-pointer rounded-lg border px-3 py-2.5 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-site-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-site-primary ${s.inputNormal}`}
+        />
+        {attachmentFile ? (
+          <p className={`mt-1.5 text-xs ${s.footer}`}>Выбран файл: {attachmentFile.name}</p>
+        ) : (
+          <p className={`mt-1.5 text-xs ${s.footer}`}>
+            PDF, XLS, XLSX, DOC, DOCX или TXT, до 10 МБ.
+          </p>
+        )}
+        {attachmentError ? (
+          <p className={`mt-1.5 text-xs ${s.errorText}`}>{attachmentError}</p>
+        ) : null}
       </div>
 
       {/* Honeypot field for basic anti-spam */}

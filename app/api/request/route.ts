@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import type { LeadAttachmentMeta } from "@/lib/leads/lead-attachment-types";
+import { uploadLeadAttachment } from "@/lib/leads/lead-attachment";
 import {
   createLeadWithDedup,
   leadPhoneTail,
@@ -420,6 +422,85 @@ function validatePayload(payload: unknown): { ok: true; data: ValidPayload } | {
   };
 }
 
+type ParsedRequestBody = {
+  payload: unknown;
+  attachmentFile: File | null;
+};
+
+async function parseRequestBody(request: Request): Promise<ParsedRequestBody> {
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+
+  if (contentType.includes("multipart/form-data")) {
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      throw new Error("invalid_multipart");
+    }
+
+    const payloadRaw = formData.get("payload");
+    if (typeof payloadRaw !== "string" || !payloadRaw.trim()) {
+      throw new Error("invalid_multipart_payload");
+    }
+
+    let payload: unknown;
+    try {
+      payload = JSON.parse(payloadRaw);
+    } catch {
+      throw new Error("invalid_multipart_payload");
+    }
+
+    const attachmentEntry = formData.get("attachment");
+    const attachmentFile =
+      attachmentEntry instanceof File && attachmentEntry.size > 0 ? attachmentEntry : null;
+
+    return { payload, attachmentFile };
+  }
+
+  try {
+    const payload = await request.json();
+    return { payload, attachmentFile: null };
+  } catch {
+    throw new Error("invalid_json");
+  }
+}
+
+function buildLeadAttribution(
+  data: ValidPayload,
+  attachment?: LeadAttachmentMeta | null,
+): Record<string, unknown> {
+  const attribution: Record<string, unknown> = {
+    ...cleanNullableRecord({
+      utm_source: data.utm_source || null,
+      utm_medium: data.utm_medium || null,
+      utm_campaign: data.utm_campaign || null,
+      utm_term: data.utm_term || null,
+      utm_content: data.utm_content || null,
+      gclid: data.gclid || null,
+      yclid: data.yclid || null,
+      fbclid: data.fbclid || null,
+      referrer: data.referrer || null,
+      first_utm_source: data.first_utm_source || null,
+      first_utm_medium: data.first_utm_medium || null,
+      first_utm_campaign: data.first_utm_campaign || null,
+      first_utm_term: data.first_utm_term || null,
+      first_utm_content: data.first_utm_content || null,
+      first_gclid: data.first_gclid || null,
+      first_yclid: data.first_yclid || null,
+      first_fbclid: data.first_fbclid || null,
+      first_referrer: data.first_referrer || null,
+      first_landing_path: data.first_landing_path || null,
+      first_touch_at: data.first_touch_at || null,
+    }),
+  };
+
+  if (attachment) {
+    attribution.attachment = attachment;
+  }
+
+  return attribution;
+}
+
 export async function POST(request: Request) {
   const rateLimit = checkRateLimit(request);
   if (rateLimit.limited) {
@@ -470,6 +551,7 @@ export async function POST(request: Request) {
   }
 
   let payload: unknown;
+  let attachmentFile: File | null = null;
   let fields: AuditFields = {
     source: "unknown",
     page: "unknown",
@@ -498,11 +580,18 @@ export async function POST(request: Request) {
   };
 
   try {
-    payload = await request.json();
+    const parsedBody = await parseRequestBody(request);
+    payload = parsedBody.payload;
+    attachmentFile = parsedBody.attachmentFile;
     fields = extractAuditFields(payload);
-  } catch {
-    logAudit("failed", fields, "invalid_json");
-    return NextResponse.json({ ok: false, error: "Некорректный JSON в запросе." }, { status: 400 });
+  } catch (error) {
+    const code = error instanceof Error ? error.message : "invalid_json";
+    const message =
+      code === "invalid_multipart" || code === "invalid_multipart_payload"
+        ? "Некорректный формат запроса с файлом."
+        : "Некорректный JSON в запросе.";
+    logAudit("failed", fields, code);
+    return NextResponse.json({ ok: false, error: message }, { status: 400 });
   }
 
   const parsed = validatePayload(payload);
@@ -543,6 +632,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  let attachmentMeta: LeadAttachmentMeta | null = null;
+  if (attachmentFile) {
+    try {
+      attachmentMeta = await uploadLeadAttachment(attachmentFile);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Не удалось загрузить файл.";
+      logAudit("failed", fields, `attachment_upload_failed:${message}`);
+      return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    }
+  }
+
   try {
     const leadResult = await createLeadWithDedup({
       name: parsed.data.name,
@@ -554,28 +655,7 @@ export async function POST(request: Request) {
       productSlug: parsed.data.productSlug || null,
       productCategory: parsed.data.productCategory || null,
       productSubcategory: parsed.data.productSubcategory || null,
-      attribution: cleanNullableRecord({
-        utm_source: parsed.data.utm_source || null,
-        utm_medium: parsed.data.utm_medium || null,
-        utm_campaign: parsed.data.utm_campaign || null,
-        utm_term: parsed.data.utm_term || null,
-        utm_content: parsed.data.utm_content || null,
-        gclid: parsed.data.gclid || null,
-        yclid: parsed.data.yclid || null,
-        fbclid: parsed.data.fbclid || null,
-        referrer: parsed.data.referrer || null,
-        first_utm_source: parsed.data.first_utm_source || null,
-        first_utm_medium: parsed.data.first_utm_medium || null,
-        first_utm_campaign: parsed.data.first_utm_campaign || null,
-        first_utm_term: parsed.data.first_utm_term || null,
-        first_utm_content: parsed.data.first_utm_content || null,
-        first_gclid: parsed.data.first_gclid || null,
-        first_yclid: parsed.data.first_yclid || null,
-        first_fbclid: parsed.data.first_fbclid || null,
-        first_referrer: parsed.data.first_referrer || null,
-        first_landing_path: parsed.data.first_landing_path || null,
-        first_touch_at: parsed.data.first_touch_at || null,
-      }),
+      attribution: buildLeadAttribution(parsed.data, attachmentMeta),
       ip: getClientIp(request),
       userAgent:
         toTrimmedString(request.headers.get("user-agent"), MAX_USER_AGENT_LENGTH) || null,

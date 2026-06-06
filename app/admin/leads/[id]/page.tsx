@@ -18,6 +18,7 @@ import {
 import { LEAD_STATUS_LABEL_RU, normalizeLeadStatus } from "@/lib/leads/lead-status-public";
 import { getPublicProductBySlug } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
+import { getLeadAttachmentFromAttribution } from "@/lib/leads/lead-attachment-admin";
 import { getLeadById } from "@/lib/services/leads";
 
 export const runtime = "nodejs";
@@ -177,6 +178,7 @@ export default async function AdminLeadDetailPage({
     formatLandingPath(getStringField(attribution, "first_landing_path")) ??
     formatLandingPath(lead.page);
   const hasRawAttribution = hasTechnicalJson(lead.attribution);
+  const leadAttachment = getLeadAttachmentFromAttribution(lead.attribution);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -263,6 +265,29 @@ export default async function AdminLeadDetailPage({
           {lead.comment?.trim() ? lead.comment : "—"}
         </p>
       </section>
+
+      {leadAttachment ? (
+        <section className="rounded-xl border border-border bg-background p-4 space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Прикреплённая спецификация
+          </h2>
+          <p className="text-sm">
+            <a
+              href={leadAttachment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary hover:underline"
+            >
+              {leadAttachment.fileName}
+            </a>
+            {leadAttachment.sizeBytes > 0 ? (
+              <span className="ml-2 text-xs text-muted-foreground">
+                ({Math.max(1, Math.round(leadAttachment.sizeBytes / 1024))} КБ)
+              </span>
+            ) : null}
+          </p>
+        </section>
+      ) : null}
 
       <section className="rounded-xl border border-border bg-background p-4 space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">

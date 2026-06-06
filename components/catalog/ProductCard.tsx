@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CircleDot } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/company";
 import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
 import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
+import { CATALOG_COMMERCIAL_FALLBACK, CATALOG_SPEC_HINTS } from "@/lib/catalog/spec-hints";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
 
 function formatPrice(price: number): string {
@@ -51,9 +52,8 @@ export function ProductCard({ product }: ProductCardProps) {
           safeAreaClassName="p-3.5 sm:p-4"
         >
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950/28 to-transparent" />
-          <span className="site-pill site-pill-success site-pill-on-image absolute left-2 top-2 shadow-sm">
-            <CircleDot className="h-2.5 w-2.5" strokeWidth={3} aria-hidden />
-            В наличии · под заказ
+          <span className="site-pill absolute left-2 top-2 bg-slate-900/75 text-white shadow-sm">
+            {CATALOG_COMMERCIAL_FALLBACK.availabilityLabel}
           </span>
           <span className="absolute bottom-2 left-2 max-w-[calc(100%-1rem)] rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-medium text-site-muted shadow-sm">
             {view.categoryLabel}
@@ -64,14 +64,24 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-2.5 flex flex-wrap gap-1.5">
           {product.dn != null && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
-              <span className="text-site-primary">DN</span>
+            <span
+              className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted"
+              title={CATALOG_SPEC_HINTS.dn}
+            >
+              <span className="text-site-primary" aria-label={CATALOG_SPEC_HINTS.dn}>
+                DN
+              </span>
               {product.dn}
             </span>
           )}
           {product.pn != null && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
-              <span className="text-site-primary">PN</span>
+            <span
+              className="inline-flex items-center gap-1 rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted"
+              title={CATALOG_SPEC_HINTS.pn}
+            >
+              <span className="text-site-primary" aria-label={CATALOG_SPEC_HINTS.pn}>
+                PN
+              </span>
               {product.pn}
             </span>
           )}
@@ -82,12 +92,18 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           {product.material && (
-            <span className="rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
+            <span
+              className="rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted"
+              title={CATALOG_SPEC_HINTS.material}
+            >
               {product.material}
             </span>
           )}
           {product.model && (
-            <span className="rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted">
+            <span
+              className="rounded-md bg-site-bg px-2 py-0.5 text-xs font-medium text-site-muted"
+              title={CATALOG_SPEC_HINTS.model}
+            >
               {product.model}
             </span>
           )}
@@ -101,10 +117,22 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
 
         <dl className="mb-3 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-site-muted">
-          <SpecItem label="Марка" value={product.model} />
-          <SpecItem label="Соединение" value={product.connectionType} />
-          <SpecItem label="Управление" value={product.controlType} />
+          <SpecItem label="Марка" hint={CATALOG_SPEC_HINTS.model} value={product.model} />
+          <SpecItem
+            label="Соединение"
+            hint={CATALOG_SPEC_HINTS.connection}
+            value={product.connectionType}
+          />
+          <SpecItem
+            label="Управление"
+            hint={CATALOG_SPEC_HINTS.control}
+            value={product.controlType}
+          />
         </dl>
+
+        <p className="mb-3 text-[11px] text-site-muted">
+          {CATALOG_COMMERCIAL_FALLBACK.deliveryHint}
+        </p>
 
         <p className="mb-3 text-xs leading-relaxed text-site-muted line-clamp-2 flex-1">
           {view.shortDescription}
@@ -182,16 +210,20 @@ export function ProductCard({ product }: ProductCardProps) {
 
 function SpecItem({
   label,
+  hint,
   value,
 }: {
   label: string;
+  hint?: string;
   value: string | undefined;
 }) {
   if (!value || value === "Не указано" || value === "Не указан") return null;
 
   return (
     <div className="min-w-0">
-      <dt className="text-slate-400">{label}</dt>
+      <dt className="text-slate-400" title={hint}>
+        {label}
+      </dt>
       <dd className="truncate font-medium text-site-ink">{value}</dd>
     </div>
   );
