@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FolderCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { DOCUMENTS_TRUST_ITEMS } from "@/components/sections/DocumentsTrust";
@@ -17,21 +17,21 @@ export async function ContactHubSection() {
 
   return (
     <section
-      className="relative overflow-hidden border-t border-site-deep bg-site-deep py-14 sm:py-16 lg:py-20"
+      className="relative overflow-hidden border-t border-site-deep bg-site-deep py-12 sm:py-14 lg:py-16"
       aria-label="Заявка, документы и ответы на вопросы"
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#0b1220_0%,#081428_48%,#10192a_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,#061024_0%,#081428_48%,#10192a_100%)]"
         aria-hidden
       />
-      <div className="site-container relative grid gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)_minmax(0,0.95fr)] lg:gap-8 xl:gap-10">
-        <aside className="order-3 min-w-0 lg:order-1">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-site-cta">
-            Документы и комплаенс
-          </p>
-          <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-            Все документы в одном пакете
-          </h2>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_52%_at_16%_0%,rgba(47,107,255,0.18),transparent_58%)]" aria-hidden />
+      <div className="site-container relative grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.08fr)_minmax(0,0.95fr)] lg:items-start">
+        <aside className="order-3 min-w-0 rounded-xl border border-white/10 bg-white/[0.045] p-5 shadow-[0_28px_64px_-44px_rgba(0,0,0,0.9)] lg:order-1 lg:p-6">
+          <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-site-primary/25 bg-site-primary/12 text-site-soft-blue">
+            <FolderCheck className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-site-soft-blue">Документы и качество</p>
+          <h2 className="text-xl font-bold tracking-tight text-white sm:text-2xl">Все документы — в одном пакете</h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-300">
             Сертификаты, паспорта, КП с НДС и отгрузочные документы — без сюрпризов при заказе.
           </p>
@@ -39,7 +39,7 @@ export async function ContactHubSection() {
             {DOCUMENTS_TRUST_ITEMS.map(({ Icon, title: docTitle, text }) => (
               <li
                 key={docTitle}
-                className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.05] px-3 py-3"
+                className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.055] px-3 py-3 transition-colors hover:border-site-primary/30 hover:bg-white/[0.075]"
               >
                 <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-site-primary/25 bg-site-primary/12 text-site-soft-blue">
                   <Icon className="h-4 w-4" aria-hidden strokeWidth={1.9} />
@@ -73,7 +73,7 @@ export async function ContactHubSection() {
           </div>
         </aside>
 
-        <div className="order-1 min-w-0 lg:order-2">
+        <div className="order-1 min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_64px_-44px_rgba(0,0,0,0.9)] lg:order-2 lg:p-6">
           <RequestCtaClient
             title={title}
             subtitle={subtitle}
@@ -82,11 +82,11 @@ export async function ContactHubSection() {
           />
         </div>
 
-        <div className="order-2 min-w-0 lg:order-3">
+        <div className="order-2 min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_64px_-44px_rgba(0,0,0,0.9)] lg:order-3 lg:p-6">
           <FAQAccordion
             variant="embedded"
-            sectionEyebrow="FAQ"
-            sectionTitle="Частые вопросы"
+            sectionEyebrow="Часто задаваемые вопросы"
+            sectionTitle="Ответы перед заявкой"
             items={[...HOME_FAQ_ITEMS]}
           />
         </div>

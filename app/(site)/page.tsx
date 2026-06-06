@@ -55,14 +55,14 @@ export default function HomePage() {
       </div>
       <main className="home-light-zone">
         <WhoWeSupply />
-        <HomeClientLogos />
-        <HomeTrustCases />
         <HomeCertificatesPreview />
-        <HomeTestimonials />
-        <HomeThankYouLetters />
         <DeliveryCase />
         <HowItWorks />
         <ContactHubSection />
+        <HomeClientLogos />
+        <HomeTrustCases />
+        <HomeTestimonials />
+        <HomeThankYouLetters />
       </main>
     </>
   );

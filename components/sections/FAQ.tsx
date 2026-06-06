@@ -35,7 +35,11 @@ export const HOME_FAQ_ITEMS = [
         },
 ] as const;
 
-export async function FAQ() {
+type FAQProps = {
+  variant?: "default" | "embedded";
+};
+
+export async function FAQ({ variant = "default" }: FAQProps = {}) {
   return (
     <FAQAccordion
       sectionEyebrow="Часто задаваемые вопросы"
@@ -43,6 +47,7 @@ export async function FAQ() {
       sectionDescription="Ответы на популярные вопросы клиентов о ценах, сроках поставки, документах и условиях сотрудничества с MANSVALVE GROUP."
       footerLine="MANSVALVE GROUP — надежные поставки промышленной арматуры по Казахстану."
       items={[...HOME_FAQ_ITEMS]}
+      variant={variant}
     />
   );
 }
