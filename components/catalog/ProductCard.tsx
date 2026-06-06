@@ -113,12 +113,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <Link
           href={detailHref}
-          className="mb-3 block text-[17px] font-bold leading-snug tracking-tight text-site-ink transition-colors line-clamp-3 hover:text-site-primary-hover focus-visible:text-site-primary-hover"
+          className="mb-3 block text-[17px] font-bold leading-snug tracking-tight text-site-ink transition-colors line-clamp-2 hover:text-site-primary-hover focus-visible:text-site-primary-hover"
         >
           {productName}
         </Link>
 
-        <dl className="mb-3 grid grid-cols-1 divide-y divide-slate-200 border-y border-slate-200 text-sm text-site-muted">
+        <dl className="mb-3 grid grid-cols-3 divide-x divide-slate-200 border-y border-slate-200 text-site-muted">
           <SpecItem icon={Tag} label="Марка" hint={CATALOG_SPEC_HINTS.model} value={product.model} />
           <SpecItem
             icon={Link2}
@@ -139,7 +139,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {CATALOG_COMMERCIAL_FALLBACK.deliveryHint}
         </p>
 
-        <p className="mb-4 line-clamp-2 flex-1 text-sm leading-relaxed text-site-muted">
+        <p className="mb-4 line-clamp-1 flex-1 text-sm leading-relaxed text-site-muted">
           {view.shortDescription}
         </p>
 
@@ -228,14 +228,14 @@ function SpecItem({
   if (!value || value === "Не указано" || value === "Не указан") return null;
 
   return (
-    <div className="flex min-w-0 gap-2 py-2.5">
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden />
-      <div className="min-w-0">
-        <dt className="text-xs text-slate-500" title={hint}>
+    <div className="min-w-0 px-2 py-2.5 first:pl-0 last:pr-0">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden />
+        <dt className="truncate text-[11px] leading-tight text-slate-500" title={hint}>
           {label}
         </dt>
-        <dd className="truncate text-sm font-bold text-site-ink">{value}</dd>
       </div>
+      <dd className="mt-1 truncate text-sm font-bold leading-tight text-site-ink">{value}</dd>
     </div>
   );
 }
