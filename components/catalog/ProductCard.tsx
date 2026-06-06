@@ -139,7 +139,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {CATALOG_COMMERCIAL_FALLBACK.deliveryHint}
         </p>
 
-        <p className="mb-4 line-clamp-1 flex-1 text-sm leading-relaxed text-site-muted">
+        <p className="mb-4 truncate text-sm leading-relaxed text-site-muted">
           {view.shortDescription}
         </p>
 
@@ -229,13 +229,13 @@ function SpecItem({
 
   return (
     <div className="min-w-0 px-2 py-2.5 first:pl-0 last:pr-0">
-      <div className="flex min-w-0 items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden />
-        <dt className="truncate text-[11px] leading-tight text-slate-500" title={hint}>
+      <div className="flex min-w-0 items-center gap-1">
+        <Icon className="h-3 w-3 shrink-0 text-slate-500" aria-hidden />
+        <dt className="truncate text-[10px] leading-tight text-slate-500" title={hint}>
           {label}
         </dt>
       </div>
-      <dd className="mt-1 truncate text-sm font-bold leading-tight text-site-ink">{value}</dd>
+      <dd className="mt-1 truncate text-[13px] font-bold leading-tight text-site-ink">{value}</dd>
     </div>
   );
 }
