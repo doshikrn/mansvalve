@@ -166,13 +166,16 @@ export function ProductShowcaseCarousel({
     >
       <div
         className={cn(
-          "relative z-[2] flex items-start justify-between gap-3 border-b border-white/[0.08]",
+          "relative z-[2] flex items-start justify-between gap-3 border-b",
           isHero ? "px-5 py-4 sm:px-6 sm:py-5 lg:px-7 lg:py-5" : "min-h-[72px] px-5 py-3.5 sm:px-6 sm:py-4",
+          isHero ? "border-white/[0.08]" : "border-slate-200/80 bg-white/70",
         )}
       >
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-site-cta/95">{eyebrow}</p>
-          <h3 className={cn("mt-1 text-lg font-bold leading-snug text-white sm:text-xl", !isHero && "line-clamp-2")}>
+          <p className={cn("text-[11px] font-semibold uppercase tracking-[0.14em]", isHero ? "text-site-cta/95" : "text-site-primary")}>
+            {eyebrow}
+          </p>
+          <h3 className={cn("mt-1 text-lg font-bold leading-snug sm:text-xl", isHero ? "text-white" : "text-site-ink", !isHero && "line-clamp-2")}>
             {title}
           </h3>
         </div>
@@ -183,7 +186,7 @@ export function ProductShowcaseCarousel({
           "relative z-[2] isolate w-full",
           isHero
             ? "max-lg:min-h-0 lg:min-h-[480px] lg:overflow-hidden"
-            : "max-lg:min-h-0 lg:min-h-[540px]",
+            : "max-lg:min-h-0 lg:min-h-[470px]",
         )}
       >
         <MotionConfig reducedMotion={reducedMotion ? "always" : "never"}>
@@ -206,7 +209,7 @@ export function ProductShowcaseCarousel({
                   "grid lg:items-stretch",
                   isHero
                     ? "max-lg:flex-none lg:flex-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
-                    : "max-lg:flex-none lg:flex-1 lg:grid-cols-[minmax(0,1.06fr)_minmax(360px,0.94fr)]",
+                    : "max-lg:flex-none lg:flex-1 lg:grid-cols-[minmax(320px,0.88fr)_minmax(0,1.12fr)]",
                 )}
               >
                 <Link
@@ -215,7 +218,7 @@ export function ProductShowcaseCarousel({
                     "block w-full lg:border-r",
                     isHero
                       ? "border-white/[0.06] lg:h-full"
-                      : "border-white/[0.06] lg:h-full lg:rounded-l-[calc(0.75rem-1px)]",
+                      : "border-slate-200/85 lg:h-full lg:rounded-l-[calc(1rem-1px)]",
                   )}
                 >
                   <ProductImageFrame
@@ -225,7 +228,7 @@ export function ProductShowcaseCarousel({
                     quality={isHero ? 88 : 85}
                     sizes={imgSizes}
                     unoptimized={view.primaryImageUnoptimized}
-                    tone="dark"
+                    tone={isHero ? "dark" : "light"}
                     className={cn(
                       "rounded-none",
                       isHero
@@ -235,11 +238,15 @@ export function ProductShowcaseCarousel({
                     safeAreaClassName={isHero ? "p-6 sm:p-8 lg:p-10" : "p-6 sm:p-8 lg:p-12"}
                     imageClassName="group-hover:scale-[1.015]"
                   >
-                    <div className={cn("absolute inset-0 bg-gradient-to-t to-transparent", isHero ? "from-site-deep/56 via-site-deep/8" : "from-black/[0.18] via-transparent")} />
-                    <div className={cn("absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-md border px-3 py-2 shadow-sm", isHero ? "border-white/10 bg-site-deep/85" : "border-white/15 bg-black/55")}>
-                      <p className={cn("text-[10px] font-semibold uppercase", isHero ? "text-slate-300" : "text-slate-400")}>{product.categoryName}</p>
-                      <p className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-white">{product.subcategoryName}</p>
-                    </div>
+                    {isHero ? (
+                      <>
+                        <div className="absolute inset-0 bg-gradient-to-t from-site-deep/56 via-site-deep/8 to-transparent" />
+                        <div className="absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] rounded-md border border-white/10 bg-site-deep/85 px-3 py-2 shadow-sm">
+                          <p className="text-[10px] font-semibold uppercase text-slate-300">{product.categoryName}</p>
+                          <p className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-white">{product.subcategoryName}</p>
+                        </div>
+                      </>
+                    ) : null}
                   </ProductImageFrame>
                 </Link>
 
@@ -272,17 +279,17 @@ export function ProductShowcaseCarousel({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex min-w-0 flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:min-h-[540px] lg:justify-between lg:px-7">
+                  <div className="flex min-w-0 flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:min-h-[470px] lg:justify-between lg:px-7">
                     <div className="flex min-w-0 flex-col gap-4">
                       <div className="inline-flex w-fit items-center gap-2 rounded-lg border border-[#2F6BFF]/25 bg-[#2F6BFF]/10 px-2.5 py-1 text-xs font-semibold text-[#8bb4ff]">
                         <Package className="h-3.5 w-3.5" />
                         {catalogBadgeLabel}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="line-clamp-3 break-words text-[1.45rem] font-bold leading-[1.14] tracking-tight text-white sm:text-[1.8rem] lg:line-clamp-2 lg:text-[2rem]">
+                        <h4 className="line-clamp-3 break-words text-[1.45rem] font-bold leading-[1.14] tracking-tight text-site-ink sm:text-[1.8rem] lg:line-clamp-2 lg:text-[2rem]">
                           {view.displayName}
                         </h4>
-                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-300 sm:text-[15px] lg:line-clamp-2">
+                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-site-muted sm:text-[15px] lg:line-clamp-2">
                           {view.shortDescription}
                         </p>
                       </div>
@@ -290,13 +297,13 @@ export function ProductShowcaseCarousel({
                         {specs.map(({ icon: Icon, label, value }) => (
                           <div
                             key={`${label}-${product.slug}`}
-                            className="flex min-h-[5.25rem] min-w-0 flex-col rounded-lg border border-white/[0.1] bg-white/[0.045] px-3 py-2.5"
+                            className="flex min-h-[5.25rem] min-w-0 flex-col rounded-lg border border-slate-200 bg-white px-3 py-2.5 shadow-sm"
                           >
-                            <Icon className="mb-1.5 h-4 w-4 text-[#8bb4ff]" />
+                            <Icon className="mb-1.5 h-4 w-4 text-site-primary" />
                             <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</p>
                             <p
                               className={cn(
-                                "break-words font-bold leading-snug text-slate-100",
+                                "break-words font-bold leading-snug text-site-ink",
                                 label === "Материал" ? "text-[13px]" : "line-clamp-2 text-sm",
                               )}
                             >
@@ -309,22 +316,22 @@ export function ProductShowcaseCarousel({
                         {CATALOG_TRUST_POINTS.map(({ icon: Icon, title: trustTitle, desc }) => (
                           <div
                             key={trustTitle}
-                            className="flex items-start gap-3 rounded-lg border border-white/[0.08] bg-white/[0.035] px-3 py-2.5"
+                            className="flex items-start gap-3 rounded-lg border border-slate-200 bg-[#f8fbff] px-3 py-2.5"
                           >
                             <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2F6BFF]/12 text-[#8bb4ff]">
                               <Icon className="h-4 w-4" strokeWidth={2} aria-hidden />
                             </span>
                             <span className="min-w-0">
-                              <span className="block text-sm font-semibold leading-snug text-slate-100">{trustTitle}</span>
-                              <span className="mt-0.5 block text-xs leading-snug text-slate-400">{desc}</span>
+                              <span className="block text-sm font-semibold leading-snug text-site-ink">{trustTitle}</span>
+                              <span className="mt-0.5 block text-xs leading-snug text-site-muted">{desc}</span>
                             </span>
                           </div>
                         ))}
                       </div>
                     </div>
-                    <div className="border-t border-white/10 pt-4">
+                    <div className="border-t border-slate-200 pt-4">
                       <p className="text-xs font-semibold uppercase text-slate-500">{hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}</p>
-                      <p className="mt-1 text-[1.85rem] font-bold leading-none tabular-nums text-white sm:text-[2rem]">
+                      <p className="mt-1 text-[1.85rem] font-bold leading-none tabular-nums text-site-cta sm:text-[2rem]">
                         {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
                       </p>
                       <div className="mt-4 flex flex-col gap-3">
@@ -360,7 +367,7 @@ export function ProductShowcaseCarousel({
                   className={cn(
                     "shrink-0 rounded-full transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
                     index === active
-                      ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(234_88_12_/_.42)]"
+                      ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(34_197_94_/_.38)]"
                       : "h-[5px] w-[5px] bg-white/25 hover:bg-white/38",
                   )}
                 />
@@ -400,7 +407,7 @@ export function ProductShowcaseCarousel({
           ) : null}
         </div>
       ) : (
-        <div className="relative z-[2] flex shrink-0 items-center justify-between gap-2 border-t border-white/[0.08] bg-black/30 px-5 py-2.5 backdrop-blur-sm sm:px-6">
+        <div className="relative z-[2] flex shrink-0 items-center justify-between gap-2 border-t border-slate-200/90 bg-white/72 px-5 py-2.5 backdrop-blur-sm sm:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
             {products.map((item, index) => (
               <button
@@ -411,7 +418,7 @@ export function ProductShowcaseCarousel({
                 title={item.name}
                 className={cn(
                   "shrink-0 rounded-full transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  index === active ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(234_88_12_/_.42)]" : "h-[5px] w-[5px] bg-white/25 hover:bg-white/38",
+                  index === active ? "h-[6px] w-8 bg-site-cta shadow-[0_0_14px_rgb(34_197_94_/_.32)]" : "h-[5px] w-[5px] bg-slate-300 hover:bg-slate-400",
                 )}
               />
             ))}
@@ -431,7 +438,7 @@ export function ProductShowcaseCarousel({
             <button
               type="button"
               onClick={prev}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.06] text-slate-200 transition-all duration-300 ease-out hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-site-ink shadow-sm transition-all duration-300 ease-out hover:border-[#2F6BFF]/35 hover:text-site-primary"
               aria-label="Предыдущий товар"
             >
               <ArrowLeft className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />
@@ -439,7 +446,7 @@ export function ProductShowcaseCarousel({
             <button
               type="button"
               onClick={next}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.06] text-slate-200 transition-all duration-300 ease-out hover:border-[#2F6BFF]/35 hover:bg-white/[0.1] hover:text-white"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-site-ink shadow-sm transition-all duration-300 ease-out hover:border-[#2F6BFF]/35 hover:text-site-primary"
               aria-label="Следующий товар"
             >
               <ArrowRight className="h-3.5 w-3.5 opacity-80" strokeWidth={1.6} />

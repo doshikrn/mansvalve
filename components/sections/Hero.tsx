@@ -11,19 +11,13 @@ import {
   Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProductShowcaseCarousel } from "@/components/sections/ProductShowcaseCarousel";
 import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
-import { pickProductsBySlugs } from "@/lib/product-showcase";
-import { resolveHomeHero, resolveHomeProductShowcases } from "@/lib/site-content/public";
+import { resolveHomeHero } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
 export async function Hero() {
-  const [prods, showcaseContent] = await Promise.all([
-    getPublicCatalogListingProducts(),
-    resolveHomeProductShowcases(),
-  ]);
+  const prods = await getPublicCatalogListingProducts();
   const heroContent = await resolveHomeHero(prods.length);
-  const featured = pickProductsBySlugs(prods, showcaseContent.heroProductSlugs, 5);
 
   const stats = [
     { val: heroContent.stat1Val, label: heroContent.stat1Label },
@@ -61,7 +55,7 @@ export async function Hero() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(234,88,12,0.08)_0%,rgba(234,88,12,0.02)_36%,transparent_62%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.02)_36%,transparent_62%)]"
         aria-hidden
       />
       <div
@@ -77,8 +71,8 @@ export async function Hero() {
         }}
         aria-hidden
       />
-      <div className="site-container relative py-12 sm:py-16 lg:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.14fr] lg:items-start lg:gap-8 xl:gap-10">
+      <div className="site-container relative py-10 sm:py-14 lg:py-16">
+        <div className="grid gap-9 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.9fr)] lg:items-center lg:gap-10 xl:gap-12">
           <div className="hero-enter-left">
             <div className="site-industrial-chip mb-5 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors duration-300 hover:border-[#2F6BFF]/35">
               <MapPin className="h-4 w-4 shrink-0 text-[#2F6BFF]" />
@@ -165,16 +159,37 @@ export async function Hero() {
             </div>
           </div>
 
-          <div className="hero-enter-right self-start">
-            <ProductShowcaseCarousel
-              products={featured}
-              eyebrow={heroContent.featuredEyebrow}
-              title={heroContent.featuredTitle}
-              linkLabel="Каталог"
-              linkHref="/catalog"
-              variant="hero"
-              heroRibbonLabel={heroContent.heroShowcaseRibbonLabel}
+          <div className="hero-enter-right relative min-h-[360px] overflow-hidden rounded-2xl border border-white/[0.12] bg-[#07111f] shadow-[0_36px_80px_-44px_rgba(0,0,0,0.82)] sm:min-h-[440px] lg:min-h-[500px]">
+            <Image
+              src="/задвижки.png"
+              alt="Промышленная трубопроводная арматура MANSVALVE GROUP"
+              fill
+              priority
+              quality={88}
+              sizes="(max-width: 1024px) 100vw, 48vw"
+              className="object-cover object-center"
             />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,0.16)_0%,rgba(6,16,36,0.06)_42%,rgba(6,16,36,0.48)_100%)]" aria-hidden />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_62%_30%,rgba(47,107,255,0.16),transparent_38%)]" aria-hidden />
+            <div className="absolute left-4 top-4 rounded-lg border border-white/12 bg-[#061024]/76 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-lg backdrop-blur sm:left-5 sm:top-5">
+              {heroContent.featuredEyebrow}
+            </div>
+            <div className="absolute bottom-4 left-4 right-4 grid gap-2 sm:bottom-5 sm:left-5 sm:right-5 sm:grid-cols-3">
+              {[
+                { title: "ГОСТ / DIN / ISO", desc: "Сертификаты и паспорта", Icon: ShieldCheck },
+                { title: "15 минут", desc: "КП в рабочее время", Icon: Clock },
+                { title: "B2B / B2G", desc: "Договор, НДС, поставка", Icon: BadgeCheck },
+              ].map(({ title, desc, Icon }) => (
+                <div
+                  key={title}
+                  className="rounded-lg border border-white/12 bg-[#061024]/78 p-3 shadow-lg backdrop-blur"
+                >
+                  <Icon className="mb-2 h-4 w-4 text-site-cta" strokeWidth={2} aria-hidden />
+                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-white">{title}</p>
+                  <p className="mt-1 text-[11px] leading-snug text-slate-300">{desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -50,9 +50,9 @@ export default function HomePage() {
     <>
       <div className="home-dark-zone">
         <Hero />
-        <TrustStrip />
         <Categories />
         <WhyUs />
+        <TrustStrip />
         <div className="home-flow-from-dark-band" aria-hidden />
       </div>
       <main className="home-light-zone">

@@ -113,7 +113,7 @@ const STYLES = {
     textarea:
       "border-white/20 bg-white/10 text-white placeholder:text-slate-400 hover:border-white/35 focus:border-white focus:bg-white/15 focus:ring-2 focus:ring-white/30",
     errorText: "text-red-300",
-    submitBtn: "!bg-site-cta !text-white hover:!bg-orange-700",
+    submitBtn: "!bg-site-cta !text-white hover:!bg-site-cta-hover",
     footer: "text-slate-300",
     policyLink: "text-slate-200 underline decoration-slate-400/60 underline-offset-2 hover:text-white",
     successTitle: "text-white",

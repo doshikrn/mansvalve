@@ -7,7 +7,7 @@ export async function WhoWeSupply() {
     <WhoWeSupplyClient
       {...data}
       sectionEyebrow="Наши клиенты"
-      sectionTitle=""
+      sectionTitle="Работаем в сегментах B2B и B2G"
       sectionLead="Работаем в сегментах B2B и B2G, обеспечивая поставки для предприятий, подрядчиков и государственных организаций по всему Казахстану."
     />
   );

@@ -21,7 +21,7 @@ export function AboutCTA({ title, subtitle, catalogLabel, contactsLabel }: About
             <div className="mt-6 flex flex-wrap gap-3">
               <Button
                 size="lg"
-                className="rounded-lg bg-site-cta font-semibold text-white hover:bg-orange-700"
+                className="rounded-lg bg-site-cta font-semibold text-white hover:bg-site-cta-hover"
                 asChild
               >
                 <Link href="/catalog">

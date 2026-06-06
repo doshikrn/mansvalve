@@ -29,7 +29,8 @@ type CategoriesClientProps = {
 
 export function CategoriesClient({ products, copy }: CategoriesClientProps) {
   return (
-    <section className="site-section-dark site-industrial-shell relative overflow-hidden border-t border-white/[0.06] px-0">
+    <section className="relative overflow-hidden border-t border-slate-200 bg-[#f5f8fc] py-10 sm:py-12 lg:py-14">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_45%_at_18%_0%,rgba(47,107,255,0.08),transparent_58%)]" aria-hidden />
       <div className="site-container relative z-[2]">
         <motion.div
           className="flex flex-col"
@@ -43,13 +44,13 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
             className="mb-6 flex flex-col gap-4 sm:mb-8 lg:mb-9"
           >
             <div className="min-w-0">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#2F6BFF]">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-site-primary">
                 {copy.sectionEyebrow}
               </p>
-              <h2 className="mt-2 max-w-3xl text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+              <h2 className="mt-2 max-w-3xl text-2xl font-bold tracking-tight text-site-ink sm:text-3xl lg:text-4xl">
                 {copy.sectionTitle}
               </h2>
-              <p className="mt-2 max-w-[760px] text-base leading-relaxed text-slate-400 sm:text-lg">
+              <p className="mt-2 max-w-[760px] text-base leading-relaxed text-site-muted sm:text-lg">
                 {copy.sectionLead}
               </p>
             </div>
