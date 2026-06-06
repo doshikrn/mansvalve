@@ -34,6 +34,13 @@ import {
   footerTrustBarSchema,
   footerMainSchema,
 } from "@/lib/site-content/models";
+import {
+  homeCertificatesPreviewSchema,
+  homeClientLogosSchema,
+  homeTestimonialsSchema,
+  homeThankYouLettersSchema,
+  homeTrustCasesSchema,
+} from "@/lib/site-content/trust-proof";
 import { getContentBlock, upsertContentBlock } from "@/lib/services/content-blocks";
 
 function err(msg: string) {
@@ -985,4 +992,187 @@ export async function saveFooterMainAction(formData: FormData) {
   revalidatePath("/", "layout");
   await settleRevalidation();
   redirect("/admin/content?saved=footer-main");
+}
+
+function parseCheckbox(formData: FormData, name: string): boolean {
+  return formData.get(name) === "on";
+}
+
+function parseSortOrder(formData: FormData, name: string, fallback: number): number {
+  const raw = Number(String(formData.get(name) ?? "").trim());
+  return Number.isFinite(raw) && raw >= 0 ? Math.trunc(raw) : fallback;
+}
+
+export async function saveHomeClientLogosAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const items = [];
+  for (let i = 0; i < 12; i++) {
+    const companyName = String(formData.get(`logo_company_${i}`) ?? "").trim();
+    const logoUrl = String(formData.get(`logo_url_${i}`) ?? "").trim();
+    if (!companyName && !logoUrl) continue;
+    if (!companyName || !logoUrl) {
+      err(`Логотип ${i + 1}: укажите название компании и изображение логотипа.`);
+    }
+    items.push({
+      companyName,
+      logoUrl,
+      websiteUrl: String(formData.get(`logo_website_${i}`) ?? "").trim(),
+      sortOrder: parseSortOrder(formData, `logo_sort_${i}`, i * 10),
+      isActive: parseCheckbox(formData, `logo_active_${i}`),
+    });
+  }
+
+  const data = {
+    title: String(formData.get("title") ?? "").trim(),
+    items,
+  };
+  const parsed = homeClientLogosSchema.safeParse(data);
+  if (!parsed.success) err("Логотипы клиентов: проверьте заголовок секции.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeClientLogos,
+    title: "Главная — логотипы клиентов",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  await settleRevalidation();
+  redirect("/admin/content?saved=trust-client-logos");
+}
+
+export async function saveHomeTrustCasesAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const items = [];
+  for (let i = 0; i < 12; i++) {
+    const title = String(formData.get(`case_title_${i}`) ?? "").trim();
+    const imageUrl = String(formData.get(`case_image_${i}`) ?? "").trim();
+    if (!title && !imageUrl) continue;
+    if (!title || !imageUrl) {
+      err(`Кейс ${i + 1}: укажите заголовок и фото.`);
+    }
+    items.push({
+      title,
+      industry: String(formData.get(`case_industry_${i}`) ?? "").trim(),
+      suppliedProducts: String(formData.get(`case_products_${i}`) ?? "").trim(),
+      description: String(formData.get(`case_description_${i}`) ?? "").trim(),
+      result: String(formData.get(`case_result_${i}`) ?? "").trim(),
+      imageUrl,
+      sortOrder: parseSortOrder(formData, `case_sort_${i}`, i * 10),
+      isActive: parseCheckbox(formData, `case_active_${i}`),
+    });
+  }
+
+  const data = {
+    title: String(formData.get("title") ?? "").trim(),
+    subtitle: String(formData.get("subtitle") ?? "").trim(),
+    items,
+  };
+  const parsed = homeTrustCasesSchema.safeParse(data);
+  if (!parsed.success) err("Кейсы: проверьте заголовок и поля элементов.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeTrustCases,
+    title: "Главная — кейсы с фото",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  await settleRevalidation();
+  redirect("/admin/content?saved=trust-cases");
+}
+
+export async function saveHomeTestimonialsAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const items = [];
+  for (let i = 0; i < 12; i++) {
+    const quote = String(formData.get(`testimonial_quote_${i}`) ?? "").trim();
+    const companyName = String(formData.get(`testimonial_company_${i}`) ?? "").trim();
+    if (!quote && !companyName) continue;
+    if (!quote || !companyName) {
+      err(`Отзыв ${i + 1}: укажите текст отзыва и компанию.`);
+    }
+    items.push({
+      quote,
+      authorName: String(formData.get(`testimonial_author_${i}`) ?? "").trim(),
+      authorPosition: String(formData.get(`testimonial_position_${i}`) ?? "").trim(),
+      companyName,
+      companyLogoUrl: String(formData.get(`testimonial_logo_${i}`) ?? "").trim(),
+      sortOrder: parseSortOrder(formData, `testimonial_sort_${i}`, i * 10),
+      isActive: parseCheckbox(formData, `testimonial_active_${i}`),
+    });
+  }
+
+  const data = {
+    title: String(formData.get("title") ?? "").trim(),
+    items,
+  };
+  const parsed = homeTestimonialsSchema.safeParse(data);
+  if (!parsed.success) err("Отзывы: проверьте заголовок и поля элементов.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeTestimonials,
+    title: "Главная — отзывы",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  await settleRevalidation();
+  redirect("/admin/content?saved=trust-testimonials");
+}
+
+export async function saveHomeThankYouLettersAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const items = [];
+  for (let i = 0; i < 12; i++) {
+    const title = String(formData.get(`letter_title_${i}`) ?? "").trim();
+    const companyName = String(formData.get(`letter_company_${i}`) ?? "").trim();
+    const previewImageUrl = String(formData.get(`letter_preview_${i}`) ?? "").trim();
+    const documentUrl = String(formData.get(`letter_document_${i}`) ?? "").trim();
+    if (!title && !companyName && !previewImageUrl && !documentUrl) continue;
+    if (!title || !companyName || !previewImageUrl || !documentUrl) {
+      err(`Письмо ${i + 1}: заполните название, компанию, превью и ссылку на документ.`);
+    }
+    items.push({
+      title,
+      companyName,
+      previewImageUrl,
+      documentUrl,
+      sortOrder: parseSortOrder(formData, `letter_sort_${i}`, i * 10),
+      isActive: parseCheckbox(formData, `letter_active_${i}`),
+    });
+  }
+
+  const data = {
+    title: String(formData.get("title") ?? "").trim(),
+    items,
+  };
+  const parsed = homeThankYouLettersSchema.safeParse(data);
+  if (!parsed.success) err("Благодарственные письма: проверьте заголовок и поля элементов.");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeThankYouLetters,
+    title: "Главная — благодарственные письма",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  await settleRevalidation();
+  redirect("/admin/content?saved=trust-thank-you");
+}
+
+export async function saveHomeCertificatesPreviewAction(formData: FormData) {
+  const session = await requireAdmin("/admin/content");
+  const limitRaw = Number(String(formData.get("limit") ?? "4").trim());
+  const data = {
+    title: String(formData.get("title") ?? "").trim(),
+    subtitle: String(formData.get("subtitle") ?? "").trim(),
+    limit: Number.isFinite(limitRaw) ? limitRaw : 4,
+  };
+  const parsed = homeCertificatesPreviewSchema.safeParse(data);
+  if (!parsed.success) err("Сертификаты на главной: заголовок и количество (3–5).");
+  await upsertContentBlock({
+    key: SITE_CONTENT_KEYS.homeCertificatesPreview,
+    title: "Главная — превью сертификатов",
+    data: parsed.data as unknown as Record<string, unknown>,
+    updatedBy: Number(session.sub) || null,
+  });
+  revalidatePath("/");
+  await settleRevalidation();
+  redirect("/admin/content?saved=trust-certificates");
 }

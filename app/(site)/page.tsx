@@ -9,6 +9,11 @@ import { FAQ } from "@/components/sections/FAQ";
 import { RequestCTA } from "@/components/sections/RequestCTA";
 import { WhoWeSupply } from "@/components/sections/WhoWeSupply";
 import { DeliveryCase } from "@/components/sections/DeliveryCase";
+import { HomeCertificatesPreview } from "@/components/sections/trust/HomeCertificatesPreview";
+import { HomeClientLogos } from "@/components/sections/trust/HomeClientLogos";
+import { HomeTestimonials } from "@/components/sections/trust/HomeTestimonials";
+import { HomeThankYouLetters } from "@/components/sections/trust/HomeThankYouLetters";
+import { HomeTrustCases } from "@/components/sections/trust/HomeTrustCases";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
 import { resolveHomePage } from "@/lib/site-content/public";
 
@@ -52,6 +57,11 @@ export default function HomePage() {
       </div>
       <main className="home-light-zone">
         <WhoWeSupply />
+        <HomeClientLogos />
+        <HomeTrustCases />
+        <HomeCertificatesPreview />
+        <HomeTestimonials />
+        <HomeThankYouLetters />
         <DeliveryCase />
         <HowItWorks />
         <DocumentsTrust />

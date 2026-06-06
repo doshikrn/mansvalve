@@ -57,6 +57,18 @@ import {
   type TermsPageContent,
   type TrustStripContent,
 } from "./models";
+import {
+  mergeHomeCertificatesPreview,
+  mergeHomeClientLogos,
+  mergeHomeTestimonials,
+  mergeHomeThankYouLetters,
+  mergeHomeTrustCases,
+  type HomeCertificatesPreviewContent,
+  type HomeClientLogosContent,
+  type HomeTestimonialsContent,
+  type HomeThankYouLettersContent,
+  type HomeTrustCasesContent,
+} from "./trust-proof";
 
 async function loadData(key: string): Promise<unknown> {
   if (!isDatabaseConfigured()) return undefined;
@@ -158,6 +170,31 @@ export async function resolveHomeWhoWeSupply(): Promise<HomeWhoWeSupplyContent> 
 export async function resolveHomeDeliveryCase(): Promise<HomeDeliveryCaseContent> {
   const data = await loadData(SITE_CONTENT_KEYS.homeDeliveryCase);
   return mergeHomeDeliveryCase(data);
+}
+
+export async function resolveHomeClientLogos(): Promise<HomeClientLogosContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeClientLogos);
+  return mergeHomeClientLogos(data);
+}
+
+export async function resolveHomeTrustCases(): Promise<HomeTrustCasesContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeTrustCases);
+  return mergeHomeTrustCases(data);
+}
+
+export async function resolveHomeTestimonials(): Promise<HomeTestimonialsContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeTestimonials);
+  return mergeHomeTestimonials(data);
+}
+
+export async function resolveHomeThankYouLetters(): Promise<HomeThankYouLettersContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeThankYouLetters);
+  return mergeHomeThankYouLetters(data);
+}
+
+export async function resolveHomeCertificatesPreview(): Promise<HomeCertificatesPreviewContent> {
+  const data = await loadData(SITE_CONTENT_KEYS.homeCertificatesPreview);
+  return mergeHomeCertificatesPreview(data);
 }
 
 export async function resolveFooterPreCta(): Promise<FooterPreCtaContent> {

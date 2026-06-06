@@ -5,6 +5,7 @@ import { AdminFormFooter } from "@/components/admin/AdminFormFooter";
 import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
 import { ContentSection } from "@/components/admin/ContentSection";
+import { TrustProofAdminForms } from "@/components/admin/TrustProofAdminForms";
 import { MediaUrlField, type MediaUrlOption } from "@/components/admin/MediaUrlField";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -42,6 +43,13 @@ import {
   mergeTermsPage,
   mergeTrustStrip,
 } from "@/lib/site-content/models";
+import {
+  mergeHomeCertificatesPreview,
+  mergeHomeClientLogos,
+  mergeHomeTestimonials,
+  mergeHomeThankYouLetters,
+  mergeHomeTrustCases,
+} from "@/lib/site-content/trust-proof";
 import { getContentBlock } from "@/lib/services/content-blocks";
 import { COMPANY } from "@/lib/company";
 import { listRecentImageMediaAssets } from "@/lib/services/media";
@@ -99,6 +107,11 @@ const SAVED_LABELS: Record<string, string> = {
   "home-how-it-works": "Этапы работы сохранены",
   "home-who-we-supply": "Блок «Кому поставляем» сохранён",
   "home-delivery-case": "Кейсы сохранены",
+  "trust-client-logos": "Логотипы клиентов сохранены",
+  "trust-cases": "Кейсы с фото сохранены",
+  "trust-testimonials": "Отзывы сохранены",
+  "trust-thank-you": "Благодарственные письма сохранены",
+  "trust-certificates": "Настройки сертификатов на главной сохранены",
   "footer-pre-cta": "Блок над подвалом сохранён",
   "footer-trust": "Полоска доверия в подвале сохранена",
   "footer-main": "Основной подвал сохранён",
@@ -107,6 +120,7 @@ const SAVED_LABELS: Record<string, string> = {
 const CONTENT_NAV = [
   { id: "header", title: "Шапка", description: "Верхнее меню сайта" },
   { id: "home", title: "Главная", description: "Баннер, блоки, SEO" },
+  { id: "trust-proof", title: "Доверие", description: "Логотипы, кейсы, отзывы, письма" },
   { id: "about", title: "О компании", description: "Тексты и страница /about" },
   { id: "contacts", title: "Контакты", description: "Форма, карта, реквизиты" },
   { id: "delivery", title: "Доставка", description: "Страница /delivery" },
@@ -165,6 +179,11 @@ export default async function AdminContentPage({
     pageCertificatesRow,
     pagePrivacyRow,
     pageTermsRow,
+    homeClientLogosRow,
+    homeTrustCasesRow,
+    homeTestimonialsRow,
+    homeThankYouLettersRow,
+    homeCertificatesPreviewRow,
     recentMedia,
   ] = await Promise.all([
     getContentBlock(SITE_CONTENT_KEYS.homeHero),
@@ -192,6 +211,11 @@ export default async function AdminContentPage({
     getContentBlock(SITE_CONTENT_KEYS.pageCertificates),
     getContentBlock(SITE_CONTENT_KEYS.pagePrivacy),
     getContentBlock(SITE_CONTENT_KEYS.pageTerms),
+    getContentBlock(SITE_CONTENT_KEYS.homeClientLogos),
+    getContentBlock(SITE_CONTENT_KEYS.homeTrustCases),
+    getContentBlock(SITE_CONTENT_KEYS.homeTestimonials),
+    getContentBlock(SITE_CONTENT_KEYS.homeThankYouLetters),
+    getContentBlock(SITE_CONTENT_KEYS.homeCertificatesPreview),
     listRecentImageMediaAssets(80),
   ]);
 
@@ -216,6 +240,11 @@ export default async function AdminContentPage({
   const homeHowItWorks = mergeHomeHowItWorks(homeHowItWorksRow?.data);
   const homeWhoWeSupply = mergeHomeWhoWeSupply(homeWhoWeSupplyRow?.data);
   const homeDeliveryCase = mergeHomeDeliveryCase(homeDeliveryCaseRow?.data);
+  const homeClientLogos = mergeHomeClientLogos(homeClientLogosRow?.data);
+  const homeTrustCases = mergeHomeTrustCases(homeTrustCasesRow?.data);
+  const homeTestimonials = mergeHomeTestimonials(homeTestimonialsRow?.data);
+  const homeThankYouLetters = mergeHomeThankYouLetters(homeThankYouLettersRow?.data);
+  const homeCertificatesPreview = mergeHomeCertificatesPreview(homeCertificatesPreviewRow?.data);
   const footerPreCta = mergeFooterPreCta(footerPreCtaRow?.data);
   const footerTrust = mergeFooterTrustBar(footerTrustRow?.data);
   const footerMain = mergeFooterMain(footerMainRow?.data);
@@ -715,6 +744,21 @@ export default async function AdminContentPage({
           </form>
         </CardContent>
       </Card>
+      </ContentSection>
+
+      <ContentSection
+        id="trust-proof"
+        title="Социальные доказательства"
+        description="Логотипы клиентов, кейсы с фото, отзывы, благодарственные письма и превью сертификатов на главной. Блоки на сайте появляются только после заполнения."
+      >
+        <TrustProofAdminForms
+          clientLogos={homeClientLogos}
+          trustCases={homeTrustCases}
+          testimonials={homeTestimonials}
+          thankYouLetters={homeThankYouLetters}
+          certificatesPreview={homeCertificatesPreview}
+          mediaLibrary={mediaLibrary}
+        />
       </ContentSection>
 
       <ContentSection
