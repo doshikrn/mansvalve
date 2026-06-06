@@ -24,17 +24,7 @@ def remove_white_background(img: Image.Image) -> Image.Image:
 
 def main() -> None:
     root = Path(__file__).resolve().parents[1]
-    default_src = (
-        Path.home()
-        / "AppData"
-        / "Roaming"
-        / "Cursor"
-        / "User"
-        / "workspaceStorage"
-        / "473bc95f4f3be156d2ebe00ede362b4a"
-        / "images"
-        / "30ch39r-dn400-117c8968-6448-47f4-acd2-46b10d71da37-e2855b31-071f-4bae-bc5d-2951e85a3c60.png"
-    )
+    default_src = root / "scripts" / "sources" / "hero-valve-source.png"
     src = Path(sys.argv[1]) if len(sys.argv) > 1 else default_src
     out_dir = root / "public" / "images"
     out_dir.mkdir(parents=True, exist_ok=True)
