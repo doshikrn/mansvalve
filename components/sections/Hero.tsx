@@ -1,5 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock, FileText, MapPin, Package } from "lucide-react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  Clock,
+  FileText,
+  MapPin,
+  Package,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductShowcaseCarousel } from "@/components/sections/ProductShowcaseCarousel";
 import { getPublicCatalogListingProducts } from "@/lib/public-catalog";
@@ -22,9 +32,23 @@ export async function Hero() {
   ];
 
   const statIcons = [Clock, Package, MapPin] as const;
+  const trustIcons = [FileText, Truck, BadgeCheck, ShieldCheck] as const;
 
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.06] bg-[#081428]">
+    <section className="site-industrial-shell border-b border-white/[0.06]">
+      <Image
+        src="/images/category-zadvizhki.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="pointer-events-none absolute inset-0 object-cover opacity-[0.16] mix-blend-screen"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#061024_0%,rgba(6,16,36,0.92)_35%,rgba(6,16,36,0.58)_62%,#061024_100%)]"
+        aria-hidden
+      />
       <div
         className="pointer-events-none absolute -left-[20%] top-0 h-full w-[70%] bg-gradient-to-r from-[rgb(47_107_255_/_.08)] via-transparent to-transparent"
         aria-hidden
@@ -53,15 +77,15 @@ export async function Hero() {
         }}
         aria-hidden
       />
-      <div className="site-container relative py-14 sm:py-16 lg:py-20">
+      <div className="site-container relative py-12 sm:py-16 lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.14fr] lg:items-start lg:gap-8 xl:gap-10">
           <div className="hero-enter-left">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-[#2F6BFF]/25 bg-[#2F6BFF]/10 px-4 py-1.5 text-sm font-semibold text-slate-200 shadow-sm backdrop-blur-sm transition-colors duration-300 hover:border-[#2F6BFF]/35">
+            <div className="site-industrial-chip mb-5 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors duration-300 hover:border-[#2F6BFF]/35">
               <MapPin className="h-4 w-4 shrink-0 text-[#2F6BFF]" />
               {heroContent.eyebrow}
             </div>
 
-            <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[56px]">
+            <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-[1.03] tracking-tight text-white drop-shadow-[0_18px_36px_rgba(0,0,0,0.32)] sm:text-5xl lg:text-[58px]">
               {heroContent.h1Line1}{" "}
               <span className="text-site-cta">{heroContent.h1Highlight}</span>
             </h1>
@@ -92,31 +116,35 @@ export async function Hero() {
                 target="_blank"
                 rel="noopener noreferrer"
                 prefetch={false}
-                className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-[#2F6BFF]/35 bg-[#2F6BFF]/10 px-4 py-2.5 text-sm font-semibold text-slate-100 shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/50 hover:bg-[#2F6BFF]/18 hover:text-white hover:shadow-[0_0_24px_rgb(47_107_255_/_.22)] sm:self-center"
+                className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-white/14 bg-white/[0.07] px-4 py-2.5 text-sm font-semibold text-slate-100 shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/50 hover:bg-[#2F6BFF]/16 hover:text-white hover:shadow-[0_0_24px_rgb(47_107_255_/_.22)] sm:self-center"
               >
                 <FileText className="h-4 w-4 shrink-0 text-[#2F6BFF] transition-colors group-hover:text-white" />
                 <span>{heroContent.secondaryCta}</span>
               </Link>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
               {heroContent.trustPoints.map((point, i) => (
                 <span
                   key={`${i}-${point.slice(0, 12)}`}
-                  className="rounded-lg border border-white/18 bg-white/[0.09] px-3 py-1 text-xs font-semibold text-slate-100 shadow-sm"
+                  className="site-industrial-chip min-h-10 px-3 py-2 text-xs font-semibold"
                 >
+                  {(() => {
+                    const Icon = trustIcons[i % trustIcons.length] ?? FileText;
+                    return <Icon className="h-4 w-4 shrink-0 text-site-soft-blue" aria-hidden strokeWidth={1.8} />;
+                  })()}
                   {point}
                 </span>
               ))}
             </div>
 
-            <div className="mt-10 flex flex-col gap-8 border-t border-white/15 pt-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-white/15">
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {stats.map((s, idx) => {
                 const Icon = statIcons[idx] ?? Clock;
                 return (
                   <div
                     key={s.label}
-                    className="flex gap-3 rounded-lg transition-colors duration-200 ease-out hover:bg-white/[0.05] motion-reduce:hover:bg-transparent sm:flex-1 sm:px-6 first:sm:pl-0 last:sm:pr-0"
+                    className="site-industrial-proof-card flex gap-3 rounded-lg p-4 transition-colors duration-200 ease-out hover:border-white/18 hover:bg-white/[0.08]"
                   >
                     <Icon
                       className="mt-1 h-5 w-5 shrink-0 text-site-soft-blue"

@@ -16,7 +16,7 @@ export type TopBarLink = { label: string; href: string };
 
 function NavDot() {
   return (
-    <span className="hidden text-slate-300 sm:inline" aria-hidden>
+    <span className="hidden text-white/25 sm:inline" aria-hidden>
       ·
     </span>
   );
@@ -28,14 +28,14 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
   const brandSecondary = brandParts.slice(1).join(" ");
 
   return (
-    <div className="border-b border-site-border bg-site-surface text-site-muted">
+    <div className="border-b border-white/[0.08] bg-[#050D1B] text-slate-300">
       <div className="mx-auto flex min-h-10 max-w-[1320px] items-center justify-between gap-3 px-5 sm:min-h-11 sm:px-7 lg:px-10">
         <Link
           href="/"
           className="inline-flex min-w-0 items-center gap-2 sm:hidden"
           aria-label={`${COMPANY.name} — на главную`}
         >
-          <span className="relative block h-7 w-7 shrink-0 overflow-hidden rounded-full border border-site-border/70 bg-white">
+          <span className="relative block h-7 w-7 shrink-0 overflow-hidden rounded-full border border-white/18 bg-white">
             <Image
               src={HEADER_LOGO_SRC}
               alt={`${COMPANY.name} — логотип`}
@@ -47,11 +47,11 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
             />
           </span>
           <span className="min-w-0 leading-none">
-            <span className="block truncate text-[11px] font-bold uppercase tracking-[0.08em] text-site-primary">
+            <span className="block truncate text-[11px] font-bold uppercase tracking-[0.08em] text-white">
               {brandPrimary}
             </span>
             {brandSecondary ? (
-              <span className="mt-0.5 block truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-site-muted">
+              <span className="mt-0.5 block truncate text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                 {brandSecondary}
               </span>
             ) : null}
@@ -65,7 +65,7 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
           {links.map((item, i) => (
             <span key={item.href} className="inline-flex shrink-0 items-center gap-2 sm:gap-3">
               {i > 0 ? <NavDot /> : null}
-              <Link href={item.href} className="whitespace-nowrap text-site-muted transition-colors hover:text-site-ink">
+              <Link href={item.href} className="whitespace-nowrap text-slate-300 transition-colors hover:text-white">
                 {item.label}
               </Link>
             </span>
@@ -77,7 +77,7 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
             href={COMPANY_WHATSAPP_BASE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-site-whatsapp text-white shadow-sm transition hover:bg-site-whatsapp-hover"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-site-whatsapp text-white shadow-sm shadow-site-whatsapp/15 ring-1 ring-white/10 transition hover:bg-site-whatsapp-hover"
             aria-label="WhatsApp"
           >
             <WhatsappIcon className="h-[22px] w-[22px]" />
@@ -86,7 +86,7 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
             href={COMPANY_INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white shadow-sm outline-none ring-1 ring-black/[0.08] transition hover:ring-black/14 hover:brightness-[1.02] focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/8 shadow-sm outline-none ring-1 ring-white/12 transition hover:bg-white/12 hover:ring-white/20 focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
             aria-label="Instagram Mansvalve"
           >
             <InstagramBrandIcon className="h-[22px] w-[22px]" />
@@ -95,9 +95,9 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
             href={COMPANY_PHONE_HREF}
             title="Позвонить в отдел продаж"
             aria-label={`Позвонить: ${COMPANY.phoneDisplay}`}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-1 text-[13px] font-semibold tabular-nums text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2 sm:text-[15px] lg:text-base"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md px-1 text-[13px] font-semibold tabular-nums text-white no-underline outline-none transition-colors hover:text-site-soft-blue focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2 sm:text-[15px] lg:text-base"
           >
-            <Phone className="h-4 w-4 shrink-0 text-site-primary" aria-hidden strokeWidth={2} />
+            <Phone className="h-4 w-4 shrink-0 text-site-soft-blue" aria-hidden strokeWidth={2} />
             {COMPANY.phoneDisplay}
           </a>
         </div>

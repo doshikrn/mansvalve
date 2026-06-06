@@ -13,7 +13,7 @@ type HeaderCategoryBarProps = {
  */
 export function HeaderCategoryBar({ links }: HeaderCategoryBarProps) {
   return (
-    <div className="hidden border-t border-white/10 bg-site-primary-hover shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] md:block">
+    <div className="hidden border-t border-white/[0.08] bg-[#10192A] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] md:block">
       <div className="mx-auto flex max-w-[1320px] items-stretch px-5 sm:px-7 lg:px-10">
         <nav
           className="flex min-h-[56px] w-full flex-wrap items-center gap-x-4 gap-y-2 py-2 lg:min-h-[60px] lg:flex-nowrap lg:gap-x-6 lg:gap-y-0 lg:py-2.5"
@@ -21,7 +21,7 @@ export function HeaderCategoryBar({ links }: HeaderCategoryBarProps) {
         >
           <Link
             href="/catalog"
-            className="flex shrink-0 items-center gap-2 rounded-lg bg-white/[0.14] px-4 py-2.5 text-sm font-bold text-white shadow-sm ring-1 ring-white/25 transition hover:bg-white/[0.22] hover:ring-white/40 lg:px-5"
+            className="flex shrink-0 items-center gap-2 rounded-lg bg-site-primary px-4 py-2.5 text-sm font-bold text-white shadow-[0_16px_30px_-22px_rgba(47,107,255,0.85)] ring-1 ring-white/12 transition hover:bg-site-primary-hover hover:ring-white/20 lg:px-5"
           >
             <LayoutGrid className="h-[18px] w-[18px] shrink-0 opacity-95" aria-hidden strokeWidth={2} />
             Все категории
@@ -34,7 +34,7 @@ export function HeaderCategoryBar({ links }: HeaderCategoryBarProps) {
               <li key={item.href} className="shrink-0">
                 <Link
                   href={item.href}
-                  className="block whitespace-nowrap rounded-lg px-3.5 py-2.5 text-sm font-medium text-white/92 transition hover:bg-white/12 hover:text-white lg:px-4"
+                className="block whitespace-nowrap rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/[0.08] hover:text-white lg:px-4"
                 >
                   {item.label}
                 </Link>
