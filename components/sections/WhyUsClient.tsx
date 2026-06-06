@@ -34,12 +34,16 @@ function Card({
   Icon,
 }: WhyUsItem & { Icon: LucideIcon }) {
   return (
-    <div className="group flex h-full flex-col rounded-lg border border-white/[0.12] bg-slate-950/45 p-6 shadow-[0_12px_48px_-20px_rgb(0_0_0_/_0.5)] backdrop-blur-sm transition-[border-color,box-shadow,transform] duration-300 ease-out hover:-translate-y-[2px] hover:border-white/18 hover:bg-slate-950/55 hover:shadow-[0_18px_56px_-24px_rgb(0_0_0_/_0.55)] motion-reduce:hover:translate-y-0">
-      <div className="site-icon mb-4 h-12 w-12 shrink-0 border border-white/5 bg-site-primary/15 transition-colors group-hover:bg-site-primary group-hover:text-white">
+    <div className="group relative flex h-full min-h-[214px] flex-col overflow-hidden rounded-xl border border-white/[0.11] bg-[linear-gradient(145deg,rgba(15,23,42,0.74),rgba(8,20,40,0.94))] p-5 shadow-[0_18px_52px_-30px_rgb(0_0_0_/_0.72)] transition-[border-color,box-shadow,transform,background-color] duration-300 ease-out hover:-translate-y-[2px] hover:border-[#2F6BFF]/30 hover:shadow-[0_24px_62px_-34px_rgb(0_0_0_/_0.78)] motion-reduce:hover:translate-y-0 sm:p-6">
+      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-site-cta via-[#2F6BFF] to-transparent opacity-75" />
+      <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#2F6BFF]/10 blur-2xl transition-opacity duration-300 group-hover:opacity-80" />
+      <div className="site-icon mb-4 h-12 w-12 shrink-0 border border-[#2F6BFF]/18 bg-[#2F6BFF]/13 text-[#8bb4ff] transition-colors group-hover:bg-site-primary group-hover:text-white">
         <Icon className="h-6 w-6" />
       </div>
-      <p className="mb-2 shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-site-tech">{metric}</p>
-      <h3 className="mb-1 shrink-0 text-base font-bold text-slate-50 sm:text-[17px]">{title}</h3>
+      <p className="mb-3 w-fit shrink-0 rounded-full border border-white/[0.1] bg-white/[0.045] px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#8bb4ff]">
+        {metric}
+      </p>
+      <h3 className="mb-2 shrink-0 text-base font-bold leading-snug text-slate-50 sm:text-[17px]">{title}</h3>
       <p className="text-sm leading-snug text-slate-400">{desc}</p>
     </div>
   );
@@ -47,8 +51,9 @@ function Card({
 
 export function WhyUsClient({ sectionEyebrow, sectionTitle, items }: WhyUsClientProps) {
   return (
-    <section className="site-section-dark relative bg-[#081428]">
-      <div className="site-container">
+    <section className="site-section-dark relative overflow-hidden border-t border-white/[0.06] bg-[#081428]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2F6BFF]/35 to-transparent" />
+      <div className="site-container relative">
         <motion.div
           className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3"
           variants={premiumStaggerContainer}

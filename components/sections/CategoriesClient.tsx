@@ -29,8 +29,8 @@ type CategoriesClientProps = {
 
 export function CategoriesClient({ products, copy }: CategoriesClientProps) {
   return (
-    <section className="site-section-dark relative overflow-hidden bg-[#081428] px-0">
-      <div className="site-container relative">
+    <section className="site-section-dark site-industrial-shell relative overflow-hidden border-t border-white/[0.06] px-0">
+      <div className="site-container relative z-[2]">
         <motion.div
           className="flex flex-col"
           variants={premiumStaggerContainer}
@@ -40,13 +40,13 @@ export function CategoriesClient({ products, copy }: CategoriesClientProps) {
         >
           <motion.div
             variants={premiumIntroBlock}
-            className="mb-6 flex flex-col gap-4 sm:mb-8"
+            className="mb-6 flex flex-col gap-4 sm:mb-8 lg:mb-9"
           >
             <div className="min-w-0">
               <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#2F6BFF]">
                 {copy.sectionEyebrow}
               </p>
-              <h2 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
+              <h2 className="mt-2 max-w-3xl text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl">
                 {copy.sectionTitle}
               </h2>
               <p className="mt-2 max-w-[760px] text-base leading-relaxed text-slate-400 sm:text-lg">

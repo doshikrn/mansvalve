@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Gauge, Package, Ruler, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  FileCheck2,
+  Gauge,
+  Package,
+  Ruler,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
@@ -29,6 +38,24 @@ function formatPrice(price: number): string {
     maximumFractionDigits: 0,
   }).format(price);
 }
+
+const CATALOG_TRUST_POINTS = [
+  {
+    icon: ShieldCheck,
+    title: "Проверенное качество",
+    desc: "Паспорта, сертификаты и контроль партии",
+  },
+  {
+    icon: Truck,
+    title: "Доставка по Казахстану",
+    desc: "Срок и маршрут фиксируем в КП",
+  },
+  {
+    icon: FileCheck2,
+    title: "Документы под объект",
+    desc: "Договор, НДС и закрывающие документы",
+  },
+] as const;
 
 export function ProductShowcaseCarousel({
   products,
@@ -156,10 +183,10 @@ export function ProductShowcaseCarousel({
           "relative z-[2] isolate w-full",
           isHero
             ? "max-lg:min-h-0 lg:min-h-[480px] lg:overflow-hidden"
-            : "min-h-[680px] lg:min-h-[520px]",
+            : "max-lg:min-h-0 lg:min-h-[540px]",
         )}
       >
-        <MotionConfig reducedMotion="never">
+        <MotionConfig reducedMotion={reducedMotion ? "always" : "never"}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={slideKey}
@@ -167,7 +194,7 @@ export function ProductShowcaseCarousel({
                 "flex w-full flex-col",
                 isHero
                   ? "max-lg:relative max-lg:h-auto max-lg:min-h-0 lg:absolute lg:inset-0 lg:h-full"
-                  : "absolute inset-0 h-full",
+                  : "max-lg:relative max-lg:h-auto lg:absolute lg:inset-0 lg:h-full",
               )}
               initial={{ opacity: 0, scale: 0.992, y: 5 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -179,7 +206,7 @@ export function ProductShowcaseCarousel({
                   "grid lg:items-stretch",
                   isHero
                     ? "max-lg:flex-none lg:flex-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]"
-                    : "flex-1 lg:[grid-template-columns:60%_40%]",
+                    : "max-lg:flex-none lg:flex-1 lg:grid-cols-[minmax(0,1.06fr)_minmax(360px,0.94fr)]",
                 )}
               >
                 <Link
@@ -203,9 +230,9 @@ export function ProductShowcaseCarousel({
                       "rounded-none",
                       isHero
                         ? "aspect-[16/10] lg:h-full lg:aspect-auto"
-                        : "aspect-[16/10] lg:h-full lg:aspect-auto lg:rounded-l-[calc(0.75rem-1px)]",
+                        : "aspect-[4/3] sm:aspect-[16/10] lg:h-full lg:aspect-auto lg:rounded-l-[calc(1rem-1px)]",
                     )}
-                    safeAreaClassName={isHero ? "p-6 sm:p-8 lg:p-10" : "p-5 sm:p-8 lg:p-10"}
+                    safeAreaClassName={isHero ? "p-6 sm:p-8 lg:p-10" : "p-6 sm:p-8 lg:p-12"}
                     imageClassName="group-hover:scale-[1.015]"
                   >
                     <div className={cn("absolute inset-0 bg-gradient-to-t to-transparent", isHero ? "from-site-deep/56 via-site-deep/8" : "from-black/[0.18] via-transparent")} />
@@ -245,27 +272,61 @@ export function ProductShowcaseCarousel({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex min-w-0 flex-col gap-4 px-5 pb-6 pt-4 sm:px-6 lg:min-h-[500px] lg:justify-between lg:py-6">
-                    <div className="flex flex-col gap-3">
-                      <div className="inline-flex w-fit items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-[#2F6BFF]">
+                  <div className="flex min-w-0 flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:min-h-[540px] lg:justify-between lg:px-7">
+                    <div className="flex min-w-0 flex-col gap-4">
+                      <div className="inline-flex w-fit items-center gap-2 rounded-lg border border-[#2F6BFF]/25 bg-[#2F6BFF]/10 px-2.5 py-1 text-xs font-semibold text-[#8bb4ff]">
                         <Package className="h-3.5 w-3.5" />
                         {catalogBadgeLabel}
                       </div>
-                      <h4 className="line-clamp-2 break-words text-[1.2rem] font-bold leading-[1.2] tracking-tight text-white sm:text-3xl">{view.displayName}</h4>
-                      <p className="line-clamp-2 text-sm leading-snug text-slate-300 sm:text-[15px]">{view.shortDescription}</p>
-                      <div className="hidden grid-cols-3 gap-2 pt-1 lg:grid">
+                      <div className="min-w-0">
+                        <h4 className="line-clamp-3 break-words text-[1.45rem] font-bold leading-[1.14] tracking-tight text-white sm:text-[1.8rem] lg:line-clamp-2 lg:text-[2rem]">
+                          {view.displayName}
+                        </h4>
+                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-slate-300 sm:text-[15px] lg:line-clamp-2">
+                          {view.shortDescription}
+                        </p>
+                      </div>
+                      <div className="hidden grid-cols-3 gap-2 pt-1 sm:grid">
                         {specs.map(({ icon: Icon, label, value }) => (
-                          <div key={`${label}-${product.slug}`} className="flex min-h-[5rem] min-w-0 flex-col rounded-lg border border-white/[0.1] bg-white/[0.04] px-2.5 py-2">
-                            <Icon className="mb-1 h-4 w-4 text-[#2F6BFF]" />
-                            <p className="text-[10px] font-semibold uppercase text-slate-500">{label}</p>
-                            <p className={cn("text-sm font-bold leading-snug text-slate-100", label === "Материал" ? "line-clamp-3 break-words" : "line-clamp-2 break-words")}>{value}</p>
+                          <div
+                            key={`${label}-${product.slug}`}
+                            className="flex min-h-[5.25rem] min-w-0 flex-col rounded-lg border border-white/[0.1] bg-white/[0.045] px-3 py-2.5"
+                          >
+                            <Icon className="mb-1.5 h-4 w-4 text-[#8bb4ff]" />
+                            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</p>
+                            <p
+                              className={cn(
+                                "break-words font-bold leading-snug text-slate-100",
+                                label === "Материал" ? "text-[13px]" : "line-clamp-2 text-sm",
+                              )}
+                            >
+                              {value}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="hidden grid-cols-1 gap-2 pt-1 lg:grid">
+                        {CATALOG_TRUST_POINTS.map(({ icon: Icon, title: trustTitle, desc }) => (
+                          <div
+                            key={trustTitle}
+                            className="flex items-start gap-3 rounded-lg border border-white/[0.08] bg-white/[0.035] px-3 py-2.5"
+                          >
+                            <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#2F6BFF]/12 text-[#8bb4ff]">
+                              <Icon className="h-4 w-4" strokeWidth={2} aria-hidden />
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold leading-snug text-slate-100">{trustTitle}</span>
+                              <span className="mt-0.5 block text-xs leading-snug text-slate-400">{desc}</span>
+                            </span>
                           </div>
                         ))}
                       </div>
                     </div>
                     <div className="border-t border-white/10 pt-4">
                       <p className="text-xs font-semibold uppercase text-slate-500">{hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}</p>
-                      <p className="mt-1 text-[2rem] font-bold leading-none tabular-nums text-[#2F6BFF]">{hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}</p>
+                      <p className="mt-1 text-[1.85rem] font-bold leading-none tabular-nums text-white sm:text-[2rem]">
+                        {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
+                      </p>
                       <div className="mt-4 flex flex-col gap-3">
                         <Button asChild className="site-primary-cta min-h-11 flex-1 px-5 font-semibold">
                           <Link href={view.canonicalPath}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
