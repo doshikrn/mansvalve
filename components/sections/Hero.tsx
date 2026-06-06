@@ -16,7 +16,6 @@ import { resolveHomeHero } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
 const HERO_BACKGROUND_IMAGE = "/images/hero-background.webp";
-const HERO_VALVE_IMAGE = "/images/hero-valve.webp";
 
 export async function Hero() {
   const prods = await getPublicCatalogListingProducts();
@@ -71,30 +70,6 @@ export async function Hero() {
         aria-hidden
       />
 
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-[1] hidden w-[min(56vw,760px)] lg:block"
-        aria-hidden
-      >
-        <div className="hero-enter-right absolute bottom-[-2%] right-[-2%] h-[min(104%,760px)] w-[min(100%,700px)]">
-          <div
-            className="absolute bottom-[10%] right-[8%] h-[72%] w-[72%] rounded-full opacity-40"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(47,107,255,0.55) 0%, rgba(47,107,255,0.12) 42%, transparent 72%)",
-            }}
-          />
-          <Image
-            src={HERO_VALVE_IMAGE}
-            alt=""
-            fill
-            priority
-            unoptimized
-            sizes="(max-width: 1536px) 56vw, 760px"
-            className="object-contain object-bottom object-right drop-shadow-[0_40px_100px_rgba(0,0,0,0.5)]"
-          />
-        </div>
-      </div>
-
       <div className="site-container relative z-10 py-10 sm:py-14 lg:py-16 xl:py-[4.5rem]">
         <div className="hero-enter-left max-w-3xl lg:max-w-[min(100%,640px)] xl:max-w-[min(100%,680px)]">
           <div className="site-industrial-chip mb-5 px-4 py-2 text-sm font-semibold transition-colors duration-300 hover:border-[#2F6BFF]/35">
@@ -110,25 +85,6 @@ export async function Hero() {
           <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-200 sm:text-[17px]">
             {heroContent.subhead}
           </p>
-
-          <div className="relative mb-8 aspect-[4/5] w-full max-w-[280px] sm:max-w-xs lg:hidden">
-            <div
-              className="absolute inset-0 scale-90 opacity-50"
-              style={{
-                background: "radial-gradient(circle at 50% 62%, rgba(47,107,255,0.35) 0%, transparent 68%)",
-              }}
-              aria-hidden
-            />
-            <Image
-              src={HERO_VALVE_IMAGE}
-              alt="Промышленная задвижка MANSVALVE GROUP"
-              fill
-              priority
-              unoptimized
-              sizes="(max-width: 1024px) 72vw, 320px"
-              className="object-contain object-bottom"
-            />
-          </div>
 
           <div className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
             <Button
