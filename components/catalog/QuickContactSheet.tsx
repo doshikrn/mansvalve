@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, Phone, Send } from "lucide-react";
+import { ChevronRight, Mail, Phone, Send } from "lucide-react";
 
 import {
   Dialog,
@@ -28,6 +28,8 @@ export interface QuickContactSheetAnalytics {
 export interface QuickContactSheetProps {
   /** Existing WhatsApp deep link (built by callers via lib/company helpers). */
   whatsAppUrl: string;
+  /** Existing `mailto:` link (built by callers via lib/company helpers). */
+  emailUrl: string;
   /**
    * `#request-name` for an on-page scroll to the existing form, or a path with
    * hash (e.g. `/tovar/slug#request-name`) to navigate to the form on the PDP.
@@ -43,6 +45,7 @@ export interface QuickContactSheetProps {
 
 export function QuickContactSheet({
   whatsAppUrl,
+  emailUrl,
   formTarget,
   analytics,
   triggerClassName,
@@ -77,6 +80,12 @@ export function QuickContactSheet({
   const handlePhone = () => {
     // Navigation + `phone_click` are handled by the existing GlobalClickTracker.
     trackEvent("contact_sheet_phone", buildPayload());
+    setOpen(false);
+  };
+
+  const handleEmail = () => {
+    // Navigation + `email_click` are handled by the existing GlobalClickTracker.
+    trackEvent("contact_sheet_email", buildPayload());
     setOpen(false);
   };
 
@@ -159,6 +168,22 @@ export function QuickContactSheet({
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-semibold text-site-ink">Позвонить</span>
               <span className="block text-xs text-site-muted">Консультация по наличию и цене</span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-site-muted" aria-hidden />
+          </a>
+
+          <a
+            href={emailUrl}
+            onClick={handleEmail}
+            aria-label="Отправить на почту — запросить цену и документы"
+            className="group flex items-center gap-3 rounded-xl border border-site-border bg-site-bg p-3 transition-colors hover:border-site-primary hover:bg-[#EFF6FF]"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-site-primary/10 text-site-primary">
+              <Mail className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-site-ink">Отправить на почту</span>
+              <span className="block text-xs text-site-muted">Запросить цену и документы</span>
             </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-site-muted" aria-hidden />
           </a>

@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
+import { Copy, Mail, Menu, Phone, Search, Truck, X } from "lucide-react";
 import { CatalogSearchPanel } from "@/components/search/CatalogSearchPanel";
+import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { HEADER_LOGO_SRC } from "@/components/layout/header-logo";
 import { COMPANY, COMPANY_EMAIL_HREF, COMPANY_PHONE_HREF } from "@/lib/company";
 import { cn } from "@/lib/utils";
@@ -121,15 +122,28 @@ export function MainHeader({
               </div>
               <div className="border-t border-slate-200/80 pt-2">
                 <p className="text-[10px] font-medium uppercase tracking-wide text-site-muted">Для заявок</p>
-                <a
-                  href={COMPANY_EMAIL_HREF}
-                  className="mt-1 flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
-                >
-                  <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-site-muted" aria-hidden strokeWidth={2} />
-                  <span className="min-w-0 break-all underline-offset-[3px] decoration-site-primary no-underline hover:underline">
-                    {COMPANY.email}
-                  </span>
-                </a>
+                <div className="mt-1 flex min-w-0 items-start gap-1.5">
+                  <a
+                    href={COMPANY_EMAIL_HREF}
+                    className="flex min-w-0 items-start gap-2 rounded-md text-left text-xs font-semibold leading-snug text-site-ink no-underline outline-none transition-colors hover:text-site-primary focus-visible:ring-2 focus-visible:ring-site-primary/35 focus-visible:ring-offset-2"
+                  >
+                    <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-site-muted" aria-hidden strokeWidth={2} />
+                    <span className="min-w-0 break-all underline-offset-[3px] decoration-site-primary no-underline hover:underline">
+                      {COMPANY.email}
+                    </span>
+                  </a>
+                  <CopyToClipboard
+                    value={COMPANY.email}
+                    messageForCopyToast={COMPANY.email}
+                    kind="email"
+                    variant="minimal"
+                    aria-label="Скопировать e-mail"
+                    title="Скопировать e-mail"
+                    className="mt-0.5 shrink-0 text-site-muted hover:text-site-primary"
+                  >
+                    <Copy className="h-3.5 w-3.5" aria-hidden />
+                  </CopyToClipboard>
+                </div>
               </div>
             </div>
 

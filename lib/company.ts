@@ -86,6 +86,40 @@ export function buildCompanyProductInquiryWhatsAppUrl(
   return buildCompanyWhatsAppUrl(PRODUCT_INQUIRY_MESSAGE(name, options?.dn, options?.pn));
 }
 
+const PRODUCT_EMAIL_BODY = (name: string, dn?: number | null, pn?: number | null) => {
+  const productName = name.trim() || "позиция";
+  const lines: string[] = ["Здравствуйте.", "", "Интересует товар:", productName];
+
+  if (dn != null || pn != null) {
+    lines.push("");
+    if (dn != null) lines.push(`DN: ${dn}`);
+    if (pn != null) lines.push(`PN: ${pn}`);
+  }
+
+  lines.push(
+    "",
+    "Прошу уточнить:",
+    "- цену;",
+    "- наличие;",
+    "- срок поставки;",
+    "- возможность отправить паспорт / сертификат.",
+    "",
+    "Контакты для ответа:",
+    "[пользователь заполнит самостоятельно]",
+  );
+  return lines.join("\n");
+};
+
+/** Каталог: `mailto:` с предзаполненной темой и телом по конкретному товару. */
+export function buildCompanyProductInquiryEmailUrl(
+  name: string,
+  options?: { dn?: number | null; pn?: number | null },
+): string {
+  const subject = encodeURIComponent(`Запрос цены: ${name.trim() || "позиция"}`);
+  const body = encodeURIComponent(PRODUCT_EMAIL_BODY(name, options?.dn, options?.pn));
+  return `mailto:${COMPANY.email}?subject=${subject}&body=${body}`;
+}
+
 const CONTACTS_QUICK_MESSAGE =
   "Здравствуйте! Хочу уточнить детали по поставке промышленной арматуры.";
 

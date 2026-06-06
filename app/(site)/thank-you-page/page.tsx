@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle2, FileText, MessageCircle, Phone } from "lucide-react";
+import { CheckCircle2, FileText, Mail, MessageCircle, Phone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { COMPANY, COMPANY_BRAND_SEO, buildCompanyWhatsAppUrl } from "@/lib/company";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import {
+  COMPANY,
+  COMPANY_BRAND_SEO,
+  COMPANY_EMAIL_HREF,
+  COMPANY_PHONE_HREF,
+  buildCompanyWhatsAppUrl,
+} from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Спасибо за заявку",
@@ -68,20 +75,41 @@ export default function ThankYouPage() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button asChild>
-            <Link href="/catalog">Вернуться в каталог</Link>
-          </Button>
+        <div className="mt-8 w-full max-w-2xl rounded-2xl border border-site-border bg-white p-5 text-center sm:p-6">
+          <p className="text-sm font-semibold text-site-ink">
+            Хотите получить ответ быстрее? Свяжитесь с менеджером напрямую.
+          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button asChild className="border-0 !bg-site-whatsapp !text-white hover:!bg-site-whatsapp-hover">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                <WhatsappIcon className="mr-2 h-4 w-4" />
+                Написать в WhatsApp
+              </a>
+            </Button>
+            <Button asChild variant="outline">
+              <a href={COMPANY_PHONE_HREF}>
+                <Phone className="mr-2 h-4 w-4" />
+                Позвонить
+              </a>
+            </Button>
+            <Button asChild variant="outline">
+              <a href={COMPANY_EMAIL_HREF}>
+                <Mail className="mr-2 h-4 w-4" />
+                Отправить на почту
+              </a>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-6">
           <Button asChild variant="outline">
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-              Написать в WhatsApp
-            </a>
+            <Link href="/catalog">Вернуться в каталог</Link>
           </Button>
         </div>
 
         <p className="mt-6 text-sm text-site-muted">
           Отдел продаж:{" "}
-          <a className="font-semibold text-site-ink hover:text-site-primary" href={`tel:${COMPANY.phoneE164}`}>
+          <a className="font-semibold text-site-ink hover:text-site-primary" href={COMPANY_PHONE_HREF}>
             {COMPANY.phoneDisplay}
           </a>
         </p>

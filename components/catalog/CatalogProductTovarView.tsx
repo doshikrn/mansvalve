@@ -18,6 +18,7 @@ import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { buildCompanyProductInquiryEmailUrl } from "@/lib/company";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 import type { TovarProductPageData } from "@/components/catalog/tovar-product-presentation";
@@ -224,6 +225,10 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
             <div className="flex flex-col gap-3 sm:flex-row">
               <QuickContactSheet
                 whatsAppUrl={waUrl}
+                emailUrl={buildCompanyProductInquiryEmailUrl(productName, {
+                  dn: product.dn,
+                  pn: product.pn,
+                })}
                 formTarget="#request-name"
                 analytics={{
                   source: "product-pdp",

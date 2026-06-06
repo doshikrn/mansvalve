@@ -5,7 +5,10 @@ import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
 import { QuickContactSheet } from "@/components/catalog/QuickContactSheet";
-import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
+import {
+  buildCompanyProductInquiryEmailUrl,
+  buildCompanyProductInquiryWhatsAppUrl,
+} from "@/lib/company";
 import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
 import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -133,6 +136,10 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex gap-2">
           <QuickContactSheet
             whatsAppUrl={buildCompanyProductInquiryWhatsAppUrl(productName, {
+              dn: product.dn,
+              pn: product.pn,
+            })}
+            emailUrl={buildCompanyProductInquiryEmailUrl(productName, {
               dn: product.dn,
               pn: product.pn,
             })}

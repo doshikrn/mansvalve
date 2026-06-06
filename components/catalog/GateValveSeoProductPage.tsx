@@ -8,7 +8,11 @@ import { QuickContactSheet } from "@/components/catalog/QuickContactSheet";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategoryVisual } from "@/lib/category-visuals";
-import { buildCompanyProductInquiryWhatsAppUrl, COMPANY } from "@/lib/company";
+import {
+  buildCompanyProductInquiryEmailUrl,
+  buildCompanyProductInquiryWhatsAppUrl,
+  COMPANY,
+} from "@/lib/company";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { getSiteBaseUrl } from "@/lib/site-url";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
@@ -150,6 +154,10 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <QuickContactSheet
               whatsAppUrl={waUrl}
+              emailUrl={buildCompanyProductInquiryEmailUrl(displayName, {
+                dn: page.dn,
+                pn: page.pn,
+              })}
               formTarget="#request-name"
               analytics={{
                 source: "series-landing",
