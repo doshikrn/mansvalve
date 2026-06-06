@@ -51,8 +51,8 @@ export async function ContactHubSection() {
               </li>
             ))}
           </ul>
-          <div className="mt-5 flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
-            <Button asChild size="sm" className="site-primary-cta h-10 px-4 text-sm">
+          <div className="mt-5 flex flex-col gap-2">
+            <Button asChild size="sm" className="site-primary-cta h-10 w-full justify-center px-4 text-sm">
               <a
                 href={buildCompanyWhatsAppUrl(REQUEST_DOCS_WA_MESSAGE)}
                 target="_blank"
@@ -66,7 +66,7 @@ export async function ContactHubSection() {
               asChild
               size="sm"
               variant="outline"
-              className="h-10 border-white/15 bg-white/[0.04] px-4 text-sm text-slate-100 hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
+              className="h-10 w-full justify-center border-white/15 bg-white/[0.04] px-4 text-sm text-slate-100 hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
             >
               <Link href="/certificates">Все сертификаты</Link>
             </Button>

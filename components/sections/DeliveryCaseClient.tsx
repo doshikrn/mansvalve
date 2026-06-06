@@ -129,7 +129,6 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
                 </div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-site-primary">{c.object}</p>
                 <h3 className="mt-2 line-clamp-3 text-sm font-bold leading-snug text-site-ink sm:text-base">{c.title}</h3>
-                <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-site-muted">{c.text}</p>
 
                 <div className="mt-4 grid min-w-0 grid-cols-1 gap-2">
                   <MetaPill icon={Package} label={content.kitMetaLabel} value={c.positions} />
