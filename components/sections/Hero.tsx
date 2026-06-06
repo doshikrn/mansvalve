@@ -29,7 +29,7 @@ export async function Hero() {
   const trustIcons = [FileText, Truck, BadgeCheck, ShieldCheck] as const;
 
   return (
-    <section className="site-industrial-shell border-b border-white/[0.06]">
+    <section className="site-industrial-shell relative overflow-hidden border-b border-white/[0.06]">
       <Image
         src="/images/category-zadvizhki.png"
         alt=""
@@ -40,7 +40,7 @@ export async function Hero() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#061024_0%,rgba(6,16,36,0.92)_35%,rgba(6,16,36,0.58)_62%,#061024_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#061024_0%,rgba(6,16,36,0.94)_42%,rgba(6,16,36,0.72)_68%,rgba(6,16,36,0.38)_100%)]"
         aria-hidden
       />
       <div
@@ -48,18 +48,7 @@ export async function Hero() {
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute -right-32 top-1/2 h-[min(120%,900px)] w-[min(100vw,720px)] -translate-y-1/2 rounded-full opacity-[0.20]"
-        style={{
-          background: "radial-gradient(circle at center, #2F6BFF 0%, transparent 68%)",
-        }}
-        aria-hidden
-      />
-      <div
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_62%_at_96%_16%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.02)_36%,transparent_62%)]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.04)_100%)] lg:block"
         aria-hidden
       />
       <div
@@ -71,127 +60,126 @@ export async function Hero() {
         }}
         aria-hidden
       />
-      <div className="site-container relative py-10 sm:py-14 lg:py-16">
-        <div className="grid gap-9 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.9fr)] lg:items-center lg:gap-10 xl:gap-12">
-          <div className="hero-enter-left">
-            <div className="site-industrial-chip mb-5 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors duration-300 hover:border-[#2F6BFF]/35">
-              <MapPin className="h-4 w-4 shrink-0 text-[#2F6BFF]" />
-              {heroContent.eyebrow}
-            </div>
 
-            <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-[1.03] tracking-tight text-white drop-shadow-[0_18px_36px_rgba(0,0,0,0.32)] sm:text-5xl lg:text-[58px]">
-              {heroContent.h1Line1}{" "}
-              <span className="text-site-cta">{heroContent.h1Highlight}</span>
-            </h1>
+      {/* Правая визуальная зона — как в референсе: арматура в кадре hero, без карточки витрины */}
+      <div
+        className="pointer-events-none absolute bottom-0 right-0 hidden h-[min(92%,640px)] w-[min(50vw,620px)] lg:block xl:w-[min(48vw,680px)]"
+        aria-hidden
+      >
+        <div
+          className="absolute inset-0 opacity-[0.22]"
+          style={{
+            background: "radial-gradient(circle at 58% 42%, #2F6BFF 0%, transparent 58%)",
+          }}
+        />
+        <Image
+          src="/задвижки.png"
+          alt=""
+          fill
+          priority
+          quality={88}
+          sizes="(max-width: 1280px) 50vw, 680px"
+          className="object-contain object-bottom object-right"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,0.55)_0%,rgba(6,16,36,0.12)_38%,transparent_62%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#061024] to-transparent" />
+      </div>
 
-            <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-200 sm:text-[17px]">
-              {heroContent.subhead}
-            </p>
-
-            <div className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="site-primary-cta h-auto min-h-[3.5rem] px-8 py-[0.875rem] text-base font-semibold tracking-tight sm:min-h-[3.625rem] sm:text-lg"
-              >
-                <a
-                  href={buildCompanyWhatsAppUrl(heroContent.kpWhatsAppMessage)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center"
-                >
-                  {heroContent.primaryCta}
-                  <ArrowRight className="ml-2.5 h-5 w-5 shrink-0" />
-                </a>
-              </Button>
-
-              <Link
-                href={COMPANY_GMAIL_COMPOSE_KP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                prefetch={false}
-                className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-white/14 bg-white/[0.07] px-4 py-2.5 text-sm font-semibold text-slate-100 shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/50 hover:bg-[#2F6BFF]/16 hover:text-white hover:shadow-[0_0_24px_rgb(47_107_255_/_.22)] sm:self-center"
-              >
-                <FileText className="h-4 w-4 shrink-0 text-[#2F6BFF] transition-colors group-hover:text-white" />
-                <span>{heroContent.secondaryCta}</span>
-              </Link>
-            </div>
-
-            <div className="site-trust-strip mt-6" role="list" aria-label="Преимущества поставщика">
-              {heroContent.trustPoints.map((point, i) => {
-                const Icon = trustIcons[i % trustIcons.length] ?? FileText;
-                return (
-                  <span key={`${i}-${point.slice(0, 12)}`} className="site-trust-strip-item" role="listitem">
-                    <Icon className="h-4 w-4 shrink-0 text-site-cta" aria-hidden strokeWidth={1.8} />
-                    <span className="min-w-0">{point}</span>
-                  </span>
-                );
-              })}
-            </div>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              {stats.map((s, idx) => {
-                const Icon = statIcons[idx] ?? Clock;
-                return (
-                  <div
-                    key={s.label}
-                    className="site-industrial-proof-card flex gap-3 rounded-lg p-4 transition-colors duration-200 ease-out hover:border-white/18 hover:bg-white/[0.08]"
-                  >
-                    <Icon
-                      className="mt-1 h-5 w-5 shrink-0 text-site-soft-blue"
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
-                    <div className="min-w-0">
-                      <div className="text-2xl font-bold tabular-nums tracking-tight text-white sm:text-[1.65rem] lg:text-[1.75rem]">
-                        {s.val}
-                      </div>
-                      <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-white/[0.75] sm:text-[11px]">
-                        {s.label}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      <div className="site-container relative z-10 py-10 sm:py-14 lg:py-16">
+        <div className="hero-enter-left max-w-3xl lg:max-w-[min(100%,680px)] xl:max-w-[min(100%,720px)]">
+          <div className="site-industrial-chip mb-5 px-4 py-2 text-sm font-semibold transition-colors duration-300 hover:border-[#2F6BFF]/35">
+            <MapPin className="h-4 w-4 shrink-0 text-[#2F6BFF]" />
+            {heroContent.eyebrow}
           </div>
 
-          <div
-            className="hero-enter-right site-featured-radius flex flex-col overflow-hidden border border-white/[0.14] bg-[#07111f]"
-            style={{ boxShadow: "var(--shadow-site-showcase)" }}
-          >
-            <div className="relative min-h-[240px] flex-1 sm:min-h-[300px] lg:min-h-[340px]">
-              <Image
-                src="/задвижки.png"
-                alt="Промышленная трубопроводная арматура MANSVALVE GROUP"
-                fill
-                priority
-                quality={88}
-                sizes="(max-width: 1024px) 100vw, 48vw"
-                className="object-cover object-center"
-              />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,0.2)_0%,rgba(6,16,36,0.08)_42%,rgba(6,16,36,0.42)_100%)]" aria-hidden />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_62%_30%,rgba(47,107,255,0.14),transparent_38%)]" aria-hidden />
-              <div className="absolute left-4 top-4 rounded-lg border border-white/12 bg-[#061024]/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-lg sm:left-5 sm:top-5">
-                {heroContent.featuredEyebrow}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-2 border-t border-white/10 bg-[#061024] p-3 sm:grid-cols-3 sm:gap-2.5 sm:p-4">
-              {[
-                { title: "ГОСТ / DIN / ISO", desc: "Сертификаты и паспорта", Icon: ShieldCheck },
-                { title: "15 минут", desc: "КП в рабочее время", Icon: Clock },
-                { title: "B2B / B2G", desc: "Договор, НДС, поставка", Icon: BadgeCheck },
-              ].map(({ title, desc, Icon }) => (
+          <h1 className="mb-4 max-w-3xl text-4xl font-bold leading-[1.03] tracking-tight text-white drop-shadow-[0_18px_36px_rgba(0,0,0,0.32)] sm:text-5xl lg:text-[58px]">
+            {heroContent.h1Line1}{" "}
+            <span className="text-site-cta">{heroContent.h1Highlight}</span>
+          </h1>
+
+          <p className="mb-8 max-w-xl text-base leading-relaxed text-slate-200 sm:text-[17px]">
+            {heroContent.subhead}
+          </p>
+
+          {/* Мобильная визуализация — без подписи «Популярные позиции» */}
+          <div className="relative mb-8 aspect-[16/11] w-full overflow-hidden rounded-xl border border-white/[0.08] bg-[#07111f]/60 lg:hidden">
+            <Image
+              src="/задвижки.png"
+              alt="Промышленная трубопроводная арматура MANSVALVE GROUP"
+              fill
+              priority
+              quality={85}
+              sizes="100vw"
+              className="object-contain object-center p-4"
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(47,107,255,0.12),transparent_55%)]" aria-hidden />
+          </div>
+
+          <div className="relative flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <Button
+              asChild
+              size="lg"
+              className="site-primary-cta h-auto min-h-[3.5rem] px-8 py-[0.875rem] text-base font-semibold tracking-tight sm:min-h-[3.625rem] sm:text-lg"
+            >
+              <a
+                href={buildCompanyWhatsAppUrl(heroContent.kpWhatsAppMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center"
+              >
+                {heroContent.primaryCta}
+                <ArrowRight className="ml-2.5 h-5 w-5 shrink-0" />
+              </a>
+            </Button>
+
+            <Link
+              href={COMPANY_GMAIL_COMPOSE_KP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              prefetch={false}
+              className="group inline-flex min-h-[3.5rem] items-center justify-center gap-2 self-start rounded-lg border border-white/14 bg-white/[0.07] px-4 py-2.5 text-sm font-semibold text-slate-100 shadow-sm transition-all duration-300 hover:border-[#2F6BFF]/50 hover:bg-[#2F6BFF]/16 hover:text-white hover:shadow-[0_0_24px_rgb(47_107_255_/_.22)] sm:self-center"
+            >
+              <FileText className="h-4 w-4 shrink-0 text-[#2F6BFF] transition-colors group-hover:text-white" />
+              <span>{heroContent.secondaryCta}</span>
+            </Link>
+          </div>
+
+          <div className="site-trust-strip mt-6" role="list" aria-label="Преимущества поставщика">
+            {heroContent.trustPoints.map((point, i) => {
+              const Icon = trustIcons[i % trustIcons.length] ?? FileText;
+              return (
+                <span key={`${i}-${point.slice(0, 12)}`} className="site-trust-strip-item" role="listitem">
+                  <Icon className="h-4 w-4 shrink-0 text-site-cta" aria-hidden strokeWidth={1.8} />
+                  <span className="min-w-0">{point}</span>
+                </span>
+              );
+            })}
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            {stats.map((s, idx) => {
+              const Icon = statIcons[idx] ?? Clock;
+              return (
                 <div
-                  key={title}
-                  className="rounded-lg border border-white/10 bg-white/[0.04] p-3"
+                  key={s.label}
+                  className="site-industrial-proof-card flex gap-3 rounded-lg p-4 transition-colors duration-200 ease-out hover:border-white/18 hover:bg-white/[0.08]"
                 >
-                  <Icon className="mb-2 h-4 w-4 text-site-cta" strokeWidth={2} aria-hidden />
-                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-white">{title}</p>
-                  <p className="mt-1 text-[11px] leading-snug text-slate-300">{desc}</p>
+                  <Icon
+                    className="mt-1 h-5 w-5 shrink-0 text-site-soft-blue"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
+                  <div className="min-w-0">
+                    <div className="text-2xl font-bold tabular-nums tracking-tight text-white sm:text-[1.65rem] lg:text-[1.75rem]">
+                      {s.val}
+                    </div>
+                    <div className="mt-1 max-w-[13rem] text-[10px] leading-snug text-white/[0.75] sm:text-[11px]">
+                      {s.label}
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
