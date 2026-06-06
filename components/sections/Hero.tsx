@@ -16,6 +16,9 @@ import { resolveHomeHero } from "@/lib/site-content/public";
 import { buildCompanyWhatsAppUrl, COMPANY_GMAIL_COMPOSE_KP_URL } from "@/lib/company";
 
 const HERO_BACKGROUND_IMAGE = "/images/hero-background.webp";
+const HERO_BACKGROUND_SHARP_IMAGE = "/images/hero-background-sharp.webp";
+const HERO_VALVE_MASK =
+  "linear-gradient(to right, transparent 0%, transparent 44%, rgba(0,0,0,0.35) 52%, black 64%)";
 
 export async function Hero() {
   const prods = await getPublicCatalogListingProducts();
@@ -42,6 +45,23 @@ export async function Hero() {
           sizes="100vw"
           className="scale-[1.03] object-cover object-[58%_center] motion-reduce:scale-100"
         />
+        <div
+          className="absolute inset-0"
+          style={{
+            maskImage: HERO_VALVE_MASK,
+            WebkitMaskImage: HERO_VALVE_MASK,
+          }}
+        >
+          <Image
+            src={HERO_BACKGROUND_SHARP_IMAGE}
+            alt=""
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className="scale-[1.03] object-cover object-[58%_center] motion-reduce:scale-100"
+          />
+        </div>
       </div>
 
       <div

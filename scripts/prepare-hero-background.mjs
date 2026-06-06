@@ -12,21 +12,26 @@ const meta = await sharp(input).metadata();
 const w = meta.width ?? 1024;
 const h = meta.height ?? 560;
 
-const pipeline = sharp(input)
-  .blur(BLUR_SIGMA)
-  .resize({
+const resize = (pipeline) =>
+  pipeline.resize({
     width: Math.max(TARGET_W, w),
     withoutEnlargement: w >= TARGET_W,
     kernel: sharp.kernel.lanczos3,
   });
 
-const webp = await pipeline.clone().webp({ quality: 92, effort: 6, smartSubsample: true }).toBuffer();
-const jpg = await pipeline.clone().jpeg({ quality: 94, mozjpeg: true }).toBuffer();
+const blurred = resize(sharp(input).blur(BLUR_SIGMA));
+const sharpLayer = resize(sharp(input));
 
-await writeFile(join(outDir, "hero-background.webp"), webp);
-await writeFile(join(outDir, "hero-background.jpg"), jpg);
+const blurredWebp = await blurred.clone().webp({ quality: 92, effort: 6, smartSubsample: true }).toBuffer();
+const blurredJpg = await blurred.clone().jpeg({ quality: 94, mozjpeg: true }).toBuffer();
+const sharpWebp = await sharpLayer.clone().webp({ quality: 94, effort: 6, smartSubsample: true }).toBuffer();
 
-const outMeta = await sharp(webp).metadata();
+await writeFile(join(outDir, "hero-background.webp"), blurredWebp);
+await writeFile(join(outDir, "hero-background.jpg"), blurredJpg);
+await writeFile(join(outDir, "hero-background-sharp.webp"), sharpWebp);
+
+const outMeta = await sharp(blurredWebp).metadata();
 console.log(`source: ${w}x${h}`);
-console.log(`output: ${outMeta.width}x${outMeta.height} (blur sigma ${BLUR_SIGMA})`);
-console.log(`webp: ${(webp.length / 1024).toFixed(1)} KB, jpg: ${(jpg.length / 1024).toFixed(1)} KB`);
+console.log(`output: ${outMeta.width}x${outMeta.height}`);
+console.log(`blurred webp: ${(blurredWebp.length / 1024).toFixed(1)} KB`);
+console.log(`sharp webp: ${(sharpWebp.length / 1024).toFixed(1)} KB`);
