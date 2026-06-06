@@ -4,6 +4,7 @@ import { BadgeCheck, ChevronRight, FileText, Phone, ShieldCheck, Truck } from "l
 import { Button } from "@/components/ui/button";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
+import { QuickContactSheet } from "@/components/catalog/QuickContactSheet";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getCategoryVisual } from "@/lib/category-visuals";
@@ -147,16 +148,21 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button
-              size="lg"
-              className="rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
-              asChild
+            <QuickContactSheet
+              whatsAppUrl={waUrl}
+              formTarget="#request-name"
+              analytics={{
+                source: "series-landing",
+                product_slug: product?.slug ?? page.slug,
+                product_name: displayName,
+                category: categoryLabel,
+              }}
+              triggerSize="lg"
+              triggerClassName="rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
             >
-              <a href="#request-name">
-                <Phone className="mr-2 h-4 w-4" />
-                Получить КП
-              </a>
-            </Button>
+              <Phone className="mr-2 h-4 w-4" />
+              Получить КП
+            </QuickContactSheet>
             <Button
               size="lg"
               className="rounded-xl border-0 bg-site-cta text-base font-semibold text-white hover:opacity-90"

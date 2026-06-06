@@ -4,6 +4,7 @@ import { ArrowRight, CircleDot } from "lucide-react";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { Button } from "@/components/ui/button";
+import { QuickContactSheet } from "@/components/catalog/QuickContactSheet";
 import { buildCompanyProductInquiryWhatsAppUrl } from "@/lib/company";
 import type { PublicCatalogProduct as Product } from "@/lib/public-catalog";
 import { buildPublicProductCardView } from "@/lib/public-catalog/product-view";
@@ -130,12 +131,25 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" className="flex-1 text-xs" asChild>
-            <Link href={`${detailHref}#request-name`}>
-              Узнать цену
-              <ArrowRight className="ml-1 h-3.5 w-3.5" />
-            </Link>
-          </Button>
+          <QuickContactSheet
+            whatsAppUrl={buildCompanyProductInquiryWhatsAppUrl(productName, {
+              dn: product.dn,
+              pn: product.pn,
+            })}
+            formTarget={`${detailHref}#request-name`}
+            analytics={{
+              source: "product-card",
+              product_slug: product.slug,
+              product_name: productName,
+              category: view.categoryLabel,
+            }}
+            triggerVariant="outline"
+            triggerSize="sm"
+            triggerClassName="flex-1 text-xs"
+          >
+            Узнать цену
+            <ArrowRight className="ml-1 h-3.5 w-3.5" />
+          </QuickContactSheet>
           <Button
             size="sm"
             className="flex-1 border-0 !bg-site-whatsapp text-xs !text-white hover:!bg-site-whatsapp-hover"

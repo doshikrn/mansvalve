@@ -13,6 +13,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/catalog/ProductCard";
+import { QuickContactSheet } from "@/components/catalog/QuickContactSheet";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -221,16 +222,21 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                size="lg"
-                className="flex-1 rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
-                asChild
+              <QuickContactSheet
+                whatsAppUrl={waUrl}
+                formTarget="#request-name"
+                analytics={{
+                  source: "product-pdp",
+                  product_slug: product.slug,
+                  product_name: productName,
+                  category: categoryLabel,
+                }}
+                triggerSize="lg"
+                triggerClassName="flex-1 rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
               >
-                <a href="#request-name">
-                  <Phone className="mr-2 h-4 w-4" />
-                  Запросить КП
-                </a>
-              </Button>
+                <Phone className="mr-2 h-4 w-4" />
+                Запросить КП
+              </QuickContactSheet>
               <Button
                 size="lg"
                 className="flex-1 rounded-xl border-0 bg-site-cta text-base font-semibold text-white hover:opacity-90"
