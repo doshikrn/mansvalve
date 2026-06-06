@@ -219,15 +219,14 @@
 .home-flow-from-dark-band {
   position: relative;
   display: block;
-  height: clamp(104px, 9vw, 160px);
+  height: clamp(36px, 4vw, 64px);
   flex-shrink: 0;
   background:
     linear-gradient(
       to bottom,
       var(--home-flow-dark) 0%,
-      #0a172d 18%,
-      #142844 44%,
-      #f0f4fa 92%,
+      #0b1830 42%,
+      #dfe8f3 96%,
       var(--home-flow-light) 100%
     );
 }
@@ -236,8 +235,8 @@
   content: "";
   position: absolute;
   inset: auto 0 0;
-  height: 58%;
-  background: linear-gradient(to bottom, rgb(244 247 251 / 0), var(--home-flow-light) 72%);
+  height: 1px;
+  background: rgb(203 213 225 / 0.72);
   pointer-events: none;
 }
 
