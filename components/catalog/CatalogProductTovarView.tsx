@@ -23,6 +23,7 @@ import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 import type { TovarProductPageData } from "@/components/catalog/tovar-product-presentation";
 import { CATALOG_COMMERCIAL_FALLBACK, CATALOG_SPEC_HINTS } from "@/lib/catalog/spec-hints";
+import { cn } from "@/lib/utils";
 
 const TRUST_ITEMS = [
   { icon: ShieldCheck, label: "Гарантия качества", sub: "Сертификаты и паспорта" },
@@ -125,7 +126,7 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
             quality={88}
             unoptimized={view.primaryImageUnoptimized}
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className="min-h-[280px] rounded-2xl border border-site-border lg:min-h-[400px]"
+            className="site-featured-radius min-h-[280px] border border-site-border lg:min-h-[400px]"
             safeAreaClassName="p-6 sm:p-8 lg:p-10"
           >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/55 via-slate-900/15 to-transparent" />
@@ -230,13 +231,18 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
               </div>
             )}
 
-            <div className="mb-8 rounded-xl border border-site-border bg-site-bg p-5">
+            <div
+              className={cn(
+                "mb-8 rounded-xl border bg-site-bg p-5",
+                formattedPrice ? "border-site-cta/25 shadow-[inset_0_1px_0_rgb(34_197_94_/_.08)]" : "border-site-border",
+              )}
+            >
               {formattedPrice ? (
                 <>
                   <p className="mb-1 text-xs font-medium uppercase tracking-widest text-slate-400">
                     Цена за единицу
                   </p>
-                  <p className="text-3xl font-bold tracking-tight text-slate-900">{formattedPrice}</p>
+                  <p className="site-price-accent text-3xl">{formattedPrice}</p>
                   <p className="mt-1.5 text-sm text-slate-500">
                     Без НДС. Цена уточняется при оформлении заказа.
                   </p>
@@ -284,7 +290,7 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
                   category: categoryLabel,
                 }}
                 triggerSize="lg"
-                triggerClassName="flex-1 rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
+                triggerClassName="site-primary-cta flex-1 rounded-xl text-base font-semibold"
               >
                 <Phone className="mr-2 h-4 w-4" />
                 Запросить КП
@@ -301,15 +307,19 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
               </Button>
             </div>
 
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-slate-100 pt-6">
+            <ul className="mt-8 space-y-2.5 border-t border-slate-100 pt-6">
               {TRUST_ITEMS.map(({ icon: Icon, label, sub }) => (
-                <div key={label} className="flex flex-col items-center gap-1.5 text-center">
-                  <Icon size={20} strokeWidth={1.5} className="text-site-primary" />
-                  <p className="text-xs font-semibold leading-tight text-slate-800">{label}</p>
-                  <p className="text-[11px] leading-tight text-slate-400">{sub}</p>
-                </div>
+                <li key={label} className="flex items-start gap-3 rounded-lg border border-site-border bg-site-bg px-3 py-2.5">
+                  <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-site-primary/10 text-site-primary">
+                    <Icon size={16} strokeWidth={2} aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <p className="text-sm font-semibold leading-snug text-slate-800">{label}</p>
+                    <p className="mt-0.5 text-xs leading-snug text-slate-500">{sub}</p>
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </div>

@@ -117,22 +117,19 @@ export async function Hero() {
               </Link>
             </div>
 
-            <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-              {heroContent.trustPoints.map((point, i) => (
-                <span
-                  key={`${i}-${point.slice(0, 12)}`}
-                  className="site-industrial-chip min-h-10 px-3 py-2 text-xs font-semibold"
-                >
-                  {(() => {
-                    const Icon = trustIcons[i % trustIcons.length] ?? FileText;
-                    return <Icon className="h-4 w-4 shrink-0 text-site-soft-blue" aria-hidden strokeWidth={1.8} />;
-                  })()}
-                  {point}
-                </span>
-              ))}
+            <div className="site-trust-strip mt-6" role="list" aria-label="Преимущества поставщика">
+              {heroContent.trustPoints.map((point, i) => {
+                const Icon = trustIcons[i % trustIcons.length] ?? FileText;
+                return (
+                  <span key={`${i}-${point.slice(0, 12)}`} className="site-trust-strip-item" role="listitem">
+                    <Icon className="h-4 w-4 shrink-0 text-site-cta" aria-hidden strokeWidth={1.8} />
+                    <span className="min-w-0">{point}</span>
+                  </span>
+                );
+              })}
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
               {stats.map((s, idx) => {
                 const Icon = statIcons[idx] ?? Clock;
                 return (
@@ -159,7 +156,10 @@ export async function Hero() {
             </div>
           </div>
 
-          <div className="hero-enter-right relative min-h-[360px] overflow-hidden rounded-2xl border border-white/[0.12] bg-[#07111f] shadow-[0_36px_80px_-44px_rgba(0,0,0,0.82)] sm:min-h-[440px] lg:min-h-[500px]">
+          <div
+            className="hero-enter-right site-featured-radius relative min-h-[360px] overflow-hidden border border-white/[0.14] bg-[#07111f] sm:min-h-[440px] lg:min-h-[500px]"
+            style={{ boxShadow: "var(--shadow-site-showcase)" }}
+          >
             <Image
               src="/задвижки.png"
               alt="Промышленная трубопроводная арматура MANSVALVE GROUP"

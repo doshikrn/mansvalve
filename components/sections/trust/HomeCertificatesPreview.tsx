@@ -32,10 +32,10 @@ export async function HomeCertificatesPreview() {
           ) : null}
         </div>
 
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((certificate) => (
-            <li key={certificate.id} className="site-card overflow-hidden p-0">
-              <div className="relative aspect-[3/4] w-full bg-slate-100">
+            <li key={certificate.id} className="site-card site-featured-radius overflow-hidden p-0">
+              <div className="relative aspect-[4/5] w-full bg-slate-100">
                 <TrustProofImage
                   src={certificate.mediaUrl}
                   alt={certificate.mediaAlt ?? certificate.title}

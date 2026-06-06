@@ -129,7 +129,7 @@ export async function Footer() {
         </div>
       </section>
 
-      <div className="bg-site-deep text-slate-300">
+      <div className="bg-[linear-gradient(180deg,var(--color-site-deep)_0%,var(--color-site-header-main)_100%)] text-slate-300">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             <div className="sm:col-span-2 lg:col-span-1">

@@ -28,8 +28,8 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
   const brandSecondary = brandParts.slice(1).join(" ");
 
   return (
-    <div className="border-b border-white/[0.08] bg-[#050D1B] text-slate-300">
-      <div className="mx-auto flex min-h-10 max-w-[1320px] items-center justify-between gap-3 px-5 sm:min-h-11 sm:px-7 lg:px-10">
+    <div className="border-b border-white/[0.08] bg-[var(--color-site-header-top)] text-slate-300">
+      <div className="mx-auto flex min-h-9 max-w-[1320px] items-center justify-between gap-3 px-5 sm:min-h-10 sm:px-7 lg:px-10">
         <Link
           href="/"
           className="inline-flex min-w-0 items-center gap-2 sm:hidden"
@@ -59,7 +59,7 @@ export function TopBar({ links }: { links: readonly TopBarLink[] }) {
         </Link>
 
         <nav
-          className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[14px] font-medium leading-snug sm:flex sm:gap-3 sm:text-[15px] lg:text-base [&::-webkit-scrollbar]:h-0"
+          className="hidden min-w-0 flex-1 items-center gap-2 overflow-x-auto text-[13px] font-medium leading-snug sm:flex sm:gap-2.5 sm:text-[14px] lg:text-[15px] [&::-webkit-scrollbar]:h-0"
           aria-label="Служебная навигация"
         >
           {links.map((item, i) => (

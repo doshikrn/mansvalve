@@ -32,16 +32,16 @@ export function MainHeader({
   const brandSecondary = brandParts.slice(1).join(" ");
 
   return (
-    <div className="border-b border-white/[0.08] bg-[linear-gradient(180deg,#081428_0%,#0A1220_100%)] shadow-[0_14px_34px_-28px_rgba(0,0,0,0.85)]">
+    <div className="border-b border-white/[0.08] bg-[linear-gradient(180deg,var(--color-site-header-main)_0%,#0a1220_100%)] shadow-[0_14px_34px_-28px_rgba(0,0,0,0.85)]">
       <div className="mx-auto max-w-[1320px] px-5 sm:px-7 lg:px-10">
-        <div className="grid min-h-[72px] grid-cols-1 items-center gap-3 py-3.5 lg:min-h-[76px] lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5 lg:py-3 xl:gap-6">
+        <div className="grid min-h-[74px] grid-cols-1 items-center gap-3 py-3.5 lg:min-h-[80px] lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-5 lg:py-3 xl:gap-6">
           <div className="flex items-center justify-between gap-3 lg:block lg:justify-self-start">
             <Link
               href="/"
-              className="hidden min-w-0 shrink-0 items-center gap-2.5 sm:flex sm:gap-3 lg:min-w-[176px] lg:max-w-[216px] lg:gap-3"
+              className="hidden min-w-0 shrink-0 items-center gap-2.5 sm:flex sm:gap-3 lg:min-w-[188px] lg:max-w-[232px] lg:gap-3.5"
               aria-label={`${COMPANY.name} — на главную`}
             >
-              <span className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-white/20 sm:h-14 sm:w-14 lg:h-16 lg:w-16">
+              <span className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-white/20 sm:h-14 sm:w-14 lg:h-[4.25rem] lg:w-[4.25rem] xl:h-[4.5rem] xl:w-[4.5rem]">
                 <Image
                   src={HEADER_LOGO_SRC}
                   alt={`${COMPANY.name} — логотип`}
@@ -53,7 +53,7 @@ export function MainHeader({
                 />
               </span>
               <span className="min-w-0 flex flex-col justify-center leading-none lg:flex">
-                <span className="truncate text-[12px] font-bold uppercase tracking-[0.08em] text-white sm:text-[13px] xl:text-[15px]">
+                <span className="truncate text-[12px] font-bold uppercase tracking-[0.08em] text-white sm:text-[13px] lg:text-[14px] xl:text-[15px]">
                   {brandPrimary}
                 </span>
                 {brandSecondary ? (
@@ -163,7 +163,7 @@ export function MainHeader({
               href={COMPANY_WHATSAPP_BASE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex max-w-[224px] min-w-[176px] flex-col justify-center rounded-lg border border-site-cta-hover/70 bg-site-cta px-4 py-2.5 text-white shadow-[0_20px_38px_-24px_rgba(34,197,94,0.82)] ring-1 ring-white/10 transition hover:bg-site-cta-hover hover:shadow-[0_22px_42px_-22px_rgba(34,197,94,0.78)]"
+              className="site-header-cta group flex max-w-[236px] min-w-[184px] flex-col justify-center rounded-lg px-4 py-2.5 ring-1 ring-white/10"
             >
               <span className="flex items-center gap-2.5">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/14 text-white ring-1 ring-white/16 transition group-hover:bg-white/18">

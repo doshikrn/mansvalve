@@ -98,7 +98,7 @@ export function DeliveryCaseClient(content: DeliveryCaseContent) {
         </motion.div>
 
         <motion.ul
-          className="grid list-none gap-4 p-0 lg:grid-cols-2"
+          className="grid list-none gap-4 p-0 sm:grid-cols-2 xl:grid-cols-3"
           variants={casesStagger}
           initial="visible"
           whileInView="visible"

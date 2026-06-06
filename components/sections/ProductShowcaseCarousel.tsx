@@ -161,7 +161,7 @@ export function ProductShowcaseCarousel({
       className={cn(
         "w-full max-w-full",
         isHero && "relative z-10 max-lg:mx-0 lg:w-full lg:max-w-full lg:self-start",
-        isHero ? "showcase-card-hero rounded-2xl" : "showcase-card-catalog rounded-xl",
+        isHero ? "showcase-card-hero site-featured-radius" : "showcase-card-catalog site-featured-radius",
       )}
     >
       <div
@@ -268,7 +268,14 @@ export function ProductShowcaseCarousel({
                     ) : null}
                     <div className="mt-4 border-t border-white/[0.06] pt-4 max-lg:mt-3 lg:mt-auto">
                       <p className="text-xs font-semibold uppercase text-slate-500">{hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}</p>
-                      <p className="mt-1 text-2xl font-bold tabular-nums text-white lg:min-h-[2rem]">
+                      <p
+                        className={cn(
+                          "mt-1 text-2xl lg:min-h-[2rem]",
+                          hasDirectPrice && product.price != null
+                            ? "site-price-accent site-price-accent-on-dark text-[1.65rem] sm:text-[1.85rem]"
+                            : "font-bold tabular-nums text-white",
+                        )}
+                      >
                         {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
                       </p>
                       <div className="mt-3 flex flex-col gap-2.5 sm:flex-row">
@@ -331,7 +338,12 @@ export function ProductShowcaseCarousel({
                     </div>
                     <div className="border-t border-slate-200 pt-4">
                       <p className="text-xs font-semibold uppercase text-slate-500">{hasDirectPrice ? "Ориентир по прайсу" : "Цена в КП"}</p>
-                      <p className="mt-1 text-[1.85rem] font-bold leading-none tabular-nums text-site-cta sm:text-[2rem]">
+                      <p
+                        className={cn(
+                          "mt-1 text-[1.85rem] leading-none sm:text-[2rem]",
+                          hasDirectPrice && product.price != null ? "site-price-accent" : "font-bold tabular-nums text-site-ink",
+                        )}
+                      >
                         {hasDirectPrice && product.price != null ? formatPrice(product.price) : "По запросу"}
                       </p>
                       <div className="mt-4 flex flex-col gap-3">

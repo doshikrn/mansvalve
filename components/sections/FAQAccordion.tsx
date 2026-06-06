@@ -14,6 +14,7 @@ type FAQAccordionProps = {
   sectionDescription?: string;
   footerLine?: string;
   items: FaqItem[];
+  variant?: "default" | "embedded";
 };
 
 const panelVariants = {
@@ -32,7 +33,9 @@ export function FAQAccordion({
   sectionDescription,
   footerLine,
   items,
+  variant = "default",
 }: FAQAccordionProps) {
+  const embedded = variant === "embedded";
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (index: number) => {
@@ -40,18 +43,22 @@ export function FAQAccordion({
   };
 
   return (
-    <section id="faq" className="site-section">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+    <section id="faq" className={cn(embedded ? "min-w-0" : "site-section")}>
+      <div className={cn(embedded ? "min-w-0" : "mx-auto max-w-3xl px-4 sm:px-6")}>
         <motion.div
-          className="mb-10"
+          className={cn(embedded ? "mb-5" : "mb-10")}
           variants={premiumIntroBlock}
           initial="hidden"
           whileInView="visible"
           viewport={PREMIUM_VIEWPORT}
         >
-          <div className="site-eyebrow">{sectionEyebrow}</div>
-          <h2 className="site-heading">{sectionTitle}</h2>
-          {sectionDescription ? (
+          <div className={cn(embedded ? "mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-site-cta" : "site-eyebrow")}>
+            {sectionEyebrow}
+          </div>
+          <h2 className={cn(embedded ? "text-xl font-bold tracking-tight text-white sm:text-2xl" : "site-heading")}>
+            {sectionTitle}
+          </h2>
+          {sectionDescription && !embedded ? (
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-site-muted">
               {sectionDescription}
             </p>
@@ -65,8 +72,14 @@ export function FAQAccordion({
               <div
                 key={`faq-${i}`}
                 className={cn(
-                  "site-card-quiet overflow-hidden rounded-lg border border-site-border bg-site-card shadow-sm transition-[box-shadow,border-color,background-color] duration-300 ease-out",
-                  isOpen && "border-site-primary/35 bg-[#fafdff] shadow-md",
+                  "overflow-hidden rounded-lg border shadow-sm transition-[box-shadow,border-color,background-color] duration-300 ease-out",
+                  embedded
+                    ? "border-white/12 bg-white/[0.06]"
+                    : "site-card-quiet border-site-border bg-site-card",
+                  isOpen &&
+                    (embedded
+                      ? "border-site-primary/35 bg-white/[0.09] shadow-md"
+                      : "border-site-primary/35 bg-[#fafdff] shadow-md"),
                 )}
                 data-open={isOpen}
               >
@@ -75,17 +88,42 @@ export function FAQAccordion({
                   aria-expanded={isOpen}
                   onClick={() => toggle(i)}
                   className={cn(
-                    "flex w-full cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-base font-semibold text-site-ink transition-colors duration-200 hover:text-site-primary",
-                    isOpen && "text-site-primary",
+                    "flex w-full cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-semibold transition-colors duration-200 sm:px-5 sm:py-4 sm:text-base",
+                    embedded
+                      ? "text-slate-100 hover:text-white"
+                      : "text-site-ink hover:text-site-primary",
+                    isOpen && (embedded ? "text-white" : "text-site-primary"),
                   )}
                 >
                   <span className="inline-flex min-w-0 items-center gap-2.5">
-                    <span className={cn("inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
+                    <span
+                      className={cn(
+                        "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border transition-colors",
+                        embedded
+                          ? isOpen
+                            ? "border-site-primary/35 bg-site-primary/15 text-site-soft-blue"
+                            : "border-white/12 bg-white/[0.06] text-slate-400"
+                          : isOpen
+                            ? "border-site-primary/30 bg-site-primary/10 text-site-primary"
+                            : "border-site-border bg-site-bg text-site-muted",
+                      )}
+                    >
                       <HelpCircle className="h-4 w-4" aria-hidden />
                     </span>
                     <span>{q}</span>
                   </span>
-                  <span className={cn("inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors", isOpen ? "border-site-primary/30 bg-site-primary/10 text-site-primary" : "border-site-border bg-site-bg text-site-muted")}>
+                  <span
+                    className={cn(
+                      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-colors",
+                      embedded
+                        ? isOpen
+                          ? "border-site-primary/35 bg-site-primary/15 text-site-soft-blue"
+                          : "border-white/12 bg-white/[0.06] text-slate-400"
+                        : isOpen
+                          ? "border-site-primary/30 bg-site-primary/10 text-site-primary"
+                          : "border-site-border bg-site-bg text-site-muted",
+                    )}
+                  >
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform duration-300 ease-out",
@@ -100,15 +138,24 @@ export function FAQAccordion({
                   animate={isOpen ? "open" : "closed"}
                   variants={panelVariants}
                   transition={panelTransition}
-                  className="overflow-hidden border-t border-site-border/80"
+                  className={cn("overflow-hidden border-t", embedded ? "border-white/10" : "border-site-border/80")}
                 >
-                  <div className="px-5 pb-5 pt-4 text-sm leading-relaxed text-site-muted">{a}</div>
+                  <div
+                    className={cn(
+                      "px-4 pb-4 pt-3 text-sm leading-relaxed sm:px-5 sm:pb-5 sm:pt-4",
+                      embedded ? "text-slate-300" : "text-site-muted",
+                    )}
+                  >
+                    {a}
+                  </div>
                 </motion.div>
               </div>
             );
           })}
         </div>
-        {footerLine ? <p className="mt-6 text-sm font-semibold text-site-ink">{footerLine}</p> : null}
+        {footerLine && !embedded ? (
+          <p className="mt-6 text-sm font-semibold text-site-ink">{footerLine}</p>
+        ) : null}
       </div>
     </section>
   );

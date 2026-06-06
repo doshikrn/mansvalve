@@ -46,7 +46,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* Публичный сайт MANSVALVE — B2B: primary (синий) + accent (оранжевый CTA) */
+  /* Публичный сайт MANSVALVE — B2B industrial (design reference mapping):
+     deep navy → --color-site-deep / --home-flow-dark / --color-site-header-*
+     primary blue → --color-site-primary (каталог, поиск, ссылки)
+     success green → --color-site-cta (КП, цена, primary CTA)
+     featured radius → --radius-featured */
   --color-site-bg: #f4f7fb;
   --color-site-surface: #f1f5f9;
   --color-site-card: #ffffff;
@@ -55,6 +59,10 @@
   --color-site-muted: #526173;
   --color-site-deep: #0b1220;
   --color-site-deep-soft: #141c2c;
+  --color-site-header-top: #050d1b;
+  --color-site-header-main: #081428;
+  --color-site-header-categories: #10192a;
+  --radius-featured: 1rem;
   /* Главная: единый тёмный фон зоны hero→хиты→преимущества + узкий fade к свету */
   --home-flow-dark: #081428;
   --home-flow-light: #f4f7fb;
@@ -90,6 +98,8 @@
   --shadow-site-card: 0 4px 12px -4px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
   --shadow-site-lift: 0 14px 40px -16px rgb(47 107 255 / 0.22), 0 4px 10px -6px rgb(15 23 42 / 0.06);
   --shadow-site-elevated: 0 24px 60px -24px rgb(15 23 42 / 0.22), 0 8px 20px -10px rgb(15 23 42 / 0.08);
+  --shadow-site-header-cta: 0 22px 42px -22px rgb(34 197 94 / 0.78);
+  --shadow-site-showcase: 0 36px 80px -44px rgb(0 0 0 / 0.82);
   /* Motion — единая система длительностей и easing для CSS-переходов */
   --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-soft: cubic-bezier(0.32, 0.72, 0.32, 1);
@@ -382,6 +392,110 @@
   .site-pill-on-image {
     background-color: rgb(255 255 255 / 0.94);
     backdrop-filter: blur(2px);
+  }
+
+  /* Горизонтальная полоска доверия (hero, референс) */
+  .site-trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: var(--radius-featured);
+    background: rgb(15 23 42 / 0.42);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  }
+
+  .site-trust-strip-item {
+    display: flex;
+    min-width: 0;
+    flex: 1 1 0;
+    align-items: center;
+    gap: 0.5rem;
+    border-right: 1px solid rgb(255 255 255 / 0.08);
+    padding: 0.625rem 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: rgb(226 232 240 / 0.94);
+  }
+
+  .site-trust-strip-item:last-child {
+    border-right: none;
+  }
+
+  @media (max-width: 639px) {
+    .site-trust-strip {
+      flex-direction: column;
+    }
+
+    .site-trust-strip-item {
+      flex: none;
+      border-right: none;
+      border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    }
+
+    .site-trust-strip-item:last-child {
+      border-bottom: none;
+    }
+  }
+
+  /* Акцент цены (зелёный, референс featured product) */
+  .site-price-accent {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-site-cta);
+    letter-spacing: -0.02em;
+  }
+
+  .site-price-accent-on-dark {
+    color: var(--color-site-cta);
+    text-shadow: 0 0 28px rgb(34 197 94 / 0.28);
+  }
+
+  /* Зелёный CTA в шапке */
+  .site-header-cta {
+    border: 1px solid rgb(22 163 74 / 0.7);
+    background-color: var(--color-site-cta);
+    color: #ffffff;
+    box-shadow: var(--shadow-site-header-cta);
+    transition:
+      background-color var(--duration-base) var(--ease-premium),
+      box-shadow var(--duration-base) var(--ease-premium),
+      transform var(--duration-base) var(--ease-premium);
+  }
+
+  .site-header-cta:hover {
+    background-color: var(--color-site-cta-hover);
+    box-shadow: 0 24px 48px -20px rgb(34 197 94 / 0.82);
+  }
+
+  .site-featured-radius {
+    border-radius: var(--radius-featured);
+  }
+
+  /* Компактный hero категорий (светлая зона) */
+  .site-catalog-hero-frame {
+    overflow: hidden;
+    border: 1px solid var(--color-site-border);
+    border-radius: var(--radius-featured);
+    background-color: var(--color-site-surface);
+    box-shadow: var(--shadow-site-card);
+  }
+
+  .site-catalog-benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-site-ink);
+  }
+
+  .site-catalog-benefits li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 }
 

@@ -295,13 +295,13 @@ export async function CatalogSubcategoryPage({
             </ol>
           </nav>
 
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="site-heading text-slate-900">
             {context.subcategory.name}
-            <span className="mt-1 block text-xl font-semibold text-slate-500 sm:mt-2 sm:text-2xl">
+            <span className="mt-1 block text-xl font-semibold text-site-muted sm:mt-2 sm:text-2xl">
               {context.category.name} · Казахстан
             </span>
           </h1>
-          <p className="mt-2 max-w-3xl text-lg leading-relaxed text-slate-500">
+          <p className="site-copy mt-2 max-w-3xl text-base">
             {description}
           </p>
         </div>

@@ -144,7 +144,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
                 Цена от
               </p>
-              <p className="text-lg font-bold tracking-tight text-site-ink">
+              <p className="site-price-accent text-lg">
                 {formatPrice(product.price)}
               </p>
             </div>

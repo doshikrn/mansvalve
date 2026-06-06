@@ -4,9 +4,7 @@ import { TrustStrip } from "@/components/sections/TrustStrip";
 import { WhyUs } from "@/components/sections/WhyUs";
 import { Categories } from "@/components/sections/Categories";
 import { HowItWorks } from "@/components/sections/HowItWorks";
-import { DocumentsTrust } from "@/components/sections/DocumentsTrust";
-import { FAQ } from "@/components/sections/FAQ";
-import { RequestCTA } from "@/components/sections/RequestCTA";
+import { ContactHubSection } from "@/components/sections/ContactHubSection";
 import { WhoWeSupply } from "@/components/sections/WhoWeSupply";
 import { DeliveryCase } from "@/components/sections/DeliveryCase";
 import { HomeCertificatesPreview } from "@/components/sections/trust/HomeCertificatesPreview";
@@ -64,9 +62,7 @@ export default function HomePage() {
         <HomeThankYouLetters />
         <DeliveryCase />
         <HowItWorks />
-        <DocumentsTrust />
-        <RequestCTA />
-        <FAQ />
+        <ContactHubSection />
       </main>
     </>
   );

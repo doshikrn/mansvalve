@@ -224,7 +224,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
             </ol>
           </nav>
 
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          <h1 className="site-heading text-slate-900">
             {h1}
           </h1>
           <p className="mt-2 text-lg text-slate-500">
@@ -236,7 +236,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
             {metaDescription}
           </p>
 
-          <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-slate-700">
+          <ul className="site-catalog-benefits mt-4">
             <li className="inline-flex items-center gap-2">
               <FileText size={16} className="shrink-0 text-site-primary" aria-hidden />
               КП за 15 минут
@@ -256,7 +256,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
               href={COMPANY_WHATSAPP_BASE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-site-whatsapp px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-site-whatsapp-hover"
+              className="site-primary-cta inline-flex h-11 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold"
             >
               <WhatsappIcon className="h-4 w-4" />
               Написать в WhatsApp
@@ -271,7 +271,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
             </a>
           </div>
 
-          <div className="relative mt-5 h-32 overflow-hidden rounded-2xl border border-site-border bg-slate-100 sm:h-40">
+          <div className="site-catalog-hero-frame relative mt-5 h-32 sm:h-40">
             <Image
               src={heroSrc}
               alt={heroAlt}

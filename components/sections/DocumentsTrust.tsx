@@ -13,7 +13,7 @@ import { buildCompanyWhatsAppUrl } from "@/lib/company";
 const REQUEST_DOCS_WA_MESSAGE =
   "Здравствуйте! Нужны документы (сертификаты, паспорта, КП) по позиции из каталога.";
 
-const DOCS = [
+export const DOCUMENTS_TRUST_ITEMS = [
   {
     Icon: ShieldCheck,
     title: "Сертификаты соответствия",
@@ -55,9 +55,9 @@ export function DocumentsTrust() {
         </div>
 
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {DOCS.map(({ Icon, title, text }) => (
+          {DOCUMENTS_TRUST_ITEMS.map(({ Icon, title, text }) => (
             <li key={title} className="h-full">
-              <div className="site-card-quiet flex h-full flex-col p-5 transition-colors hover:border-site-primary/35">
+              <div className="site-card-quiet site-featured-radius flex h-full flex-col p-5 transition-colors hover:border-site-primary/35">
                 <span className="site-icon mb-4 h-11 w-11 border border-site-primary/15">
                   <Icon className="h-5 w-5" aria-hidden strokeWidth={1.9} />
                 </span>
