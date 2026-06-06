@@ -38,9 +38,9 @@ export async function Hero() {
           alt=""
           fill
           priority
-          quality={88}
+          unoptimized
           sizes="100vw"
-          className="scale-[1.06] object-cover object-[68%_center] blur-[5px] motion-reduce:scale-100 motion-reduce:blur-none sm:object-[64%_center] sm:blur-[6px] lg:blur-[7px]"
+          className="scale-[1.04] object-cover object-[42%_center] blur-[6px] motion-reduce:scale-100 motion-reduce:blur-none sm:blur-[7px] lg:blur-[8px]"
         />
       </div>
 
