@@ -184,9 +184,8 @@ export function ProductShowcaseCarousel({
       <div
         className={cn(
           "relative z-[2] isolate w-full",
-          isHero
-            ? "max-lg:min-h-0 lg:min-h-[480px] lg:overflow-hidden"
-            : "max-lg:min-h-0 lg:min-h-[470px]",
+          "overflow-hidden",
+          isHero ? "max-lg:min-h-0 lg:min-h-[480px]" : "min-h-0",
         )}
       >
         <MotionConfig reducedMotion={reducedMotion ? "always" : "never"}>
@@ -197,7 +196,7 @@ export function ProductShowcaseCarousel({
                 "flex w-full flex-col",
                 isHero
                   ? "max-lg:relative max-lg:h-auto max-lg:min-h-0 lg:absolute lg:inset-0 lg:h-full"
-                  : "max-lg:relative max-lg:h-auto lg:absolute lg:inset-0 lg:h-full",
+                  : "relative h-auto min-h-0",
               )}
               initial={{ opacity: 0, scale: 0.992, y: 5 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -286,14 +285,14 @@ export function ProductShowcaseCarousel({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex min-w-0 flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:min-h-[470px] lg:justify-between lg:px-7">
+                  <div className="flex min-w-0 flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:px-7">
                     <div className="flex min-w-0 flex-col gap-4">
                       <div className="inline-flex w-fit items-center gap-2 rounded-lg border border-[#2F6BFF]/25 bg-[#2F6BFF]/10 px-2.5 py-1 text-xs font-semibold text-[#8bb4ff]">
                         <Package className="h-3.5 w-3.5" />
                         {catalogBadgeLabel}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="line-clamp-3 break-words text-[1.45rem] font-bold leading-[1.14] tracking-tight text-site-ink sm:text-[1.8rem] lg:line-clamp-2 lg:text-[2rem]">
+                        <h4 className="break-words text-[1.35rem] font-bold leading-[1.18] tracking-tight text-site-ink sm:text-[1.55rem] lg:text-[1.65rem] xl:text-[1.8rem]">
                           {view.displayName}
                         </h4>
                         <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-site-muted sm:text-[15px] lg:line-clamp-2">
@@ -351,7 +350,10 @@ export function ProductShowcaseCarousel({
                           <Link href={view.canonicalPath}>Подробнее <ArrowRight className="ml-2 h-4 w-4" /></Link>
                         </Button>
                         {showCatalogButton ? (
-                          <Link href={linkHref} className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06] px-5 text-sm font-semibold text-slate-100 transition hover:border-[#2F6BFF]/45 hover:text-white">
+                          <Link
+                            href={linkHref}
+                            className="inline-flex min-h-11 flex-1 items-center justify-center rounded-lg border border-site-border bg-site-bg px-5 text-sm font-semibold text-site-primary transition hover:border-site-primary/45 hover:bg-[#EFF6FF]"
+                          >
                             {linkLabel}
                           </Link>
                         ) : null}
@@ -419,8 +421,8 @@ export function ProductShowcaseCarousel({
           ) : null}
         </div>
       ) : (
-        <div className="relative z-[2] flex shrink-0 items-center justify-between gap-2 border-t border-slate-200/90 bg-white/72 px-5 py-2.5 backdrop-blur-sm sm:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
+        <div className="relative z-[2] flex shrink-0 items-center justify-between gap-2 border-t border-slate-200 bg-white px-5 py-2.5 sm:px-6">
+          <div className="relative z-[1] flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pb-0.5">
             {products.map((item, index) => (
               <button
                 key={item.slug}
@@ -436,7 +438,7 @@ export function ProductShowcaseCarousel({
             ))}
           </div>
           {products.length > 1 ? (
-            <div className="absolute bottom-0 left-0 h-[2px] w-full overflow-hidden">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[2px] overflow-hidden">
               <motion.div
                 key={`progress-${active}`}
                 initial={{ width: "0%", opacity: 0.6 }}
@@ -446,7 +448,7 @@ export function ProductShowcaseCarousel({
               />
             </div>
           ) : null}
-          <div className="flex shrink-0 gap-1">
+          <div className="relative z-[1] flex shrink-0 gap-1">
             <button
               type="button"
               onClick={prev}

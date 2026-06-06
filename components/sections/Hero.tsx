@@ -157,24 +157,26 @@ export async function Hero() {
           </div>
 
           <div
-            className="hero-enter-right site-featured-radius relative min-h-[360px] overflow-hidden border border-white/[0.14] bg-[#07111f] sm:min-h-[440px] lg:min-h-[500px]"
+            className="hero-enter-right site-featured-radius flex flex-col overflow-hidden border border-white/[0.14] bg-[#07111f]"
             style={{ boxShadow: "var(--shadow-site-showcase)" }}
           >
-            <Image
-              src="/задвижки.png"
-              alt="Промышленная трубопроводная арматура MANSVALVE GROUP"
-              fill
-              priority
-              quality={88}
-              sizes="(max-width: 1024px) 100vw, 48vw"
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,0.16)_0%,rgba(6,16,36,0.06)_42%,rgba(6,16,36,0.48)_100%)]" aria-hidden />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_62%_30%,rgba(47,107,255,0.16),transparent_38%)]" aria-hidden />
-            <div className="absolute left-4 top-4 rounded-lg border border-white/12 bg-[#061024]/76 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-lg backdrop-blur sm:left-5 sm:top-5">
-              {heroContent.featuredEyebrow}
+            <div className="relative min-h-[240px] flex-1 sm:min-h-[300px] lg:min-h-[340px]">
+              <Image
+                src="/задвижки.png"
+                alt="Промышленная трубопроводная арматура MANSVALVE GROUP"
+                fill
+                priority
+                quality={88}
+                sizes="(max-width: 1024px) 100vw, 48vw"
+                className="object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,16,36,0.2)_0%,rgba(6,16,36,0.08)_42%,rgba(6,16,36,0.42)_100%)]" aria-hidden />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_62%_30%,rgba(47,107,255,0.14),transparent_38%)]" aria-hidden />
+              <div className="absolute left-4 top-4 rounded-lg border border-white/12 bg-[#061024]/92 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-lg sm:left-5 sm:top-5">
+                {heroContent.featuredEyebrow}
+              </div>
             </div>
-            <div className="absolute bottom-4 left-4 right-4 grid gap-2 sm:bottom-5 sm:left-5 sm:right-5 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-2 border-t border-white/10 bg-[#061024] p-3 sm:grid-cols-3 sm:gap-2.5 sm:p-4">
               {[
                 { title: "ГОСТ / DIN / ISO", desc: "Сертификаты и паспорта", Icon: ShieldCheck },
                 { title: "15 минут", desc: "КП в рабочее время", Icon: Clock },
@@ -182,7 +184,7 @@ export async function Hero() {
               ].map(({ title, desc, Icon }) => (
                 <div
                   key={title}
-                  className="rounded-lg border border-white/12 bg-[#061024]/78 p-3 shadow-lg backdrop-blur"
+                  className="rounded-lg border border-white/10 bg-white/[0.04] p-3"
                 >
                   <Icon className="mb-2 h-4 w-4 text-site-cta" strokeWidth={2} aria-hidden />
                   <p className="text-xs font-bold uppercase tracking-[0.08em] text-white">{title}</p>
