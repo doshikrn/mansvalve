@@ -11,8 +11,31 @@ const LEGACY_KLAPANY_SUB_SLUG_TARGETS: Record<string, string> = {
   "klapany-chugunnye": "mezhflancevye-pruzhinnye",
 };
 
+const ZADVIZHKI_CHUGUNNYE = catalogSubcategoryPath("zadvizhki", "zadvizhki-chugunnye");
+const ZADVIZHKI_STALNYE = catalogSubcategoryPath("zadvizhki", "zadvizhki-stalnyye");
+/**
+ * Старые slug подкатегорий в формате `/catalog/[category]/[subcategory]`
+ * (описательные slug из ранней версии каталога / Google).
+ */
+const LEGACY_NESTED_SUBCATEGORY_PATHS: Record<string, string> = {
+  "zadvizhki/chugunnye-flantsevye-zadvizhki": ZADVIZHKI_CHUGUNNYE,
+  "zadvizhki/stalnye-flantsevye-zadvizhki": ZADVIZHKI_STALNYE,
+  "zadvizhki/zadvizhki-chugunnye-flantsevye": ZADVIZHKI_CHUGUNNYE,
+  "zadvizhki/zadvizhki-stalnye-flantsevye": ZADVIZHKI_STALNYE,
+  "zadvizhki/chugunnye-zadvizhki": ZADVIZHKI_CHUGUNNYE,
+  "zadvizhki/stalnye-zadvizhki": ZADVIZHKI_STALNYE,
+  "zadvizhki/chugunnye-flantsevye": ZADVIZHKI_CHUGUNNYE,
+  "zadvizhki/stalnye-flantsevye": ZADVIZHKI_STALNYE,
+};
+
 const LEGACY_SUBCATEGORY_CANONICAL_PATHS: Record<string, string> = {
-  "zadvizhki-chugunnye": catalogSubcategoryPath("zadvizhki", "zadvizhki-chugunnye"),
+  "chugunnye-flantsevye-zadvizhki": ZADVIZHKI_CHUGUNNYE,
+  "stalnye-flantsevye-zadvizhki": ZADVIZHKI_STALNYE,
+  "zadvizhki-chugunnye-flantsevye": ZADVIZHKI_CHUGUNNYE,
+  "zadvizhki-stalnye-flantsevye": ZADVIZHKI_STALNYE,
+  "chugunnye-zadvizhki": ZADVIZHKI_CHUGUNNYE,
+  "stalnye-zadvizhki": ZADVIZHKI_STALNYE,
+  "zadvizhki-chugunnye": ZADVIZHKI_CHUGUNNYE,
   "zadvizhki-klinovye": catalogSubcategoryPath("zadvizhki", "zadvizhki-klinovye"),
   "zadvizhki-shibernye": catalogSubcategoryPath("zadvizhki", "zadvizhki-shibernye"),
   "zadvizhki-stalnyye": catalogSubcategoryPath("zadvizhki", "zadvizhki-stalnyye"),
@@ -66,4 +89,27 @@ export function resolveLegacySubcategoryCanonicalPath(
     LEGACY_SUBCATEGORY_CANONICAL_PATHS[subcategorySlug] ||
     resolveLegacyKlapanySubcategoryCanonicalPath(subcategorySlug)
   );
+}
+
+export function resolveLegacyNestedSubcategoryCanonicalPath(
+  categorySlug: string,
+  subcategorySlug: string,
+): string | undefined {
+  return LEGACY_NESTED_SUBCATEGORY_PATHS[`${categorySlug}/${subcategorySlug}`];
+}
+
+/** For redirect QA scripts — flat + nested legacy subcategory targets. */
+export function listLegacySubcategoryRedirectEntries(): Array<{
+  source: string;
+  target: string;
+}> {
+  const flat = Object.entries(LEGACY_SUBCATEGORY_CANONICAL_PATHS).map(([slug, target]) => ({
+    source: `/catalog/subcategory/${slug}`,
+    target,
+  }));
+  const nested = Object.entries(LEGACY_NESTED_SUBCATEGORY_PATHS).map(([key, target]) => ({
+    source: `/catalog/${key}`,
+    target,
+  }));
+  return [...flat, ...nested];
 }

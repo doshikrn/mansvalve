@@ -70,3 +70,14 @@ export function buildCleanProductRedirectUrl(
   }
   return appendQueryString(canonicalPath, stripCatalogFilterParams(searchParams));
 }
+
+/** Category/subcategory listing redirects keep filter query params. */
+export function buildCatalogListingRedirectUrl(
+  canonicalPath: string,
+  searchParams?: SearchParamsLike,
+): string {
+  if (!searchParams || Object.keys(searchParams).length === 0) {
+    return canonicalPath;
+  }
+  return appendQueryString(canonicalPath, searchParams as SearchParamsInput);
+}

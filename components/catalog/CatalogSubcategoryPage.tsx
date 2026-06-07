@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -24,6 +24,8 @@ import {
 import { resolveSubcategorySeoMetaDescription } from "@/lib/services/category-public-content";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { getKlapanySubcategorySeoTitle } from "@/lib/catalog-klapany-public-seo";
+import { buildCatalogListingRedirectUrl, type SearchParamsLike } from "@/lib/catalog-redirect";
+import { resolveLegacyNestedSubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
 import { buildPagedMeta } from "@/lib/seo/metadata";
 
 type SubcategoryContext = {
@@ -121,6 +123,11 @@ export async function getCatalogSubcategoryMetadata(
   subcategorySlug: string,
   searchParams?: CatalogSearchParams,
 ): Promise<Metadata> {
+  const legacyPath = resolveLegacyNestedSubcategoryCanonicalPath(categorySlug, subcategorySlug);
+  if (legacyPath) {
+    return { title: "Перенаправление…", alternates: { canonical: legacyPath } };
+  }
+
   let context: SubcategoryContext | undefined;
   try {
     context = await getSubcategoryContext(categorySlug, subcategorySlug);
@@ -201,6 +208,12 @@ export async function CatalogSubcategoryPage({
   subcategorySlug,
   searchParams,
 }: CatalogSubcategoryPageProps) {
+  const query = await searchParams;
+  const legacyPath = resolveLegacyNestedSubcategoryCanonicalPath(categorySlug, subcategorySlug);
+  if (legacyPath) {
+    permanentRedirect(buildCatalogListingRedirectUrl(legacyPath, query as SearchParamsLike));
+  }
+
   const route = `/catalog/${categorySlug}/${subcategorySlug}`;
   const loaded = await withCatalogRouteLoad(
     { route, categorySlug, subcategorySlug },
