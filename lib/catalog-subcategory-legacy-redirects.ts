@@ -1,4 +1,4 @@
-import { catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 
 /**
  * Старые slug подкатегорий «Клапаны» до ТЗ → канонические пути `/catalog/klapany/...`.
@@ -17,6 +17,10 @@ const ZADVIZHKI_STALNYE = catalogSubcategoryPath("zadvizhki", "zadvizhki-stalnyy
  * Старые slug подкатегорий в формате `/catalog/[category]/[subcategory]`
  * (описательные slug из ранней версии каталога / Google).
  */
+const ZATVORY_DISKOVYE = catalogSubcategoryPath("zatvory", "zatvory-diskovye");
+const KLAPANY_CATEGORY = catalogCategoryPath("klapany");
+const KLAPANY_PODEMNYE = catalogSubcategoryPath("klapany", "podemnye");
+
 const LEGACY_NESTED_SUBCATEGORY_PATHS: Record<string, string> = {
   "zadvizhki/chugunnye-flantsevye-zadvizhki": ZADVIZHKI_CHUGUNNYE,
   "zadvizhki/stalnye-flantsevye-zadvizhki": ZADVIZHKI_STALNYE,
@@ -26,6 +30,12 @@ const LEGACY_NESTED_SUBCATEGORY_PATHS: Record<string, string> = {
   "zadvizhki/stalnye-zadvizhki": ZADVIZHKI_STALNYE,
   "zadvizhki/chugunnye-flantsevye": ZADVIZHKI_CHUGUNNYE,
   "zadvizhki/stalnye-flantsevye": ZADVIZHKI_STALNYE,
+  "zatvory/diskovye": ZATVORY_DISKOVYE,
+  "zatvory/diskovye-zatvory": ZATVORY_DISKOVYE,
+  "zatvory/zatvory-diskovye-zatvory": ZATVORY_DISKOVYE,
+  "klapany/obratnye": KLAPANY_CATEGORY,
+  "klapany/obratnye-klapany": KLAPANY_PODEMNYE,
+  "klapany/klapany-obratnye": KLAPANY_PODEMNYE,
 };
 
 const LEGACY_SUBCATEGORY_CANONICAL_PATHS: Record<string, string> = {

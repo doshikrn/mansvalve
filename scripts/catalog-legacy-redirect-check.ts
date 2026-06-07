@@ -8,6 +8,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { listLegacySubcategoryRedirectEntries } from "@/lib/catalog-subcategory-legacy-redirects";
+import { LEGACY_INTERNAL_LINK_HREFS } from "@/lib/legacy-internal-link-hrefs";
 
 type CatalogJson = {
   categories: Array<{
@@ -27,7 +28,10 @@ for (const category of catalog.categories) {
   }
 }
 
-const entries = listLegacySubcategoryRedirectEntries();
+const entries = [
+  ...listLegacySubcategoryRedirectEntries(),
+  ...Object.entries(LEGACY_INTERNAL_LINK_HREFS).map(([source, target]) => ({ source, target })),
+];
 const failures: string[] = [];
 
 for (const { source, target } of entries) {

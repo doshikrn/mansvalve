@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { COMPANY_BRAND_SEO } from "@/lib/company";
+import { normalizeLegacyInternalHref } from "@/lib/legacy-internal-link-hrefs";
 
 const faqItemSchema = z.object({
   q: z.string(),
@@ -390,7 +391,14 @@ export function mergeHeaderTopNav(dbJson: unknown): HeaderTopNavContent {
     dbJson,
   );
   const parsed = headerTopNavSchema.safeParse(merged);
-  return parsed.success ? parsed.data : DEFAULT_HEADER_TOP_NAV;
+  const content = parsed.success ? parsed.data : DEFAULT_HEADER_TOP_NAV;
+  return {
+    ...content,
+    links: content.links.map((link) => ({
+      ...link,
+      href: normalizeLegacyInternalHref(link.href),
+    })),
+  };
 }
 
 /* ── Home: каталог / хиты ─────────────────────────────────────────── */
@@ -790,7 +798,7 @@ export const DEFAULT_FOOTER_MAIN: FooterMainContent = {
     { label: "Задвижки", href: "/catalog/zadvizhki" },
     { label: "Затворы дисковые", href: "/catalog/zatvory/zatvory-diskovye" },
     { label: "Краны шаровые", href: "/catalog/krany-sharovye" },
-    { label: "Обратные клапаны", href: "/catalog/klapany" },
+    { label: "Обратные клапаны", href: "/catalog/klapany/podemnye" },
     { label: "Фланцы", href: "/catalog/flansy-i-otvody/flansy" },
     { label: "Электроприводы", href: "/catalog/elektroprivody" },
     { label: "Фланцы и отводы", href: "/catalog/flansy-i-otvody" },
@@ -812,19 +820,15 @@ export function mergeFooterMain(dbJson: unknown): FooterMainContent {
   return normalizeFooterMainLinks(parsed.success ? parsed.data : DEFAULT_FOOTER_MAIN);
 }
 
-const LEGACY_FOOTER_LINK_HREFS: Record<string, string> = {
-  "/catalog/subcategory/zatvory-diskovye": "/catalog/zatvory/zatvory-diskovye",
-  "/catalog/subcategory/flansy": "/catalog/flansy-i-otvody/flansy",
-  "/catalog/subcategory/klapany-obratnye": "/catalog/klapany/podemnye",
-};
-
 function normalizeFooterMainLinks(content: FooterMainContent): FooterMainContent {
+  const normalize = (link: NavLink) => ({
+    ...link,
+    href: normalizeLegacyInternalHref(link.href),
+  });
   return {
     ...content,
-    catalogLinks: content.catalogLinks.map((link) => ({
-      ...link,
-      href: LEGACY_FOOTER_LINK_HREFS[link.href] ?? link.href,
-    })),
+    catalogLinks: content.catalogLinks.map(normalize),
+    companyLinks: content.companyLinks.map(normalize),
   };
 }
 

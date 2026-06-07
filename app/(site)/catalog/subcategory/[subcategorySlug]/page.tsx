@@ -9,6 +9,9 @@ import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 
 export const revalidate = 300;
 
+/** Legacy redirects must run at request time (308), not as static HTML. */
+export const dynamic = "force-dynamic";
+
 export const dynamicParams = true;
 
 interface PageProps {
