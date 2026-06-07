@@ -6,17 +6,31 @@ import {
   getPublicCatalogCategories,
   getPublicCategoryBySlug,
   getPublicProductBySlug,
+  getPublicSubcategoryBySlug,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
-import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
+import {
+  buildCatalogListingRedirectUrl,
+  buildCleanProductRedirectUrl,
+  type SearchParamsLike,
+} from "@/lib/catalog-redirect";
 import { redirectLegacyCatalogProductIfNeeded } from "@/lib/catalog-legacy-product-redirect";
 import {
   CatalogCategoryPage,
   getCatalogCategoryMetadata,
 } from "@/components/catalog/CatalogCategoryPage";
+import {
+  CatalogSubcategoryPage,
+  getCatalogSubcategoryMetadata,
+} from "@/components/catalog/CatalogSubcategoryPage";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
+import {
+  catalogSubcategoryPath,
+  resolveCatalogSubcategoryPublicSlug,
+  resolveCatalogSubcategoryRouteSlug,
+} from "@/lib/catalog-routes";
 
 export const revalidate = 300;
 
@@ -31,9 +45,18 @@ export async function generateStaticParams() {
     getPublicCatalogCategories(),
   ]);
   const productSlugSet = new Set(products.map((p) => p.slug));
-  return categories
+  const categoryParams = categories
     .filter((c) => !productSlugSet.has(c.slug))
     .map((c) => ({ slug: c.slug }));
+  const subcategoryParams = categories.flatMap((category) =>
+    category.subcategories
+      .map((subcategory) => ({
+        slug: resolveCatalogSubcategoryPublicSlug(category.slug, subcategory.slug),
+      }))
+      .filter((param) => !productSlugSet.has(param.slug)),
+  );
+
+  return [...categoryParams, ...subcategoryParams];
 }
 
 export const dynamicParams = true;
@@ -70,6 +93,22 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     return getCatalogCategoryMetadata(slug, query);
   }
 
+  const routeSubcategorySlug = resolveCatalogSubcategoryRouteSlug(slug);
+  let subcategoryContext: Awaited<ReturnType<typeof getPublicSubcategoryBySlug>>;
+  try {
+    subcategoryContext = await getPublicSubcategoryBySlug(routeSubcategorySlug);
+  } catch (error) {
+    console.error("[catalog-slug] metadata subcategory load failed", { slug, error });
+    return { title: "Каталог MANSVALVE GROUP" };
+  }
+  if (subcategoryContext) {
+    return getCatalogSubcategoryMetadata(
+      subcategoryContext.category.slug,
+      subcategoryContext.subcategory.slug,
+      query,
+    );
+  }
+
   await redirectLegacyCatalogProductIfNeeded(slug);
 
   return { title: "Страница не найдена" };
@@ -100,6 +139,37 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
   const category = loaded.data;
   if (category) {
     return <CatalogCategoryPage categorySlug={slug} searchParams={searchParams} />;
+  }
+
+  const routeSubcategorySlug = resolveCatalogSubcategoryRouteSlug(slug);
+  const subcategoryLoaded = await withCatalogRouteLoad(
+    { route, subcategorySlug: routeSubcategorySlug },
+    () => getPublicSubcategoryBySlug(routeSubcategorySlug),
+    (context) => ({ categoriesCount: context ? 1 : 0 }),
+  );
+
+  if (!subcategoryLoaded.ok) {
+    return <CatalogRouteError route={route} />;
+  }
+
+  if (subcategoryLoaded.data) {
+    const canonicalPath = catalogSubcategoryPath(
+      subcategoryLoaded.data.category.slug,
+      subcategoryLoaded.data.subcategory.slug,
+    );
+
+    if (canonicalPath !== route) {
+      permanentRedirect(buildCatalogListingRedirectUrl(canonicalPath, query as SearchParamsLike));
+    }
+
+    return (
+      <CatalogSubcategoryPage
+        categorySlug={subcategoryLoaded.data.category.slug}
+        subcategorySlug={subcategoryLoaded.data.subcategory.slug}
+        searchParams={searchParams}
+        currentPath={route}
+      />
+    );
   }
 
   notFound();

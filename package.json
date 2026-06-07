@@ -19,6 +19,7 @@
     "catalog:slug-check": "tsx scripts/catalog-slug-check.ts",
     "catalog:legacy-redirect-check": "tsx scripts/catalog-legacy-redirect-check.ts",
     "links:audit": "tsx scripts/broken-links-audit.ts",
+    "audit:links": "tsx scripts/broken-links-audit.ts",
     "seo:audit": "tsx scripts/seo-audit.ts",
     "build:icons": "node scripts/build-app-icons.mjs",
     "generate:icons": "node scripts/generate-brand-icons.mjs"

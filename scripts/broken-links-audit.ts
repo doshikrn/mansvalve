@@ -111,6 +111,38 @@ type LinkCheck = {
   redirectChain: string[];
 };
 
+type ExpectedRouteCheck = {
+  href: string;
+  expectedStatus?: number;
+  expectedFinalPath?: string;
+  expectedRedirectCount?: number;
+  label: string;
+};
+
+const EXPECTED_ROUTE_CHECKS: ExpectedRouteCheck[] = [
+  {
+    label: "old Google gate-valve subcategory",
+    href: "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki",
+    expectedFinalPath: "/catalog/zadvizhki-chugunnye",
+  },
+  {
+    label: "old nested butterfly valves footer URL",
+    href: "/catalog/zatvory/zatvory-diskovye",
+    expectedFinalPath: "/catalog/zatvory-diskovye",
+  },
+  {
+    label: "old nested check valves footer URL",
+    href: "/catalog/klapany/podemnye",
+    expectedFinalPath: "/catalog/klapany-obratnye",
+  },
+  {
+    label: "unknown nested URL must stay 404",
+    href: "/catalog/zadvizhki/random-nonsense-url",
+    expectedStatus: 404,
+    expectedRedirectCount: 0,
+  },
+];
+
 async function checkHref(base: string, href: string): Promise<Omit<LinkCheck, "source">> {
   const url = new URL(href, `${base}/`).toString();
   const redirectChain: string[] = [];
@@ -134,10 +166,20 @@ async function checkHref(base: string, href: string): Promise<Omit<LinkCheck, "s
   return { href, status: 0, finalUrl: current, redirectChain };
 }
 
+function pathFromFinalUrl(finalUrl: string): string {
+  try {
+    const url = new URL(finalUrl);
+    return url.pathname.replace(/\/+$/, "") || "/";
+  } catch {
+    return finalUrl;
+  }
+}
+
 async function main() {
   const base = getBaseUrl();
   const seedPaths = loadSeedPaths();
   const checks = new Map<string, LinkCheck>();
+  const hrefResultCache = new Map<string, Omit<LinkCheck, "source">>();
 
   console.log(`Base: ${base}`);
   console.log(`Seed pages: ${seedPaths.length}`);
@@ -161,7 +203,11 @@ async function main() {
     for (const href of extractInternalHrefs(html)) {
       const key = `${sourcePath}::${href}`;
       if (checks.has(key)) continue;
-      const result = await checkHref(base, href);
+      let result = hrefResultCache.get(href);
+      if (!result) {
+        result = await checkHref(base, href);
+        hrefResultCache.set(href, result);
+      }
       checks.set(key, { source: sourcePath, ...result });
     }
   }
@@ -169,18 +215,55 @@ async function main() {
   const rows = [...checks.values()].sort((a, b) => a.source.localeCompare(b.source));
   const broken = rows.filter((row) => row.status === 404 || row.status >= 500 || row.status === 0);
   const redirects = rows.filter((row) => row.status >= 300 && row.status < 400);
+  const expectedFailures: Array<
+    ExpectedRouteCheck & { actualStatus: number; actualFinalPath: string }
+  > = [];
+
+  for (const expected of EXPECTED_ROUTE_CHECKS) {
+    const result = await checkHref(base, expected.href);
+    const actualFinalPath = pathFromFinalUrl(result.finalUrl);
+    const statusOk =
+      expected.expectedStatus === undefined
+        ? result.status > 0 && result.status < 400
+        : result.status === expected.expectedStatus;
+    const finalPathOk =
+      expected.expectedFinalPath === undefined || actualFinalPath === expected.expectedFinalPath;
+    const redirectCountOk =
+      expected.expectedRedirectCount === undefined ||
+      result.redirectChain.length === expected.expectedRedirectCount;
+    if (!statusOk || !finalPathOk || !redirectCountOk) {
+      expectedFailures.push({
+        ...expected,
+        actualStatus: result.status,
+        actualFinalPath,
+      });
+    }
+  }
 
   console.log(`Internal hrefs checked: ${rows.length}`);
   console.log(`Redirects (manual check): ${redirects.length}`);
   console.log(`Broken: ${broken.length}`);
+  console.log(`Expected route checks failed: ${expectedFailures.length}`);
   console.log("—".repeat(100));
 
-  if (broken.length > 0) {
+  if (broken.length > 0 || expectedFailures.length > 0) {
+    if (expectedFailures.length > 0) {
+      console.log(`${"route check".padEnd(42)} ${"href".padEnd(50)} actual`);
+      for (const row of expectedFailures) {
+        console.log(
+          `${row.label.padEnd(42)} ${row.href.padEnd(50)} ${row.actualStatus} ${row.actualFinalPath}`,
+        );
+      }
+      console.log("—".repeat(100));
+    }
+
+    if (broken.length > 0) {
     console.log(`${"source page".padEnd(42)} ${"broken href".padEnd(42)} status`);
     for (const row of broken) {
       console.log(`${row.source.padEnd(42)} ${row.href.padEnd(42)} ${row.status}`);
     }
     console.log("—".repeat(100));
+    }
     process.exit(1);
   }
 

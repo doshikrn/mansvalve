@@ -1,13 +1,33 @@
 /**
- * Публичные URL каталога (короткие пути без сегмента `/catalog/category/`).
- * Каноникал категорий: `/catalog/[categorySlug]`, подкатегорий: `/catalog/[categorySlug]/[subcategorySlug]`.
+ * Публичные URL каталога.
+ * Каноникал категорий: `/catalog/[categorySlug]`.
+ * Каноникал подкатегорий: короткий `/catalog/[subcategoryPublicSlug]`.
  */
 export function catalogCategoryPath(categorySlug: string): string {
   return `/catalog/${categorySlug}`;
 }
 
+const SUBCATEGORY_PUBLIC_SLUG_OVERRIDES: Record<string, string> = {
+  "klapany/podemnye": "klapany-obratnye",
+};
+
+const SUBCATEGORY_ROUTE_SLUG_ALIASES: Record<string, string> = {
+  "klapany-obratnye": "podemnye",
+};
+
+export function resolveCatalogSubcategoryPublicSlug(
+  categorySlug: string,
+  subcategorySlug: string,
+): string {
+  return SUBCATEGORY_PUBLIC_SLUG_OVERRIDES[`${categorySlug}/${subcategorySlug}`] ?? subcategorySlug;
+}
+
+export function resolveCatalogSubcategoryRouteSlug(subcategorySlug: string): string {
+  return SUBCATEGORY_ROUTE_SLUG_ALIASES[subcategorySlug] ?? subcategorySlug;
+}
+
 export function catalogSubcategoryPath(categorySlug: string, subcategorySlug: string): string {
-  return `/catalog/${categorySlug}/${subcategorySlug}`;
+  return `/catalog/${resolveCatalogSubcategoryPublicSlug(categorySlug, subcategorySlug)}`;
 }
 
 export function catalogNestedProductPath(

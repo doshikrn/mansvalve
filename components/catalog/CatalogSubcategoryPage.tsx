@@ -124,7 +124,7 @@ export async function getCatalogSubcategoryMetadata(
   searchParams?: CatalogSearchParams,
 ): Promise<Metadata> {
   const legacyPath = resolveLegacyNestedSubcategoryCanonicalPath(categorySlug, subcategorySlug);
-  if (legacyPath) {
+  if (legacyPath && legacyPath !== catalogSubcategoryPath(categorySlug, subcategorySlug)) {
     return { title: "Перенаправление…", alternates: { canonical: legacyPath } };
   }
 
@@ -201,20 +201,23 @@ interface CatalogSubcategoryPageProps {
   categorySlug: string;
   subcategorySlug: string;
   searchParams: Promise<CatalogSearchParams>;
+  currentPath?: string;
 }
 
 export async function CatalogSubcategoryPage({
   categorySlug,
   subcategorySlug,
   searchParams,
+  currentPath,
 }: CatalogSubcategoryPageProps) {
   const query = await searchParams;
+  const canonicalPath = catalogSubcategoryPath(categorySlug, subcategorySlug);
   const legacyPath = resolveLegacyNestedSubcategoryCanonicalPath(categorySlug, subcategorySlug);
-  if (legacyPath) {
+  if (legacyPath && legacyPath !== currentPath) {
     permanentRedirect(buildCatalogListingRedirectUrl(legacyPath, query as SearchParamsLike));
   }
 
-  const route = `/catalog/${categorySlug}/${subcategorySlug}`;
+  const route = currentPath ?? canonicalPath;
   const loaded = await withCatalogRouteLoad(
     { route, categorySlug, subcategorySlug },
     async () => {
@@ -246,6 +249,11 @@ export async function CatalogSubcategoryPage({
   }
 
   const { context, allCategories, subcategoryProducts } = loaded.data;
+  const actualCanonicalPath = catalogSubcategoryPath(context.category.slug, context.subcategory.slug);
+  if (currentPath && currentPath !== actualCanonicalPath) {
+    permanentRedirect(buildCatalogListingRedirectUrl(actualCanonicalPath, query as SearchParamsLike));
+  }
+
   const description = await resolveSubcategoryDescription(
     context.category,
     context.subcategory,

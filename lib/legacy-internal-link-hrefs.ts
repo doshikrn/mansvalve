@@ -18,10 +18,13 @@ export const LEGACY_INTERNAL_LINK_HREFS: Record<string, string> = {
   "/catalog/category/elektroprivody": catalogCategoryPath("elektroprivody"),
   "/catalog/zatvory/diskovye": catalogSubcategoryPath("zatvory", "zatvory-diskovye"),
   "/catalog/zatvory/diskovye-zatvory": catalogSubcategoryPath("zatvory", "zatvory-diskovye"),
+  "/catalog/zatvory/zatvory-diskovye": catalogSubcategoryPath("zatvory", "zatvory-diskovye"),
   "/catalog/zatvory/zatvory-diskovye-zatvory": catalogSubcategoryPath("zatvory", "zatvory-diskovye"),
-  "/catalog/klapany/obratnye": catalogCategoryPath("klapany"),
+  "/catalog/klapany/obratnye": catalogSubcategoryPath("klapany", "podemnye"),
   "/catalog/klapany/obratnye-klapany": catalogSubcategoryPath("klapany", "podemnye"),
   "/catalog/klapany/klapany-obratnye": catalogSubcategoryPath("klapany", "podemnye"),
+  "/catalog/klapany/podemnye": catalogSubcategoryPath("klapany", "podemnye"),
+  "/catalog/flansy-i-otvody/flansy": catalogSubcategoryPath("flansy-i-otvody", "flansy"),
   "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki": catalogSubcategoryPath(
     "zadvizhki",
     "zadvizhki-chugunnye",
@@ -35,8 +38,11 @@ export const LEGACY_INTERNAL_LINK_HREFS: Record<string, string> = {
 export function normalizeLegacyInternalHref(href: string): string {
   const trimmed = href.trim();
   if (!trimmed.startsWith("/")) return href;
-  const withoutHash = trimmed.split("#")[0] ?? trimmed;
-  const withoutQuery = withoutHash.split("?")[0] ?? withoutHash;
-  const normalizedPath = withoutQuery.replace(/\/+$/, "") || "/";
-  return LEGACY_INTERNAL_LINK_HREFS[normalizedPath] ?? href;
+  const match = trimmed.match(/^([^?#]*)(\?[^#]*)?(#.*)?$/);
+  const path = match?.[1] ?? trimmed;
+  const query = match?.[2] ?? "";
+  const hash = match?.[3] ?? "";
+  const normalizedPath = path.replace(/\/+$/, "") || "/";
+  const target = LEGACY_INTERNAL_LINK_HREFS[normalizedPath];
+  return target ? `${target}${query}${hash}` : href;
 }

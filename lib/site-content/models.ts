@@ -796,10 +796,10 @@ export const DEFAULT_FOOTER_MAIN: FooterMainContent = {
   privacyLabel: "Политика конфиденциальности",
   catalogLinks: [
     { label: "Задвижки", href: "/catalog/zadvizhki" },
-    { label: "Затворы дисковые", href: "/catalog/zatvory/zatvory-diskovye" },
+    { label: "Затворы дисковые", href: "/catalog/zatvory-diskovye" },
     { label: "Краны шаровые", href: "/catalog/krany-sharovye" },
-    { label: "Обратные клапаны", href: "/catalog/klapany/podemnye" },
-    { label: "Фланцы", href: "/catalog/flansy-i-otvody/flansy" },
+    { label: "Обратные клапаны", href: "/catalog/klapany-obratnye" },
+    { label: "Фланцы", href: "/catalog/flansy" },
     { label: "Электроприводы", href: "/catalog/elektroprivody" },
     { label: "Фланцы и отводы", href: "/catalog/flansy-i-otvody" },
     { label: "Другие товары", href: "/catalog" },

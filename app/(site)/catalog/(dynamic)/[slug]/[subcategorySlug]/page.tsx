@@ -37,6 +37,7 @@ export default async function CatalogNestedSubcategoryPage({ params, searchParam
       categorySlug={slug}
       subcategorySlug={subcategorySlug}
       searchParams={searchParams}
+      currentPath={`/catalog/${slug}/${subcategorySlug}`}
     />
   );
 }
