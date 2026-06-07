@@ -28,7 +28,6 @@ import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import {
   catalogSubcategoryPath,
-  resolveCatalogSubcategoryPublicSlug,
   resolveCatalogSubcategoryRouteSlug,
 } from "@/lib/catalog-routes";
 
@@ -45,18 +44,9 @@ export async function generateStaticParams() {
     getPublicCatalogCategories(),
   ]);
   const productSlugSet = new Set(products.map((p) => p.slug));
-  const categoryParams = categories
+  return categories
     .filter((c) => !productSlugSet.has(c.slug))
     .map((c) => ({ slug: c.slug }));
-  const subcategoryParams = categories.flatMap((category) =>
-    category.subcategories
-      .map((subcategory) => ({
-        slug: resolveCatalogSubcategoryPublicSlug(category.slug, subcategory.slug),
-      }))
-      .filter((param) => !productSlugSet.has(param.slug)),
-  );
-
-  return [...categoryParams, ...subcategoryParams];
 }
 
 export const dynamicParams = true;

@@ -43,7 +43,9 @@ export function stripCatalogFilterParams(
 }
 
 function appendQueryString(path: string, searchParams: SearchParamsInput): string {
-  const params = new URLSearchParams();
+  const [pathAndSearch, hash = ""] = path.split("#");
+  const [pathname, existingSearch = ""] = pathAndSearch.split("?");
+  const params = new URLSearchParams(existingSearch);
   for (const [key, value] of Object.entries(searchParams)) {
     if (Array.isArray(value)) {
       for (const item of value) {
@@ -54,7 +56,8 @@ function appendQueryString(path: string, searchParams: SearchParamsInput): strin
     if (value) params.set(key, value);
   }
   const search = params.toString();
-  return search ? `${path}?${search}` : path;
+  const suffix = hash ? `#${hash}` : "";
+  return search ? `${pathname}?${search}${suffix}` : `${pathname}${suffix}`;
 }
 
 /**

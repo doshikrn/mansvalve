@@ -123,17 +123,17 @@ const EXPECTED_ROUTE_CHECKS: ExpectedRouteCheck[] = [
   {
     label: "old Google gate-valve subcategory",
     href: "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki",
-    expectedFinalPath: "/catalog/zadvizhki-chugunnye",
+    expectedFinalPath: "/catalog/zadvizhki?subcategory=zadvizhki-chugunnye",
   },
   {
     label: "old nested butterfly valves footer URL",
     href: "/catalog/zatvory/zatvory-diskovye",
-    expectedFinalPath: "/catalog/zatvory-diskovye",
+    expectedFinalPath: "/catalog/zatvory?subcategory=zatvory-diskovye",
   },
   {
     label: "old nested check valves footer URL",
     href: "/catalog/klapany/podemnye",
-    expectedFinalPath: "/catalog/klapany-obratnye",
+    expectedFinalPath: "/catalog/klapany?subcategory=podemnye",
   },
   {
     label: "unknown nested URL must stay 404",
@@ -169,7 +169,8 @@ async function checkHref(base: string, href: string): Promise<Omit<LinkCheck, "s
 function pathFromFinalUrl(finalUrl: string): string {
   try {
     const url = new URL(finalUrl);
-    return url.pathname.replace(/\/+$/, "") || "/";
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    return `${pathname}${url.search}`;
   } catch {
     return finalUrl;
   }

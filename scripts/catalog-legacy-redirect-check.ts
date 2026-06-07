@@ -7,6 +7,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { listLegacySubcategoryRedirectEntries } from "@/lib/catalog-subcategory-legacy-redirects";
 import { LEGACY_INTERNAL_LINK_HREFS } from "@/lib/legacy-internal-link-hrefs";
 
@@ -22,9 +23,9 @@ const catalog = JSON.parse(readFileSync(catalogPath, "utf8")) as CatalogJson;
 
 const validPaths = new Set<string>();
 for (const category of catalog.categories) {
-  validPaths.add(`/catalog/${category.slug}`);
+  validPaths.add(catalogCategoryPath(category.slug));
   for (const subcategory of category.subcategories) {
-    validPaths.add(`/catalog/${category.slug}/${subcategory.slug}`);
+    validPaths.add(catalogSubcategoryPath(category.slug, subcategory.slug));
   }
 }
 
@@ -41,7 +42,7 @@ for (const { source, target } of entries) {
 }
 
 const mustRedirect = "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki";
-const mustTarget = "/catalog/zadvizhki/zadvizhki-chugunnye";
+const mustTarget = "/catalog/zadvizhki?subcategory=zadvizhki-chugunnye";
 const found = entries.find((e) => e.source === mustRedirect);
 if (!found || found.target !== mustTarget) {
   failures.push(`${mustRedirect} must redirect to ${mustTarget}`);

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { getPublicSubcategoryBySlug } from "@/lib/public-catalog";
 import { catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { buildCatalogListingRedirectUrl } from "@/lib/catalog-redirect";
 import { resolveLegacySubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
 import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
@@ -54,7 +55,7 @@ export default async function LegacyCatalogSubcategoryRedirect({
 
   const legacy = resolveLegacySubcategoryCanonicalPath(subcategorySlug);
   if (legacy) {
-    permanentRedirect(`${legacy}${buildQueryString(query)}`);
+    permanentRedirect(buildCatalogListingRedirectUrl(legacy, query));
   }
 
   const loaded = await withCatalogRouteLoad(
@@ -71,21 +72,9 @@ export default async function LegacyCatalogSubcategoryRedirect({
   if (!context) notFound();
 
   permanentRedirect(
-    `${catalogSubcategoryPath(context.category.slug, context.subcategory.slug)}${buildQueryString(query)}`,
+    buildCatalogListingRedirectUrl(
+      catalogSubcategoryPath(context.category.slug, context.subcategory.slug),
+      query,
+    ),
   );
-}
-
-function buildQueryString(query: Record<string, string | string[] | undefined>) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item) params.append(key, item);
-      }
-      continue;
-    }
-    if (value) params.set(key, value);
-  }
-  const search = params.toString();
-  return search ? `?${search}` : "";
 }
