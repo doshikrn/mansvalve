@@ -111,7 +111,10 @@ async function resolveSubcategoryDescription(
   subcategory: Subcategory,
   products: Product[],
 ): Promise<string> {
-  const manualDescription = await resolveSubcategorySeoMetaDescription(subcategory.slug);
+  const manualDescription =
+    subcategory.description?.trim() ||
+    subcategory.seoMetaDescription?.trim() ||
+    (await resolveSubcategorySeoMetaDescription(subcategory.slug));
   return (
     manualDescription?.trim() ||
     buildSubcategoryDescription(category, subcategory, products)

@@ -18,6 +18,7 @@ export const CATALOG_FILTER_QUERY_KEYS = new Set([
   "controlType",
   "model",
   "sort",
+  "view",
 ]);
 
 export type SearchParamsInput = Record<string, string | string[] | undefined>;

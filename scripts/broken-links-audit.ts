@@ -97,8 +97,8 @@ function extractInternalHrefs(html: string): string[] {
       continue;
     }
     if (!raw.startsWith("/")) continue;
-    const pathOnly = raw.split("?")[0] ?? raw;
-    hrefs.add(pathOnly);
+    const hrefWithoutHash = raw.split("#")[0] ?? raw;
+    hrefs.add(hrefWithoutHash);
   }
   return [...hrefs];
 }
@@ -131,9 +131,23 @@ const EXPECTED_ROUTE_CHECKS: ExpectedRouteCheck[] = [
     expectedFinalPath: "/catalog/zatvory?subcategory=zatvory-diskovye",
   },
   {
+    label: "butterfly valves query page",
+    href: "/catalog/zatvory?subcategory=zatvory-diskovye",
+    expectedStatus: 200,
+    expectedFinalPath: "/catalog/zatvory?subcategory=zatvory-diskovye",
+    expectedRedirectCount: 0,
+  },
+  {
     label: "old nested check valves footer URL",
     href: "/catalog/klapany/podemnye",
     expectedFinalPath: "/catalog/klapany?subcategory=podemnye",
+  },
+  {
+    label: "check valves query page",
+    href: "/catalog/klapany?subcategory=podemnye",
+    expectedStatus: 200,
+    expectedFinalPath: "/catalog/klapany?subcategory=podemnye",
+    expectedRedirectCount: 0,
   },
   {
     label: "unknown nested URL must stay 404",

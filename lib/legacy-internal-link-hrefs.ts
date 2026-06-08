@@ -35,6 +35,23 @@ export const LEGACY_INTERNAL_LINK_HREFS: Record<string, string> = {
   ),
 };
 
+function mergeHrefParts(target: string, query: string, hash: string): string {
+  const [targetPathAndSearch, targetHash = ""] = target.split("#");
+  const [targetPath, targetSearch = ""] = targetPathAndSearch.split("?");
+  const params = new URLSearchParams(targetSearch);
+
+  if (query) {
+    const incoming = new URLSearchParams(query.slice(1));
+    for (const [key, value] of incoming.entries()) {
+      params.set(key, value);
+    }
+  }
+
+  const search = params.toString();
+  const suffix = hash || (targetHash ? `#${targetHash}` : "");
+  return search ? `${targetPath}?${search}${suffix}` : `${targetPath}${suffix}`;
+}
+
 export function normalizeLegacyInternalHref(href: string): string {
   const trimmed = href.trim();
   if (!trimmed.startsWith("/")) return href;
@@ -44,5 +61,5 @@ export function normalizeLegacyInternalHref(href: string): string {
   const hash = match?.[3] ?? "";
   const normalizedPath = path.replace(/\/+$/, "") || "/";
   const target = LEGACY_INTERNAL_LINK_HREFS[normalizedPath];
-  return target ? `${target}${query}${hash}` : href;
+  return target ? mergeHrefParts(target, query, hash) : href;
 }

@@ -106,6 +106,8 @@ function revalidateCatalogPublicPaths(
   revalidatePath("/");
   revalidatePath("/catalog");
   revalidatePath("/catalog", "layout");
+  revalidatePath("/catalog/[slug]", "page");
+  revalidatePath("/catalog/[slug]/[subcategorySlug]", "page");
   revalidatePath("/catalog/category/[categorySlug]", "page");
   revalidatePath("/catalog/subcategory/[subcategorySlug]", "page");
   revalidatePath("/sitemap.xml");

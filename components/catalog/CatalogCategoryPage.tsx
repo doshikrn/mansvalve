@@ -5,11 +5,13 @@ import Link from "next/link";
 import { ChevronRight, ShieldCheck, Truck, BadgeCheck, FileText, Phone } from "lucide-react";
 
 import {
+  countPublicProductsBySubcategory,
   countPublicProductsByCategory,
   getPublicCatalogCategories,
   getPublicProductsByCategory,
   getPublicCategoryBySlug,
   type PublicCatalogCategory as Category,
+  type PublicCatalogSubcategory as Subcategory,
 } from "@/lib/public-catalog";
 import {
   resolveCategoryHeroImageUrl,
@@ -45,6 +47,29 @@ import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-route
 
 const TRUST_ICONS = [ShieldCheck, BadgeCheck, Truck, FileText] as const;
 
+function findSelectedSubcategory(
+  category: Category,
+  searchParams?: CatalogSearchParams,
+): Subcategory | undefined {
+  const selectedSlug = searchParams?.subcategory?.trim();
+  if (!selectedSlug) return undefined;
+  return category.subcategories.find(
+    (sub) => sub.slug === selectedSlug || sub.id === selectedSlug,
+  );
+}
+
+function resolveSubcategoryIntro(
+  category: Category,
+  subcategory: Subcategory,
+  productCount: number,
+): string {
+  return (
+    subcategory.description?.trim() ||
+    subcategory.seoMetaDescription?.trim() ||
+    `${subcategory.name} (${category.name}): ${productCount} позиций в наличии и под заказ. Подбор по DN/PN, КП, НДС, сертификаты и доставка по Казахстану.`
+  );
+}
+
 export async function getCatalogCategoryMetadata(
   categorySlug: string,
   searchParams?: CatalogSearchParams,
@@ -63,17 +88,26 @@ export async function getCatalogCategoryMetadata(
   if (!category) return { title: "Категория не найдена" };
 
   try {
-  const productCount = await countPublicProductsByCategory(category.id);
+  const selectedSubcategory = findSelectedSubcategory(category, searchParams);
+  const productCount = selectedSubcategory
+    ? await countPublicProductsBySubcategory(selectedSubcategory.id)
+    : await countPublicProductsByCategory(category.id);
   const seoPreset = getCategorySeo(category);
   const customMeta = await resolveCategorySeoMetaDescription(categorySlug);
-  const description =
-    customMeta?.trim() ||
-    seoPreset?.description ||
-    buildCategoryPageDescription(category, productCount);
+  const adminDescription = category.description?.trim();
+  const description = selectedSubcategory
+    ? resolveSubcategoryIntro(category, selectedSubcategory, productCount)
+    : customMeta?.trim() ||
+      adminDescription ||
+      seoPreset?.description ||
+      buildCategoryPageDescription(category, productCount);
 
   const canonicalPath = catalogCategoryPath(category.slug);
+  const title = selectedSubcategory
+    ? `${selectedSubcategory.name} — ${category.name} · Казахстан`
+    : seoPreset?.title || `${category.name} — каталог арматуры`;
   const meta = buildPagedMeta({
-    title: seoPreset?.title || `${category.name} — каталог арматуры`,
+    title,
     description,
     canonicalPath,
     searchParams,
@@ -115,6 +149,7 @@ interface CatalogCategoryPageProps {
 }
 
 export async function CatalogCategoryPage({ categorySlug, searchParams }: CatalogCategoryPageProps) {
+  const query = await searchParams;
   const route = `/catalog/${categorySlug}`;
   const loaded = await withCatalogRouteLoad(
     { route, categorySlug },
@@ -165,11 +200,26 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
     heroImageUrl,
     metaDescriptionOverride,
   } = loaded.data;
+  const selectedSubcategory = findSelectedSubcategory(category, query);
+  const selectedSubcategoryProducts = selectedSubcategory
+    ? categoryProducts.filter((product) => product.subcategory === selectedSubcategory.slug)
+    : [];
+  const selectedSubcategoryDescription = selectedSubcategory
+    ? resolveSubcategoryIntro(
+        category,
+        selectedSubcategory,
+        selectedSubcategoryProducts.length,
+      )
+    : undefined;
   const metaDescription =
+    selectedSubcategoryDescription ||
     metaDescriptionOverride?.trim() ||
+    category.description?.trim() ||
     getCategorySeo(category)?.description ||
     buildCategoryPageDescription(category, categoryProducts.length);
-  const h1 = getCategorySeo(category)?.h1 ?? category.name;
+  const visibleDescription =
+    selectedSubcategoryDescription || category.description?.trim() || metaDescription;
+  const h1 = selectedSubcategory?.name ?? getCategorySeo(category)?.h1 ?? category.name;
   const displayCategories = getOrderedCatalogCategories(allCategories);
   const subcategoryCounts = categoryProducts.reduce((acc, product) => {
     acc.set(product.subcategory, (acc.get(product.subcategory) ?? 0) + 1);
@@ -182,8 +232,10 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
   const heroAlt = categoryVisual.imageAlt;
   const collectionPageJsonLd = buildCollectionPageJsonLd({
     name: h1,
-    description: metaDescription,
-    path: catalogCategoryPath(category.slug),
+    description: visibleDescription,
+    path: selectedSubcategory
+      ? catalogSubcategoryPath(category.slug, selectedSubcategory.slug)
+      : catalogCategoryPath(category.slug),
   });
 
   return (
@@ -233,7 +285,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
             {pluralSubcategories(category.subcategories.length)}
           </p>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600 line-clamp-2">
-            {metaDescription}
+            {visibleDescription}
           </p>
 
           <ul className="site-catalog-benefits mt-4">

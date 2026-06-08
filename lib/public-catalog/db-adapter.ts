@@ -114,6 +114,8 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       .select({
         slug: categoriesTable.slug,
         name: categoriesTable.name,
+        description: categoriesTable.description,
+        seoMetaDescription: categoriesTable.seoMetaDescription,
         sortOrder: categoriesTable.sortOrder,
       })
       .from(categoriesTable)
@@ -123,6 +125,8 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       .select({
         slug: subcategoriesTable.slug,
         name: subcategoriesTable.name,
+        description: subcategoriesTable.description,
+        seoMetaDescription: subcategoriesTable.seoMetaDescription,
         sortOrder: subcategoriesTable.sortOrder,
         categorySlug: categoriesTable.slug,
       })
@@ -152,6 +156,8 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       name: subcategory.name,
       slug: subcategory.slug,
       parentCategory: subcategory.categorySlug,
+      description: subcategory.description ?? undefined,
+      seoMetaDescription: subcategory.seoMetaDescription ?? undefined,
       sortOrder: subcategory.sortOrder,
     });
     bucket.set(subcategory.categorySlug, arr);
@@ -162,6 +168,8 @@ async function fetchCategories(): Promise<PublicCatalogCategory[]> {
       id: category.slug,
       name: category.name,
       slug: category.slug,
+      description: category.description ?? undefined,
+      seoMetaDescription: category.seoMetaDescription ?? undefined,
       sortOrder: category.sortOrder,
       subcategories: bucket.get(category.slug) ?? [],
     })),

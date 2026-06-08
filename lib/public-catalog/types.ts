@@ -53,6 +53,8 @@ export interface PublicCatalogSubcategory {
   name: string;
   slug: string;
   parentCategory: string;
+  description?: string;
+  seoMetaDescription?: string;
   sortOrder?: number;
 }
 
@@ -60,6 +62,8 @@ export interface PublicCatalogCategory {
   id: string;
   name: string;
   slug: string;
+  description?: string;
+  seoMetaDescription?: string;
   sortOrder?: number;
   subcategories: PublicCatalogSubcategory[];
 }
