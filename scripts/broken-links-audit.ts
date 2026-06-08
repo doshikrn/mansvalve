@@ -140,13 +140,20 @@ const EXPECTED_ROUTE_CHECKS: ExpectedRouteCheck[] = [
   {
     label: "old nested check valves footer URL",
     href: "/catalog/klapany/podemnye",
-    expectedFinalPath: "/catalog/podemnye",
+    expectedFinalPath: "/catalog/klapany-obratnye",
+  },
+  {
+    label: "old check valves flat internal slug redirects to public URL",
+    href: "/catalog/podemnye",
+    expectedStatus: 200,
+    expectedFinalPath: "/catalog/klapany-obratnye",
+    expectedRedirectCount: 1,
   },
   {
     label: "check valves query page redirects to clean subcategory URL",
     href: "/catalog/klapany?subcategory=podemnye",
     expectedStatus: 200,
-    expectedFinalPath: "/catalog/podemnye",
+    expectedFinalPath: "/catalog/klapany-obratnye",
     expectedRedirectCount: 1,
   },
   {

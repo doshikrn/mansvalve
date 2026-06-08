@@ -41,11 +41,22 @@ for (const { source, target } of entries) {
   }
 }
 
-const mustRedirect = "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki";
-const mustTarget = "/catalog/zadvizhki-chugunnye";
-const found = entries.find((e) => e.source === mustRedirect);
-if (!found || found.target !== mustTarget) {
-  failures.push(`${mustRedirect} must redirect to ${mustTarget}`);
+const mustRedirects = [
+  {
+    source: "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki",
+    target: "/catalog/zadvizhki-chugunnye",
+  },
+  {
+    source: "/catalog/klapany/podemnye",
+    target: "/catalog/klapany-obratnye",
+  },
+];
+
+for (const { source, target } of mustRedirects) {
+  const found = entries.find((e) => e.source === source);
+  if (!found || found.target !== target) {
+    failures.push(`${source} must redirect to ${target}`);
+  }
 }
 
 if (failures.length > 0) {
