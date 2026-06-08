@@ -15,8 +15,8 @@ export function resolveCatalogSubcategoryRouteSlug(subcategorySlug: string): str
   return SUBCATEGORY_ROUTE_SLUG_ALIASES[subcategorySlug] ?? subcategorySlug;
 }
 
-export function catalogSubcategoryPath(categorySlug: string, subcategorySlug: string): string {
-  return `${catalogCategoryPath(categorySlug)}?subcategory=${encodeURIComponent(subcategorySlug)}`;
+export function catalogSubcategoryPath(_categorySlug: string, subcategorySlug: string): string {
+  return `/catalog/${encodeURIComponent(subcategorySlug)}`;
 }
 
 export function catalogNestedProductPath(

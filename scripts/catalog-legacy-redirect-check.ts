@@ -42,7 +42,7 @@ for (const { source, target } of entries) {
 }
 
 const mustRedirect = "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki";
-const mustTarget = "/catalog/zadvizhki?subcategory=zadvizhki-chugunnye";
+const mustTarget = "/catalog/zadvizhki-chugunnye";
 const found = entries.find((e) => e.source === mustRedirect);
 if (!found || found.target !== mustTarget) {
   failures.push(`${mustRedirect} must redirect to ${mustTarget}`);

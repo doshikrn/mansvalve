@@ -1,4 +1,8 @@
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import {
+  catalogCategoryPath,
+  catalogSubcategoryPath,
+  resolveCatalogSubcategoryRouteSlug,
+} from "@/lib/catalog-routes";
 
 /**
  * Known legacy internal hrefs → актуальные публичные URL.
@@ -52,6 +56,30 @@ function mergeHrefParts(target: string, query: string, hash: string): string {
   return search ? `${targetPath}?${search}${suffix}` : `${targetPath}${suffix}`;
 }
 
+function normalizeCatalogSubcategoryQueryHref(
+  path: string,
+  query: string,
+  hash: string,
+): string | undefined {
+  if (!query) return undefined;
+  const match = path.match(/^\/catalog\/([^/]+)$/);
+  if (!match) return undefined;
+
+  const params = new URLSearchParams(query.slice(1));
+  const rawSubcategorySlug = params.get("subcategory")?.trim();
+  if (!rawSubcategorySlug) return undefined;
+
+  params.delete("category");
+  params.delete("subcategory");
+
+  const target = catalogSubcategoryPath(
+    match[1] ?? "",
+    resolveCatalogSubcategoryRouteSlug(rawSubcategorySlug),
+  );
+  const remainingQuery = params.toString();
+  return mergeHrefParts(target, remainingQuery ? `?${remainingQuery}` : "", hash);
+}
+
 export function normalizeLegacyInternalHref(href: string): string {
   const trimmed = href.trim();
   if (!trimmed.startsWith("/")) return href;
@@ -60,6 +88,8 @@ export function normalizeLegacyInternalHref(href: string): string {
   const query = match?.[2] ?? "";
   const hash = match?.[3] ?? "";
   const normalizedPath = path.replace(/\/+$/, "") || "/";
+  const queryTarget = normalizeCatalogSubcategoryQueryHref(normalizedPath, query, hash);
+  if (queryTarget) return queryTarget;
   const target = LEGACY_INTERNAL_LINK_HREFS[normalizedPath];
   return target ? mergeHrefParts(target, query, hash) : href;
 }

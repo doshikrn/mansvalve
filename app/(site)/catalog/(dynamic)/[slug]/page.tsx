@@ -7,6 +7,7 @@ import {
   getPublicCategoryBySlug,
   getPublicProductBySlug,
   getPublicSubcategoryBySlug,
+  type PublicCatalogCategory,
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import {
@@ -56,6 +57,36 @@ interface PageProps {
   searchParams: Promise<CatalogSearchParams>;
 }
 
+function getSingleSearchParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function stripSubcategorySelectionParams(searchParams: SearchParamsLike): SearchParamsLike {
+  const rest: SearchParamsLike = { ...searchParams };
+  delete rest.category;
+  delete rest.subcategory;
+  return rest;
+}
+
+function buildSubcategoryQueryRedirect(
+  category: PublicCatalogCategory,
+  searchParams: SearchParamsLike,
+): string | undefined {
+  const rawSubcategorySlug = getSingleSearchParam(searchParams.subcategory)?.trim();
+  if (!rawSubcategorySlug) return undefined;
+
+  const routeSubcategorySlug = resolveCatalogSubcategoryRouteSlug(rawSubcategorySlug);
+  const subcategory = category.subcategories.find(
+    (sub) => sub.slug === routeSubcategorySlug || sub.id === routeSubcategorySlug,
+  );
+  if (!subcategory) return undefined;
+
+  return buildCatalogListingRedirectUrl(
+    catalogSubcategoryPath(category.slug, subcategory.slug),
+    stripSubcategorySelectionParams(searchParams),
+  );
+}
+
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const query = await searchParams;
@@ -80,6 +111,8 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     return { title: "Каталог MANSVALVE GROUP" };
   }
   if (category) {
+    const subcategoryRedirect = buildSubcategoryQueryRedirect(category, query as SearchParamsLike);
+    if (subcategoryRedirect) permanentRedirect(subcategoryRedirect);
     return getCatalogCategoryMetadata(slug, query);
   }
 
@@ -128,6 +161,12 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
 
   const category = loaded.data;
   if (category) {
+    const subcategoryRedirect = buildSubcategoryQueryRedirect(
+      category,
+      query as SearchParamsLike,
+    );
+    if (subcategoryRedirect) permanentRedirect(subcategoryRedirect);
+
     return <CatalogCategoryPage categorySlug={slug} searchParams={searchParams} />;
   }
 
