@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { readProductFormCategoryContext } from "@/lib/admin/product-form-context";
+import { revalidateProductPublicSurfaces } from "@/lib/admin/revalidate-product-surfaces";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
-import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import { buildProductSlugFromTitle } from "@/lib/products-import/slug-builder";
 import {
@@ -14,22 +15,16 @@ import {
   PRODUCT_DETAIL_BLOCK_FIELDS,
   type ProductDetailBlocks,
 } from "@/lib/product-detail-blocks";
-import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
-import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { settleRevalidation } from "@/lib/revalidation";
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import {
   createProduct,
   deleteProduct,
   getProductById,
   updateProduct,
-  type ProductDetail,
   type ProductWritePayload,
 } from "@/lib/services/products";
 import { slugify } from "@/lib/services/slug";
-import { getGateValveSeoPageForProduct } from "@/lib/seo-product-pages/gate-valves";
-
 /* -------------------------------------------------------------------------- */
 /* Shared parsing                                                             */
 /* -------------------------------------------------------------------------- */
@@ -337,18 +332,17 @@ export async function createProductAction(
 ): Promise<ProductFormState> {
   await requireAdmin("/admin/products/new");
 
-  const categoryId = Number(formData.get("categoryId"));
   const categories = await listCategoriesWithSubcategories();
-  const category = categories.find((item) => item.id === categoryId);
-  const subcategoryIdRaw = String(formData.get("subcategoryId") ?? "").trim();
-  const subcategoryId = subcategoryIdRaw ? Number(subcategoryIdRaw) : null;
-  const subcategory = category?.subcategories.find((item) => item.id === subcategoryId);
+  const categoryContext = readProductFormCategoryContext(formData, categories);
+  if (!categoryContext.ok) {
+    return { fieldErrors: categoryContext.fieldErrors, error: "Проверьте форму." };
+  }
 
   const parsed = parseProductForm(formData, {
-    categorySlug: category?.slug,
-    categoryName: category?.name,
-    subcategorySlug: subcategory?.slug ?? null,
-    subcategoryName: subcategory?.name ?? null,
+    categorySlug: categoryContext.context.categorySlug,
+    categoryName: categoryContext.context.categoryName,
+    subcategorySlug: categoryContext.context.subcategorySlug,
+    subcategoryName: categoryContext.context.subcategoryName,
   });
   if (!parsed.ok) {
     return { fieldErrors: parsed.fieldErrors, error: "Проверьте форму." };
@@ -363,7 +357,7 @@ export async function createProductAction(
   }
 
   revalidatePath("/admin/products");
-  revalidateProductPublicPaths(await getProductById(id));
+  revalidateProductPublicSurfaces(await getProductById(id));
   await settleRevalidation();
   const rawReturnTo = String(formData.get("returnTo") ?? "").trim();
   const returnTo = safeReturnTo(rawReturnTo, "");
@@ -382,16 +376,17 @@ export async function updateProductAction(
 
   const before = await getProductById(id);
   const categories = await listCategoriesWithSubcategories();
-  const category = categories.find((item) => item.id === before?.categoryId);
-  const subcategory = category?.subcategories.find(
-    (item) => item.id === before?.subcategoryId,
-  );
+  const categoryContext = readProductFormCategoryContext(formData, categories);
+  if (!categoryContext.ok) {
+    return { fieldErrors: categoryContext.fieldErrors, error: "Проверьте форму." };
+  }
+
   const parsed = parseProductForm(formData, {
     existingSlug: before?.slug ?? undefined,
-    categorySlug: category?.slug ?? before?.categorySlug,
-    categoryName: category?.name ?? before?.categoryName,
-    subcategorySlug: subcategory?.slug ?? before?.subcategorySlug,
-    subcategoryName: subcategory?.name ?? before?.subcategoryName,
+    categorySlug: categoryContext.context.categorySlug,
+    categoryName: categoryContext.context.categoryName,
+    subcategorySlug: categoryContext.context.subcategorySlug,
+    subcategoryName: categoryContext.context.subcategoryName,
   });
   if (!parsed.ok) {
     return { fieldErrors: parsed.fieldErrors, error: "Проверьте форму." };
@@ -407,13 +402,13 @@ export async function updateProductAction(
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   const after = await getProductById(id);
-  revalidateProductPublicPaths(before, after);
+  revalidateProductPublicSurfaces(before, after);
   await settleRevalidation();
   const slugChanged = Boolean(before && after && before.slug !== after.slug);
   return {
     success: slugChanged
-      ? "Изменения сохранены. Ссылка товара обновлена — старый адрес автоматически ведёт на новый. Сайт может обновиться в течение нескольких минут."
-      : "Изменения сохранены. Публичный сайт может обновиться в течение нескольких минут.",
+      ? "Изменения сохранены. Ссылка товара обновлена — старый адрес автоматически ведёт на новый."
+      : "Изменения сохранены. Публичная страница товара и каталог обновлены.",
     savedAt: new Date().toISOString(),
   };
 }
@@ -433,67 +428,9 @@ export async function deleteProductAction(
     redirect(withStatusParam(returnTo, "error", "Не удалось удалить товар. Проверьте связанные данные и попробуйте ещё раз."));
   }
   revalidatePath("/admin/products");
-  revalidateProductPublicPaths(before);
+  revalidateProductPublicSurfaces(before);
   await settleRevalidation();
   redirect(withStatusParam(returnTo, "msg", "Товар удалён. Он исчез с сайта, поиска, sitemap и витрины."));
-}
-
-function revalidateProductPublicPaths(
-  ...products: Array<ProductDetail | null | undefined>
-) {
-  revalidatePath("/", "layout");
-  revalidatePath("/");
-  revalidatePath("/catalog");
-  revalidatePath("/catalog", "layout");
-  revalidatePath("/about");
-  revalidatePath("/sitemap.xml");
-
-  for (const product of products) {
-    if (!product) continue;
-    const publicProduct = productDetailToPublicCatalogProduct(product);
-    const view = buildPublicProductView(publicProduct);
-    revalidatePath(`/catalog/${product.slug}`);
-    revalidatePath(`/tovar/${product.slug}`);
-    revalidatePath(view.canonicalPath);
-    for (const path of getRelatedSeoLandingPaths(product, publicProduct, view.canonicalPath)) {
-      revalidatePath(path);
-    }
-    if (product.categorySlug) {
-      revalidatePath(catalogCategoryPath(product.categorySlug));
-      revalidatePath(`/catalog/category/${product.categorySlug}`);
-    }
-    if (product.subcategorySlug && product.categorySlug) {
-      revalidatePath(catalogSubcategoryPath(product.categorySlug, product.subcategorySlug));
-    }
-    if (product.subcategorySlug) {
-      revalidatePath(`/catalog/subcategory/${product.subcategorySlug}`);
-    }
-  }
-}
-
-function getRelatedSeoLandingPaths(
-  product: ProductDetail,
-  publicProduct: ReturnType<typeof productDetailToPublicCatalogProduct>,
-  canonicalPath: string,
-): string[] {
-  const paths = new Set<string>();
-  const gateValvePage = getGateValveSeoPageForProduct(publicProduct);
-  if (gateValvePage) {
-    paths.add(`/${gateValvePage.categorySlug}/${gateValvePage.slug}`);
-  }
-
-  const categorySlug = product.categorySlug || publicProduct.category;
-  const productSlug = product.slug.toLowerCase();
-  const canonical = canonicalPath.toLowerCase();
-  for (const landingPage of CATALOG_LANDING_PAGES) {
-    if (landingPage.categorySlug !== categorySlug) continue;
-    const landingSlug = landingPage.slug.toLowerCase();
-    if (productSlug.includes(landingSlug) || canonical.includes(`/${categorySlug}/${landingSlug}`)) {
-      paths.add(`/${landingPage.categorySlug}/${landingPage.slug}`);
-    }
-  }
-
-  return [...paths];
 }
 
 function withStatusParam(href: string, key: "msg" | "error", value: string): string {
@@ -505,6 +442,9 @@ function withStatusParam(href: string, key: "msg" | "error", value: string): str
 
 function humanizeError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes("SUBCATEGORY_CATEGORY_MISMATCH")) {
+    return "Выбранная подкатегория не относится к этой категории.";
+  }
   if (msg.includes("products_slug_idx")) {
     return "Товар с такой ссылкой уже есть.";
   }

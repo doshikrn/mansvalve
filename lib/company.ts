@@ -22,7 +22,7 @@ export const COMPANY = {
 } as const;
 
 /** Имя бренда для title, Open Graph и сниппетов (единый стиль в выдаче). */
-export const COMPANY_BRAND_SEO = "MANSVALVE Group";
+export const COMPANY_BRAND_SEO = "MANSVALVE GROUP";
 
 export const COMPANY_PHONE_HREF = `tel:${COMPANY.phoneE164}`;
 export const COMPANY_EMAIL_HREF = `mailto:${COMPANY.email}`;

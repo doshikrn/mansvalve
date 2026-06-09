@@ -4,7 +4,9 @@ import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
 import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth/current-user";
+import { PublicCatalogSourceNotice } from "@/components/admin/PublicCatalogSourceNotice";
 import { getCatalogHealthPageModel } from "@/lib/catalog/health";
+import { getPublicCatalogRuntimeInfo } from "@/lib/public-catalog";
 import { isDatabaseConfigured } from "@/lib/db/client";
 
 export const runtime = "nodejs";
@@ -35,6 +37,7 @@ export default async function CatalogHealthPage() {
     );
   }
 
+  const runtime = getPublicCatalogRuntimeInfo();
   const { headline, metrics } = await getCatalogHealthPageModel();
 
   const attentionCount = metrics.filter((row) => {
@@ -47,6 +50,19 @@ export default async function CatalogHealthPage() {
   return (
     <div className="space-y-5">
       <AdminBreadcrumbs items={[{ label: "Проверка каталога" }]} />
+
+      <PublicCatalogSourceNotice />
+
+      {!runtime.adminChangesVisibleOnPublicSite ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-950">
+          <p className="font-semibold">Публичный сайт не читает эту базу данных</p>
+          <p className="mt-1">
+            Пока источник каталога не переключён на DB, правки в админке могут не попадать на
+            сайт. configuredSource={runtime.configuredSource}, effectiveSource=
+            {runtime.effectiveSource}.
+          </p>
+        </div>
+      ) : null}
 
       <header className="space-y-3">
         <h1 className="text-xl font-semibold tracking-tight text-slate-900">

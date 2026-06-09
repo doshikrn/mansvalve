@@ -97,6 +97,9 @@ export function ProductForm({
   const [categoryId, setCategoryId] = useState<number | "">(
     product?.categoryId ?? "",
   );
+  const [subcategoryId, setSubcategoryId] = useState<number | "">(
+    product?.subcategoryId ?? "",
+  );
   const specIdRef = useRef(0);
   const [specs, setSpecs] = useState<Spec[]>(
     product?.specs.map((s, index) => ({
@@ -107,6 +110,14 @@ export function ProductForm({
   );
 
   const selectedCategory = categories.find((c) => c.id === categoryId);
+  const subcategorySelectValue =
+    subcategoryId &&
+    selectedCategory?.subcategories.some((item) => item.id === subcategoryId)
+      ? subcategoryId
+      : "";
+  const selectedSubcategory = selectedCategory?.subcategories.find(
+    (item) => item.id === subcategorySelectValue,
+  );
   const selectedImages: SelectedMediaItem[] = (product?.images ?? []).map((img) => ({
     mediaId: img.mediaId,
     url: img.url,
@@ -242,8 +253,8 @@ export function ProductForm({
       slug: slugDraft,
       categorySlug: selectedCategory?.slug ?? product?.categorySlug ?? "",
       categoryName: selectedCategory?.name ?? product?.categoryName ?? "",
-      subcategorySlug: product?.subcategorySlug ?? undefined,
-      subcategoryName: product?.subcategoryName ?? undefined,
+      subcategorySlug: selectedSubcategory?.slug ?? undefined,
+      subcategoryName: selectedSubcategory?.name ?? undefined,
       model: modelDraft,
       dn: dnDraft ? Number(dnDraft) : null,
       pn: pnDraft ? Number(pnDraft) : null,
@@ -280,6 +291,7 @@ export function ProductForm({
     h1OverrideDraft,
     slugDraft,
     selectedCategory,
+    selectedSubcategory,
     product,
     modelDraft,
     dnDraft,
@@ -439,8 +451,10 @@ export function ProductForm({
             {isExisting ? (
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-muted-foreground">
-                  Меняйте ссылку только если это действительно нужно. После сохранения
-                  старый URL будет работать через редирект.
+                  У существующего товара URL не меняется автоматически, чтобы не ломать SEO и
+                  рекламу. Чтобы изменить URL, нажмите «Сгенерировать URL из текущего названия»
+                  или отредактируйте поле вручную — после сохранения старый адрес будет работать
+                  через редирект.
                 </p>
                 <Button
                   type="button"
@@ -479,9 +493,11 @@ export function ProductForm({
                 name="categoryId"
                 required
                 value={categoryId}
-                onChange={(e) =>
-                  setCategoryId(e.target.value ? Number(e.target.value) : "")
-                }
+                onChange={(e) => {
+                  const nextCategoryId = e.target.value ? Number(e.target.value) : "";
+                  setCategoryId(nextCategoryId);
+                  setSubcategoryId("");
+                }}
                 className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <option value="">Выберите категорию</option>
@@ -500,7 +516,10 @@ export function ProductForm({
             >
               <select
                 name="subcategoryId"
-                defaultValue={product?.subcategoryId ?? ""}
+                value={subcategorySelectValue}
+                onChange={(e) =>
+                  setSubcategoryId(e.target.value ? Number(e.target.value) : "")
+                }
                 className="h-9 w-full rounded-md border border-border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                 disabled={!selectedCategory}
               >

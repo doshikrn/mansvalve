@@ -26,7 +26,7 @@ export function resolveProductAutoH1(input: ProductSeoNamingInput): string {
 }
 
 /**
- * Часть `<title>` до template layout (`%s | MANSVALVE Group`).
+ * Часть `<title>` до template layout (`%s | MANSVALVE GROUP`).
  * Полный tab title: `formatProductPageTitle(part)`.
  */
 export function buildProductAutoMetaTitlePart(productTitle: string): string {

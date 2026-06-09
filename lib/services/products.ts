@@ -482,6 +482,7 @@ export async function createProduct(
 
   return db.transaction(async (tx) => {
     await validateDocumentMedia(tx, core);
+    await assertSubcategoryBelongsToCategory(tx, core.categoryId, core.subcategoryId);
     const names = await resolveDenormalizedNames(
       tx,
       core.categoryId,
@@ -523,6 +524,24 @@ export async function createProduct(
   });
 }
 
+async function assertSubcategoryBelongsToCategory(
+  tx: DbExecutor,
+  categoryId: number,
+  subcategoryId: number | null | undefined,
+): Promise<void> {
+  if (!subcategoryId) return;
+
+  const row = await tx
+    .select({ categoryId: subcategoriesTable.categoryId })
+    .from(subcategoriesTable)
+    .where(eq(subcategoriesTable.id, subcategoryId))
+    .limit(1);
+
+  if (!row.length || row[0].categoryId !== categoryId) {
+    throw new Error("SUBCATEGORY_CATEGORY_MISMATCH");
+  }
+}
+
 export async function updateProduct(
   id: number,
   payload: ProductWritePayload,
@@ -532,6 +551,7 @@ export async function updateProduct(
 
   await db.transaction(async (tx) => {
     await validateDocumentMedia(tx, core);
+    await assertSubcategoryBelongsToCategory(tx, core.categoryId, core.subcategoryId);
     const names = await resolveDenormalizedNames(
       tx,
       core.categoryId,

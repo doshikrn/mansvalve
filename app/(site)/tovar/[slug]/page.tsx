@@ -15,7 +15,8 @@ import { buildCleanProductRedirectUrl } from "@/lib/catalog-redirect";
 import { resolveProductSlugAliasTarget } from "@/lib/public-catalog/slug-aliases";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 
-export const revalidate = 300;
+/** Admin edits must appear immediately — no ISR stale HTML for product pages. */
+export const dynamic = "force-dynamic";
 
 /** Products whose canonical is not `/tovar/[slug]` are redirected; keep dynamicParams for those. */
 export const dynamicParams = true;
