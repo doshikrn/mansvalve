@@ -94,3 +94,10 @@ export interface PublicCatalogAdapter {
 }
 
 export type PublicCatalogSource = "json" | "db";
+
+export type PublicCatalogRuntimeInfo = {
+  configuredSource: PublicCatalogSource;
+  effectiveSource: PublicCatalogSource;
+  databaseConfigured: boolean;
+  adminChangesVisibleOnPublicSite: boolean;
+};

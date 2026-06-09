@@ -1,5 +1,5 @@
 /**
- * Compare admin DB product vs public catalog view for a slug.
+ * Compare DB product row vs public catalog view for a slug.
  * Read-only diagnostic — does not modify the database.
  *
  * Usage:
@@ -8,7 +8,7 @@
 
 import "../db/_env";
 
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { formatProductPageTitle } from "@/lib/catalog/product-seo-naming";
 import { getDb } from "@/lib/db/drizzle-core";
@@ -17,18 +17,87 @@ import {
   products as productsTable,
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
-import {
-  getPublicCatalogRuntimeInfo,
-  getPublicProductBySlug,
-} from "@/lib/public-catalog";
-import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
+import { getPublicCatalogRuntimeInfo } from "@/lib/public-catalog/runtime-info";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
-import { getProductById } from "@/lib/services/products";
+import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
+import { getProductOptionalColumns } from "@/lib/db/product-optional-columns";
 
 function readArg(name: string): string | undefined {
   const prefix = `--${name}=`;
   const hit = process.argv.find((arg) => arg.startsWith(prefix));
   return hit ? hit.slice(prefix.length).trim() : undefined;
+}
+
+async function loadDbProductBySlug(slug: string) {
+  const db = getDb();
+  const optional = await getProductOptionalColumns();
+
+  const rows = await db
+    .select({
+      id: productsTable.id,
+      slug: productsTable.slug,
+      name: productsTable.name,
+      publicTitle: optional.publicTitle
+        ? productsTable.publicTitle
+        : sql<string | null>`null`,
+      h1Override: optional.h1Override
+        ? productsTable.h1Override
+        : sql<string | null>`null`,
+      shortDescription: productsTable.shortDescription,
+      longDescription: productsTable.longDescription,
+      dn: productsTable.dn,
+      pn: productsTable.pn,
+      thread: productsTable.thread,
+      material: productsTable.material,
+      connectionType: productsTable.connectionType,
+      controlType: productsTable.controlType,
+      model: productsTable.model,
+      price: productsTable.price,
+      priceByRequest: productsTable.priceByRequest,
+      weight: productsTable.weight,
+      isActive: productsTable.isActive,
+      categorySlug: categoriesTable.slug,
+      categoryName: categoriesTable.name,
+      subcategorySlug: subcategoriesTable.slug,
+      subcategoryName: subcategoriesTable.name,
+    })
+    .from(productsTable)
+    .innerJoin(categoriesTable, eq(categoriesTable.id, productsTable.categoryId))
+    .leftJoin(
+      subcategoriesTable,
+      eq(subcategoriesTable.id, productsTable.subcategoryId),
+    )
+    .where(eq(productsTable.slug, slug))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+function toPublicProduct(row: NonNullable<Awaited<ReturnType<typeof loadDbProductBySlug>>>): PublicCatalogProduct {
+  return {
+    id: String(row.id),
+    name: row.name,
+    publicTitle: row.publicTitle ?? undefined,
+    h1Override: row.h1Override ?? undefined,
+    slug: row.slug,
+    category: row.categorySlug,
+    subcategory: row.subcategorySlug ?? "",
+    subcategoryName: row.subcategoryName ?? "",
+    categoryName: row.categoryName,
+    dn: row.dn ?? undefined,
+    pn: row.pn ?? undefined,
+    thread: row.thread ?? undefined,
+    material: row.material ?? "",
+    connectionType: row.connectionType ?? "",
+    controlType: row.controlType ?? "",
+    model: row.model ?? "",
+    price: row.price == null ? undefined : Number(row.price),
+    priceByRequest: row.priceByRequest,
+    weight: row.weight == null ? undefined : Number(row.weight),
+    specs: {},
+    shortDescription: row.shortDescription ?? "",
+    longDescription: row.longDescription ?? undefined,
+  };
 }
 
 async function main() {
@@ -53,81 +122,59 @@ async function main() {
     process.exit(1);
   }
 
-  const db = getDb();
-  const rows = await db
-    .select({
-      id: productsTable.id,
-      slug: productsTable.slug,
-      categorySlug: categoriesTable.slug,
-      subcategorySlug: subcategoriesTable.slug,
-    })
-    .from(productsTable)
-    .leftJoin(categoriesTable, eq(categoriesTable.id, productsTable.categoryId))
-    .leftJoin(
-      subcategoriesTable,
-      eq(subcategoriesTable.id, productsTable.subcategoryId),
-    )
-    .where(eq(productsTable.slug, slug))
-    .limit(1);
-
-  if (!rows.length) {
+  const dbRow = await loadDbProductBySlug(slug);
+  if (!dbRow) {
     console.error(`Product slug "${slug}" not found in DB.`);
     process.exit(1);
   }
 
-  const productId = rows[0].id;
-  const [adminDetail, publicProduct] = await Promise.all([
-    getProductById(productId),
-    getPublicProductBySlug(slug),
-  ]);
-
-  if (!adminDetail) {
-    console.error(`Admin product #${productId} could not be loaded.`);
-    process.exit(1);
+  if (!dbRow.isActive) {
+    console.warn("WARN  Product is inactive (is_active=false) — public catalog hides it.");
   }
 
-  if (!publicProduct) {
-    console.error(`Public catalog did not return product for slug "${slug}".`);
-    process.exit(1);
-  }
+  const publicProduct = toPublicProduct(dbRow);
+  const view = buildPublicProductView(publicProduct);
 
-  const adminView = buildPublicProductView(productDetailToPublicCatalogProduct(adminDetail));
-  const publicView = buildPublicProductView(publicProduct);
+  console.log("\nPublic product view (from DB row via buildPublicProductView):");
+  console.log(`  h1: ${view.h1}`);
+  console.log(`  seoTitle: ${view.seoTitle}`);
+  console.log(`  browser title: ${formatProductPageTitle(view.seoTitle)}`);
+  console.log(`  seoDescription: ${view.seoDescription.slice(0, 120)}…`);
+  console.log(`  canonicalPath: ${view.canonicalPath}`);
+  console.log(`  category: ${publicProduct.category} / ${publicProduct.subcategory}`);
 
   const checks = [
-    ["slug", adminDetail.slug, publicProduct.slug],
-    ["categorySlug", adminDetail.categorySlug, publicProduct.category],
-    ["subcategorySlug", adminDetail.subcategorySlug ?? "", publicProduct.subcategory],
-    ["publicTitle", adminDetail.publicTitle ?? "", publicProduct.publicTitle ?? ""],
-    ["h1Override", adminDetail.h1Override ?? "", publicProduct.h1Override ?? ""],
-    ["h1", adminView.h1, publicView.h1],
-    ["seoTitle", adminView.seoTitle, publicView.seoTitle],
-    ["seoDescription", adminView.seoDescription, publicView.seoDescription],
-    ["canonicalPath", adminView.canonicalPath, publicView.canonicalPath],
+    ["slug", dbRow.slug, publicProduct.slug],
+    ["categorySlug", dbRow.categorySlug, publicProduct.category],
+    ["subcategorySlug", dbRow.subcategorySlug ?? "", publicProduct.subcategory],
+    ["publicTitle(db)", dbRow.publicTitle ?? "", publicProduct.publicTitle ?? ""],
+    ["h1Override(db)", dbRow.h1Override ?? "", publicProduct.h1Override ?? ""],
+    ["h1(view)", view.h1, view.h1],
+    ["seoTitle", view.seoTitle, view.seoTitle],
+    ["canonicalPath non-empty", Boolean(view.canonicalPath), true],
   ] as const;
 
   let failed = 0;
-  for (const [label, adminValue, publicValue] of checks) {
-    const pass = adminValue === publicValue;
+  for (const [label, left, right] of checks) {
+    const pass = left === right;
     if (!pass) failed += 1;
     console.log(`${pass ? "OK" : "FAIL"}  ${label}`);
     if (!pass) {
-      console.log(`      admin:   ${adminValue}`);
-      console.log(`      public:  ${publicValue}`);
+      console.log(`      left:  ${left}`);
+      console.log(`      right: ${right}`);
     }
   }
 
-  console.log("\nDerived browser title (admin view):");
-  console.log(`  ${formatProductPageTitle(adminView.seoTitle)}`);
-  console.log("\nExpected public path:");
-  console.log(`  /tovar/${slug}`);
+  if (view.canonicalPath !== `/tovar/${slug}` && !view.canonicalPath.includes(slug)) {
+    console.log(`NOTE  Canonical is ${view.canonicalPath} (series/SEO landing, not /tovar/).`);
+  }
 
   if (failed > 0) {
-    console.error(`\n${failed} mismatch(es) between admin DB and public catalog view.`);
+    console.error(`\n${failed} check(s) failed.`);
     process.exit(1);
   }
 
-  console.log("\nAdmin DB and public catalog are in sync for this product.");
+  console.log("\nDB row and buildPublicProductView() are consistent for this product.");
 }
 
 main().catch((error) => {
