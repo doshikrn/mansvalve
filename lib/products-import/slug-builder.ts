@@ -16,6 +16,31 @@ export interface SlugBuildInput {
   pn?: number | null | string;
 }
 
+export interface SlugFromTitleInput {
+  publicTitle?: string | null;
+  generatedDisplayName?: string | null;
+  name?: string | null;
+}
+
+/**
+ * Slug из публичного названия для админки / новых товаров:
+ * publicTitle → generated display name → внутреннее name.
+ */
+export function buildProductSlugFromTitle(input: SlugFromTitleInput): string {
+  const source =
+    (input.publicTitle ?? "").trim() ||
+    (input.generatedDisplayName ?? "").trim() ||
+    (input.name ?? "").trim();
+  return slugify(source);
+}
+
+/** Безопасный суффикс при коллизии: `base`, `base-2`, `base-3`, … */
+export function appendSlugCollisionSuffix(baseSlug: string, attempt: number): string {
+  const base = baseSlug.replace(/-+$/, "");
+  if (attempt <= 1) return base;
+  return `${base}-${attempt}`;
+}
+
 function toIntOrNull(value: number | string | null | undefined): number | null {
   if (value === null || value === undefined || value === "") return null;
   if (typeof value === "number") return Number.isFinite(value) ? Math.trunc(value) : null;

@@ -33,7 +33,9 @@ import {
   PRODUCT_DETAIL_BLOCK_FIELDS,
   type ProductDetailBlocks,
 } from "@/lib/product-detail-blocks";
-import { buildProductSlug } from "@/lib/products-import/slug-builder";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
+import { buildProductPreviewFromDraft } from "@/lib/catalog/product-preview-draft";
+import { buildProductSlugFromTitle } from "@/lib/products-import/slug-builder";
 import type { CategoryWithSubcategories } from "@/lib/services/categories";
 import type { ProductDetail } from "@/lib/services/products";
 
@@ -124,6 +126,12 @@ export function ProductForm({
     isExisting ? (product?.slug ?? "") : null,
   );
   const [nameDraft, setNameDraft] = useState<string>(product?.name ?? "");
+  const [publicTitleDraft, setPublicTitleDraft] = useState<string>(
+    product?.publicTitle ?? "",
+  );
+  const [h1OverrideDraft, setH1OverrideDraft] = useState<string>(
+    product?.h1Override ?? "",
+  );
   const [modelDraft, setModelDraft] = useState<string>(product?.model ?? "");
   const [dnDraft, setDnDraft] = useState<string>(
     product?.dn != null ? String(product.dn) : "",
@@ -131,28 +139,65 @@ export function ProductForm({
   const [pnDraft, setPnDraft] = useState<string>(
     product?.pn != null ? String(product.pn) : "",
   );
+  const [materialDraft, setMaterialDraft] = useState<string>(
+    product?.material ?? "",
+  );
+  const [connectionTypeDraft, setConnectionTypeDraft] = useState<string>(
+    product?.connectionType ?? "",
+  );
+
+  const namingInput = useMemo(
+    () => ({
+      name: nameDraft,
+      publicTitle: publicTitleDraft,
+      category: selectedCategory?.slug,
+      categoryName: selectedCategory?.name,
+      model: modelDraft,
+      dn: dnDraft ? Number(dnDraft) : null,
+      pn: pnDraft ? Number(pnDraft) : null,
+      material: materialDraft,
+      connectionType: connectionTypeDraft,
+    }),
+    [
+      nameDraft,
+      publicTitleDraft,
+      selectedCategory,
+      modelDraft,
+      dnDraft,
+      pnDraft,
+      materialDraft,
+      connectionTypeDraft,
+    ],
+  );
+
+  const generatedDisplayName = useMemo(
+    () => formatProductDisplayName(namingInput),
+    [namingInput],
+  );
 
   const autoSlug = useMemo(
     () =>
-      buildProductSlug({
+      buildProductSlugFromTitle({
+        publicTitle: publicTitleDraft,
+        generatedDisplayName,
         name: nameDraft,
-        model: modelDraft,
-        dn: dnDraft,
-        pn: pnDraft,
       }),
-    [nameDraft, modelDraft, dnDraft, pnDraft],
+    [publicTitleDraft, generatedDisplayName, nameDraft],
   );
   const slugDraft = manualSlug ?? autoSlug;
   const autoSlugActive = manualSlug == null;
 
   const regenerateSlugFromCurrentFields = () => {
-    const generated = buildProductSlug({
+    const generated = buildProductSlugFromTitle({
+      publicTitle: publicTitleDraft,
+      generatedDisplayName,
       name: nameDraft,
-      model: modelDraft,
-      dn: dnDraft,
-      pn: pnDraft,
     });
     if (generated) setManualSlug(generated);
+  };
+
+  const resetH1ToAuto = () => {
+    setH1OverrideDraft("");
   };
 
   const selectedDocuments = {
@@ -188,17 +233,60 @@ export function ProductForm({
   }, [state.fieldErrors]);
 
   const livePublicPreview = useMemo(() => {
-    if (!publicPreview) return null;
     const primaryImage =
       liveImages.find((image) => image.isPrimary) ?? liveImages[0] ?? null;
-    if (!primaryImage) return publicPreview;
-    return {
-      ...publicPreview,
-      primaryImageUrl: primaryImage.url,
-      primaryImageAlt: primaryImage.alt || publicPreview.primaryImageAlt,
+    const draftPreview = buildProductPreviewFromDraft({
+      name: nameDraft,
+      publicTitle: publicTitleDraft,
+      h1Override: h1OverrideDraft,
+      slug: slugDraft,
+      categorySlug: selectedCategory?.slug ?? product?.categorySlug ?? "",
+      categoryName: selectedCategory?.name ?? product?.categoryName ?? "",
+      subcategorySlug: product?.subcategorySlug ?? undefined,
+      subcategoryName: product?.subcategoryName ?? undefined,
+      model: modelDraft,
+      dn: dnDraft ? Number(dnDraft) : null,
+      pn: pnDraft ? Number(pnDraft) : null,
+      material: materialDraft,
+      connectionType: connectionTypeDraft,
+      shortDescription: product?.shortDescription ?? "",
+      primaryImageUrl: primaryImage?.url ?? publicPreview?.primaryImageUrl,
+      primaryImageAlt: primaryImage?.alt ?? publicPreview?.primaryImageAlt,
       imageCount: liveImages.length,
+    });
+
+    if (!publicPreview && !nameDraft.trim()) return null;
+
+    return {
+      generatedDisplayName: draftPreview.generatedDisplayName,
+      displayName: draftPreview.displayName,
+      h1: draftPreview.h1,
+      h1IsManual: draftPreview.h1IsManual,
+      shortDescription: draftPreview.shortDescription || publicPreview?.shortDescription || "",
+      seoTitle: draftPreview.seoTitle,
+      seoTitleFull: draftPreview.seoTitleFull,
+      seoDescription: draftPreview.seoDescription || publicPreview?.seoDescription || "",
+      canonicalPath: draftPreview.canonicalPath,
+      canonicalUrl: draftPreview.canonicalUrl,
+      primaryImageUrl: draftPreview.primaryImageUrl,
+      primaryImageAlt: draftPreview.primaryImageAlt,
+      imageCount: draftPreview.imageCount,
     };
-  }, [liveImages, publicPreview]);
+  }, [
+    liveImages,
+    publicPreview,
+    nameDraft,
+    publicTitleDraft,
+    h1OverrideDraft,
+    slugDraft,
+    selectedCategory,
+    product,
+    modelDraft,
+    dnDraft,
+    pnDraft,
+    materialDraft,
+    connectionTypeDraft,
+  ]);
 
   return (
     <AdminUnsavedChangesGuard>
@@ -258,7 +346,11 @@ export function ProductForm({
             name="publicTitle"
             error={state.fieldErrors?.publicTitle}
           >
-            <Input name="publicTitle" defaultValue={product?.publicTitle ?? ""} />
+            <Input
+              name="publicTitle"
+              value={publicTitleDraft}
+              onChange={(event) => setPublicTitleDraft(event.target.value)}
+            />
             <AdminFieldHint>
               Показывается в карточках, поиске и в шаблоне SEO title. Если пусто —
               подставляется автоматическое имя из параметров (см. ниже).
@@ -275,19 +367,44 @@ export function ProductForm({
           </Field>
 
           <Field
-            label={
-              <>
-                Заголовок H1 на сайте <AdminStatusBadge tone="manual" />
-              </>
-            }
+            label="Заголовок H1 вручную, необязательно"
             name="h1Override"
             error={state.fieldErrors?.h1Override}
           >
-            <Input name="h1Override" defaultValue={product?.h1Override ?? ""} />
+            <Input
+              name="h1Override"
+              value={h1OverrideDraft}
+              onChange={(event) => setH1OverrideDraft(event.target.value)}
+              placeholder={
+                livePublicPreview?.h1IsManual
+                  ? undefined
+                  : livePublicPreview?.h1 || "Подставится автоматически"
+              }
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              {livePublicPreview ? (
+                h1OverrideDraft.trim() ? (
+                  <AdminStatusBadge tone="manual">изменено вручную</AdminStatusBadge>
+                ) : (
+                  <AdminStatusBadge tone="auto">автоматически</AdminStatusBadge>
+                )
+              ) : null}
+              {h1OverrideDraft.trim() ? (
+                <Button type="button" variant="outline" size="sm" onClick={resetH1ToAuto}>
+                  Вернуть H1 в авто
+                </Button>
+              ) : null}
+            </div>
             <AdminFieldHint>
-              Если пусто — H1 совпадает с «Названием на сайте», затем с автоматическим
-              именем из параметров.
+              Если пусто — H1 берётся из «Названия на сайте» или автоматического имени.
+              Автоматически сгенерированный H1 в базу не сохраняется.
             </AdminFieldHint>
+            {livePublicPreview ? (
+              <p className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                Фактический H1 на сайте:{" "}
+                <span className="font-medium text-foreground">{livePublicPreview.h1}</span>
+              </p>
+            ) : null}
           </Field>
 
           <Field
@@ -316,7 +433,7 @@ export function ProductForm({
                 className="text-xs text-muted-foreground underline-offset-2 hover:underline"
                 onClick={() => setManualSlug(null)}
               >
-                Снова собрать ссылку из названия, модели и DN/PN
+                Снова собрать ссылку из названия на сайте
               </button>
             ) : null}
             {isExisting ? (
@@ -332,14 +449,14 @@ export function ProductForm({
                   className="w-fit"
                   onClick={regenerateSlugFromCurrentFields}
                 >
-                  Сгенерировать из текущего названия
+                  Сгенерировать URL из текущего названия
                 </Button>
               </div>
             ) : null}
             <AdminFieldHint>
               {product
                 ? "Ссылка товара не меняется автоматически после публикации, чтобы не ломать SEO и рекламу. Если нужно изменить URL, отредактируйте поле вручную — старый адрес будет перенаправлен на новый."
-                : "Можно оставить пустым — ссылка соберётся из «Внутреннего названия», модели и DN/PN. После сохранения товара адрес лучше не менять без нужды."}
+                : "Можно оставить пустым — ссылка соберётся из «Названия на сайте» или автоматического имени. После сохранения товара адрес лучше не менять без нужды."}
             </AdminFieldHint>
             {product && slugDraft.trim() && slugDraft.trim() !== product.slug ? (
               <AdminInlineNotice tone="auto">
@@ -442,12 +559,22 @@ export function ProductForm({
           {livePublicPreview ? (
             <div className="space-y-4">
               <AdminSeoPreview
-                title={livePublicPreview.seoTitle}
+                title={livePublicPreview.seoTitleFull}
                 description={livePublicPreview.seoDescription}
                 url={livePublicPreview.canonicalUrl}
               />
               <dl className="grid gap-3 rounded-lg border border-border bg-muted/30 p-3 text-sm sm:grid-cols-2">
-                <PreviewValue label="H1" value={livePublicPreview.h1} />
+                <PreviewValue
+                  label="H1"
+                  value={livePublicPreview.h1}
+                  badge={
+                    livePublicPreview.h1IsManual ? (
+                      <AdminStatusBadge tone="manual">изменено вручную</AdminStatusBadge>
+                    ) : (
+                      <AdminStatusBadge tone="auto">автоматически</AdminStatusBadge>
+                    )
+                  }
+                />
                 <PreviewValue label="Основная ссылка" value={livePublicPreview.canonicalPath} />
               </dl>
               <AdminFieldHint>
@@ -492,7 +619,11 @@ export function ProductForm({
 
           <div className="grid gap-3 md:grid-cols-2">
             <Field label="Материал" name="material">
-              <Input name="material" defaultValue={product?.material ?? ""} />
+              <Input
+                name="material"
+                defaultValue={product?.material ?? ""}
+                onChange={(event) => setMaterialDraft(event.target.value)}
+              />
             </Field>
             <Field label="Марка / модель" name="model">
               <Input
@@ -508,6 +639,7 @@ export function ProductForm({
               <Input
                 name="connectionType"
                 defaultValue={product?.connectionType ?? ""}
+                onChange={(event) => setConnectionTypeDraft(event.target.value)}
               />
             </Field>
             <Field label="Тип управления" name="controlType">
@@ -748,13 +880,13 @@ function ProductValidationWarnings({
     product && product.pn == null
       ? "PN не указан: фильтры и поиск по давлению будут работать хуже."
       : null,
-    preview && !preview.seoTitle.trim()
+    preview && !(preview.seoTitleFull ?? preview.seoTitle).trim()
       ? "Заголовок для поиска пустой: проверьте название, модель, DN и PN."
       : null,
     preview && !preview.seoDescription.trim()
       ? "Описание для поиска пустое: добавьте текст в описание или характеристики."
       : null,
-    preview && preview.seoTitle.length > 70
+    preview && (preview.seoTitleFull ?? preview.seoTitle).length > 70
       ? "Заголовок для поиска длиннее 70 знаков — в выдаче может обрезаться."
       : null,
     preview && preview.seoDescription.length > 170
@@ -826,11 +958,20 @@ function Field({
   );
 }
 
-function PreviewValue({ label, value }: { label: string; value: string }) {
+function PreviewValue({
+  label,
+  value,
+  badge,
+}: {
+  label: string;
+  value: string;
+  badge?: ReactNode;
+}) {
   return (
     <div className="min-w-0">
-      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <dt className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
+        {badge}
       </dt>
       <dd className="mt-0.5 break-words font-medium text-foreground">{value}</dd>
     </div>

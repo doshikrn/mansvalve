@@ -8,8 +8,10 @@ export type AdminProductPreviewData = {
   generatedDisplayName: string;
   displayName: string;
   h1: string;
+  h1IsManual?: boolean;
   shortDescription: string;
   seoTitle: string;
+  seoTitleFull?: string;
   seoDescription: string;
   canonicalPath: string;
   canonicalUrl: string;
@@ -55,7 +57,17 @@ export function AdminProductPreview({ preview }: Props) {
             ) : null}
           </div>
           <dl className="grid gap-2 text-sm sm:grid-cols-2">
-            <PreviewRow label="H1" value={preview.h1} />
+            <PreviewRow
+              label="H1"
+              value={preview.h1}
+              badge={
+                preview.h1IsManual ? (
+                  <AdminStatusBadge tone="manual">изменено вручную</AdminStatusBadge>
+                ) : (
+                  <AdminStatusBadge tone="auto">автоматически</AdminStatusBadge>
+                )
+              }
+            />
             <PreviewRow label="Изображений" value={String(preview.imageCount)} />
             <PreviewRow label="Публичный URL" value={preview.canonicalPath} />
           </dl>
@@ -72,11 +84,20 @@ export function AdminProductPreview({ preview }: Props) {
   );
 }
 
-function PreviewRow({ label, value }: { label: string; value: string }) {
+function PreviewRow({
+  label,
+  value,
+  badge,
+}: {
+  label: string;
+  value: string;
+  badge?: React.ReactNode;
+}) {
   return (
     <div className="min-w-0">
-      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <dt className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         {label}
+        {badge}
       </dt>
       <dd className="mt-0.5 break-words font-medium text-foreground">{value}</dd>
     </div>

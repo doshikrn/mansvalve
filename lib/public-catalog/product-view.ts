@@ -1,16 +1,17 @@
 import { getCatalogCategoryLabel } from "@/lib/catalog-seo";
-import { formatProductDisplayName, formatProductSeoName } from "@/lib/catalog/product-naming";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
+import {
+  buildProductSeoTitleFromSource,
+  resolveProductAutoH1,
+  resolveProductSourceTitle,
+} from "@/lib/catalog/product-seo-naming";
 import { getCategoryVisual } from "@/lib/category-visuals";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { buildProductDetailContent, type ProductDetailContent } from "@/lib/product-detail-content";
 import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
 import { catalogCategoryPath } from "@/lib/catalog-routes";
-import {
-  normalizeMetaDescription,
-  normalizeMetaTitle,
-  stripBrandFromTitle,
-} from "@/lib/seo/metadata";
+import { normalizeMetaDescription } from "@/lib/seo/metadata";
 
 import type { PublicCatalogProduct } from "./types";
 
@@ -67,9 +68,8 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   const h1Override = product.h1Override?.trim();
   const seriesPage = getSeriesSeoPageForProduct(product);
   const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
-  const h1 = h1Override || seriesPage?.h1 || publicTitle || generatedDisplayName;
-  const seoName = publicTitle || seriesPage?.title || formatProductSeoName(product);
-  const compactSeoName = buildCompactProductSeoName(product, seoName);
+  const h1 = h1Override || seriesPage?.h1 || resolveProductAutoH1(product);
+  const sourceTitle = resolveProductSourceTitle(product);
   const detailContent = buildProductDetailContent(product, seriesPage);
   const fullDescription = detailContent.descriptionParagraphs.join("\n\n");
   const contentSections: PublicProductContentSections = {
@@ -95,10 +95,10 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     generatedDisplayName,
     displayName,
     h1,
-    seoTitle: buildProductSeoTitle(compactSeoName, seriesPage?.seoTitle),
+    seoTitle: buildProductSeoTitleFromSource(sourceTitle, seriesPage?.seoTitle),
     seoDescription: buildProductSeoDescription(
       product,
-      compactSeoName,
+      sourceTitle,
       seriesPage?.seoDescription,
     ),
     shortDescription: product.shortDescription || detailContent.descriptionParagraphs[0] || "",
@@ -146,21 +146,6 @@ export function buildPublicProductCardView(product: PublicCatalogProduct): Publi
   };
 }
 
-function buildProductSeoTitle(
-  compactName: string,
-  manualTitle?: string,
-): string {
-  const normalizedManual = manualTitle ? normalizeMetaTitle(manualTitle) : "";
-  if (manualTitle && stripBrandFromTitle(manualTitle).length <= 60) {
-    return normalizedManual;
-  }
-
-  const buyTitle = normalizeMetaTitle(`Купить ${compactName} в Казахстане`);
-  if (buyTitle.length <= 60) return buyTitle;
-
-  return normalizeMetaTitle(`${compactName} купить в Казахстане`);
-}
-
 function buildProductSeoDescription(
   product: PublicCatalogProduct,
   compactName: string,
@@ -178,38 +163,3 @@ function buildProductSeoDescription(
   );
 }
 
-function buildCompactProductSeoName(product: PublicCatalogProduct, fallback: string): string {
-  const productType = getSeoProductType(product, fallback);
-  const model = product.model?.trim();
-  const dn = product.dn ? `DN${product.dn}` : "";
-  const pn = product.pn ? `PN${product.pn}` : "";
-  const parts = [productType, model, dn, pn].filter(Boolean);
-
-  if (!model && !dn && pn && product.slug) {
-    parts.push(`арт. ${product.slug}`);
-  }
-
-  const compact = parts.join(" ").trim();
-  return compact && compact !== productType ? compact : fallback;
-}
-
-function getSeoProductType(product: PublicCatalogProduct, fallback: string): string {
-  switch (product.category) {
-    case "zadvizhki":
-      return "Задвижка";
-    case "zatvory":
-      return "Затвор";
-    case "krany-sharovye":
-      return "Кран шаровой";
-    case "klapany":
-      return "Клапан";
-    case "filtry-i-kompensatory":
-      return "Компенсатор";
-    case "flansy-i-otvody":
-      return "Фланец";
-    case "elektroprivody":
-      return "Электропривод";
-    default:
-      return fallback.split(/\s+/)[0] || "Товар";
-  }
-}

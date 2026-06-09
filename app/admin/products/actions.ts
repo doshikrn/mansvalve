@@ -7,6 +7,8 @@ import { z } from "zod";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
+import { formatProductDisplayName } from "@/lib/catalog/product-naming";
+import { buildProductSlugFromTitle } from "@/lib/products-import/slug-builder";
 import {
   parseProductDetailBlockLines,
   PRODUCT_DETAIL_BLOCK_FIELDS,
@@ -16,6 +18,7 @@ import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-p
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { settleRevalidation } from "@/lib/revalidation";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import {
   createProduct,
   deleteProduct,
@@ -140,7 +143,13 @@ function readSpecs(form: FormInput): { key: string; value: string }[] {
 
 function parseProductForm(
   formData: FormData,
-  options: { existingSlug?: string } = {},
+  options: {
+    existingSlug?: string;
+    categorySlug?: string;
+    categoryName?: string;
+    subcategorySlug?: string | null;
+    subcategoryName?: string | null;
+  } = {},
 ) {
   const parsed = productSchema.safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success) {
@@ -164,15 +173,40 @@ function parseProductForm(
   const detailBlocks = readDetailBlocks(formData);
 
   const data = parsed.data;
+  const generatedDisplayName = formatProductDisplayName({
+    name: data.name,
+    category: options.categorySlug,
+    categoryName: options.categoryName,
+    subcategory: options.subcategorySlug,
+    subcategoryName: options.subcategoryName,
+    model: data.model,
+    dn: data.dn,
+    pn: data.pn,
+    material: data.material,
+    connectionType: data.connectionType,
+  });
+  const slugFromTitle = buildProductSlugFromTitle({
+    publicTitle: data.publicTitle,
+    generatedDisplayName,
+    name: data.name,
+  });
   // Slug lifecycle:
-  //   1) update with an existing slug — never re-slugify from name; only change
-  //      when the manager explicitly edits the slug field (manual override).
-  //   2) create / empty slug — slugify either the submitted slug or the name.
+  //   1) update — never re-slugify from name; only change when slug field edited.
+  //   2) create — slug from submitted field, else public title / generated / name.
   const slug = options.existingSlug
     ? data.slug
       ? slugify(data.slug)
       : options.existingSlug
-    : slugify(data.slug ?? data.name);
+    : slugify(data.slug ?? "") || slugFromTitle || slugify(data.name);
+
+  if (!slug) {
+    return {
+      ok: false as const,
+      fieldErrors: {
+        slug: "Укажите ссылку товара или заполните название для автогенерации.",
+      },
+    };
+  }
 
   const payload: ProductWritePayload = {
     slug,
@@ -303,7 +337,19 @@ export async function createProductAction(
 ): Promise<ProductFormState> {
   await requireAdmin("/admin/products/new");
 
-  const parsed = parseProductForm(formData);
+  const categoryId = Number(formData.get("categoryId"));
+  const categories = await listCategoriesWithSubcategories();
+  const category = categories.find((item) => item.id === categoryId);
+  const subcategoryIdRaw = String(formData.get("subcategoryId") ?? "").trim();
+  const subcategoryId = subcategoryIdRaw ? Number(subcategoryIdRaw) : null;
+  const subcategory = category?.subcategories.find((item) => item.id === subcategoryId);
+
+  const parsed = parseProductForm(formData, {
+    categorySlug: category?.slug,
+    categoryName: category?.name,
+    subcategorySlug: subcategory?.slug ?? null,
+    subcategoryName: subcategory?.name ?? null,
+  });
   if (!parsed.ok) {
     return { fieldErrors: parsed.fieldErrors, error: "Проверьте форму." };
   }
@@ -335,8 +381,17 @@ export async function updateProductAction(
   await requireAdmin(`/admin/products/${id}`);
 
   const before = await getProductById(id);
+  const categories = await listCategoriesWithSubcategories();
+  const category = categories.find((item) => item.id === before?.categoryId);
+  const subcategory = category?.subcategories.find(
+    (item) => item.id === before?.subcategoryId,
+  );
   const parsed = parseProductForm(formData, {
     existingSlug: before?.slug ?? undefined,
+    categorySlug: category?.slug ?? before?.categorySlug,
+    categoryName: category?.name ?? before?.categoryName,
+    subcategorySlug: subcategory?.slug ?? before?.subcategorySlug,
+    subcategoryName: subcategory?.name ?? before?.subcategoryName,
   });
   if (!parsed.ok) {
     return { fieldErrors: parsed.fieldErrors, error: "Проверьте форму." };

@@ -16,6 +16,7 @@ import {
   type NewProduct,
   type Product,
 } from "@/lib/db/schema";
+import { appendSlugCollisionSuffix } from "@/lib/products-import/slug-builder";
 import { resolvePublicMediaUrl } from "@/lib/services/media";
 
 type DbClient = ReturnType<typeof getDb>;
@@ -426,6 +427,53 @@ async function resolveDenormalizedNames(
   return { categoryName: categoryRow[0].name, subcategoryName };
 }
 
+async function isProductSlugTaken(
+  tx: DbExecutor,
+  slug: string,
+  excludeProductId?: number,
+): Promise<boolean> {
+  const trimmed = slug.trim();
+  if (!trimmed) return true;
+
+  const productRows = await tx
+    .select({ id: productsTable.id })
+    .from(productsTable)
+    .where(eq(productsTable.slug, trimmed))
+    .limit(1);
+  if (productRows.length > 0 && productRows[0].id !== excludeProductId) {
+    return true;
+  }
+
+  const aliasRows = await tx
+    .select({ productId: productSlugAliasesTable.productId })
+    .from(productSlugAliasesTable)
+    .where(eq(productSlugAliasesTable.slug, trimmed))
+    .limit(1);
+  return aliasRows.length > 0;
+}
+
+export async function allocateUniqueProductSlug(
+  tx: DbExecutor,
+  baseSlug: string,
+  excludeProductId?: number,
+): Promise<string> {
+  const normalized = baseSlug.trim();
+  if (!normalized) {
+    throw new Error("Product slug is empty.");
+  }
+
+  let attempt = 1;
+  while (attempt < 10_000) {
+    const candidate = appendSlugCollisionSuffix(normalized, attempt);
+    if (!(await isProductSlugTaken(tx, candidate, excludeProductId))) {
+      return candidate;
+    }
+    attempt += 1;
+  }
+
+  throw new Error(`Unable to allocate unique slug for "${normalized}".`);
+}
+
 export async function createProduct(
   payload: ProductWritePayload,
 ): Promise<number> {
@@ -439,6 +487,8 @@ export async function createProduct(
       core.categoryId,
       core.subcategoryId,
     );
+
+    core.slug = await allocateUniqueProductSlug(tx, core.slug);
 
     if (core.slug) {
       // Reclaim the slug from any prior alias — manual republish wins.

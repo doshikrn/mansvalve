@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { safeReturnTo } from "@/lib/admin/safe-return-to";
 import { requireAdmin } from "@/lib/auth/current-user";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
+import { formatProductPageTitle } from "@/lib/catalog/product-seo-naming";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { productDetailToPublicCatalogProduct } from "@/lib/public-catalog/from-product-detail";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
@@ -153,8 +154,10 @@ function buildPublicPreview(product: ProductDetail) {
     generatedDisplayName: view.generatedDisplayName,
     displayName: view.displayName,
     h1: view.h1,
+    h1IsManual: Boolean(product.h1Override?.trim()),
     shortDescription: view.shortDescription,
     seoTitle: view.seoTitle,
+    seoTitleFull: formatProductPageTitle(view.seoTitle),
     seoDescription: view.seoDescription,
     canonicalPath: view.canonicalPath,
     canonicalUrl: view.canonicalUrl,
