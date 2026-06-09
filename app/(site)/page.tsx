@@ -13,13 +13,17 @@ import { HomeTestimonials } from "@/components/sections/trust/HomeTestimonials";
 import { HomeThankYouLetters } from "@/components/sections/trust/HomeThankYouLetters";
 import { HomeTrustCases } from "@/components/sections/trust/HomeTrustCases";
 import { COMPANY_BRAND_SEO } from "@/lib/company";
+import { normalizeMetaTitle, stripBrandFromTitle } from "@/lib/seo/metadata";
 import { resolveHomePage } from "@/lib/site-content/public";
 
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const home = await resolveHomePage();
-  const title = home.meta.ogTitle;
+  const title = normalizeMetaTitle(
+    stripBrandFromTitle(home.meta.ogTitle) ||
+      "Промышленная трубопроводная арматура в Казахстане",
+  );
   const description = home.meta.ogDescription;
   return {
     title,

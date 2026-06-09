@@ -1,11 +1,19 @@
 import { COMPANY_BRAND_SEO } from "@/lib/company";
-import { normalizeMetaTitle, stripBrandFromTitle } from "@/lib/seo/metadata";
+import {
+  buildBrowserTitleFromPart,
+  clampMetaTextAtWord,
+  normalizeMetaTitle,
+  stripBrandFromTitle,
+  TITLE_PART_MAX_LENGTH,
+} from "@/lib/seo/metadata";
 
 import { formatProductDisplayName, type ProductNamingInput } from "./product-naming";
 
 export type ProductSeoNamingInput = ProductNamingInput & {
   publicTitle?: string | null;
 };
+
+const PRODUCT_TITLE_SUFFIX = " — купить в Казахстане";
 
 /** Публичное имя для SEO title: publicTitle → generated → name. */
 export function resolveProductSourceTitle(input: ProductSeoNamingInput): string {
@@ -34,7 +42,11 @@ export function buildProductAutoMetaTitlePart(productTitle: string): string {
   if (!trimmed) {
     return normalizeMetaTitle("Купить в Казахстане");
   }
-  return normalizeMetaTitle(`${trimmed} — купить в Казахстане`);
+
+  const maxNameLen = TITLE_PART_MAX_LENGTH - PRODUCT_TITLE_SUFFIX.length;
+  const namePart =
+    maxNameLen >= 8 ? trimProductNameForTitle(trimmed, maxNameLen) : trimmed;
+  return normalizeMetaTitle(`${namePart}${PRODUCT_TITLE_SUFFIX}`);
 }
 
 /** Полный title страницы товара, как в браузере (с брендом из root template). */
@@ -42,7 +54,7 @@ export function formatProductPageTitle(titlePart: string): string {
   const part = titlePart.trim();
   if (!part) return COMPANY_BRAND_SEO;
   if (stripBrandFromTitle(part).length !== part.length) return part;
-  return `${part} | ${COMPANY_BRAND_SEO}`;
+  return buildBrowserTitleFromPart(part);
 }
 
 export function normalizeComparableTitle(value: string | null | undefined): string {
@@ -74,4 +86,22 @@ export function buildProductSeoTitleFromSource(
     return normalizeMetaTitle(manual);
   }
   return buildProductAutoMetaTitlePart(sourceTitle);
+}
+
+/** Сохраняет DN/PN/модель в конце при укорочении длинного названия. */
+function trimProductNameForTitle(name: string, maxLen: number): string {
+  if (name.length <= maxLen) return name;
+
+  const specTokens = [...name.matchAll(/\b(?:DN\d+|PN\d+|30[а-яa-z0-9]+)\b/gi)].map(
+    (m) => m[0],
+  );
+  const tail = [...new Set(specTokens)].slice(-2).join(" ");
+
+  if (tail && tail.length + 1 < maxLen) {
+    const headMax = maxLen - tail.length - 1;
+    const head = clampMetaTextAtWord(name, headMax);
+    return `${head} ${tail}`.trim();
+  }
+
+  return clampMetaTextAtWord(name, maxLen);
 }

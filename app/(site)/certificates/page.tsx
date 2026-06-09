@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_BRAND_SEO } from "@/lib/company";
+import { normalizeMetaDescription, normalizeMetaTitle } from "@/lib/seo/metadata";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
 import { warnInvalidMediaUrl } from "@/lib/media-url";
@@ -31,26 +32,27 @@ const MICRO_ICONS = [ShieldCheck, FileText, BadgeCheck] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const c = await resolveCertificatesPage();
-  const title = applyPlaceholders(c.metaTitle, COMPANY.name);
-  const description = applyPlaceholders(c.metaDescription, COMPANY.name);
-  const ogDesc = applyPlaceholders(c.ogDescription, COMPANY.name);
-  const twDesc = applyPlaceholders(c.twitterDescription, COMPANY.name);
-  const socialTitle = `${title} | ${COMPANY.name}`;
+  const title = normalizeMetaTitle(applyPlaceholders(c.metaTitle, COMPANY.name));
+  const description = normalizeMetaDescription(
+    applyPlaceholders(c.metaDescription, COMPANY.name),
+  );
+  const ogDesc = normalizeMetaDescription(applyPlaceholders(c.ogDescription, COMPANY.name));
+  const twDesc = normalizeMetaDescription(applyPlaceholders(c.twitterDescription, COMPANY.name));
   return {
     title,
     description,
     alternates: { canonical: "/certificates" },
     openGraph: {
-      title: socialTitle,
+      title,
       description: ogDesc,
       url: "/certificates",
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: socialTitle,
+      title,
       description: twDesc,
     },
   };

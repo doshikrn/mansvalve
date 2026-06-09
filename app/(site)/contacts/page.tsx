@@ -17,6 +17,7 @@ import {
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
 import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { COMPANY, COMPANY_BRAND_SEO, buildCompanyContactsQuickCardWhatsAppUrl } from "@/lib/company";
+import { normalizeMetaDescription, normalizeMetaTitle } from "@/lib/seo/metadata";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { resolveContactsPage } from "@/lib/site-content/public";
 
@@ -24,15 +25,17 @@ import { resolveContactsPage } from "@/lib/site-content/public";
 
 export async function generateMetadata(): Promise<Metadata> {
   const page = await resolveContactsPage();
+  const title = normalizeMetaTitle(page.metaTitle);
+  const description = normalizeMetaDescription(page.metaDescription);
   return {
-    title: page.metaTitle,
-    description: page.metaDescription,
+    title,
+    description,
     alternates: {
       canonical: "/contacts",
     },
     openGraph: {
-      title: page.metaTitle,
-      description: page.metaDescription,
+      title,
+      description,
       url: "/contacts",
       siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
@@ -40,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: page.metaTitle,
-      description: page.metaDescription,
+      title,
+      description,
     },
   };
 }

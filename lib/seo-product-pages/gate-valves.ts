@@ -1,4 +1,6 @@
+import { buildProductAutoMetaTitlePart } from "@/lib/catalog/product-seo-naming";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
+import { normalizeMetaDescription } from "@/lib/seo/metadata";
 
 export type GateValveSeries = "30ch6br" | "30ch39r" | "30s41nzh" | "30s64nzh";
 export type GateValveConnectionVariant = "flanged" | "welding";
@@ -443,8 +445,8 @@ function buildGateValvePage(
     pn,
     title,
     h1: title,
-    seoTitle: template.makeSeoTitle(dn, pn),
-    seoDescription: template.makeSeoDescription(dn, pn),
+    seoTitle: buildProductAutoMetaTitlePart(title),
+    seoDescription: normalizeMetaDescription(template.makeSeoDescription(dn, pn)),
     imageAlt: title,
     imageFileName: `${slug}.jpg`,
     introParagraphs: template.makeIntroParagraphs(dn, pn),

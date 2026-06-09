@@ -174,7 +174,7 @@ export type HomePageView = {
 
 export function defaultHomeMeta(): HomeMetaContent {
   return {
-    ogTitle: "MANSVALVE Group — трубопроводная арматура в Казахстане",
+    ogTitle: "Промышленная трубопроводная арматура в Казахстане",
     ogDescription:
       "Поставка задвижек, шаровых кранов, затворов, клапанов и фланцев DN15–DN1000. Подбор, КП и доставка по Казахстану. ГОСТ, DIN, ISO.",
   };

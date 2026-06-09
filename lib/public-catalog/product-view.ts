@@ -158,8 +158,23 @@ function buildProductSeoDescription(
   const deliveryRegion =
     product.category === "flansy-i-otvody" ? "по Казахстану" : "по РК";
 
+  const specBits = [
+    product.subcategoryName?.trim() || undefined,
+    product.model?.trim() || undefined,
+    product.dn != null ? `DN${product.dn}` : undefined,
+    product.pn != null ? `PN${product.pn}` : undefined,
+    product.material?.trim() || undefined,
+  ].filter((part): part is string => Boolean(part && part.length > 0));
+
+  const uniqueSpecs = [...new Set(specBits)].slice(0, 4).join(", ");
+  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
+
+  const lead = uniqueSpecs
+    ? `${compactName} (${uniqueSpecs})`
+    : `${compactName}, ${categoryLabel}`;
+
   return normalizeMetaDescription(
-    `${compactName} с поставкой ${deliveryRegion}. КП в рабочее время, НДС, сертификаты, паспорт изделия и доставка.`,
+    `${lead} — поставка ${deliveryRegion}. КП, НДС, сертификаты, паспорт изделия, доставка.`,
   );
 }
 

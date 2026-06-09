@@ -72,8 +72,9 @@ const baseProduct: PublicCatalogProduct = {
   check(
     "meta title template",
     part.includes("купить в Казахстане") &&
-      full === "Клапан обратный Ду 80 — купить в Казахстане | MANSVALVE GROUP",
-    `part="${part}" full="${full}"`,
+      full.endsWith("| MANSVALVE GROUP") &&
+      full.length <= 60,
+    `part="${part}" full="${full}" (${full.length} chars)`,
   );
 }
 

@@ -1,5 +1,7 @@
+import { buildProductAutoMetaTitlePart } from "@/lib/catalog/product-seo-naming";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
+import { normalizeMetaDescription } from "@/lib/seo/metadata";
 
 export type IndustrialSeriesKind = "compensator-kso-k" | "check-valve-19s38nzh";
 
@@ -161,8 +163,10 @@ function buildKsoKPage(spec: KsoKSpec): IndustrialSeriesSeoPage {
     pn: 16,
     title: `Компенсатор сильфонный ${marking} под приварку`,
     h1: `Компенсатор сильфонный осевой ${marking} Ду ${spec.dn} Ру16 под приварку`,
-    seoTitle: `Компенсатор сильфонный ${marking} под приварку купить в Казахстане | MANSVALVE GROUP`,
-    seoDescription: `Компенсатор сильфонный осевой ${marking} (Ду ${spec.dn} Ру16) под приварку с защитным кожухом для тепловых сетей и промышленных трубопроводов. Доставка по РК. Паспорт и сертификат ТР ТС.`,
+    seoTitle: buildProductAutoMetaTitlePart(`Компенсатор ${marking} DN${spec.dn} PN16`),
+    seoDescription: normalizeMetaDescription(
+      `Компенсатор сильфонный осевой ${marking} (Ду ${spec.dn} Ру16) под приварку с защитным кожухом для тепловых сетей и промышленных трубопроводов. Доставка по РК. Паспорт и сертификат ТР ТС.`,
+    ),
     imageAlt: `Компенсатор сильфонный осевой ${marking} под приварку с кожухом`,
     imageFileName: `${slug}-bw.jpg`,
     introParagraphs: [
@@ -211,8 +215,10 @@ function buildCheckValvePage(spec: CheckValveSpec): IndustrialSeriesSeoPage {
     pn: 16,
     title: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
     h1: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
-    seoTitle: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} Ру16 купить в Казахстане | MANSVALVE GROUP`,
-    seoDescription: `Поворотный обратный клапан стальной фланцевый 19с38нж ${diameter} PN16 (Ру16) для защиты трубопроводов, насосных станций и систем теплоснабжения от обратного потока. Доставка по РК от MANSVALVE GROUP.`,
+    seoTitle: buildProductAutoMetaTitlePart(`Клапан 19с38нж ${diameter} PN16`),
+    seoDescription: normalizeMetaDescription(
+      `Поворотный обратный клапан стальной фланцевый 19с38нж ${diameter} PN16 (Ру16) для защиты трубопроводов, насосных станций и систем теплоснабжения от обратного потока. Доставка по РК.`,
+    ),
     imageAlt: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
     imageFileName: `19s38nzh-dn${spec.dn}-pn16.jpg`,
     introParagraphs: [

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { CopyToClipboard } from "@/components/contacts/CopyToClipboard";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_BRAND_SEO } from "@/lib/company";
+import { normalizeMetaDescription, normalizeMetaTitle } from "@/lib/seo/metadata";
 import { applyPlaceholders, applySiteBrandingPlaceholders } from "@/lib/site-content/models";
 import { resolvePrivacyPage } from "@/lib/site-content/public";
 
@@ -17,20 +18,21 @@ function brandInput() {
 export async function generateMetadata(): Promise<Metadata> {
   const p = await resolvePrivacyPage();
   const b = brandInput();
-  const title = applySiteBrandingPlaceholders(applyPlaceholders(p.metaTitle, b.companyName), b);
-  const description = applySiteBrandingPlaceholders(
-    applyPlaceholders(p.metaDescription, b.companyName),
-    b,
+  const title = normalizeMetaTitle(
+    applySiteBrandingPlaceholders(applyPlaceholders(p.metaTitle, b.companyName), b),
   );
-  const ogDesc = applySiteBrandingPlaceholders(
-    applyPlaceholders(p.ogDescription, b.companyName),
-    b,
+  const description = normalizeMetaDescription(
+    applySiteBrandingPlaceholders(
+      applyPlaceholders(p.metaDescription, b.companyName),
+      b,
+    ),
   );
-  const twDesc = applySiteBrandingPlaceholders(
-    applyPlaceholders(p.twitterDescription, b.companyName),
-    b,
+  const ogDesc = normalizeMetaDescription(
+    applySiteBrandingPlaceholders(applyPlaceholders(p.ogDescription, b.companyName), b),
   );
-  const socialTitle = `${title} | ${COMPANY.name}`;
+  const twDesc = normalizeMetaDescription(
+    applySiteBrandingPlaceholders(applyPlaceholders(p.twitterDescription, b.companyName), b),
+  );
   return {
     title,
     description,
@@ -38,16 +40,16 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: "/privacy",
     },
     openGraph: {
-      title: socialTitle,
+      title,
       description: ogDesc,
       url: "/privacy",
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: socialTitle,
+      title,
       description: twDesc,
     },
   };

@@ -21,6 +21,7 @@
     "links:audit": "tsx scripts/broken-links-audit.ts",
     "audit:links": "tsx scripts/broken-links-audit.ts",
     "seo:audit": "tsx scripts/seo-audit.ts",
+    "seo:technical-audit": "tsx scripts/seo-technical-audit.ts",
     "products:seo-naming-check": "tsx scripts/products/product-seo-naming-check.ts",
     "products:seo-production-check": "tsx scripts/products/product-seo-production-check.ts",
     "products:clear-auto-h1": "tsx scripts/products/clear-auto-like-h1-overrides.ts",

@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check, Package, Truck, FileText, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, COMPANY_BRAND_SEO } from "@/lib/company";
+import { normalizeMetaDescription, normalizeMetaTitle } from "@/lib/seo/metadata";
 import { applyPlaceholders } from "@/lib/site-content/models";
 import { resolveDeliveryPage } from "@/lib/site-content/public";
 import { mediaImageNeedsUnoptimized } from "@/lib/media-image";
@@ -13,11 +14,12 @@ const BULLET_ICONS = [Package, Truck, Clock, FileText] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const d = await resolveDeliveryPage();
-  const title = applyPlaceholders(d.metaTitle, COMPANY.name);
-  const description = applyPlaceholders(d.metaDescription, COMPANY.name);
-  const ogDesc = applyPlaceholders(d.ogDescription, COMPANY.name);
-  const twDesc = applyPlaceholders(d.twitterDescription, COMPANY.name);
-  const socialTitle = `${title} | ${COMPANY.name}`;
+  const title = normalizeMetaTitle(applyPlaceholders(d.metaTitle, COMPANY.name));
+  const description = normalizeMetaDescription(
+    applyPlaceholders(d.metaDescription, COMPANY.name),
+  );
+  const ogDesc = normalizeMetaDescription(applyPlaceholders(d.ogDescription, COMPANY.name));
+  const twDesc = normalizeMetaDescription(applyPlaceholders(d.twitterDescription, COMPANY.name));
   return {
     title,
     description,
@@ -25,16 +27,16 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: "/delivery",
     },
     openGraph: {
-      title: socialTitle,
+      title,
       description: ogDesc,
       url: "/delivery",
-      siteName: COMPANY.name,
+      siteName: COMPANY_BRAND_SEO,
       locale: "ru_KZ",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: socialTitle,
+      title,
       description: twDesc,
     },
   };
