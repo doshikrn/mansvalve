@@ -7,7 +7,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import {
+  catalogCategoryPath,
+  catalogSubcategoryListingHref,
+  catalogSubcategoryPath,
+} from "@/lib/catalog-routes";
 import { listLegacySubcategoryRedirectEntries } from "@/lib/catalog-subcategory-legacy-redirects";
 import { LEGACY_INTERNAL_LINK_HREFS } from "@/lib/legacy-internal-link-hrefs";
 
@@ -26,6 +30,7 @@ for (const category of catalog.categories) {
   validPaths.add(catalogCategoryPath(category.slug));
   for (const subcategory of category.subcategories) {
     validPaths.add(catalogSubcategoryPath(category.slug, subcategory.slug));
+    validPaths.add(catalogSubcategoryListingHref(category.slug, subcategory.slug));
   }
 }
 
@@ -44,7 +49,7 @@ for (const { source, target } of entries) {
 const mustRedirects = [
   {
     source: "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki",
-    target: "/catalog/zadvizhki-chugunnye",
+    target: catalogSubcategoryListingHref("zadvizhki", "zadvizhki-chugunnye"),
   },
   {
     source: "/catalog/klapany/podemnye",

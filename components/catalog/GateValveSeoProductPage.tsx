@@ -24,7 +24,10 @@ import {
   getSeriesPagePath,
   type ProductSeriesSeoPage,
 } from "@/lib/seo-product-pages/product-series";
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import {
+  catalogCategoryPath,
+  catalogSubcategoryListingHref,
+} from "@/lib/catalog-routes";
 
 interface Props {
   page: ProductSeriesSeoPage;
@@ -108,7 +111,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               </li>
               <li>
                 <Link
-                  href={catalogSubcategoryPath(catalogCategoryId, catalogSubcategoryId)}
+                  href={catalogSubcategoryListingHref(catalogCategoryId, catalogSubcategoryId)}
                   className="transition-colors hover:text-slate-900"
                 >
                   {"catalogSubcategoryName" in page ? page.catalogSubcategoryName : catalogSubcategoryId}
@@ -407,7 +410,9 @@ function buildBreadcrumbJsonLd(
         "@type": "ListItem",
         position: 4,
         name: subLabel,
-        item: absoluteUrl(catalogSubcategoryPath(catalogCategoryId, catalogSubcategoryId)),
+        item: absoluteUrl(
+          catalogSubcategoryListingHref(catalogCategoryId, catalogSubcategoryId),
+        ),
       },
       {
         "@type": "ListItem",

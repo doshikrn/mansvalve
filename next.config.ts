@@ -2,6 +2,7 @@ import path from "node:path";
 
 import type { NextConfig } from "next";
 
+import { SUBCATEGORY_FLAT_PATH_REDIRECTS } from "./lib/catalog-routes";
 import { buildNextImageRemotePatterns } from "./lib/media-image-trusted-hosts";
 
 /** Lockfiles higher up the filesystem (e.g. user home) must not become the workspace root. */
@@ -19,6 +20,11 @@ const nextConfig: NextConfig = {
         destination: "https://mansvalve-group.kz/:path*",
         permanent: true,
       },
+      ...SUBCATEGORY_FLAT_PATH_REDIRECTS.map(({ source, destination }) => ({
+        source,
+        destination,
+        permanent: true,
+      })),
     ];
   },
   turbopack: {

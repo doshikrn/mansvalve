@@ -30,7 +30,9 @@ export function getSeriesPageCatalogCategoryId(page: ProductSeriesSeoPage): stri
 
 export function getSeriesPageCatalogSubcategoryId(page: ProductSeriesSeoPage): string {
   if ("catalogSubcategoryId" in page) return page.catalogSubcategoryId;
-  return page.series === "30ch6br" ? "zadvizhki-chugunnye" : "zadvizhki-stalnyye";
+  if (page.series === "30ch6br") return "zadvizhki-chugunnye";
+  if (page.series === "30ch39r") return "zadvizhki-s-obrezinennym-klinom";
+  return "zadvizhki-stalnyye";
 }
 
 export function getSeriesPageCategoryLabel(page: ProductSeriesSeoPage): string {

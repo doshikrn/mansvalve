@@ -12,7 +12,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import {
+  catalogCategoryPath,
+  catalogSubcategoryListingHref,
+  catalogSubcategoryPath,
+} from "@/lib/catalog-routes";
 import { DEFAULT_FOOTER_MAIN } from "@/lib/site-content/models";
 import { LEGACY_INTERNAL_LINK_HREFS } from "@/lib/legacy-internal-link-hrefs";
 import { listLegacySubcategoryRedirectEntries } from "@/lib/catalog-subcategory-legacy-redirects";
@@ -123,7 +127,21 @@ const EXPECTED_ROUTE_CHECKS: ExpectedRouteCheck[] = [
   {
     label: "old Google gate-valve subcategory",
     href: "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki",
-    expectedFinalPath: "/catalog/zadvizhki-chugunnye",
+    expectedFinalPath: catalogSubcategoryListingHref("zadvizhki", "zadvizhki-chugunnye"),
+  },
+  {
+    label: "flat cast-iron subcategory slug redirects to category filter",
+    href: "/catalog/zadvizhki-chugunnye",
+    expectedStatus: 200,
+    expectedFinalPath: catalogSubcategoryListingHref("zadvizhki", "zadvizhki-chugunnye"),
+    expectedRedirectCount: 1,
+  },
+  {
+    label: "flat steel subcategory slug redirects to category filter",
+    href: "/catalog/zadvizhki-stalnyye",
+    expectedStatus: 200,
+    expectedFinalPath: catalogSubcategoryListingHref("zadvizhki", "zadvizhki-stalnyye"),
+    expectedRedirectCount: 1,
   },
   {
     label: "old nested butterfly valves footer URL",

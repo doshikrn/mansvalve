@@ -1,5 +1,6 @@
 import {
   catalogCategoryPath,
+  catalogSubcategoryListingHref,
   catalogSubcategoryPath,
   resolveCatalogSubcategoryRouteSlug,
 } from "@/lib/catalog-routes";
@@ -12,8 +13,14 @@ export const LEGACY_INTERNAL_LINK_HREFS: Record<string, string> = {
   "/catalog/subcategory/zatvory-diskovye": catalogSubcategoryPath("zatvory", "zatvory-diskovye"),
   "/catalog/subcategory/klapany-obratnye": catalogSubcategoryPath("klapany", "podemnye"),
   "/catalog/subcategory/flansy": catalogSubcategoryPath("flansy-i-otvody", "flansy"),
-  "/catalog/subcategory/zadvizhki-chugunnye": catalogSubcategoryPath("zadvizhki", "zadvizhki-chugunnye"),
-  "/catalog/subcategory/zadvizhki-stalnyye": catalogSubcategoryPath("zadvizhki", "zadvizhki-stalnyye"),
+  "/catalog/subcategory/zadvizhki-chugunnye": catalogSubcategoryListingHref(
+    "zadvizhki",
+    "zadvizhki-chugunnye",
+  ),
+  "/catalog/subcategory/zadvizhki-stalnyye": catalogSubcategoryListingHref(
+    "zadvizhki",
+    "zadvizhki-stalnyye",
+  ),
   "/catalog/category/zadvizhki": catalogCategoryPath("zadvizhki"),
   "/catalog/category/zatvory": catalogCategoryPath("zatvory"),
   "/catalog/category/klapany": catalogCategoryPath("klapany"),
@@ -29,11 +36,11 @@ export const LEGACY_INTERNAL_LINK_HREFS: Record<string, string> = {
   "/catalog/klapany/klapany-obratnye": catalogSubcategoryPath("klapany", "podemnye"),
   "/catalog/klapany/podemnye": catalogSubcategoryPath("klapany", "podemnye"),
   "/catalog/flansy-i-otvody/flansy": catalogSubcategoryPath("flansy-i-otvody", "flansy"),
-  "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki": catalogSubcategoryPath(
+  "/catalog/zadvizhki/chugunnye-flantsevye-zadvizhki": catalogSubcategoryListingHref(
     "zadvizhki",
     "zadvizhki-chugunnye",
   ),
-  "/catalog/zadvizhki/stalnye-flantsevye-zadvizhki": catalogSubcategoryPath(
+  "/catalog/zadvizhki/stalnye-flantsevye-zadvizhki": catalogSubcategoryListingHref(
     "zadvizhki",
     "zadvizhki-stalnyye",
   ),
@@ -72,7 +79,7 @@ function normalizeCatalogSubcategoryQueryHref(
   params.delete("category");
   params.delete("subcategory");
 
-  const target = catalogSubcategoryPath(
+  const target = catalogSubcategoryListingHref(
     match[1] ?? "",
     resolveCatalogSubcategoryRouteSlug(rawSubcategorySlug),
   );

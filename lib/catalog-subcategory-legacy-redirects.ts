@@ -1,4 +1,7 @@
-import { catalogSubcategoryPath } from "@/lib/catalog-routes";
+import {
+  catalogSubcategoryListingHref,
+  catalogSubcategoryPath,
+} from "@/lib/catalog-routes";
 
 /**
  * Старые slug подкатегорий «Клапаны» до ТЗ → канонические пути `/catalog/klapany/...`.
@@ -11,8 +14,8 @@ const LEGACY_KLAPANY_SUB_SLUG_TARGETS: Record<string, string> = {
   "klapany-chugunnye": "mezhflancevye-pruzhinnye",
 };
 
-const ZADVIZHKI_CHUGUNNYE = catalogSubcategoryPath("zadvizhki", "zadvizhki-chugunnye");
-const ZADVIZHKI_STALNYE = catalogSubcategoryPath("zadvizhki", "zadvizhki-stalnyye");
+const ZADVIZHKI_CHUGUNNYE = catalogSubcategoryListingHref("zadvizhki", "zadvizhki-chugunnye");
+const ZADVIZHKI_STALNYE = catalogSubcategoryListingHref("zadvizhki", "zadvizhki-stalnyye");
 /**
  * Старые slug подкатегорий в формате `/catalog/[category]/[subcategory]`
  * (описательные slug из ранней версии каталога / Google).
@@ -49,7 +52,7 @@ const LEGACY_SUBCATEGORY_CANONICAL_PATHS: Record<string, string> = {
   "zadvizhki-chugunnye": ZADVIZHKI_CHUGUNNYE,
   "zadvizhki-klinovye": catalogSubcategoryPath("zadvizhki", "zadvizhki-klinovye"),
   "zadvizhki-shibernye": catalogSubcategoryPath("zadvizhki", "zadvizhki-shibernye"),
-  "zadvizhki-stalnyye": catalogSubcategoryPath("zadvizhki", "zadvizhki-stalnyye"),
+  "zadvizhki-stalnyye": ZADVIZHKI_STALNYE,
   "zadvizhki-s-elektroprivodom": catalogSubcategoryPath("zadvizhki", "zadvizhki-s-elektroprivodom"),
   "zadvizhki-pn40-pn64": catalogSubcategoryPath("zadvizhki", "zadvizhki-pn40-pn64"),
   "zadvizhki-pod-privarku": catalogSubcategoryPath("zadvizhki", "zadvizhki-pod-privarku"),

@@ -15,7 +15,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { catalogCategoryPath, catalogSubcategoryListingHref } from "@/lib/catalog-routes";
 import { BROWSER_TITLE_MAX_LENGTH, buildBrowserTitleFromPart } from "@/lib/seo/metadata";
 import { parsePageMeta, pathFromUrl, parseSitemapLocs } from "@/lib/seo/html-audit";
 
@@ -54,7 +54,7 @@ function loadCatalogPaths(): string[] {
     for (const category of catalog.categories) {
       paths.push(catalogCategoryPath(category.slug));
       for (const subcategory of category.subcategories) {
-        paths.push(catalogSubcategoryPath(category.slug, subcategory.slug));
+        paths.push(catalogSubcategoryListingHref(category.slug, subcategory.slug));
       }
     }
     for (const landing of CATALOG_LANDING_PAGES) {

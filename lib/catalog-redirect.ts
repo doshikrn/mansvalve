@@ -28,6 +28,10 @@ export type SearchParamsLike = {
   [key: string]: string | string[] | undefined;
 };
 
+import { encodeRedirectPath } from "@/lib/catalog-url-encoding";
+
+export { encodeRedirectPath };
+
 /**
  * Removes catalog listing/filter params; keeps other keys (e.g. UTM) if present.
  */
@@ -58,7 +62,8 @@ function appendQueryString(path: string, searchParams: SearchParamsInput): strin
   }
   const search = params.toString();
   const suffix = hash ? `#${hash}` : "";
-  return search ? `${pathname}?${search}${suffix}` : `${pathname}${suffix}`;
+  const combined = search ? `${pathname}?${search}${suffix}` : `${pathname}${suffix}`;
+  return encodeRedirectPath(combined);
 }
 
 /**
@@ -81,7 +86,7 @@ export function buildCatalogListingRedirectUrl(
   searchParams?: SearchParamsLike,
 ): string {
   if (!searchParams || Object.keys(searchParams).length === 0) {
-    return canonicalPath;
+    return encodeRedirectPath(canonicalPath);
   }
   return appendQueryString(canonicalPath, searchParams as SearchParamsInput);
 }

@@ -28,7 +28,8 @@ import { CatalogRouteError } from "@/components/catalog/CatalogRouteError";
 import type { CatalogSearchParams } from "@/components/catalog/CatalogShell";
 import { withCatalogRouteLoad } from "@/lib/catalog/runtime";
 import {
-  catalogSubcategoryPath,
+  catalogCategoryPath,
+  catalogSubcategoryListingHref,
   resolveCatalogSubcategoryRouteSlug,
 } from "@/lib/catalog-routes";
 
@@ -81,8 +82,14 @@ function buildSubcategoryQueryRedirect(
   );
   if (!subcategory) return undefined;
 
+  const listingHref = catalogSubcategoryListingHref(category.slug, subcategory.slug);
+  // Filter-style listing (`?subcategory=`) is self-canonical on the category page.
+  if (listingHref.startsWith(`${catalogCategoryPath(category.slug)}?`)) {
+    return undefined;
+  }
+
   return buildCatalogListingRedirectUrl(
-    catalogSubcategoryPath(category.slug, subcategory.slug),
+    listingHref,
     stripSubcategorySelectionParams(searchParams),
   );
 }
@@ -182,13 +189,13 @@ export default async function CatalogSlugPage({ params, searchParams }: PageProp
   }
 
   if (subcategoryLoaded.data) {
-    const canonicalPath = catalogSubcategoryPath(
+    const listingHref = catalogSubcategoryListingHref(
       subcategoryLoaded.data.category.slug,
       subcategoryLoaded.data.subcategory.slug,
     );
 
-    if (canonicalPath !== route) {
-      permanentRedirect(buildCatalogListingRedirectUrl(canonicalPath, query as SearchParamsLike));
+    if (listingHref !== route) {
+      permanentRedirect(buildCatalogListingRedirectUrl(listingHref, query as SearchParamsLike));
     }
 
     return (
