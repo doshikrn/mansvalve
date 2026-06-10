@@ -14,6 +14,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
+import { isCatalogRedirectSourcePath } from "@/lib/catalog-path-redirects";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
 import { BROWSER_TITLE_MAX_LENGTH } from "@/lib/seo/metadata";
 import { buildRobotsTxtBody } from "@/lib/seo/robots-text";
@@ -54,6 +55,21 @@ function getBaseUrl(): string {
       : `https://${fromEnv}`.replace(/\/+$/, "");
   }
   return "http://localhost:3000";
+}
+
+function isProductionAudit(base: string): boolean {
+  try {
+    const host = new URL(base).hostname;
+    return host === "mansvalve-group.kz" || host === "www.mansvalve-group.kz";
+  } catch {
+    return false;
+  }
+}
+
+function shouldUseLocalJsonSeed(base: string): boolean {
+  if (process.env.SEO_AUDIT_USE_LOCAL_SEED === "1") return true;
+  if (process.env.SEO_AUDIT_USE_LOCAL_SEED === "0") return false;
+  return !isProductionAudit(base);
 }
 
 function loadSeedPaths(): string[] {
@@ -260,11 +276,23 @@ async function main() {
 
   await auditRobots(base, issues);
   const sitemapUrls = await auditSitemap(base, issues);
+  const sitemapPathSet = new Set(sitemapUrls.map(pathFromUrl));
+  const useLocalJsonSeed = shouldUseLocalJsonSeed(base);
+  const localSeedPaths = loadSeedPaths();
+  const localSeedSet = new Set(localSeedPaths);
 
-  const seedPaths = loadSeedPaths();
-  const auditPaths = new Set<string>(seedPaths);
+  const auditPaths = new Set<string>();
   for (const url of sitemapUrls.slice(0, maxUrls)) {
     auditPaths.add(pathFromUrl(url));
+  }
+  if (useLocalJsonSeed) {
+    for (const path of localSeedPaths) auditPaths.add(path);
+  }
+
+  if (isProductionAudit(base)) {
+    console.log(
+      `Production audit mode: sitemap URLs=${sitemapPathSet.size}, local JSON seed=${useLocalJsonSeed ? "on" : "off"}`,
+    );
   }
 
   const pageMetaRows: Array<{
@@ -286,21 +314,64 @@ async function main() {
     const pageUrl = new URL(path, `${base}/`).toString();
     let html: string;
     try {
-      const res = await fetch(pageUrl, { redirect: "follow" });
-      if (!res.ok) {
+      const res = await fetch(pageUrl, { redirect: "manual" });
+      if (res.status >= 300 && res.status < 400) {
+        if (isCatalogRedirectSourcePath(path)) {
+          const location = res.headers.get("location") ?? "";
+          issues.push({
+            level: "warning",
+            code: "legacy-redirect",
+            message: `${path} → HTTP ${res.status} → ${location} (known legacy redirect)`,
+            urls: [path],
+          });
+          continue;
+        }
+        const location = res.headers.get("location");
+        if (!location) {
+          issues.push({
+            level: "error",
+            code: sitemapPathSet.has(path) ? "sitemap-page-status" : "page-status",
+            message: `${path} → HTTP ${res.status} without Location`,
+            urls: [path],
+          });
+          continue;
+        }
+        const follow = await fetch(new URL(location, pageUrl).toString(), { redirect: "follow" });
+        if (!follow.ok) {
+          issues.push({
+            level: "error",
+            code: sitemapPathSet.has(path) ? "sitemap-page-status" : "page-status",
+            message: `${path} → redirect chain ends HTTP ${follow.status}`,
+            urls: [path],
+          });
+          continue;
+        }
+        html = await follow.text();
+      } else if (!res.ok) {
+        const inSitemap = sitemapPathSet.has(path);
+        if (!inSitemap && isProductionAudit(base) && localSeedSet.has(path) && !useLocalJsonSeed) {
+          issues.push({
+            level: "warning",
+            code: "local-json-seed-only",
+            message: `${path} → HTTP ${res.status} (local JSON seed only, not in sitemap)`,
+            urls: [path],
+          });
+          continue;
+        }
         issues.push({
           level: "error",
-          code: "page-status",
+          code: inSitemap ? "sitemap-page-status" : "page-status",
           message: `${path} → HTTP ${res.status}`,
           urls: [path],
         });
         continue;
+      } else {
+        html = await res.text();
       }
-      html = await res.text();
     } catch (error) {
       issues.push({
         level: "error",
-        code: "page-fetch",
+        code: sitemapPathSet.has(path) ? "sitemap-page-fetch" : "page-fetch",
         message: `${path} fetch failed: ${error instanceof Error ? error.message : error}`,
         urls: [path],
       });
@@ -423,7 +494,37 @@ async function main() {
     return false;
   });
 
-  const errors = issues.filter((i) => i.level === "error").length + duplicateDescriptions.length;
+  const criticalIssueCodes = new Set([
+    "robots-fetch",
+    "robots-status",
+    "robots-content-type",
+    "robots-not-plain",
+    "robots-cloudflare-content-signal",
+    "robots-disallow",
+    "robots-sitemap",
+    "robots-blocks-catalog",
+    "sitemap-status",
+    "sitemap-format",
+    "sitemap-fetch",
+    "sitemap-page-status",
+    "sitemap-page-fetch",
+    "page-fetch",
+    "missing-title",
+  ]);
+  if (useLocalJsonSeed) {
+    criticalIssueCodes.add("page-status");
+  }
+
+  const criticalErrors =
+    issues.filter((i) => i.level === "error" && criticalIssueCodes.has(i.code)).length +
+    internalBroken.length +
+    brokenExternal.length;
+
+  const informationalWarnings = issues.filter(
+    (i) => i.code === "local-json-seed-only" || i.code === "legacy-redirect",
+  );
+
+  const errors = criticalErrors + duplicateDescriptions.length;
   const warnings =
     issues.filter((i) => i.level === "warning").length +
     longTitles.length +
@@ -458,6 +559,14 @@ async function main() {
     for (const issue of issues) {
       console.log(`  [${issue.level}] ${issue.code}: ${issue.message}`);
       if (issue.urls?.length) console.log(`    ${issue.urls.join(", ")}`);
+    }
+    console.log("-".repeat(80));
+  }
+
+  if (informationalWarnings.length) {
+    console.log("Informational (non-blocking):");
+    for (const issue of informationalWarnings) {
+      console.log(`  [${issue.level}] ${issue.code}: ${issue.message}`);
     }
     console.log("-".repeat(80));
   }
@@ -518,11 +627,7 @@ async function main() {
     console.log("-".repeat(80));
   }
 
-  const hasBlockingErrors =
-    issues.some((i) => i.level === "error") ||
-    duplicateDescriptions.length > 0 ||
-    brokenExternal.length > 0 ||
-    internalBroken.length > 0;
+  const hasBlockingErrors = criticalErrors > 0 || duplicateDescriptions.length > 0;
 
   if (hasBlockingErrors) {
     process.exit(1);

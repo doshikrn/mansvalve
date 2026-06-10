@@ -10,6 +10,9 @@ import {
  * Используется при нормализации CMS/footer/nav и в audit-скриптах.
  */
 export const LEGACY_INTERNAL_LINK_HREFS: Record<string, string> = {
+  "/catalog/zatvory": catalogCategoryPath("zatvory-diskovye"),
+  "/catalog/klapany": catalogCategoryPath("klapany-obratnye"),
+  "/zatvory/mezhflantsevye": catalogSubcategoryPath("zatvory", "zatvory-diskovye-mezhflantsevye"),
   "/catalog/subcategory/zatvory-diskovye": catalogSubcategoryPath("zatvory", "zatvory-diskovye"),
   "/catalog/subcategory/klapany-obratnye": catalogSubcategoryPath("klapany", "podemnye"),
   "/catalog/subcategory/flansy": catalogSubcategoryPath("flansy-i-otvody", "flansy"),

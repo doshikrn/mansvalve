@@ -12,6 +12,10 @@ import {
   catalogSubcategoryListingHref,
   catalogSubcategoryPath,
 } from "@/lib/catalog-routes";
+import {
+  ALL_CATALOG_PATH_REDIRECTS,
+  listCatalogPathRedirectEntries,
+} from "@/lib/catalog-path-redirects";
 import { listLegacySubcategoryRedirectEntries } from "@/lib/catalog-subcategory-legacy-redirects";
 import { LEGACY_INTERNAL_LINK_HREFS } from "@/lib/legacy-internal-link-hrefs";
 
@@ -34,8 +38,14 @@ for (const category of catalog.categories) {
   }
 }
 
+for (const { destination } of ALL_CATALOG_PATH_REDIRECTS) {
+  const pathname = destination.split("?")[0]?.split("#")[0];
+  if (pathname) validPaths.add(pathname);
+}
+
 const entries = [
   ...listLegacySubcategoryRedirectEntries(),
+  ...listCatalogPathRedirectEntries(),
   ...Object.entries(LEGACY_INTERNAL_LINK_HREFS).map(([source, target]) => ({ source, target })),
 ];
 const failures: string[] = [];
@@ -54,6 +64,22 @@ const mustRedirects = [
   {
     source: "/catalog/klapany/podemnye",
     target: "/catalog/klapany-obratnye",
+  },
+  {
+    source: "/catalog/zatvory",
+    target: "/catalog/zatvory-diskovye",
+  },
+  {
+    source: "/catalog/klapany",
+    target: "/catalog/klapany-obratnye",
+  },
+  {
+    source: "/zatvory/mezhflantsevye",
+    target: "/catalog/zatvory-diskovye-mezhflantsevye",
+  },
+  {
+    source: "/catalog/zadvizhki-klinovye",
+    target: catalogSubcategoryListingHref("zadvizhki", "zadvizhki-klinovye"),
   },
 ];
 

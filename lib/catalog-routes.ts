@@ -34,9 +34,20 @@ export function catalogSubcategoryPath(_categorySlug: string, subcategorySlug: s
  * Некоторые slug из JSON (например `zadvizhki-chugunnye`) на production открываются
  * как фильтр категории, а не отдельная flat-страница `/catalog/[subcategorySlug]`.
  */
-const SUBCATEGORY_LISTING_HREF_OVERRIDES: Record<string, string> = {
-  "zadvizhki-chugunnye": "/catalog/zadvizhki?subcategory=zadvizhki-chugunnye",
-  "zadvizhki-stalnyye": "/catalog/zadvizhki?subcategory=zadvizhki-stalnyye",
+function zadvizhkiSubcategoryFilter(subcategorySlug: string): string {
+  return `/catalog/zadvizhki?subcategory=${subcategorySlug}`;
+}
+
+/** Flat subcategory slug → production canonical listing href (flat или `?subcategory=`). */
+export const SUBCATEGORY_LISTING_HREF_OVERRIDES: Record<string, string> = {
+  "zadvizhki-chugunnye": zadvizhkiSubcategoryFilter("zadvizhki-chugunnye"),
+  "zadvizhki-stalnyye": zadvizhkiSubcategoryFilter("zadvizhki-stalnyye"),
+  "zadvizhki-klinovye": zadvizhkiSubcategoryFilter("zadvizhki-klinovye"),
+  "zadvizhki-pod-privarku": zadvizhkiSubcategoryFilter("zadvizhki-pod-privarku"),
+  "zadvizhki-pn40-pn64": zadvizhkiSubcategoryFilter("zadvizhki-pn40-pn64"),
+  "stalnye-flantsevye-zadvizhki": zadvizhkiSubcategoryFilter("zadvizhki-stalnyye"),
+  "zadvizhki-chugunnye-flantsevye": zadvizhkiSubcategoryFilter("zadvizhki-chugunnye"),
+  "chugunnye-flantsevye-zadvizhki": zadvizhkiSubcategoryFilter("zadvizhki-chugunnye"),
 };
 
 export function catalogSubcategoryListingHref(
@@ -50,7 +61,7 @@ export function catalogSubcategoryListingHref(
   );
 }
 
-/** 308 для старых flat-URL подкатегорий → актуальный листинг (next.config + QA). */
+/** @deprecated Используйте `ALL_CATALOG_PATH_REDIRECTS` из `catalog-path-redirects`. */
 export const SUBCATEGORY_FLAT_PATH_REDIRECTS: ReadonlyArray<{
   source: string;
   destination: string;

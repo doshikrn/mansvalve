@@ -11,7 +11,6 @@ import type {
   PublicCatalogAdapter,
   PublicCatalogCategory,
   PublicCatalogProduct,
-  PublicCatalogSource,
   PublicCatalogSubcategory,
 } from "./types";
 

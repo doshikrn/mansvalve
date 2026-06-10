@@ -7,7 +7,8 @@ import {
 } from "@/lib/public-catalog";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import { CATALOG_LANDING_PAGES } from "@/lib/catalog-seo";
-import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { catalogCategoryPath, catalogSubcategoryListingHref } from "@/lib/catalog-routes";
+import { isCatalogRedirectSourcePath, isLandingRedirectOnlyPath } from "@/lib/catalog-path-redirects";
 import {
   findSeriesCatalogProduct,
   getSeriesPagePath,
@@ -27,6 +28,11 @@ const STATIC_ROUTES = [
 
 function absoluteUrl(baseUrl: string, path: string): string {
   return new URL(path, `${baseUrl}/`).toString();
+}
+
+function shouldIncludeCatalogPath(path: string): boolean {
+  if (isCatalogRedirectSourcePath(path)) return false;
+  return true;
 }
 
 function uniqueSitemapEntries(entries: MetadataRoute.Sitemap): MetadataRoute.Sitemap {
@@ -53,28 +59,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: path === "/" ? 1 : 0.8,
   }));
 
-  const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: absoluteUrl(baseUrl, catalogCategoryPath(cat.slug)),
-    lastModified,
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
+  const categoryPages: MetadataRoute.Sitemap = categories.flatMap((cat) => {
+    const path = catalogCategoryPath(cat.slug);
+    if (!shouldIncludeCatalogPath(path)) return [];
+    return [
+      {
+        url: absoluteUrl(baseUrl, path),
+        lastModified,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      },
+    ];
+  });
 
   const subcategoryPages: MetadataRoute.Sitemap = categories.flatMap((cat) =>
-    cat.subcategories.map((sub) => ({
-      url: absoluteUrl(baseUrl, catalogSubcategoryPath(cat.slug, sub.slug)),
-      lastModified,
-      changeFrequency: "weekly" as const,
-      priority: 0.78,
-    })),
+    cat.subcategories.flatMap((sub) => {
+      const listingPath = catalogSubcategoryListingHref(cat.slug, sub.slug);
+      if (!shouldIncludeCatalogPath(listingPath)) return [];
+
+      return [
+        {
+          url: absoluteUrl(baseUrl, listingPath),
+          lastModified,
+          changeFrequency: "weekly" as const,
+          priority: 0.78,
+        },
+      ];
+    }),
   );
 
-  const landingPages: MetadataRoute.Sitemap = CATALOG_LANDING_PAGES.map((page) => ({
-    url: absoluteUrl(baseUrl, `/${page.categorySlug}/${page.slug}`),
-    lastModified,
-    changeFrequency: "weekly",
-    priority: 0.85,
-  }));
+  const landingPages: MetadataRoute.Sitemap = CATALOG_LANDING_PAGES.flatMap((page) => {
+    const path = `/${page.categorySlug}/${page.slug}`;
+    if (isLandingRedirectOnlyPath(path)) return [];
+
+    const category = categories.find(
+      (cat) => cat.id === page.filters.categoryId || cat.slug === page.categorySlug,
+    );
+    if (!category) return [];
+
+    return [
+      {
+        url: absoluteUrl(baseUrl, path),
+        lastModified,
+        changeFrequency: "weekly" as const,
+        priority: 0.85,
+      },
+    ];
+  });
 
   const seriesSeoPages: MetadataRoute.Sitemap = PRODUCT_SERIES_SEO_PAGES.filter((page) =>
     findSeriesCatalogProduct(products, page),
