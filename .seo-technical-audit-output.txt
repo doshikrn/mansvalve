@@ -1,0 +1,104 @@
+﻿
+> mansvalve@0.1.0 seo:technical-audit
+> tsx scripts/seo-technical-audit.ts
+
+Technical SEO audit тАФ https://mansvalve-group.kz
+================================================================================
+Pages audited: 100
+Errors (approx): 24
+Warnings (approx): 100
+--------------------------------------------------------------------------------
+Top unique causes:
+  тАв low text-HTML ratio pages: 100
+  тАв duplicate meta description groups: 1
+--------------------------------------------------------------------------------
+Issues:
+  [error] page-status: /catalog/filtry-i-kompensatory тЖТ HTTP 404
+    /catalog/filtry-i-kompensatory
+  [error] page-status: /catalog/filtry-korzinchatye тЖТ HTTP 404
+    /catalog/filtry-korzinchatye
+  [error] page-status: /catalog/klapany тЖТ HTTP 404
+    /catalog/klapany
+  [error] page-status: /catalog/krany-tselnosvarnye тЖТ HTTP 404
+    /catalog/krany-tselnosvarnye
+  [error] page-status: /catalog/mezhflancevye-dvuhstvorchatye тЖТ HTTP 404
+    /catalog/mezhflancevye-dvuhstvorchatye
+  [error] page-status: /catalog/mezhflancevye-pruzhinnye тЖТ HTTP 404
+    /catalog/mezhflancevye-pruzhinnye
+  [error] page-status: /catalog/sharovye тЖТ HTTP 404
+    /catalog/sharovye
+  [error] page-status: /catalog/zadvizhki-klinovye тЖТ HTTP 404
+    /catalog/zadvizhki-klinovye
+  [error] page-status: /catalog/zadvizhki-pn40-pn64 тЖТ HTTP 404
+    /catalog/zadvizhki-pn40-pn64
+  [error] page-status: /catalog/zadvizhki-pod-privarku тЖТ HTTP 404
+    /catalog/zadvizhki-pod-privarku
+  [error] page-status: /catalog/zatvory тЖТ HTTP 404
+    /catalog/zatvory
+  [error] page-status: /catalog/zatvory-flantsevy тЖТ HTTP 404
+    /catalog/zatvory-flantsevy
+  [error] page-status: /catalog/zatvory-mezhflantsevy тЖТ HTTP 404
+    /catalog/zatvory-mezhflantsevy
+  [error] page-status: /catalog/zatvory-s-uplotneniem тЖТ HTTP 404
+    /catalog/zatvory-s-uplotneniem
+  [error] page-status: /tovar/filtr-stal-dn150-pn16 тЖТ HTTP 404
+    /tovar/filtr-stal-dn150-pn16
+  [error] page-status: /tovar/filtr-stal-dn150-pn40 тЖТ HTTP 404
+    /tovar/filtr-stal-dn150-pn40
+  [error] page-status: /tovar/kompensator-dn100-pn16 тЖТ HTTP 404
+    /tovar/kompensator-dn100-pn16
+  [error] page-status: /tovar/kompensator-dn200-pn16 тЖТ HTTP 404
+    /tovar/kompensator-dn200-pn16
+  [error] page-status: /tovar/kompensator-dn250-pn16 тЖТ HTTP 404
+    /tovar/kompensator-dn250-pn16
+  [error] page-status: /tovar/kompensator-dn300-pn16 тЖТ HTTP 404
+    /tovar/kompensator-dn300-pn16
+  [error] page-status: /tovar/kompensator-dn400-pn16 тЖТ HTTP 404
+    /tovar/kompensator-dn400-pn16
+  [error] page-status: /tovar/kompensator-dn80-pn16 тЖТ HTTP 404
+    /tovar/kompensator-dn80-pn16
+  [error] page-status: /zatvory/mezhflantsevye тЖТ HTTP 404
+    /zatvory/mezhflantsevye
+--------------------------------------------------------------------------------
+Duplicate meta descriptions:
+  group (5): ╨Ъ╤Г╨┐╨╕╤В╤М ╨┐╤А╨╛╨╝╤Л╤И╨╗╨╡╨╜╨╜╤Л╨╡ ╨╖╨░╨┤╨▓╨╕╨╢╨║╨╕. ╨и╨╕╤А╨╛╨║╨╕╨╣ ╨▓╤Л╨▒╨╛╤А, ╨▓╤Л╤Б╨╛╨║╨╛╨╡ ╨║╨░╤З╨╡╤Б╤В╨▓╨╛, ╨│╨░╤А╨░╨╜╤В╨╕╤П, ╨┤╨╛╤Б╤В╨░╨▓╨║╨░ ╨┐╨╛ ╨Ъ╨░╨╖╨░╤Е╤Б╤В╨░╨╜╤Г. ╨Ч╨░╨║тАж
+    - /catalog/stalnye-flantsevye-zadvizhki
+    - /catalog/zadvizhki
+    - /catalog/zadvizhki-chugunnye
+    - /catalog/zadvizhki-chugunnye-flantsevye
+    - /catalog/zadvizhki-stalnyye
+--------------------------------------------------------------------------------
+Skipped external HTTP checks (tel/mailto/WhatsApp): 216 unique hrefs
+Low text-HTML ratio (classification):
+  static/service: 59 URLs
+    - /flansy-i-otvody/ru16
+    - /zadvizhki/s-elektroprivodom
+    - /zadvizhki/30ch6br
+    - /zadvizhki/30s41nzh
+    - /terms
+    - /delivery
+    - /contacts
+    - /certificates
+    тАж +51 more
+  category: 32 URLs
+    - /catalog/elektroprivody-dlya-zatvorov
+    - /catalog/elektroprivody-dlya-klapanov
+    - /catalog/krepezh-gayki
+    - /catalog/zadvizhki-pod-elektroprivod
+    - /catalog/krepezh-bolty
+    - /catalog/krepezh-shpilki
+    - /catalog/prokladki-paronit-ponb
+    - /catalog/povorotnye-svarnye
+    тАж +24 more
+  product: 8 URLs
+    - /tovar/elektroprivod-dlya-zatvorov-dn250-600-pn16
+    - /tovar/elektroprivod-dlya-klapanov-dn200-400-pn25
+    - /tovar/elektroprivod-dlya-klapanov-dn50-150-pn16
+    - /tovar/elektroprivod-dlya-zatvorov-dn50-200-pn16
+    - /tovar/elektroprivod-dlya-zadvizhek-dn50-200-pn16
+    - /tovar/elektroprivod-dlya-zadvizhek-dn250-600-pn16
+    - /tovar/kompensator-dn25-pn16
+    - /tovar/kompensator-dn50-pn16
+  catalog-listing: 1 URLs
+    - /catalog
+--------------------------------------------------------------------------------
