@@ -35,6 +35,7 @@ type RequestPayload = {
   source?: unknown;
   page?: unknown;
   website?: unknown;
+  productId?: unknown;
   productName?: unknown;
   productSlug?: unknown;
   productCategory?: unknown;
@@ -68,6 +69,7 @@ type ValidPayload = {
   source: string;
   page: string;
   website: string;
+  productId: number | null;
   productName: string;
   productSlug: string;
   productCategory: string;
@@ -154,6 +156,17 @@ function normalizeIsoTimestamp(value: unknown): string {
   if (Number.isNaN(date.getTime())) return "";
 
   return date.toISOString();
+}
+
+function toPositiveInteger(value: unknown): number | null {
+  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return null;
+  const parsed = Number.parseInt(trimmed, 10);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
 function extractAuditFields(payload: unknown): AuditFields {
@@ -345,6 +358,7 @@ function validatePayload(payload: unknown): { ok: true; data: ValidPayload } | {
   const source = toTrimmedString(raw.source, MAX_SOURCE_LENGTH);
   const page = toTrimmedString(raw.page, MAX_PAGE_LENGTH);
   const website = toTrimmedString(raw.website, MAX_HONEYPOT_LENGTH);
+  const productId = toPositiveInteger(raw.productId);
   const productName = toTrimmedString(raw.productName, MAX_PRODUCT_NAME_LENGTH);
   const productSlug = toTrimmedString(raw.productSlug, MAX_PRODUCT_SLUG_LENGTH);
   const productCategory = toTrimmedString(raw.productCategory, MAX_PRODUCT_CATEGORY_LENGTH);
@@ -394,6 +408,7 @@ function validatePayload(payload: unknown): { ok: true; data: ValidPayload } | {
       source,
       page,
       website,
+      productId,
       productName,
       productSlug,
       productCategory,
@@ -655,6 +670,7 @@ export async function POST(request: Request) {
       productSlug: parsed.data.productSlug || null,
       productCategory: parsed.data.productCategory || null,
       productSubcategory: parsed.data.productSubcategory || null,
+      productId: parsed.data.productId,
       attribution: buildLeadAttribution(parsed.data, attachmentMeta),
       ip: getClientIp(request),
       userAgent:

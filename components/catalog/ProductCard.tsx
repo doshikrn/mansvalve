@@ -180,6 +180,7 @@ export function ProductCard({ product }: ProductCardProps) {
             formTarget={`${detailHref}#request-name`}
             analytics={{
               source: "product-card",
+              product_id: product.id,
               product_slug: product.slug,
               product_name: productName,
               category: view.categoryLabel,

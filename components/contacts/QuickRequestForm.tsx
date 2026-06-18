@@ -21,6 +21,7 @@ interface FormState {
 }
 
 interface ProductContext {
+  productId?: number | string;
   productName?: string;
   productSlug?: string;
   productCategory?: string;
@@ -74,6 +75,7 @@ export interface QuickRequestFormProps {
   variant?: "light" | "dark";
   source?: string;
   productContext?: ProductContext;
+  anchorId?: string;
 }
 
 /* ── Per-variant style tokens ─────────────────────────────────────── */
@@ -296,9 +298,12 @@ export function QuickRequestForm({
   variant = "light",
   source = "commercial_offer_form",
   productContext,
+  anchorId,
 }: QuickRequestFormProps) {
   const router = useRouter();
   const s = STYLES[variant];
+  const formAnchorId =
+    anchorId && anchorId !== `${s.idPrefix}-name` ? anchorId : undefined;
   const formRef = useRef<HTMLFormElement | null>(null);
   const hasTrackedFormViewRef = useRef(false);
   const [values, setValues] = useState<FormState>({ name: "", phone: "", comment: "" });
@@ -334,6 +339,7 @@ export function QuickRequestForm({
       source,
       page,
       website,
+      productId: productContext?.productId,
       productName: productContext?.productName,
       productSlug: productContext?.productSlug,
       productCategory: productContext?.productCategory,
@@ -376,6 +382,7 @@ export function QuickRequestForm({
         page,
         pathname,
         search,
+        product_id: productContext?.productId,
         product_slug: productContext?.productSlug ?? pageContext.product_slug,
         product_name: productContext?.productName,
         category: productContext?.productCategory ?? pageContext.category,
@@ -466,6 +473,7 @@ export function QuickRequestForm({
         source,
         page,
         method: "site_form",
+        product_id: productContext?.productId,
         product_slug: productContext?.productSlug ?? pageContext.product_slug,
         product_name: productContext?.productName,
         category: productContext?.productCategory ?? pageContext.category,
@@ -476,6 +484,7 @@ export function QuickRequestForm({
         {
           source,
           page,
+          product_id: productContext?.productId,
           product_slug: productContext?.productSlug ?? pageContext.product_slug,
           product_name: productContext?.productName,
           category: productContext?.productCategory ?? pageContext.category,
@@ -495,6 +504,7 @@ export function QuickRequestForm({
         source,
         page,
         error_message: message,
+        product_id: productContext?.productId,
         product_slug: productContext?.productSlug ?? pageContext.product_slug,
         product_name: productContext?.productName,
         category: productContext?.productCategory ?? pageContext.category,
@@ -530,7 +540,14 @@ export function QuickRequestForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form
+      id={formAnchorId}
+      ref={formRef}
+      onSubmit={handleSubmit}
+      noValidate
+      tabIndex={formAnchorId ? -1 : undefined}
+      className="flex flex-col gap-4"
+    >
       {submitState === "error" && (
         <div className={`rounded-lg border px-4 py-3 text-sm ${s.errorBox}`} role="alert">
           <p>{submitError ?? "Не удалось отправить заявку через сайт."}</p>

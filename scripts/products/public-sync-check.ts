@@ -134,9 +134,17 @@ async function main() {
 
   const publicProduct = toPublicProduct(dbRow);
   const view = buildPublicProductView(publicProduct);
+  const h1Source = dbRow.h1Override?.trim()
+    ? "manual h1_override"
+    : dbRow.publicTitle?.trim()
+      ? "auto/generated (public_title influences display name)"
+      : "auto/generated";
 
   console.log("\nPublic product view (from DB row via buildPublicProductView):");
+  console.log(`  db h1_override: ${dbRow.h1Override ?? "(empty)"}`);
   console.log(`  h1: ${view.h1}`);
+  console.log(`  h1 source: ${h1Source}`);
+  console.log(`  expected public <h1>: ${view.h1}`);
   console.log(`  seoTitle: ${view.seoTitle}`);
   console.log(`  browser title: ${formatProductPageTitle(view.seoTitle)}`);
   console.log(`  seoDescription: ${view.seoDescription.slice(0, 120)}…`);

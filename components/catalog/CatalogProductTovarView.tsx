@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, ChevronRight, Download, FileText, Phone, ShieldCheck, Truck } from "lucide-react";
 
 import { QuickContactSheet } from "@/components/catalog/QuickContactSheet";
+import { QuickRequestForm } from "@/components/contacts/QuickRequestForm";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { ProductImageFrame } from "@/components/product/ProductImageFrame";
@@ -117,9 +118,11 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
               formTarget="#request-name"
               analytics={{
                 source: "product-pdp",
+                product_id: product.id,
                 product_slug: product.slug,
                 product_name: productName,
                 category: categoryLabel,
+                subcategory: subcategoryLabel,
               }}
               triggerSize="lg"
               triggerClassName="rounded-xl bg-site-primary text-base font-semibold hover:bg-site-primary-hover"
@@ -259,6 +262,34 @@ export function CatalogProductTovarView(data: TovarProductPageData) {
           </div>
         </section>
       ) : null}
+
+      <section id="request-section" className="scroll-mt-24 border-t border-site-border bg-site-bg">
+        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+          <div className="rounded-2xl border border-site-border bg-site-card p-5 shadow-sm sm:p-6">
+            <div className="mb-5">
+              <h2 className="text-2xl font-bold text-slate-900">
+                Получить коммерческое предложение
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Заявка будет сохранена и передана менеджеру вместе с данными товара.
+                Менеджер свяжется с вами по указанному телефону.
+              </p>
+            </div>
+            <QuickRequestForm
+              variant="light"
+              source="product-pdp-form"
+              anchorId="request-name"
+              productContext={{
+                productId: product.id,
+                productName,
+                productSlug: product.slug,
+                productCategory: categoryLabel,
+                productSubcategory: subcategoryLabel,
+              }}
+            />
+          </div>
+        </div>
+      </section>
 
       {related.length ? (
         <section className="border-t border-site-border bg-white">

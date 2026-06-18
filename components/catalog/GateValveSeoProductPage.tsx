@@ -164,6 +164,7 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
               formTarget="#request-name"
               analytics={{
                 source: "series-landing",
+                product_id: product?.id,
                 product_slug: product?.slug ?? page.slug,
                 product_name: displayName,
                 category: categoryLabel,
@@ -328,7 +329,9 @@ export function GateValveSeoProductPage({ page, product, relatedPages }: Props) 
             <QuickRequestForm
               variant="dark"
               source={`series-${page.slug}`}
+              anchorId="request-name"
               productContext={{
+                productId: product?.id,
                 productName: displayName,
                 productSlug: product?.slug ?? page.slug,
                 productCategory: categoryLabel,

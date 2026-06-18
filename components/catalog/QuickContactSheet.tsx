@@ -20,9 +20,11 @@ type ButtonSize = React.ComponentProps<typeof Button>["size"];
 
 export interface QuickContactSheetAnalytics {
   source?: string;
+  product_id?: string | number;
   product_slug?: string;
   product_name?: string;
   category?: string;
+  subcategory?: string;
 }
 
 export interface QuickContactSheetProps {
@@ -60,9 +62,11 @@ export function QuickContactSheet({
     const ctx = getPageAnalyticsContext();
     return {
       source: analytics?.source,
+      product_id: analytics?.product_id,
       product_slug: analytics?.product_slug ?? ctx.product_slug,
       product_name: analytics?.product_name,
       category: analytics?.category ?? ctx.category,
+      subcategory: analytics?.subcategory,
     };
   }, [analytics]);
 
@@ -101,10 +105,22 @@ export function QuickContactSheet({
   };
 
   const focusFormField = () => {
-    const el = document.getElementById(formTarget.replace(/^#/, ""));
+    const targetId = formTarget.replace(/^#/, "");
+    const el =
+      document.getElementById(targetId) ??
+      document.getElementById("request-section") ??
+      document.getElementById("request-name") ??
+      document.getElementById("contact-name");
     if (!el) return;
     el.scrollIntoView({ behavior: "smooth", block: "center" });
-    (el as HTMLElement).focus({ preventScroll: true });
+    const focusTarget =
+      el instanceof HTMLElement &&
+      el.matches("input, textarea, select, button, [tabindex]")
+        ? el
+        : el.querySelector<HTMLElement>(
+            "input:not([type='hidden']), textarea, select, button, [tabindex]:not([tabindex='-1'])",
+          );
+    (focusTarget ?? (el as HTMLElement)).focus({ preventScroll: true });
   };
 
   return (
