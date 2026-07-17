@@ -31,6 +31,7 @@ export interface CatalogSearchParams {
   connection?: string;
   controlType?: string;
   sort?: string;
+  view?: string;
   page?: string;
   q?: string;
 }
@@ -54,7 +55,12 @@ interface CatalogShellProps {
   lockedSubcategoryId?: string;
 }
 
-type SubcategoryOption = { id: string; name: string };
+type CatalogQuickLink = {
+  href: string;
+  label: string;
+  count: number;
+  active?: boolean;
+};
 
 export function CatalogShell({
   products,
@@ -111,15 +117,37 @@ export function CatalogShell({
   });
 
   // Compute subcategory labels from the category pool, then let facets decide counts.
-  const subcategoryOptions: SubcategoryOption[] = queryResult.facets.subcategories
+  const subcategoryOptions = queryResult.facets.subcategories
     .map((facet) => {
       const meta = subcategoryById.get(facet.value);
       return {
-        id: facet.value,
-        name: meta?.name ? `${meta.name} (${facet.count})` : facet.label,
+        ...facet,
+        label: meta?.name ?? facet.label,
       };
     })
-    .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+    .sort((a, b) => a.label.localeCompare(b.label, "ru"));
+
+  const categoryCountById = new Map(
+    queryResult.facets.categories.map((facet) => [facet.value, facet.count] as const),
+  );
+  const subcategoryCountById = new Map(
+    queryResult.facets.subcategories.map((facet) => [facet.value, facet.count] as const),
+  );
+  const quickLinks: CatalogQuickLink[] = lockedSubcategory && lockedCategory
+    ? lockedCategory.subcategories.map((subcategory) => ({
+        href: catalogSubcategoryPath(lockedCategory.slug, subcategory.slug),
+        label: subcategory.name,
+        count: subcategoryCountById.get(subcategory.id) ?? 0,
+        active: subcategory.id === effectiveSubcategoryId,
+      }))
+    : lockedCategory
+      ? []
+      : orderedCategories.map((category) => ({
+          href: catalogCategoryPath(category.slug),
+          label: category.name,
+          count: categoryCountById.get(category.id) ?? 0,
+          active: category.id === effectiveCategoryId,
+        }));
 
   const currentPage = queryResult.page;
   const pageItems = queryResult.pageItems;
@@ -144,6 +172,7 @@ export function CatalogShell({
     connectionType: searchParams.connectionType,
     controlType: searchParams.controlType,
     sort: searchParams.sort,
+    view: searchParams.view,
   };
 
   return (
@@ -165,6 +194,10 @@ export function CatalogShell({
           materialOptions={queryResult.facets.material}
           connectionTypeOptions={queryResult.facets.connectionType}
           controlTypeOptions={queryResult.facets.controlType}
+          quickLinks={quickLinks}
+          total={queryResult.total}
+          currentPage={currentPage}
+          totalPages={totalPages}
           showCategoryTabs={!effectiveLockedCategoryId}
           showSubcategoryFilter={!lockedSubcategoryId}
           showThreadFilter={queryResult.facets.thread.length > 0}
@@ -175,6 +208,8 @@ export function CatalogShell({
               total={queryResult.total}
               query={queryResult.normalizedQuery.raw}
               hasActiveFilters={hasActiveFilters(searchParams)}
+              view={searchParams.view === "list" ? "list" : "grid"}
+              resetHref={basePath}
             />
             <Pagination
               currentPage={currentPage}

@@ -34,19 +34,19 @@ export function Pagination({
   return (
     <nav
       aria-label="Навигация по каталогу"
-      className="mt-10 flex items-center justify-center gap-1"
+      className="mt-8 flex flex-wrap items-center justify-center gap-1.5 rounded-lg border border-site-border bg-white px-3 py-3 shadow-sm"
     >
       {/* Previous */}
       {currentPage > 1 ? (
         <Link
           href={buildHref(currentPage - 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-site-bg"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-transparent text-slate-600 transition-colors hover:border-site-border hover:bg-slate-50"
           aria-label="Предыдущая страница"
         >
           <ChevronLeft className="h-4 w-4" />
         </Link>
       ) : (
-        <span className="flex h-9 w-9 items-center justify-center text-slate-300">
+        <span className="flex h-10 w-10 items-center justify-center text-slate-300">
           <ChevronLeft className="h-4 w-4" />
         </span>
       )}
@@ -56,7 +56,7 @@ export function Pagination({
         page === null ? (
           <span
             key={`ellipsis-${idx}`}
-            className="flex h-9 w-9 items-center justify-center text-sm text-slate-400"
+            className="flex h-10 w-8 items-center justify-center text-sm text-slate-400"
           >
             ...
           </span>
@@ -65,10 +65,10 @@ export function Pagination({
             key={page}
             href={buildHref(page)}
             className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition-colors",
+              "flex h-10 min-w-10 items-center justify-center rounded-md border px-2 text-sm font-semibold transition-colors",
               page === currentPage
-                ? "bg-site-primary text-white"
-                : "text-slate-600 hover:bg-site-bg",
+                ? "border-site-primary bg-site-primary text-white"
+                : "border-transparent text-slate-600 hover:border-site-border hover:bg-slate-50",
             )}
             aria-current={page === currentPage ? "page" : undefined}
           >
@@ -81,13 +81,13 @@ export function Pagination({
       {currentPage < totalPages ? (
         <Link
           href={buildHref(currentPage + 1)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-site-bg"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-transparent text-slate-600 transition-colors hover:border-site-border hover:bg-slate-50"
           aria-label="Следующая страница"
         >
           <ChevronRight className="h-4 w-4" />
         </Link>
       ) : (
-        <span className="flex h-9 w-9 items-center justify-center text-slate-300">
+        <span className="flex h-10 w-10 items-center justify-center text-slate-300">
           <ChevronRight className="h-4 w-4" />
         </span>
       )}

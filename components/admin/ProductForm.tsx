@@ -38,6 +38,7 @@ import { buildProductPreviewFromDraft } from "@/lib/catalog/product-preview-draf
 import { buildProductSlugFromTitle } from "@/lib/products-import/slug-builder";
 import type { CategoryWithSubcategories } from "@/lib/services/categories";
 import type { ProductDetail } from "@/lib/services/products";
+import { slugify } from "@/lib/services/slug";
 
 type Action = (
   state: ProductFormState,
@@ -195,7 +196,11 @@ export function ProductForm({
       }),
     [publicTitleDraft, generatedDisplayName, nameDraft],
   );
-  const slugDraft = manualSlug ?? autoSlug;
+  const normalizedManualSlug = manualSlug == null ? null : slugify(manualSlug);
+  const slugDraft =
+    state.savedSlug && normalizedManualSlug === state.savedSlug
+      ? state.savedSlug
+      : manualSlug ?? autoSlug;
   const autoSlugActive = manualSlug == null;
 
   const regenerateSlugFromCurrentFields = () => {

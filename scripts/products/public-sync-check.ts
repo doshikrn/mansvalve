@@ -14,6 +14,7 @@ import { formatProductPageTitle } from "@/lib/catalog/product-seo-naming";
 import { getDb } from "@/lib/db/drizzle-core";
 import {
   categories as categoriesTable,
+  productSlugAliases as productSlugAliasesTable,
   products as productsTable,
   subcategories as subcategoriesTable,
 } from "@/lib/db/schema";
@@ -134,6 +135,10 @@ async function main() {
 
   const publicProduct = toPublicProduct(dbRow);
   const view = buildPublicProductView(publicProduct);
+  const aliases = await getDb()
+    .select({ slug: productSlugAliasesTable.slug })
+    .from(productSlugAliasesTable)
+    .where(eq(productSlugAliasesTable.productId, dbRow.id));
   const h1Source = dbRow.h1Override?.trim()
     ? "manual h1_override"
     : dbRow.publicTitle?.trim()
@@ -150,6 +155,10 @@ async function main() {
   console.log(`  seoDescription: ${view.seoDescription.slice(0, 120)}…`);
   console.log(`  canonicalPath: ${view.canonicalPath}`);
   console.log(`  category: ${publicProduct.category} / ${publicProduct.subcategory}`);
+  console.log(`  slug aliases: ${aliases.length}`);
+  for (const alias of aliases) {
+    console.log(`    /tovar/${alias.slug} -> 308 ${view.canonicalPath}`);
+  }
 
   const checks = [
     ["slug", dbRow.slug, publicProduct.slug],
@@ -160,6 +169,7 @@ async function main() {
     ["h1(view)", view.h1, view.h1],
     ["seoTitle", view.seoTitle, view.seoTitle],
     ["canonicalPath non-empty", Boolean(view.canonicalPath), true],
+    ["current slug is not an alias", aliases.some((row) => row.slug === dbRow.slug), false],
   ] as const;
 
   let failed = 0;

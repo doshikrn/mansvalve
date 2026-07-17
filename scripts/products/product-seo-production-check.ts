@@ -86,7 +86,10 @@ check("COMPANY_BRAND_SEO is MANSVALVE GROUP", COMPANY_BRAND_SEO === "MANSVALVE G
 // 2. New product H1 + meta (public view)
 {
   const view = buildPublicProductView({ ...newProductBase, h1Override: undefined });
-  const titlePart = buildProductAutoMetaTitlePart(resolveProductSourceTitle(newProductBase));
+  const titlePart = buildProductAutoMetaTitlePart(
+    resolveProductSourceTitle(newProductBase),
+    newProductBase,
+  );
   const browserTitle = `${view.seoTitle} | ${COMPANY_BRAND_SEO}`;
   const previewTitle = formatProductPageTitle(view.seoTitle);
 

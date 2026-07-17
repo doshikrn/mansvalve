@@ -116,6 +116,8 @@ export type ProductFormState = {
   success?: string;
   /** ISO timestamp after successful update (client shows «last saved»). */
   savedAt?: string;
+  /** Slug actually persisted after server normalization. */
+  savedSlug?: string;
 };
 
 type FormInput = FormData | Record<string, unknown>;
@@ -410,6 +412,7 @@ export async function updateProductAction(
       ? "Изменения сохранены. Ссылка товара обновлена — старый адрес автоматически ведёт на новый."
       : "Изменения сохранены. Публичная страница товара и каталог обновлены.",
     savedAt: new Date().toISOString(),
+    savedSlug: after?.slug,
   };
 }
 

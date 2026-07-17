@@ -2,28 +2,27 @@ export default function CatalogLoading() {
   const cards = Array.from({ length: 6 });
   return (
     <div className="min-h-screen bg-site-bg">
-      <section className="relative isolate overflow-hidden bg-[#081428]" aria-hidden>
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:py-14">
-          <div className="site-skeleton-dark h-3 w-32 rounded-full" />
-          <div className="site-skeleton-dark mt-5 h-9 w-3/4 max-w-2xl rounded-md sm:h-11" />
-          <div className="site-skeleton-dark mt-3 h-4 w-2/3 max-w-xl rounded-md" />
+      <section className="border-b border-site-border bg-white" aria-hidden>
+        <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-8">
+          <div className="site-skeleton h-3 w-32 rounded" />
+          <div className="site-skeleton mt-5 h-9 w-3/4 max-w-2xl rounded-md" />
+          <div className="site-skeleton mt-3 h-4 w-2/3 max-w-xl rounded-md" />
           <div className="mt-6 flex gap-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="site-skeleton-dark h-6 w-28 rounded-full" />
+              <div key={i} className="site-skeleton h-7 w-28 rounded-md" />
             ))}
           </div>
         </div>
-        <div className="h-[10px] bg-gradient-to-b from-[#081428] via-[#1b2b46] to-site-bg" />
       </section>
 
       <div
-        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10"
+        className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:py-8"
         aria-label="Загрузка каталога"
         aria-busy="true"
       >
-        <div className="lg:grid lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10">
+        <div className="lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:items-start lg:gap-6">
           <aside className="hidden lg:block">
-            <div className="rounded-2xl border border-site-border bg-site-card p-5 shadow-sm">
+            <div className="rounded-lg border border-site-border bg-site-card p-5 shadow-sm">
               <div className="site-skeleton h-4 w-32 rounded" />
               <div className="site-skeleton mt-2 h-3 w-44 rounded" />
               <div className="mt-5 space-y-3">
@@ -35,9 +34,9 @@ export default function CatalogLoading() {
           </aside>
 
           <div>
-            <div className="mb-5 flex items-center justify-between">
-              <div className="site-skeleton h-4 w-40 rounded" />
-              <div className="site-skeleton h-3 w-56 rounded" />
+            <div className="mb-4 flex h-16 items-center justify-between rounded-lg border border-site-border bg-white px-4">
+              <div className="site-skeleton h-4 w-32 rounded" />
+              <div className="site-skeleton h-10 w-64 rounded" />
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
