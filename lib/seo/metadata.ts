@@ -26,7 +26,9 @@ export function stripBrandFromTitle(value: string): string {
 
 /** Title part for Next.js `title` metadata (brand comes from root template). */
 export function normalizeMetaTitle(value: string): string {
-  return clampMetaTextAtWord(stripBrandFromTitle(value), TITLE_PART_MAX_LENGTH);
+  return clampMetaTextAtWord(stripTitleEllipsis(stripBrandFromTitle(value)), TITLE_PART_MAX_LENGTH, {
+    appendEllipsis: false,
+  });
 }
 
 /** Full browser title as rendered via root `title.template`. */
@@ -36,7 +38,9 @@ export function buildBrowserTitleFromPart(titlePart: string): string {
   if (stripBrandFromTitle(part).length !== part.length) return part;
   const full = `${part}${TITLE_TEMPLATE_BRAND_SUFFIX}`;
   if (full.length <= BROWSER_TITLE_MAX_LENGTH) return full;
-  const tighter = clampMetaTextAtWord(part, TITLE_PART_MAX_LENGTH - 1);
+  const tighter = clampMetaTextAtWord(part, TITLE_PART_MAX_LENGTH - 1, {
+    appendEllipsis: false,
+  });
   return `${tighter}${TITLE_TEMPLATE_BRAND_SUFFIX}`;
 }
 
@@ -85,11 +89,12 @@ export function buildPagedMeta(input: {
   const suffix = pageNumber ? ` - Страница ${pageNumber}` : "";
   const titleBase = pageNumber
     ? clampMetaTextAtWord(
-        stripBrandFromTitle(input.title),
+        stripTitleEllipsis(stripBrandFromTitle(input.title)),
         Math.max(
           1,
           BROWSER_TITLE_MAX_LENGTH - TITLE_TEMPLATE_BRAND_SUFFIX.length - suffix.length,
         ),
+        { appendEllipsis: false },
       )
     : normalizeMetaTitle(input.title);
   const title = pageNumber ? `${titleBase}${suffix}` : titleBase;
@@ -113,6 +118,11 @@ export function buildPagedMeta(input: {
     pageNumber,
     robots: hasNonPageParams ? { index: false, follow: true } : undefined,
   };
+}
+
+/** Removes generated ellipsis tokens from title input without joining adjacent words. */
+function stripTitleEllipsis(value: string): string {
+  return value.replace(/(?:\.{3,}|…)/gu, " ").replace(/\s+/g, " ").trim();
 }
 
 export function clampMetaTextAtWord(

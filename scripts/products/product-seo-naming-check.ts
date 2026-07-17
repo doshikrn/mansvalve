@@ -10,12 +10,14 @@ import {
   buildProductSeoDescription,
   buildProductSeoTitleFromSource,
   formatProductPageTitle,
+  getProductSeoIdentityParts,
   isAutoLikeH1Override,
   resolveProductSourceTitle,
 } from "@/lib/catalog/product-seo-naming";
 import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
 import { buildProductSlugFromTitle } from "@/lib/products-import/slug-builder";
+import { buildPagedMeta } from "@/lib/seo/metadata";
 import { slugify } from "@/lib/services/slug";
 
 type Check = { name: string; pass: boolean; detail?: string };
@@ -162,6 +164,59 @@ const baseProduct: PublicCatalogProduct = {
     "auto-like h1 override detection",
     isAutoLikeH1Override(generated, [generated, baseProduct.name]),
   );
+}
+
+// 10. Pagination titles are clamped at a word boundary without an ellipsis.
+{
+  for (const page of [2, 3, 4, 5, 6]) {
+    const meta = buildPagedMeta({
+      title: "Клапаны обратные — каталог арматуры",
+      description: "Клапаны обратные для промышленных трубопроводов и инженерных систем.",
+      canonicalPath: "/catalog/klapany-obratnye",
+      searchParams: { page: String(page) },
+    });
+    check(
+      `pagination title page ${page}`,
+      !meta.fullTitle.includes("...") &&
+        !meta.fullTitle.includes("…") &&
+        meta.fullTitle.endsWith(`| MANSVALVE GROUP - Страница ${page}`) &&
+        (meta.fullTitle.match(/MANSVALVE GROUP/g) ?? []).length === 1 &&
+        (meta.fullTitle.match(/Страница\s+\d+/g) ?? []).length === 1,
+      `got "${meta.fullTitle}"`,
+    );
+  }
+}
+
+// 11. Internal import ids never become public articles; KSO titles remain readable.
+{
+  for (const dn of [80, 100, 200, 400]) {
+    const product: PublicCatalogProduct = {
+      ...baseProduct,
+      id: `series:compensator-kso-k:kso-k-${dn}-16`,
+      externalId: `series:compensator-kso-k:kso-k-${dn}-16`,
+      name: `Компенсатор сильфонный КСО.К-${dn}-16 под приварку`,
+      slug: `kso-k-${dn}-16`,
+      category: "filtry-i-kompensatory",
+      categoryName: "Фильтры и компенсаторы",
+      subcategory: "kompensatory",
+      subcategoryName: "Компенсаторы",
+      model: `КСО.К-${dn}-16`,
+      dn,
+      pn: 16,
+      material: "Сталь / нержавеющая сталь",
+      connectionType: "Под приварку",
+    };
+    const view = buildPublicProductView(product);
+    const fullTitle = formatProductPageTitle(view.seoTitle);
+    const identities = getProductSeoIdentityParts(product);
+    check(
+      `KSO.К-${dn} title has no technical id`,
+      fullTitle === `Компенсатор КСО.К-${dn}-16 DN${dn} PN16 | MANSVALVE GROUP` &&
+        !/series:|\.\.\.|…/iu.test(fullTitle) &&
+        !identities.some((part) => part.field === "externalId"),
+      `got "${fullTitle}"`,
+    );
+  }
 }
 
 const failed = checks.filter((item) => !item.pass);

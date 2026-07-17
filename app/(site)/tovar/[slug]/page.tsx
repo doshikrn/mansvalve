@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!product) {
     const aliasTarget = await resolveProductSlugAliasTarget(slug);
     if (aliasTarget) {
-      return { title: "Перенаправление…", alternates: { canonical: aliasTarget } };
+      return { title: "Перенаправление", alternates: { canonical: aliasTarget } };
     }
     return { title: "Товар не найден" };
   }

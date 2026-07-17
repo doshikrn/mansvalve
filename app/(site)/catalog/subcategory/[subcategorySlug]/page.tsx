@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { subcategorySlug } = await params;
   const legacy = resolveLegacySubcategoryCanonicalPath(subcategorySlug);
   if (legacy) {
-    return { title: "Перенаправление…", alternates: { canonical: legacy } };
+    return { title: "Перенаправление", alternates: { canonical: legacy } };
   }
   let context: Awaited<ReturnType<typeof getPublicSubcategoryBySlug>>;
   try {
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   if (!context) return { title: "Подкатегория не найдена" };
   const canonicalPath = catalogSubcategoryPath(context.category.slug, context.subcategory.slug);
-  return { title: "Перенаправление…", alternates: { canonical: canonicalPath } };
+  return { title: "Перенаправление", alternates: { canonical: canonicalPath } };
 }
 
 /** `/catalog/subcategory/[slug]` → канонический `/catalog/[category]/[subcategory]`. */

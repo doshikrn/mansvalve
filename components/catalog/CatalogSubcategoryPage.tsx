@@ -130,7 +130,7 @@ export async function getCatalogSubcategoryMetadata(
 ): Promise<Metadata> {
   const legacyPath = resolveLegacyNestedSubcategoryCanonicalPath(categorySlug, subcategorySlug);
   if (legacyPath && legacyPath !== catalogSubcategoryPath(categorySlug, subcategorySlug)) {
-    return { title: "Перенаправление…", alternates: { canonical: legacyPath } };
+    return { title: "Перенаправление", alternates: { canonical: legacyPath } };
   }
 
   let context: SubcategoryContext | undefined;

@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const page = getSeriesSeoPageByPath(`/klapany/obratnye/${landingSlug}`);
   if (!page) return { title: "Страница не найдена" };
   const canonical = toAbsoluteSiteUrl(getSeriesPagePath(page));
-  return { title: "Перенаправление…", alternates: { canonical } };
+  return { title: "Перенаправление", alternates: { canonical } };
 }
 
 /** Старые URL `/klapany/obratnye/*` → канонический путь серии (сейчас `/catalog/klapany/...`). */

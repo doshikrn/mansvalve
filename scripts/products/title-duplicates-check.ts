@@ -40,6 +40,15 @@ for (const product of products as PublicCatalogProduct[]) {
   if (title.includes("...") || title.includes("…")) {
     violations.push({ slug: product.slug, title, reason: "title contains artificial ellipsis" });
   }
+  if (/series:/iu.test(title)) {
+    violations.push({ slug: product.slug, title, reason: "title contains technical series id" });
+  }
+  if (/арт\.\s+(?:\d+|[0-9a-f]{8}-[0-9a-f-]{27,})\b/iu.test(title)) {
+    violations.push({ slug: product.slug, title, reason: "title contains a DB/UUID identifier" });
+  }
+  if ((title.match(/Страница\s+\d+/giu) ?? []).length > 1) {
+    violations.push({ slug: product.slug, title, reason: "page suffix is duplicated" });
+  }
 }
 
 const duplicates = [...groups.values()]

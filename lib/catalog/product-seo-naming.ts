@@ -25,7 +25,8 @@ export type ProductSeoIdentityPart = {
     | "material"
     | "connectionType"
     | "controlType"
-    | "thread";
+    | "thread"
+    | "variant";
   value: string;
 };
 
@@ -67,7 +68,7 @@ export function buildProductAutoMetaTitlePart(
 
 /** Полный title страницы товара, как в браузере (с брендом из root template). */
 export function formatProductPageTitle(titlePart: string): string {
-  const part = stripBrandFromTitle(titlePart).replace(/\s+/g, " ").trim();
+  const part = stripProductTitleEllipsis(stripBrandFromTitle(titlePart));
   if (!part) return COMPANY_BRAND_SEO;
   return `${part}${TITLE_TEMPLATE_BRAND_SUFFIX}`;
 }
@@ -100,7 +101,7 @@ export function buildProductSeoTitleFromSource(
   const manual = manualTitle?.trim();
   if (manual && stripBrandFromTitle(manual).length > 0) {
     // Root metadata appends the brand. Preserve manager/template wording otherwise.
-    return stripBrandFromTitle(manual).replace(/\s+/g, " ").trim();
+    return stripProductTitleEllipsis(stripBrandFromTitle(manual));
   }
   return buildProductAutoMetaTitlePart(sourceTitle, identity);
 }
@@ -146,11 +147,12 @@ export function getProductSeoIdentityParts(
     ? Object.fromEntries(input.specs.map((item) => [item.key, item.value]))
     : input.specs ?? {};
   const specModel = Object.entries(specs).find(([key]) => /модел|маркир/i.test(key))?.[1];
+  const publicArticle = getPublicProductArticle(input);
   const values: ProductSeoIdentityPart[] = [
     { field: "model", value: meaningfulValue(input.model) || meaningfulValue(specModel) },
     {
       field: "externalId",
-      value: meaningfulValue(input.externalId) ? `арт. ${input.externalId!.trim()}` : "",
+      value: publicArticle ? `арт. ${publicArticle}` : "",
     },
     { field: "dn", value: input.dn != null ? `DN${input.dn}` : "" },
     { field: "pn", value: input.pn != null ? `PN${input.pn}` : "" },
@@ -158,6 +160,7 @@ export function getProductSeoIdentityParts(
     { field: "connectionType", value: meaningfulValue(input.connectionType) },
     { field: "controlType", value: meaningfulValue(input.controlType) },
     { field: "thread", value: meaningfulValue(input.thread) },
+    { field: "variant", value: getHumanReadableVariant(input) },
   ];
 
   const seen = new Set<string>();
@@ -208,13 +211,61 @@ function appendMissingIdentityParts(
 }
 
 function stripProductTitleDecorations(value: string): string {
-  return stripBrandFromTitle(value)
+  return stripProductTitleEllipsis(
+    stripBrandFromTitle(value)
     .replace(/^купить\s+/iu, "")
     .replace(/\s+[—-]\s*купить\s+в\s+Казахстане\s*$/iu, "")
-    .replace(/\s+купить\s+в\s+Казахстане\s*$/iu, "")
-    .replace(/[…]+$/u, "")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/\s+купить\s+в\s+Казахстане\s*$/iu, ""),
+  );
+}
+
+function stripProductTitleEllipsis(value: string): string {
+  return value.replace(/(?:\.{3,}|…)/gu, " ").replace(/\s+/g, " ").trim();
+}
+
+/** `externalId` is an import key unless it looks like a real public article. */
+function getPublicProductArticle(input: ProductSeoNamingInput): string {
+  const value = meaningfulValue(input.externalId);
+  if (!value) return "";
+
+  const normalized = value.trim();
+  const comparable = normalizeComparableTitle(normalized);
+  const slug = normalizeComparableTitle(input.slug);
+  const model = normalizeComparableTitle(input.model);
+
+  if (/^\d+$/u.test(normalized)) return "";
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(normalized)) {
+    return "";
+  }
+  if (/^(?:series|internal|import|product|db|welding)[_:-]/iu.test(normalized)) return "";
+  if (normalized.includes(":")) return "";
+  if (slug && comparable === slug) return "";
+  if (model && comparable === model) return "";
+
+  return normalized;
+}
+
+/** Makes legacy slug collision suffixes readable without exposing the slug or DB id. */
+function getHumanReadableVariant(input: ProductSeoNamingInput): string {
+  const suffix = input.slug?.match(/-(\d+)$/u)?.[1];
+  if (!suffix || Number(suffix) < 2) return "";
+  const slugBase = input.slug!.slice(0, -(suffix.length + 1));
+  const repeatsNamedSlugValue = new RegExp(`(?:dn|pn)${suffix}$`, "iu").test(slugBase);
+
+  const semanticText = [
+    input.name,
+    input.model,
+    input.dn != null ? `DN${input.dn}` : "",
+    input.pn != null ? `PN${input.pn}` : "",
+  ].join(" ");
+  if (
+    !repeatsNamedSlugValue &&
+    new RegExp(`(^|\\D)${suffix}(\\D|$)`, "u").test(semanticText)
+  ) {
+    return "";
+  }
+
+  return `исполнение ${suffix}`;
 }
 
 function clampProductMetaText(value: string, maxLength: number): string {

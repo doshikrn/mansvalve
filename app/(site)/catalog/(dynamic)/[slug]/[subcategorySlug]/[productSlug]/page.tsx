@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const expectedPath = `/catalog/${slug}/${subcategorySlug}/${productSlug}`;
   if (view.canonicalPath !== expectedPath) {
     return {
-      title: "Перенаправление…",
+      title: "Перенаправление",
       alternates: { canonical: toAbsoluteSiteUrl(view.canonicalPath) },
     };
   }

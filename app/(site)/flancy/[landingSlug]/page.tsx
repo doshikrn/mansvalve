@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = toAbsoluteSiteUrl(
     `/${LEGACY_CATALOG_LANDING_CATEGORY_SLUGS.flancy}/${landingSlug}`,
   );
-  return { title: "Перенаправление…", alternates: { canonical } };
+  return { title: "Перенаправление", alternates: { canonical } };
 }
 
 /** Старые URL `/flancy/*` → канонический SEO landing `/flansy-i-otvody/*`. */
