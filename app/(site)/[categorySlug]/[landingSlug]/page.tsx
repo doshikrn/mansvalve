@@ -22,7 +22,12 @@ import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
 } from "@/lib/structured-data";
-import { normalizeMetaDescription, normalizeMetaTitle } from "@/lib/seo/metadata";
+import {
+  appendPageNumberSuffix,
+  buildPagedMeta,
+  normalizeMetaDescription,
+  normalizeMetaTitle,
+} from "@/lib/seo/metadata";
 import {
   findSeriesCatalogProduct,
   getRelatedSeriesSeoPages,
@@ -35,6 +40,7 @@ export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ categorySlug: string; landingSlug: string }>;
+  searchParams: Promise<CatalogSearchParams>;
 }
 
 export function generateStaticParams() {
@@ -53,30 +59,37 @@ export function generateStaticParams() {
   ];
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { categorySlug, landingSlug } = await params;
   const landing = getLandingPage(categorySlug, landingSlug);
 
   if (landing) {
     const canonical = `/${landing.categorySlug}/${landing.slug}`;
+    const meta = buildPagedMeta({
+      title: landing.title,
+      description: landing.description,
+      canonicalPath: canonical,
+      searchParams: await searchParams,
+    });
 
     return {
-      title: normalizeMetaTitle(landing.title),
-      description: normalizeMetaDescription(landing.description),
+      title: meta.metadataTitle,
+      description: meta.description,
+      robots: meta.robots,
       alternates: {
-        canonical,
+        canonical: meta.canonicalPath,
       },
       openGraph: {
-        title: normalizeMetaTitle(landing.title),
-        description: normalizeMetaDescription(landing.description),
-        url: canonical,
+        title: meta.socialTitle,
+        description: meta.description,
+        url: meta.canonicalPath,
         locale: "ru_KZ",
         type: "website",
       },
       twitter: {
         card: "summary_large_image",
-        title: normalizeMetaTitle(landing.title),
-        description: normalizeMetaDescription(landing.description),
+        title: meta.socialTitle,
+        description: meta.description,
       },
     };
   }
@@ -119,7 +132,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function CatalogLandingPage({ params }: PageProps) {
+export default async function CatalogLandingPage({ params, searchParams: rawSearchParams }: PageProps) {
   const { categorySlug, landingSlug } = await params;
   const landing = getLandingPage(categorySlug, landingSlug);
 
@@ -170,12 +183,23 @@ export default async function CatalogLandingPage({ params }: PageProps) {
   const { products, categories, category } = loaded.data;
   if (!category) notFound();
 
-  const searchParams = buildLandingSearchParams(landing);
+  const requestSearchParams = await rawSearchParams;
+  const searchParams = {
+    ...buildLandingSearchParams(landing),
+    page: requestSearchParams.page,
+  };
   const canonical = `/${landing.categorySlug}/${landing.slug}`;
-  const collectionPageJsonLd = buildCollectionPageJsonLd({
-    name: landing.h1,
+  const pageMeta = buildPagedMeta({
+    title: landing.title,
     description: landing.description,
-    path: canonical,
+    canonicalPath: canonical,
+    searchParams: requestSearchParams,
+  });
+  const pageH1 = appendPageNumberSuffix(landing.h1, pageMeta.pageNumber);
+  const collectionPageJsonLd = buildCollectionPageJsonLd({
+    name: pageH1,
+    description: pageMeta.description,
+    path: pageMeta.canonicalPath,
   });
   const breadcrumbJsonLd = buildCategoryBreadcrumbJsonLd(category);
 
@@ -227,11 +251,13 @@ export default async function CatalogLandingPage({ params }: PageProps) {
           </nav>
 
           <h1 className="max-w-4xl text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            {landing.h1}
+            {pageH1}
           </h1>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            {landing.description}
-          </p>
+          {!pageMeta.pageNumber && (
+            <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
+              {landing.description}
+            </p>
+          )}
 
           <CatalogLandingConversion
             landingTitle={landing.h1}

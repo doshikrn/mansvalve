@@ -1,5 +1,6 @@
 export type ProductNamingInput = {
   name: string;
+  externalId?: string | null;
   slug?: string;
   category?: string;
   categoryName?: string;
@@ -10,6 +11,8 @@ export type ProductNamingInput = {
   pn?: number | null;
   material?: string | null;
   connectionType?: string | null;
+  controlType?: string | null;
+  thread?: string | null;
   specs?: Record<string, string> | Array<{ key: string; value: string }>;
 };
 

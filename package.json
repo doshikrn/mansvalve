@@ -24,6 +24,7 @@
     "seo:technical-audit": "tsx scripts/seo-technical-audit.ts",
     "products:seo-naming-check": "tsx scripts/products/product-seo-naming-check.ts",
     "products:seo-production-check": "tsx scripts/products/product-seo-production-check.ts",
+    "products:title-duplicates-check": "tsx scripts/products/title-duplicates-check.ts",
     "products:clear-auto-h1": "tsx scripts/products/clear-auto-like-h1-overrides.ts",
     "products:public-sync-check": "tsx scripts/products/public-sync-check.ts",
     "build:icons": "node scripts/build-app-icons.mjs",

@@ -16,6 +16,7 @@ export interface PublicCatalogProductDocument {
 
 export interface PublicCatalogProduct {
   id: string;
+  externalId?: string;
   name: string;
   publicTitle?: string;
   h1Override?: string;

@@ -26,7 +26,7 @@ import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-route
 import { getKlapanySubcategorySeoTitle } from "@/lib/catalog-klapany-public-seo";
 import { buildCatalogListingRedirectUrl, type SearchParamsLike } from "@/lib/catalog-redirect";
 import { resolveLegacyNestedSubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
-import { buildPagedMeta } from "@/lib/seo/metadata";
+import { appendPageNumberSuffix, buildPagedMeta } from "@/lib/seo/metadata";
 
 type SubcategoryContext = {
   category: Category;
@@ -165,19 +165,21 @@ export async function getCatalogSubcategoryMetadata(
     canonicalPath,
     searchParams,
   });
-  const canonicalForPage =
-    SUBCATEGORY_CANONICAL_OVERRIDES[`${context.category.slug}/${context.subcategory.slug}`] ??
-    meta.canonicalPath;
+  const canonicalForPage = meta.pageNumber
+    ? meta.canonicalPath
+    : SUBCATEGORY_CANONICAL_OVERRIDES[
+        `${context.category.slug}/${context.subcategory.slug}`
+      ] ?? meta.canonicalPath;
 
   return {
-    title: meta.title,
+    title: meta.metadataTitle,
     description: meta.description,
     robots: meta.robots,
     alternates: {
       canonical: canonicalForPage,
     },
     openGraph: {
-      title: meta.title,
+      title: meta.socialTitle,
       description: meta.description,
       url: canonicalForPage,
       siteName: COMPANY.name,
@@ -186,7 +188,7 @@ export async function getCatalogSubcategoryMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title: meta.title,
+      title: meta.socialTitle,
       description: meta.description,
     },
   };
@@ -262,14 +264,24 @@ export async function CatalogSubcategoryPage({
     context.subcategory,
     subcategoryProducts,
   );
+  const pageMeta = buildPagedMeta({
+    title: context.subcategory.name,
+    description,
+    canonicalPath: actualCanonicalPath,
+    searchParams: query,
+  });
+  const pageH1 = appendPageNumberSuffix(
+    context.subcategory.name,
+    pageMeta.pageNumber,
+  );
   const breadcrumbJsonLd = buildSubcategoryBreadcrumbJsonLd(
     context.category,
     context.subcategory,
   );
   const collectionPageJsonLd = buildCollectionPageJsonLd({
-    name: context.subcategory.name,
-    description,
-    path: catalogSubcategoryPath(context.category.slug, context.subcategory.slug),
+    name: pageH1,
+    description: pageMeta.description,
+    path: pageMeta.canonicalPath,
   });
 
   return (
@@ -320,14 +332,16 @@ export async function CatalogSubcategoryPage({
           </nav>
 
           <h1 className="site-heading text-slate-900">
-            {context.subcategory.name}
-            <span className="mt-1 block text-xl font-semibold text-site-muted sm:mt-2 sm:text-2xl">
-              {context.category.name} · Казахстан
-            </span>
+            {pageH1}
           </h1>
-          <p className="site-copy mt-2 max-w-3xl text-base">
-            {description}
+          <p className="mt-1 text-xl font-semibold text-site-muted sm:mt-2 sm:text-2xl">
+            {context.category.name} · Казахстан
           </p>
+          {!pageMeta.pageNumber && (
+            <p className="site-copy mt-2 max-w-3xl text-base">
+              {description}
+            </p>
+          )}
         </div>
       </div>
 

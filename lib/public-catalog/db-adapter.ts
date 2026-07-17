@@ -26,6 +26,7 @@ import type {
 
 type ProductDbRow = {
   id: number;
+  externalId: string | null;
   slug: string;
   name: string;
   publicTitle: string | null;
@@ -81,6 +82,7 @@ function productBaseSelect(optionalColumns: ProductOptionalColumns) {
   const optional = productOptionalSelects(optionalColumns);
   return {
     id: productsTable.id,
+    externalId: productsTable.externalId,
     slug: productsTable.slug,
     name: productsTable.name,
     publicTitle: optional.publicTitle,
@@ -237,6 +239,7 @@ async function fetchListingProductRows(filters?: {
     .select({
       product: {
         id: productsTable.id,
+        externalId: productsTable.externalId,
         slug: productsTable.slug,
         name: productsTable.name,
         publicTitle: optional.publicTitle,
@@ -390,6 +393,7 @@ function mapProductRow(
   const subcategory = row.subcategory;
   return {
     id: String(product.id),
+    externalId: product.externalId ?? undefined,
     name: product.name,
     publicTitle: product.publicTitle ?? undefined,
     h1Override: product.h1Override ?? undefined,
@@ -430,6 +434,7 @@ function mapListingProductRow(
   const subcategory = row.subcategory;
   return {
     id: String(product.id),
+    externalId: product.externalId ?? undefined,
     name: product.name,
     publicTitle: product.publicTitle ?? undefined,
     h1Override: product.h1Override ?? undefined,

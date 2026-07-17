@@ -38,7 +38,7 @@ import {
   getCategorySeo,
   getOrderedCatalogCategories,
 } from "@/lib/catalog-seo";
-import { buildPagedMeta } from "@/lib/seo/metadata";
+import { appendPageNumberSuffix, buildPagedMeta } from "@/lib/seo/metadata";
 import {
   buildCategoryBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -114,14 +114,14 @@ export async function getCatalogCategoryMetadata(
   });
 
   return {
-    title: meta.title,
+    title: meta.metadataTitle,
     description: meta.description,
     robots: meta.robots,
     alternates: {
       canonical: meta.canonicalPath,
     },
     openGraph: {
-      title: meta.title,
+      title: meta.socialTitle,
       description: meta.description,
       url: meta.canonicalPath,
       siteName: COMPANY_BRAND_SEO,
@@ -130,7 +130,7 @@ export async function getCatalogCategoryMetadata(
     },
     twitter: {
       card: "summary_large_image",
-      title: meta.title,
+      title: meta.socialTitle,
       description: meta.description,
     },
   };
@@ -220,6 +220,16 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
   const visibleDescription =
     selectedSubcategoryDescription || category.description?.trim() || metaDescription;
   const h1 = selectedSubcategory?.name ?? getCategorySeo(category)?.h1 ?? category.name;
+  const pageCanonicalPath = selectedSubcategory
+    ? catalogSubcategoryPath(category.slug, selectedSubcategory.slug)
+    : catalogCategoryPath(category.slug);
+  const pageMeta = buildPagedMeta({
+    title: h1,
+    description: visibleDescription,
+    canonicalPath: pageCanonicalPath,
+    searchParams: query,
+  });
+  const pageH1 = appendPageNumberSuffix(h1, pageMeta.pageNumber);
   const displayCategories = getOrderedCatalogCategories(allCategories);
   const subcategoryCounts = categoryProducts.reduce((acc, product) => {
     acc.set(product.subcategory, (acc.get(product.subcategory) ?? 0) + 1);
@@ -231,11 +241,9 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
   const heroSrc = heroImageUrl ?? categoryVisual.imageSrc;
   const heroAlt = categoryVisual.imageAlt;
   const collectionPageJsonLd = buildCollectionPageJsonLd({
-    name: h1,
-    description: visibleDescription,
-    path: selectedSubcategory
-      ? catalogSubcategoryPath(category.slug, selectedSubcategory.slug)
-      : catalogCategoryPath(category.slug),
+    name: pageH1,
+    description: pageMeta.description,
+    path: pageMeta.canonicalPath,
   });
 
   return (
@@ -277,16 +285,18 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
           </nav>
 
           <h1 className="site-heading text-slate-900">
-            {h1}
+            {pageH1}
           </h1>
           <p className="mt-2 text-lg text-slate-500">
             {categoryProducts.length}{" "}
             {pluralProducts(categoryProducts.length)} · {category.subcategories.length}{" "}
             {pluralSubcategories(category.subcategories.length)}
           </p>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600 line-clamp-2">
-            {visibleDescription}
-          </p>
+          {!pageMeta.pageNumber && (
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600 line-clamp-2">
+              {visibleDescription}
+            </p>
+          )}
 
           <ul className="site-catalog-benefits mt-4">
             <li className="inline-flex items-center gap-2">
@@ -378,7 +388,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
         />
       </div>
 
-      {seo && (
+      {seo && !pageMeta.pageNumber && (
         <section className="bg-site-bg">
           <div className="mx-auto max-w-7xl px-4 pt-2 pb-10 sm:px-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -399,7 +409,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
         </section>
       )}
 
-      {seo && (
+      {seo && !pageMeta.pageNumber && (
         <section className="border-t border-site-border bg-site-card">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
             <div className="prose prose-slate max-w-3xl">
@@ -414,7 +424,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
         </section>
       )}
 
-      {seo && (
+      {seo && !pageMeta.pageNumber && (
         <section className="bg-site-primary text-white">
           <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:flex lg:items-start lg:gap-12">
             <div className="mb-8 lg:mb-0 lg:w-1/2">

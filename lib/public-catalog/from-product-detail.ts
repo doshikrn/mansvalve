@@ -6,6 +6,7 @@ export function productDetailToPublicCatalogProduct(
 ): PublicCatalogProduct {
   return {
     id: String(product.id),
+    externalId: product.externalId ?? undefined,
     name: product.name,
     publicTitle: product.publicTitle ?? undefined,
     h1Override: product.h1Override ?? undefined,

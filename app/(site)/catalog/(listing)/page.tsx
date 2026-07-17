@@ -21,7 +21,7 @@ import {
   getPublicCatalogListingProducts,
 } from "@/lib/public-catalog";
 import { getOrderedCatalogCategories } from "@/lib/catalog-seo";
-import { buildPagedMeta } from "@/lib/seo/metadata";
+import { appendPageNumberSuffix, buildPagedMeta } from "@/lib/seo/metadata";
 
 export const revalidate = 300;
 
@@ -51,14 +51,14 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   });
 
   return {
-    title: meta.title,
+    title: meta.metadataTitle,
     description: meta.description,
     robots: meta.robots,
     alternates: {
       canonical: meta.canonicalPath,
     },
     openGraph: {
-      title: meta.title,
+      title: meta.socialTitle,
       description: meta.description,
       url: meta.canonicalPath,
       siteName: COMPANY_BRAND_SEO,
@@ -67,7 +67,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     },
     twitter: {
       card: "summary_large_image",
-      title: meta.title,
+      title: meta.socialTitle,
       description: meta.description,
     },
   };
@@ -81,6 +81,13 @@ interface PageProps {
 
 export default async function CatalogPage({ searchParams }: PageProps) {
   const params = await searchParams;
+  const pageMeta = buildPagedMeta({
+    title: CATALOG_TITLE,
+    description: CATALOG_DESCRIPTION,
+    canonicalPath: "/catalog",
+    searchParams: params,
+  });
+  const pageHeading = appendPageNumberSuffix(CATALOG_TITLE, pageMeta.pageNumber);
   const loaded = await withCatalogRouteLoad(
     { route: "/catalog" },
     async () => {
@@ -103,9 +110,9 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   const { products, categories } = loaded.data;
   const orderedCategories = getOrderedCatalogCategories(categories);
   const collectionPageJsonLd = buildCollectionPageJsonLd({
-    name: CATALOG_TITLE,
-    description: CATALOG_DESCRIPTION,
-    path: "/catalog",
+    name: pageHeading,
+    description: pageMeta.description,
+    path: pageMeta.canonicalPath,
   });
 
   return (
@@ -169,11 +176,13 @@ export default async function CatalogPage({ searchParams }: PageProps) {
                 id="catalog-page-heading"
                 className="mt-3 text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl lg:text-[44px]"
               >
-                {CATALOG_TITLE}
+                {pageHeading}
               </h1>
-              <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-[17px]">
-                {CATALOG_DESCRIPTION}
-              </p>
+              {!pageMeta.pageNumber && (
+                <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-[17px]">
+                  {CATALOG_DESCRIPTION}
+                </p>
+              )}
 
               <dl className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-300">
                 <div className="flex items-baseline gap-2">

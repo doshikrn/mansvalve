@@ -59,7 +59,11 @@ export function buildProductPreviewFromDraft(
   const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
   const h1 = h1Override || seriesPage?.h1 || resolveProductAutoH1(product);
   const sourceTitle = resolveProductSourceTitle(product);
-  const seoTitlePart = buildProductSeoTitleFromSource(sourceTitle, seriesPage?.seoTitle);
+  const seoTitlePart = buildProductSeoTitleFromSource(
+    sourceTitle,
+    seriesPage?.seoTitle,
+    product,
+  );
   const categoryVisual = getCategoryVisual(product.category);
   const imageUrl = input.primaryImageUrl?.trim() || categoryVisual.imageSrc;
   const imageAlt =

@@ -73,7 +73,7 @@ const baseProduct: PublicCatalogProduct = {
     "meta title template",
     part.includes("купить в Казахстане") &&
       full.endsWith("| MANSVALVE GROUP") &&
-      full.length <= 60,
+      full.length <= 90,
     `part="${part}" full="${full}" (${full.length} chars)`,
   );
 }

@@ -95,7 +95,7 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     generatedDisplayName,
     displayName,
     h1,
-    seoTitle: buildProductSeoTitleFromSource(sourceTitle, seriesPage?.seoTitle),
+    seoTitle: buildProductSeoTitleFromSource(sourceTitle, seriesPage?.seoTitle, product),
     seoDescription: buildProductSeoDescription(
       product,
       sourceTitle,
@@ -177,4 +177,3 @@ function buildProductSeoDescription(
     `${lead} — поставка ${deliveryRegion}. КП, НДС, сертификаты, паспорт изделия, доставка.`,
   );
 }
-

@@ -6,6 +6,7 @@ import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
 
 export interface Product {
   id: string;
+  externalId?: string;
   name: string;
   slug: string;
   category: string;
@@ -77,6 +78,7 @@ export const categories: Category[] = rawCategories;
 
 export const products: Product[] = rawProducts.map((product) => ({
   ...product,
+  externalId: product.externalId ?? product.id,
   dn: product.dn ?? undefined,
   pn: product.pn ?? undefined,
   thread: product.thread ?? undefined,

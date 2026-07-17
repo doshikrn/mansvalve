@@ -46,8 +46,11 @@ export function normalizeMetaDescription(value: string): string {
 
 export function getMetaPageNumber(searchParams?: SearchParamsWithPage): number | undefined {
   const raw = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
-  const page = Number.parseInt(raw ?? "", 10);
-  return Number.isFinite(page) && page > 1 ? page : undefined;
+  const normalized = raw?.trim() ?? "";
+  if (!/^\d+$/.test(normalized)) return undefined;
+
+  const page = Number(normalized);
+  return Number.isSafeInteger(page) && page > 1 ? page : undefined;
 }
 
 export function hasNonPaginationSearchParams(searchParams?: object): boolean {
@@ -66,6 +69,11 @@ export function buildPagedCanonical(path: string, pageNumber?: number): string {
   return pageNumber ? `${path}?page=${pageNumber}` : path;
 }
 
+export function appendPageNumberSuffix(value: string, pageNumber?: number): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  return pageNumber ? `${normalized} - Страница ${pageNumber}` : normalized;
+}
+
 export function buildPagedMeta(input: {
   title: string;
   description: string;
@@ -74,17 +82,35 @@ export function buildPagedMeta(input: {
 }) {
   const pageNumber = getMetaPageNumber(input.searchParams);
   const hasNonPageParams = hasNonPaginationSearchParams(input.searchParams);
-  const title = pageNumber
-    ? `${input.title}, страница ${pageNumber}`
-    : input.title;
+  const suffix = pageNumber ? ` - Страница ${pageNumber}` : "";
+  const titleBase = pageNumber
+    ? clampMetaTextAtWord(
+        stripBrandFromTitle(input.title),
+        Math.max(
+          1,
+          BROWSER_TITLE_MAX_LENGTH - TITLE_TEMPLATE_BRAND_SUFFIX.length - suffix.length,
+        ),
+      )
+    : normalizeMetaTitle(input.title);
+  const title = pageNumber ? `${titleBase}${suffix}` : titleBase;
+  const fullTitle = pageNumber
+    ? `${titleBase}${TITLE_TEMPLATE_BRAND_SUFFIX}${suffix}`
+    : buildBrowserTitleFromPart(titleBase);
   const description = pageNumber
-    ? `${input.description} Страница ${pageNumber}.`
-    : input.description;
+    ? `${clampMetaTextAtWord(
+        input.description,
+        Math.max(1, DESCRIPTION_MAX_LENGTH - suffix.length),
+      )}${suffix}`
+    : normalizeMetaDescription(input.description);
 
   return {
-    title: normalizeMetaTitle(title),
-    description: normalizeMetaDescription(description),
+    title,
+    metadataTitle: pageNumber ? { absolute: fullTitle } : title,
+    socialTitle: pageNumber ? fullTitle : title,
+    fullTitle,
+    description,
     canonicalPath: buildPagedCanonical(input.canonicalPath, pageNumber),
+    pageNumber,
     robots: hasNonPageParams ? { index: false, follow: true } : undefined,
   };
 }
@@ -94,7 +120,7 @@ export function clampMetaTextAtWord(value: string, maxLength: number): string {
   if (normalized.length <= maxLength) return normalized;
   if (maxLength <= 1) return "…";
 
-  const slice = normalized.slice(0, maxLength);
+  const slice = normalized.slice(0, maxLength - 1);
   const lastSpace = slice.lastIndexOf(" ");
   const cut = (lastSpace > maxLength * 0.55 ? slice.slice(0, lastSpace) : slice).trimEnd();
   return `${cut.replace(/[,\s.;:—-]+$/, "")}…`;

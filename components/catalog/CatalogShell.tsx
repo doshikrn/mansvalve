@@ -10,6 +10,7 @@ import {
 } from "@/lib/catalog-seo";
 import { runCatalogQuery } from "@/lib/catalog-query";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { getMetaPageNumber } from "@/lib/seo/metadata";
 import type {
   PublicCatalogCategory,
   PublicCatalogProduct as Product,
@@ -104,7 +105,7 @@ export function CatalogShell({
       controlType: searchParams.controlType,
     },
     sort: parseCatalogSort(searchParams.sort),
-    page: parseInt(searchParams.page ?? "1", 10),
+    page: getMetaPageNumber(searchParams) ?? 1,
     pageSize: PAGE_SIZE,
     omitFullMatchedProductList: true,
   });
