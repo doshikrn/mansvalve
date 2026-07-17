@@ -1,4 +1,5 @@
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { CatalogEntitySeoFields } from "@/components/admin/CatalogEntitySeoFields";
 import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
@@ -87,16 +88,7 @@ export default async function NewCategoryPage({
             <Textarea id="description" name="description" rows={4} className="text-sm" />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="seoMetaDescription">SEO description (meta)</Label>
-            <Textarea
-              id="seoMetaDescription"
-              name="seoMetaDescription"
-              rows={3}
-              placeholder="Краткое описание для поисковиков; если пусто — соберётся автоматически на публичной странице."
-              className="text-sm"
-            />
-          </div>
+          <CatalogEntitySeoFields entityLabel="категории" />
 
           <div className="space-y-2">
             <Label htmlFor="heroImageUrl">URL изображения героя (из медиатеки)</Label>

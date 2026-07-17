@@ -68,6 +68,10 @@ export const categories = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     slug: varchar("slug", { length: 160 }).notNull(),
     name: varchar("name", { length: 200 }).notNull(),
+    /** Optional public H1; category name/preset remains the fallback. */
+    h1Override: text("h1_override"),
+    /** Optional metadata title; current generated title remains the fallback. */
+    seoTitle: text("seo_title"),
     /** Short intro / body copy (admin + optional public use). */
     description: text("description"),
     /** Overrides meta description when set (public category page). */
@@ -105,6 +109,10 @@ export const subcategories = pgTable(
       .references(() => categories.id, { onDelete: "cascade" }),
     slug: varchar("slug", { length: 160 }).notNull(),
     name: varchar("name", { length: 200 }).notNull(),
+    /** Optional public H1; subcategory name remains the fallback. */
+    h1Override: text("h1_override"),
+    /** Optional metadata title; current generated title remains the fallback. */
+    seoTitle: text("seo_title"),
     description: text("description"),
     /** Overrides Open Graph / meta description when set. */
     seoMetaDescription: text("seo_meta_description"),

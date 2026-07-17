@@ -261,6 +261,8 @@ export async function updateCategory(
       Category,
       | "name"
       | "slug"
+      | "h1Override"
+      | "seoTitle"
       | "description"
       | "seoMetaDescription"
       | "seoContent"
@@ -294,7 +296,15 @@ export async function updateSubcategory(
   patch: Partial<
     Pick<
       Subcategory,
-      "name" | "slug" | "description" | "seoMetaDescription" | "sortOrder" | "isActive" | "categoryId"
+      | "name"
+      | "slug"
+      | "h1Override"
+      | "seoTitle"
+      | "description"
+      | "seoMetaDescription"
+      | "sortOrder"
+      | "isActive"
+      | "categoryId"
     >
   >,
 ): Promise<void> {

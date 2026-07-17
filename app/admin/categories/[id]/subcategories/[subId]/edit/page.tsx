@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { CatalogEntitySeoFields } from "@/components/admin/CatalogEntitySeoFields";
 import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
@@ -113,7 +114,7 @@ export default async function EditSubcategoryPage({
             }
             slugLabel={
               <>
-                Ссылка подраздела <AdminStatusBadge tone="auto" />
+                Ссылка подраздела <AdminStatusBadge tone="manual" />
               </>
             }
           />
@@ -138,16 +139,12 @@ export default async function EditSubcategoryPage({
               className="text-sm"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="seoMetaDescription">SEO description (meta) <AdminStatusBadge tone="manual" /></Label>
-            <Textarea
-              id="seoMetaDescription"
-              name="seoMetaDescription"
-              rows={2}
-              defaultValue={sub.seoMetaDescription ?? ""}
-              className="text-sm"
-            />
-          </div>
+          <CatalogEntitySeoFields
+            entityLabel="подкатегории"
+            h1Override={sub.h1Override}
+            seoTitle={sub.seoTitle}
+            seoMetaDescription={sub.seoMetaDescription}
+          />
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"

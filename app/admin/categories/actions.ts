@@ -80,6 +80,8 @@ function buildSeoContentFromForm(formData: FormData) {
 const categoryBaseSchema = z.object({
   name: z.string().trim().min(1).max(200),
   slug: slugSchema,
+  h1Override: nullableTrimmed(300),
+  seoTitle: nullableTrimmed(500),
   description: nullableTrimmed(50_000),
   seoMetaDescription: nullableTrimmed(2000),
   heroImageUrl: z.preprocess(
@@ -404,6 +406,8 @@ export async function createCategoryAction(formData: FormData) {
   const parsed = categoryBaseSchema.safeParse({
     name: formData.get("name"),
     slug,
+    h1Override: formData.get("h1Override"),
+    seoTitle: formData.get("seoTitle"),
     description: formData.get("description"),
     seoMetaDescription: formData.get("seoMetaDescription"),
     heroImageUrl: formData.get("heroImageUrl"),
@@ -422,6 +426,8 @@ export async function createCategoryAction(formData: FormData) {
   const id = await createCategory({
     name: parsed.data.name,
     slug: parsed.data.slug,
+    h1Override: parsed.data.h1Override,
+    seoTitle: parsed.data.seoTitle,
     description: parsed.data.description,
     seoMetaDescription: parsed.data.seoMetaDescription,
     seoContent: buildSeoContentFromForm(formData),
@@ -445,12 +451,19 @@ export async function updateCategoryAction(formData: FormData) {
     redirect("/admin/categories?error=invalid_id");
   }
 
+  const existing = await getCategoryById(id);
+  if (!existing) {
+    redirect("/admin/categories?error=not_found");
+  }
+
   const slugInput = String(formData.get("slug") ?? "").trim();
-  const slug = slugInput || slugify(String(formData.get("name") ?? ""));
+  const slug = slugInput || existing.slug;
 
   const parsed = categoryBaseSchema.safeParse({
     name: formData.get("name"),
     slug,
+    h1Override: formData.get("h1Override"),
+    seoTitle: formData.get("seoTitle"),
     description: formData.get("description"),
     seoMetaDescription: formData.get("seoMetaDescription"),
     heroImageUrl: formData.get("heroImageUrl"),
@@ -466,11 +479,11 @@ export async function updateCategoryAction(formData: FormData) {
     redirect(`/admin/categories/${id}/edit?error=${encodeURIComponent("Такая ссылка уже занята.")}`);
   }
 
-  const existing = await getCategoryById(id);
-
   await updateCategory(id, {
     name: parsed.data.name,
     slug: parsed.data.slug,
+    h1Override: parsed.data.h1Override,
+    seoTitle: parsed.data.seoTitle,
     description: parsed.data.description,
     seoMetaDescription: parsed.data.seoMetaDescription,
     seoContent: buildSeoContentFromForm(formData),
@@ -490,6 +503,8 @@ const subcategorySchema = z.object({
   categoryId: z.coerce.number().int().positive(),
   name: z.string().trim().min(1).max(200),
   slug: slugSchema,
+  h1Override: nullableTrimmed(300),
+  seoTitle: nullableTrimmed(500),
   description: nullableTrimmed(50_000),
   seoMetaDescription: nullableTrimmed(2000),
   sortOrder: z.coerce.number().int().min(0).max(1_000_000),
@@ -519,6 +534,8 @@ export async function createSubcategoryAction(formData: FormData) {
     categoryId,
     name: formData.get("name"),
     slug,
+    h1Override: formData.get("h1Override"),
+    seoTitle: formData.get("seoTitle"),
     description: formData.get("description"),
     seoMetaDescription: formData.get("seoMetaDescription"),
     sortOrder: sortOrderNum,
@@ -541,6 +558,8 @@ export async function createSubcategoryAction(formData: FormData) {
     categoryId: parsed.data.categoryId,
     name: parsed.data.name,
     slug: parsed.data.slug,
+    h1Override: parsed.data.h1Override,
+    seoTitle: parsed.data.seoTitle,
     description: parsed.data.description,
     seoMetaDescription: parsed.data.seoMetaDescription,
     sortOrder: parsed.data.sortOrder,
@@ -568,12 +587,14 @@ export async function updateSubcategoryAction(formData: FormData) {
   if (!existing) redirect("/admin/categories?error=not_found");
 
   const slugInput = String(formData.get("slug") ?? "").trim();
-  const slug = slugInput || slugify(String(formData.get("name") ?? ""));
+  const slug = slugInput || existing.slug;
 
   const parsed = subcategorySchema.safeParse({
     categoryId,
     name: formData.get("name"),
     slug,
+    h1Override: formData.get("h1Override"),
+    seoTitle: formData.get("seoTitle"),
     description: formData.get("description"),
     seoMetaDescription: formData.get("seoMetaDescription"),
     sortOrder: formData.get("sortOrder"),
@@ -601,6 +622,8 @@ export async function updateSubcategoryAction(formData: FormData) {
     categoryId: parsed.data.categoryId,
     name: parsed.data.name,
     slug: parsed.data.slug,
+    h1Override: parsed.data.h1Override,
+    seoTitle: parsed.data.seoTitle,
     description: parsed.data.description,
     seoMetaDescription: parsed.data.seoMetaDescription,
     sortOrder: parsed.data.sortOrder,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { CatalogEntitySeoFields } from "@/components/admin/CatalogEntitySeoFields";
 import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminInlineNotice, AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
@@ -117,7 +118,7 @@ export default async function EditCategoryPage({
               }
               slugLabel={
                 <>
-                  Ссылка раздела <AdminStatusBadge tone="auto" />
+                  Ссылка раздела <AdminStatusBadge tone="manual" />
                 </>
               }
               nameContainerClassName="space-y-2 sm:col-span-2"
@@ -147,16 +148,12 @@ export default async function EditCategoryPage({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="seoMetaDescription">SEO description (meta) <AdminStatusBadge tone="manual" /></Label>
-            <Textarea
-              id="seoMetaDescription"
-              name="seoMetaDescription"
-              rows={3}
-              defaultValue={category.seoMetaDescription ?? ""}
-              className="text-sm"
-            />
-          </div>
+          <CatalogEntitySeoFields
+            entityLabel="категории"
+            h1Override={category.h1Override}
+            seoTitle={category.seoTitle}
+            seoMetaDescription={category.seoMetaDescription}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="heroImageUrl">URL изображения героя</Label>

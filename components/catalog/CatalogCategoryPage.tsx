@@ -44,6 +44,7 @@ import {
   buildCollectionPageJsonLd,
 } from "@/lib/structured-data";
 import { catalogCategoryPath, catalogSubcategoryPath } from "@/lib/catalog-routes";
+import { resolveCatalogTaxonomySeo } from "@/lib/catalog-taxonomy-seo";
 
 const TRUST_ICONS = [ShieldCheck, BadgeCheck, Truck, FileText] as const;
 
@@ -95,20 +96,30 @@ export async function getCatalogCategoryMetadata(
   const seoPreset = getCategorySeo(category);
   const customMeta = await resolveCategorySeoMetaDescription(categorySlug);
   const adminDescription = category.description?.trim();
-  const description = selectedSubcategory
+  const autoDescription = selectedSubcategory
     ? resolveSubcategoryIntro(category, selectedSubcategory, productCount)
-    : customMeta?.trim() ||
-      adminDescription ||
+    : adminDescription ||
       seoPreset?.description ||
       buildCategoryPageDescription(category, productCount);
 
   const canonicalPath = catalogCategoryPath(category.slug);
-  const title = selectedSubcategory
+  const autoTitle = selectedSubcategory
     ? `${selectedSubcategory.name} — ${category.name} · Казахстан`
     : seoPreset?.title || `${category.name} — каталог арматуры`;
+  const resolvedSeo = resolveCatalogTaxonomySeo({
+    name: selectedSubcategory?.name ?? category.name,
+    h1Override: selectedSubcategory ? selectedSubcategory.h1Override : category.h1Override,
+    seoTitle: selectedSubcategory ? selectedSubcategory.seoTitle : category.seoTitle,
+    seoMetaDescription: selectedSubcategory
+      ? selectedSubcategory.seoMetaDescription
+      : customMeta ?? category.seoMetaDescription,
+    autoH1: selectedSubcategory?.name ?? seoPreset?.h1 ?? category.name,
+    autoTitle,
+    autoDescription,
+  });
   const meta = buildPagedMeta({
-    title,
-    description,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
     canonicalPath,
     searchParams,
   });
@@ -211,25 +222,39 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
         selectedSubcategoryProducts.length,
       )
     : undefined;
-  const metaDescription =
+  const categorySeoPreset = getCategorySeo(category);
+  const autoDescription =
     selectedSubcategoryDescription ||
-    metaDescriptionOverride?.trim() ||
     category.description?.trim() ||
-    getCategorySeo(category)?.description ||
+    categorySeoPreset?.description ||
     buildCategoryPageDescription(category, categoryProducts.length);
   const visibleDescription =
-    selectedSubcategoryDescription || category.description?.trim() || metaDescription;
-  const h1 = selectedSubcategory?.name ?? getCategorySeo(category)?.h1 ?? category.name;
+    selectedSubcategoryDescription || category.description?.trim() || autoDescription;
+  const autoH1 = selectedSubcategory?.name ?? categorySeoPreset?.h1 ?? category.name;
+  const autoTitle = selectedSubcategory
+    ? `${selectedSubcategory.name} — ${category.name} · Казахстан`
+    : categorySeoPreset?.title || `${category.name} — каталог арматуры`;
+  const resolvedSeo = resolveCatalogTaxonomySeo({
+    name: selectedSubcategory?.name ?? category.name,
+    h1Override: selectedSubcategory ? selectedSubcategory.h1Override : category.h1Override,
+    seoTitle: selectedSubcategory ? selectedSubcategory.seoTitle : category.seoTitle,
+    seoMetaDescription: selectedSubcategory
+      ? selectedSubcategory.seoMetaDescription
+      : metaDescriptionOverride ?? category.seoMetaDescription,
+    autoH1,
+    autoTitle,
+    autoDescription,
+  });
   const pageCanonicalPath = selectedSubcategory
     ? catalogSubcategoryPath(category.slug, selectedSubcategory.slug)
     : catalogCategoryPath(category.slug);
   const pageMeta = buildPagedMeta({
-    title: h1,
-    description: visibleDescription,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
     canonicalPath: pageCanonicalPath,
     searchParams: query,
   });
-  const pageH1 = appendPageNumberSuffix(h1, pageMeta.pageNumber);
+  const pageH1 = appendPageNumberSuffix(resolvedSeo.h1, pageMeta.pageNumber);
   const displayCategories = getOrderedCatalogCategories(allCategories);
   const subcategoryCounts = categoryProducts.reduce((acc, product) => {
     acc.set(product.subcategory, (acc.get(product.subcategory) ?? 0) + 1);
@@ -278,7 +303,7 @@ export async function CatalogCategoryPage({ categorySlug, searchParams }: Catalo
               </li>
               <li>
                 <span className="font-medium text-slate-900" aria-current="page">
-                  {h1}
+                  {resolvedSeo.h1}
                 </span>
               </li>
             </ol>

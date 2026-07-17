@@ -27,6 +27,7 @@ import { getKlapanySubcategorySeoTitle } from "@/lib/catalog-klapany-public-seo"
 import { buildCatalogListingRedirectUrl, type SearchParamsLike } from "@/lib/catalog-redirect";
 import { resolveLegacyNestedSubcategoryCanonicalPath } from "@/lib/catalog-subcategory-legacy-redirects";
 import { appendPageNumberSuffix, buildPagedMeta } from "@/lib/seo/metadata";
+import { resolveCatalogTaxonomySeo } from "@/lib/catalog-taxonomy-seo";
 
 type SubcategoryContext = {
   category: Category;
@@ -106,19 +107,20 @@ function buildSubcategoryDescription(
   return `${subcategory.name} (${category.name}): ${products.length} поз.${facetPart} КП и доставка по РК.`;
 }
 
-async function resolveSubcategoryDescription(
+async function resolveSubcategoryContent(
   category: Category,
   subcategory: Subcategory,
   products: Product[],
-): Promise<string> {
-  const manualDescription =
-    subcategory.description?.trim() ||
+): Promise<{ visibleDescription: string; seoMetaDescription?: string }> {
+  const generatedDescription = buildSubcategoryDescription(category, subcategory, products);
+  const seoMetaDescription =
     subcategory.seoMetaDescription?.trim() ||
-    (await resolveSubcategorySeoMetaDescription(subcategory.slug));
-  return (
-    manualDescription?.trim() ||
-    buildSubcategoryDescription(category, subcategory, products)
-  );
+    (await resolveSubcategorySeoMetaDescription(subcategory.slug))?.trim();
+  return {
+    visibleDescription:
+      subcategory.description?.trim() || seoMetaDescription || generatedDescription,
+    seoMetaDescription: seoMetaDescription || undefined,
+  };
 }
 
 export async function getCatalogSubcategoryMetadata(
@@ -147,7 +149,7 @@ export async function getCatalogSubcategoryMetadata(
 
   try {
   const subcategoryProducts = await getPublicProductsBySubcategory(context.subcategory.id);
-  const description = await resolveSubcategoryDescription(
+  const content = await resolveSubcategoryContent(
     context.category,
     context.subcategory,
     subcategoryProducts,
@@ -159,9 +161,18 @@ export async function getCatalogSubcategoryMetadata(
       : undefined;
   const pageTitle =
     klapanyTitle ?? `${context.subcategory.name} — ${context.category.name} · Казахстан`;
+  const resolvedSeo = resolveCatalogTaxonomySeo({
+    name: context.subcategory.name,
+    h1Override: context.subcategory.h1Override,
+    seoTitle: context.subcategory.seoTitle,
+    seoMetaDescription: content.seoMetaDescription,
+    autoH1: context.subcategory.name,
+    autoTitle: pageTitle,
+    autoDescription: content.visibleDescription,
+  });
   const meta = buildPagedMeta({
-    title: pageTitle,
-    description,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
     canonicalPath,
     searchParams,
   });
@@ -259,19 +270,33 @@ export async function CatalogSubcategoryPage({
     permanentRedirect(buildCatalogListingRedirectUrl(actualCanonicalPath, query as SearchParamsLike));
   }
 
-  const description = await resolveSubcategoryDescription(
+  const content = await resolveSubcategoryContent(
     context.category,
     context.subcategory,
     subcategoryProducts,
   );
+  const klapanyTitle =
+    context.category.slug === "klapany"
+      ? getKlapanySubcategorySeoTitle(context.subcategory.slug)
+      : undefined;
+  const resolvedSeo = resolveCatalogTaxonomySeo({
+    name: context.subcategory.name,
+    h1Override: context.subcategory.h1Override,
+    seoTitle: context.subcategory.seoTitle,
+    seoMetaDescription: content.seoMetaDescription,
+    autoH1: context.subcategory.name,
+    autoTitle:
+      klapanyTitle ?? `${context.subcategory.name} — ${context.category.name} · Казахстан`,
+    autoDescription: content.visibleDescription,
+  });
   const pageMeta = buildPagedMeta({
-    title: context.subcategory.name,
-    description,
+    title: resolvedSeo.title,
+    description: resolvedSeo.description,
     canonicalPath: actualCanonicalPath,
     searchParams: query,
   });
   const pageH1 = appendPageNumberSuffix(
-    context.subcategory.name,
+    resolvedSeo.h1,
     pageMeta.pageNumber,
   );
   const breadcrumbJsonLd = buildSubcategoryBreadcrumbJsonLd(
@@ -339,7 +364,7 @@ export async function CatalogSubcategoryPage({
           </p>
           {!pageMeta.pageNumber && (
             <p className="site-copy mt-2 max-w-3xl text-base">
-              {description}
+              {content.visibleDescription}
             </p>
           )}
         </div>

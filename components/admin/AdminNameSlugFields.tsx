@@ -89,7 +89,7 @@ export function AdminNameSlugFields({
 }: Props) {
   const [nameValue, setNameValue] = useState(initialName);
   const [slugValue, setSlugValue] = useState(initialSlug || slugify(initialName));
-  const [syncSlug, setSyncSlug] = useState(true);
+  const [syncSlug, setSyncSlug] = useState(!initialSlug);
   const generatedSlug = useMemo(() => slugify(nameValue), [nameValue]);
   const slugChanged = Boolean(initialSlug && slugValue.trim() && slugValue.trim() !== initialSlug);
 

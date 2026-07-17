@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { AdminBreadcrumbs } from "@/components/admin/AdminBreadcrumbs";
+import { CatalogEntitySeoFields } from "@/components/admin/CatalogEntitySeoFields";
 import { AdminNameSlugFields } from "@/components/admin/AdminNameSlugFields";
 import { AdminStickyActions } from "@/components/admin/AdminStickyActions";
 import { AdminUnsavedChangesGuard } from "@/components/admin/AdminUnsavedChangesGuard";
@@ -95,10 +96,7 @@ export default async function NewSubcategoryPage({
             <Label htmlFor="description">Описание / SEO-текст</Label>
             <Textarea id="description" name="description" rows={5} className="text-sm" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="seoMetaDescription">SEO description (meta)</Label>
-            <Textarea id="seoMetaDescription" name="seoMetaDescription" rows={2} className="text-sm" />
-          </div>
+          <CatalogEntitySeoFields entityLabel="подкатегории" />
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="isActive" defaultChecked className="rounded border-input" />
             Активна
