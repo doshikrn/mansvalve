@@ -11,10 +11,10 @@ export type ProductSeoNamingInput = ProductNamingInput & {
   publicTitle?: string | null;
 };
 
-const PRODUCT_TITLE_SUFFIX = " — купить в Казахстане";
 const PRODUCT_BROWSER_TITLE_MAX_LENGTH = 90;
 const PRODUCT_TITLE_PART_MAX_LENGTH =
   PRODUCT_BROWSER_TITLE_MAX_LENGTH - TITLE_TEMPLATE_BRAND_SUFFIX.length;
+const PRODUCT_DESCRIPTION_MAX_LENGTH = 160;
 
 export type ProductSeoIdentityPart = {
   field:
@@ -57,14 +57,12 @@ export function buildProductAutoMetaTitlePart(
 ): string {
   const trimmed = stripProductTitleDecorations(productTitle);
   if (!trimmed) {
-    return "Купить в Казахстане";
+    return "Промышленная арматура";
   }
 
   const identityParts = identity ? getProductSeoIdentityParts(identity) : [];
   const augmented = appendMissingIdentityParts(trimmed, identityParts);
-  const maxNameLen = PRODUCT_TITLE_PART_MAX_LENGTH - PRODUCT_TITLE_SUFFIX.length;
-  const namePart = trimProductNameForTitle(augmented, maxNameLen, identityParts);
-  return `${namePart}${PRODUCT_TITLE_SUFFIX}`;
+  return trimProductNameForTitle(augmented, PRODUCT_TITLE_PART_MAX_LENGTH, identityParts);
 }
 
 /** Полный title страницы товара, как в браузере (с брендом из root template). */
@@ -101,9 +99,44 @@ export function buildProductSeoTitleFromSource(
 ): string {
   const manual = manualTitle?.trim();
   if (manual && stripBrandFromTitle(manual).length > 0) {
-    return buildProductAutoMetaTitlePart(manual, identity);
+    // Root metadata appends the brand. Preserve manager/template wording otherwise.
+    return stripBrandFromTitle(manual).replace(/\s+/g, " ").trim();
   }
   return buildProductAutoMetaTitlePart(sourceTitle, identity);
+}
+
+/** Neutral B2B product description. Preferred/manual copy is never marketing-cleaned. */
+export function buildProductSeoDescription(
+  input: ProductSeoNamingInput,
+  sourceTitle: string,
+  preferredDescription?: string | null,
+): string {
+  const preferred = preferredDescription?.replace(/\s+/g, " ").trim();
+  if (preferred) return normalizeProductSeoDescription(preferred);
+
+  const compactTitle = buildProductAutoMetaTitlePart(sourceTitle, input);
+  const region = input.category === "flansy-i-otvody" ? "по Казахстану" : "по РК";
+  const taxonomy = (input.subcategoryName || input.categoryName || "").replace(/\s+/g, " ").trim();
+  const fixedParts = [
+    `${compactTitle}.`,
+    "Характеристики, материалы и данные для подбора.",
+    `Поставка ${region}.`,
+    `${COMPANY_BRAND_SEO}.`,
+  ];
+  const withTaxonomy = taxonomy
+    ? [fixedParts[0], `${taxonomy}.`, ...fixedParts.slice(1)].join(" ")
+    : fixedParts.join(" ");
+  const fallback = fixedParts.join(" ");
+  const description = withTaxonomy.length <= PRODUCT_DESCRIPTION_MAX_LENGTH
+    ? withTaxonomy
+    : fallback;
+
+  return clampProductMetaText(description, PRODUCT_DESCRIPTION_MAX_LENGTH);
+}
+
+/** Product-only metadata clamp: keeps the shared pagination behavior unchanged. */
+export function normalizeProductSeoDescription(value: string): string {
+  return clampProductMetaText(value, PRODUCT_DESCRIPTION_MAX_LENGTH);
 }
 
 export function getProductSeoIdentityParts(
@@ -154,11 +187,11 @@ function trimProductNameForTitle(
 
   if (tail && tail.length + 1 < maxLen) {
     const headMax = maxLen - tail.length - 1;
-    const head = clampMetaTextAtWord(name, headMax);
+    const head = clampProductMetaText(name, headMax);
     return `${head} ${tail}`.trim();
   }
 
-  return clampMetaTextAtWord(name, maxLen);
+  return clampProductMetaText(name, maxLen);
 }
 
 function appendMissingIdentityParts(
@@ -176,10 +209,16 @@ function appendMissingIdentityParts(
 
 function stripProductTitleDecorations(value: string): string {
   return stripBrandFromTitle(value)
+    .replace(/^купить\s+/iu, "")
     .replace(/\s+[—-]\s*купить\s+в\s+Казахстане\s*$/iu, "")
+    .replace(/\s+купить\s+в\s+Казахстане\s*$/iu, "")
     .replace(/[…]+$/u, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function clampProductMetaText(value: string, maxLength: number): string {
+  return clampMetaTextAtWord(value, maxLength, { appendEllipsis: false });
 }
 
 function meaningfulValue(value: string | null | undefined): string {

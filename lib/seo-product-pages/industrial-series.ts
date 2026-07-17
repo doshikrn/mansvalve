@@ -1,7 +1,9 @@
-import { buildProductAutoMetaTitlePart } from "@/lib/catalog/product-seo-naming";
+import {
+  buildProductAutoMetaTitlePart,
+  normalizeProductSeoDescription,
+} from "@/lib/catalog/product-seo-naming";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
 import type { ProductDetailBlocks } from "@/lib/product-detail-blocks";
-import { normalizeMetaDescription } from "@/lib/seo/metadata";
 
 export type IndustrialSeriesKind = "compensator-kso-k" | "check-valve-19s38nzh";
 
@@ -164,7 +166,7 @@ function buildKsoKPage(spec: KsoKSpec): IndustrialSeriesSeoPage {
     title: `Компенсатор сильфонный ${marking} под приварку`,
     h1: `Компенсатор сильфонный осевой ${marking} Ду ${spec.dn} Ру16 под приварку`,
     seoTitle: buildProductAutoMetaTitlePart(`Компенсатор ${marking} DN${spec.dn} PN16`),
-    seoDescription: normalizeMetaDescription(
+    seoDescription: normalizeProductSeoDescription(
       `Компенсатор сильфонный осевой ${marking} (Ду ${spec.dn} Ру16) под приварку с защитным кожухом для тепловых сетей и промышленных трубопроводов. Доставка по РК. Паспорт и сертификат ТР ТС.`,
     ),
     imageAlt: `Компенсатор сильфонный осевой ${marking} под приварку с кожухом`,
@@ -216,7 +218,7 @@ function buildCheckValvePage(spec: CheckValveSpec): IndustrialSeriesSeoPage {
     title: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
     h1: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,
     seoTitle: buildProductAutoMetaTitlePart(`Клапан 19с38нж ${diameter} PN16`),
-    seoDescription: normalizeMetaDescription(
+    seoDescription: normalizeProductSeoDescription(
       `Поворотный обратный клапан стальной фланцевый 19с38нж ${diameter} PN16 (Ру16) для защиты трубопроводов, насосных станций и систем теплоснабжения от обратного потока. Доставка по РК.`,
     ),
     imageAlt: `Клапан обратный поворотный стальной фланцевый 19с38нж ${diameter} PN16`,

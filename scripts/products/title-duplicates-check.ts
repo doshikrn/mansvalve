@@ -15,6 +15,7 @@ type AuditRow = {
 };
 
 const groups = new Map<string, AuditRow[]>();
+const violations: Array<{ slug: string; title: string; reason: string }> = [];
 
 for (const product of products as PublicCatalogProduct[]) {
   const view = buildPublicProductView(product);
@@ -29,6 +30,16 @@ for (const product of products as PublicCatalogProduct[]) {
   };
   const key = title.toLocaleLowerCase("ru-RU");
   groups.set(key, [...(groups.get(key) ?? []), row]);
+
+  if (title.toLocaleLowerCase("ru-RU").includes("купить в казахстане")) {
+    violations.push({ slug: product.slug, title, reason: "auto title contains forbidden phrase" });
+  }
+  if (title.split("MANSVALVE GROUP").length - 1 !== 1) {
+    violations.push({ slug: product.slug, title, reason: "brand count is not exactly one" });
+  }
+  if (title.includes("...") || title.includes("…")) {
+    violations.push({ slug: product.slug, title, reason: "title contains artificial ellipsis" });
+  }
 }
 
 const duplicates = [...groups.values()]
@@ -40,6 +51,7 @@ console.log(`Products: ${products.length}`);
 console.log(`Unique titles: ${groups.size}`);
 console.log(`Duplicate groups: ${duplicates.length}`);
 console.log(`Products in duplicate groups: ${duplicateProducts}`);
+console.log(`SEO mask violations: ${violations.length}`);
 
 for (const rows of duplicates) {
   console.log(`\nDUPLICATE (${rows.length}): ${rows[0].title}`);
@@ -51,4 +63,10 @@ for (const rows of duplicates) {
   }
 }
 
-if (duplicates.length > 0) process.exitCode = 1;
+for (const violation of violations) {
+  console.log(`\nVIOLATION: ${violation.reason}`);
+  console.log(`- ${violation.slug}`);
+  console.log(`  ${violation.title}`);
+}
+
+if (duplicates.length > 0 || violations.length > 0) process.exitCode = 1;

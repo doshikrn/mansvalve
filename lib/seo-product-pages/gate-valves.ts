@@ -1,6 +1,8 @@
-import { buildProductAutoMetaTitlePart } from "@/lib/catalog/product-seo-naming";
+import {
+  buildProductAutoMetaTitlePart,
+  normalizeProductSeoDescription,
+} from "@/lib/catalog/product-seo-naming";
 import type { PublicCatalogProduct } from "@/lib/public-catalog";
-import { normalizeMetaDescription } from "@/lib/seo/metadata";
 
 export type GateValveSeries = "30ch6br" | "30ch39r" | "30s41nzh" | "30s64nzh";
 export type GateValveConnectionVariant = "flanged" | "welding";
@@ -109,7 +111,7 @@ const templates: GateValveTemplate[] = [
     supplyTerms: DEFAULT_SUPPLY_TERMS,
     makeTitle: (dn, pn) => `Задвижка чугунная фланцевая 30ч6бр DN${dn} PN${pn}`,
     makeSeoTitle: (dn, pn) =>
-      `Купить Задвижка чугунная фланцевая 30ч6бр DN${dn} PN${pn} в Казахстане | MANSVALVE GROUP`,
+      `Задвижка чугунная фланцевая 30ч6бр DN${dn} PN${pn}`,
     makeSeoDescription: (dn, pn) =>
       `Задвижка чугунная фланцевая 30ч6бр DN${dn} PN${pn} для водоснабжения, отопления и коммунального хозяйства. Поставка по Казахстану. Сертификаты, паспорт изделия, доставка.`,
     makeIntroParagraphs: (dn, pn) => [
@@ -162,7 +164,7 @@ const templates: GateValveTemplate[] = [
     makeTitle: (dn, pn) =>
       `Задвижка чугунная фланцевая с обрезиненным клином 30ч39р DN${dn} PN${pn} GGG50`,
     makeSeoTitle: (dn, pn) =>
-      `Задвижка 30ч39р DN${dn} PN${pn} GGG50 купить в Казахстане | MANSVALVE GROUP`,
+      `Задвижка 30ч39р DN${dn} PN${pn} GGG50`,
     makeSeoDescription: (dn, pn) =>
       `Задвижка чугунная фланцевая 30ч39р DN${dn} PN${pn} GGG50 с обрезиненным клином для систем водоснабжения и ЖКХ. Поставка по Казахстану. Сертификаты, паспорт изделия, доставка.`,
     makeIntroParagraphs: (dn, pn) => [
@@ -221,7 +223,7 @@ const templates: GateValveTemplate[] = [
     supplyTerms: DEFAULT_SUPPLY_TERMS,
     makeTitle: (dn, pn) => `Задвижка стальная клиновая фланцевая 30с41нж DN${dn} PN${pn}`,
     makeSeoTitle: (dn, pn) =>
-      `Задвижка 30с41нж DN${dn} PN${pn} купить в Казахстане | MANSVALVE GROUP`,
+      `Задвижка 30с41нж DN${dn} PN${pn}`,
     makeSeoDescription: (dn, pn) =>
       `Задвижка стальная клиновая фланцевая 30с41нж DN${dn} PN${pn} для систем теплоснабжения, промышленного трубопровода и нефтегазовой отрасли. Поставка по Казахстану. Сертификаты и паспорт изделия.`,
     makeIntroParagraphs: (dn, pn) => [
@@ -288,7 +290,7 @@ const templates: GateValveTemplate[] = [
     supplyTerms: DEFAULT_SUPPLY_TERMS,
     makeTitle: (dn, pn) => `Задвижка стальная клиновая под приварку 30с41нж DN${dn} PN${pn}`,
     makeSeoTitle: (dn, pn) =>
-      `Задвижка 30с41нж DN${dn} PN${pn} под приварку купить в Казахстане | MANSVALVE GROUP`,
+      `Задвижка 30с41нж DN${dn} PN${pn} под приварку`,
     makeSeoDescription: (dn, pn) =>
       `Задвижка стальная клиновая 30с41нж DN${dn} PN${pn} под приварку для теплоснабжения, промышленного трубопровода и нефтегазовой отрасли. Поставка по Казахстану. Сертификаты и паспорт изделия.`,
     makeIntroParagraphs: (dn, pn) => [
@@ -349,7 +351,7 @@ const templates: GateValveTemplate[] = [
     supplyTerms: DEFAULT_SUPPLY_TERMS,
     makeTitle: (dn, pn) => `Задвижка стальная клиновая фланцевая 30с64нж DN${dn} PN${pn}`,
     makeSeoTitle: (dn, pn) =>
-      `Задвижка 30с64нж DN${dn} PN${pn} купить в Казахстане | MANSVALVE GROUP`,
+      `Задвижка 30с64нж DN${dn} PN${pn}`,
     makeSeoDescription: (dn, pn) =>
       `Задвижка стальная клиновая фланцевая 30с64нж DN${dn} PN${pn} для промышленного трубопровода, теплоснабжения и нефтегазовой отрасли. Поставка по Казахстану. Сертификаты и паспорт изделия.`,
     makeIntroParagraphs: (dn, pn) => [
@@ -446,7 +448,7 @@ function buildGateValvePage(
     title,
     h1: title,
     seoTitle: buildProductAutoMetaTitlePart(title),
-    seoDescription: normalizeMetaDescription(template.makeSeoDescription(dn, pn)),
+    seoDescription: normalizeProductSeoDescription(template.makeSeoDescription(dn, pn)),
     imageAlt: title,
     imageFileName: `${slug}.jpg`,
     introParagraphs: template.makeIntroParagraphs(dn, pn),

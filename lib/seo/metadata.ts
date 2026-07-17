@@ -115,15 +115,21 @@ export function buildPagedMeta(input: {
   };
 }
 
-export function clampMetaTextAtWord(value: string, maxLength: number): string {
+export function clampMetaTextAtWord(
+  value: string,
+  maxLength: number,
+  options: { appendEllipsis?: boolean } = {},
+): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (normalized.length <= maxLength) return normalized;
-  if (maxLength <= 1) return "…";
+  const appendEllipsis = options.appendEllipsis ?? true;
+  if (maxLength <= 1) return appendEllipsis ? "…" : normalized.slice(0, maxLength);
 
-  const slice = normalized.slice(0, maxLength - 1);
+  const slice = normalized.slice(0, appendEllipsis ? maxLength - 1 : maxLength);
   const lastSpace = slice.lastIndexOf(" ");
   const cut = (lastSpace > maxLength * 0.55 ? slice.slice(0, lastSpace) : slice).trimEnd();
-  return `${cut.replace(/[,\s.;:—-]+$/, "")}…`;
+  const clean = cut.replace(/[,\s.;:—-]+$/, "");
+  return appendEllipsis ? `${clean}…` : clean;
 }
 
 function clampMetaText(value: string, maxLength: number): string {

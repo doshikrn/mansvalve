@@ -9,6 +9,11 @@ import {
 } from "@/lib/db/schema";
 import { listCategoriesWithSubcategories } from "@/lib/services/categories";
 import { slugify } from "@/lib/services/slug";
+import {
+  buildProductAutoMetaTitlePart,
+  buildProductSeoDescription,
+  formatProductPageTitle,
+} from "@/lib/catalog/product-seo-naming";
 
 import { buildProductSlug } from "./slug-builder";
 import type { ImportColumnKey } from "./columns";
@@ -317,12 +322,20 @@ export async function buildImportPreview(
 
     const name = val(p.row.values, "name");
     const model = val(p.row.values, "model");
-    const seoTitle = `${name} купить в Казахстане | MANSVALVE GROUP`;
-    const seoDescription = buildAutoSeoDescription({
+    const seoInput = {
       name,
+      category: p.category?.slug,
+      categoryName: p.category?.name,
+      subcategoryName: p.subcategoryName,
+      model,
       dn: p.dn,
       pn: p.pn,
-    });
+      material: val(p.row.values, "material"),
+      connectionType: val(p.row.values, "connectionType"),
+      controlType: val(p.row.values, "controlType"),
+    };
+    const seoTitle = formatProductPageTitle(buildProductAutoMetaTitlePart(name, seoInput));
+    const seoDescription = buildProductSeoDescription(seoInput, name);
 
     const action: ImportRowAction = errors.length
       ? "error"
@@ -398,22 +411,6 @@ export async function buildImportPreview(
   };
 
   return { rows: previewRows, summary };
-}
-
-function buildAutoSeoDescription({
-  name,
-  dn,
-  pn,
-}: {
-  name: string;
-  dn: number | null;
-  pn: number | null;
-}): string {
-  const params: string[] = [];
-  if (dn != null) params.push(`DN ${dn}`);
-  if (pn != null) params.push(`PN ${pn}`);
-  const paramsText = params.length ? ` с ${params.join(" ")}` : "";
-  return `${name}${paramsText} для промышленных трубопроводов. Доставка по Казахстану, документы, сертификаты и подготовка КП.`;
 }
 
 // Подсказка eslint: slugify используется через buildProductSlug, явный re-export не нужен.

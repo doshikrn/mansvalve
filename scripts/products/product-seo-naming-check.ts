@@ -7,6 +7,8 @@
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import {
   buildProductAutoMetaTitlePart,
+  buildProductSeoDescription,
+  buildProductSeoTitleFromSource,
   formatProductPageTitle,
   isAutoLikeH1Override,
   resolveProductSourceTitle,
@@ -71,14 +73,50 @@ const baseProduct: PublicCatalogProduct = {
   const full = formatProductPageTitle(part);
   check(
     "meta title template",
-    part.includes("купить в Казахстане") &&
+    !part.toLocaleLowerCase("ru-RU").includes("купить в казахстане") &&
       full.endsWith("| MANSVALVE GROUP") &&
+      full.split("MANSVALVE GROUP").length - 1 === 1 &&
+      !/[.…]{3}|…/u.test(full) &&
       full.length <= 90,
     `part="${part}" full="${full}" (${full.length} chars)`,
   );
 }
 
-// 4. Slug from title
+// 4. Explicit/manual SEO wording is preserved; only root brand duplication is removed.
+{
+  const manual = "Клапан обратный DN80 — купить в Казахстане";
+  const part = buildProductSeoTitleFromSource(baseProduct.name, manual, baseProduct);
+  check("manual SEO title wording preserved", part === manual, `got "${part}"`);
+}
+
+// 5. Auto description stays neutral and has no artificial ellipsis.
+{
+  const description = buildProductSeoDescription(baseProduct, baseProduct.name);
+  check(
+    "auto SEO description is neutral",
+    !description.toLocaleLowerCase("ru-RU").includes("купить") &&
+      !description.includes("...") &&
+      !description.includes("…") &&
+      description.length <= 160,
+    `got "${description}"`,
+  );
+}
+
+// 6. A long preferred description is word-clamped without a generated ellipsis.
+{
+  const description = buildProductSeoDescription(
+    baseProduct,
+    baseProduct.name,
+    Array.from({ length: 40 }, () => "характеристики товара").join(" "),
+  );
+  check(
+    "long product description has no artificial ellipsis",
+    !description.includes("...") && !description.includes("…") && description.length <= 160,
+    `got "${description}"`,
+  );
+}
+
+// 7. Slug from title
 {
   const slug = buildProductSlugFromTitle({
     publicTitle: "Клапан обратный поворотный Ду 80",
@@ -92,12 +130,12 @@ const baseProduct: PublicCatalogProduct = {
   );
 }
 
-// 5. Slug transliteration basics
+// 7. Slug transliteration basics
 {
   check("slugify du-80", slugify("Ду 80") === "du-80");
 }
 
-// 6. Source title priority
+// 8. Source title priority
 {
   const withPublic = resolveProductSourceTitle({
     ...baseProduct,
@@ -117,7 +155,7 @@ const baseProduct: PublicCatalogProduct = {
   );
 }
 
-// 7. Auto-like h1 detection
+// 9. Auto-like h1 detection
 {
   const generated = formatProductDisplayName(baseProduct);
   check(

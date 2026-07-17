@@ -100,12 +100,15 @@ check("COMPANY_BRAND_SEO is MANSVALVE GROUP", COMPANY_BRAND_SEO === "MANSVALVE G
   );
   check(
     "new product meta title part",
-    view.seoTitle.includes("купить в Казахстане"),
+    !view.seoTitle.toLocaleLowerCase("ru-RU").includes("купить в казахстане") &&
+      !view.seoTitle.includes("...") &&
+      !view.seoTitle.includes("…"),
     `got "${view.seoTitle}"`,
   );
   check(
     "new product browser title brand",
-    browserTitle.endsWith("| MANSVALVE GROUP"),
+    browserTitle.endsWith("| MANSVALVE GROUP") &&
+      browserTitle.split("MANSVALVE GROUP").length - 1 === 1,
     `got "${browserTitle}"`,
   );
   check(

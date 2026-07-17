@@ -1,5 +1,6 @@
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import {
+  buildProductSeoDescription,
   buildProductSeoTitleFromSource,
   formatProductPageTitle,
   resolveProductAutoH1,
@@ -80,7 +81,7 @@ export function buildProductPreviewFromDraft(
     shortDescription,
     seoTitle: seoTitlePart,
     seoTitleFull: formatProductPageTitle(seoTitlePart),
-    seoDescription: buildDraftSeoDescription(product, sourceTitle, seriesPage?.seoDescription),
+    seoDescription: buildProductSeoDescription(product, sourceTitle, seriesPage?.seoDescription),
     canonicalPath,
     canonicalUrl: toAbsoluteSiteUrl(canonicalPath),
     primaryImageUrl: imageUrl,
@@ -113,20 +114,4 @@ function toDraftPublicProduct(input: ProductPreviewDraftInput): PublicCatalogPro
     specs: {},
     shortDescription: input.shortDescription ?? "",
   };
-}
-
-function buildDraftSeoDescription(
-  product: PublicCatalogProduct,
-  sourceTitle: string,
-  manualDescription?: string,
-): string {
-  if (manualDescription?.trim()) {
-    return manualDescription.trim().replace(/\s+/g, " ").slice(0, 160);
-  }
-  const deliveryRegion =
-    product.category === "flansy-i-otvody" ? "по Казахстану" : "по РК";
-  return `${sourceTitle} с поставкой ${deliveryRegion}. КП в рабочее время, НДС, сертификаты, паспорт изделия и доставка.`
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
 }

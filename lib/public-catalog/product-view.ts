@@ -1,6 +1,7 @@
 import { getCatalogCategoryLabel } from "@/lib/catalog-seo";
 import { formatProductDisplayName } from "@/lib/catalog/product-naming";
 import {
+  buildProductSeoDescription,
   buildProductSeoTitleFromSource,
   resolveProductAutoH1,
   resolveProductSourceTitle,
@@ -11,7 +12,6 @@ import { buildProductDetailContent, type ProductDetailContent } from "@/lib/prod
 import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
 import { toAbsoluteSiteUrl } from "@/lib/site-url";
 import { catalogCategoryPath } from "@/lib/catalog-routes";
-import { normalizeMetaDescription } from "@/lib/seo/metadata";
 
 import type { PublicCatalogProduct } from "./types";
 
@@ -144,36 +144,4 @@ export function buildPublicProductCardView(product: PublicCatalogProduct): Publi
     categoryLabel,
     shortDescription,
   };
-}
-
-function buildProductSeoDescription(
-  product: PublicCatalogProduct,
-  compactName: string,
-  manualDescription?: string,
-): string {
-  if (manualDescription && manualDescription.replace(/\s+/g, " ").trim().length <= 160) {
-    return normalizeMetaDescription(manualDescription);
-  }
-
-  const deliveryRegion =
-    product.category === "flansy-i-otvody" ? "по Казахстану" : "по РК";
-
-  const specBits = [
-    product.subcategoryName?.trim() || undefined,
-    product.model?.trim() || undefined,
-    product.dn != null ? `DN${product.dn}` : undefined,
-    product.pn != null ? `PN${product.pn}` : undefined,
-    product.material?.trim() || undefined,
-  ].filter((part): part is string => Boolean(part && part.length > 0));
-
-  const uniqueSpecs = [...new Set(specBits)].slice(0, 4).join(", ");
-  const categoryLabel = getCatalogCategoryLabel(product.category, product.categoryName);
-
-  const lead = uniqueSpecs
-    ? `${compactName} (${uniqueSpecs})`
-    : `${compactName}, ${categoryLabel}`;
-
-  return normalizeMetaDescription(
-    `${lead} — поставка ${deliveryRegion}. КП, НДС, сертификаты, паспорт изделия, доставка.`,
-  );
 }
