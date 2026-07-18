@@ -249,6 +249,55 @@ check("COMPANY_BRAND_SEO is MANSVALVE GROUP", COMPANY_BRAND_SEO === "MANSVALVE G
   );
 }
 
+// 7. Manual SEO overrides and reset-to-auto use the same public builder.
+{
+  const manualTitle = "Ручной Title менеджера";
+  const manualDescription = "Ручное описание менеджера, сохранённое без переписывания.";
+  const manualProduct = {
+    ...newProductBase,
+    h1Override: "Независимый H1",
+    seoTitleOverride: manualTitle,
+    seoDescriptionOverride: manualDescription,
+  };
+  const publicView = buildPublicProductView(manualProduct);
+  const draftView = buildProductPreviewFromDraft({
+    name: manualProduct.name,
+    publicTitle: manualProduct.publicTitle ?? "",
+    h1Override: manualProduct.h1Override,
+    seoTitleOverride: manualTitle,
+    seoDescriptionOverride: manualDescription,
+    slug: manualProduct.slug,
+    categorySlug: manualProduct.category,
+    categoryName: manualProduct.categoryName,
+    subcategorySlug: manualProduct.subcategory,
+    subcategoryName: manualProduct.subcategoryName,
+    dn: manualProduct.dn,
+  });
+  const autoView = buildPublicProductView({
+    ...manualProduct,
+    seoTitleOverride: "",
+    seoDescriptionOverride: "",
+  });
+
+  check("manual SEO title reaches public view", publicView.seoTitle === manualTitle);
+  check(
+    "manual SEO description reaches public view",
+    publicView.seoDescription === manualDescription,
+  );
+  check("draft manual SEO title matches public view", draftView.seoTitle === publicView.seoTitle);
+  check(
+    "draft manual SEO description matches public view",
+    draftView.seoDescription === publicView.seoDescription,
+  );
+  check("H1 remains independent", publicView.h1 === "Независимый H1");
+  check("manual SEO keeps slug", publicView.product.slug === newProductSlug);
+  check("clear manual SEO restores auto title", autoView.seoTitle !== manualTitle);
+  check(
+    "clear manual SEO restores auto description",
+    autoView.seoDescription !== manualDescription,
+  );
+}
+
 const failed = checks.filter((item) => !item.pass);
 for (const item of checks) {
   const mark = item.pass ? "OK" : "FAIL";

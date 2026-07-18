@@ -20,6 +20,8 @@ export interface PublicCatalogProduct {
   name: string;
   publicTitle?: string;
   h1Override?: string;
+  seoTitleOverride?: string;
+  seoDescriptionOverride?: string;
   slug: string;
   category: string;
   subcategory: string;

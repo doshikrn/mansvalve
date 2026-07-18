@@ -57,6 +57,13 @@
       "when": 1784246400000,
       "tag": "0010_category_subcategory_seo_overrides",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1784332800000,
+      "tag": "0011_product_seo_overrides",
+      "breakpoints": true
     }
   ]
 }

@@ -205,6 +205,8 @@ export const products = pgTable(
 
     publicTitle: text("public_title"),
     h1Override: text("h1_override"),
+    seoTitleOverride: text("seo_title_override"),
+    seoDescriptionOverride: text("seo_description_override"),
     shortDescription: text("short_description"),
     longDescription: text("long_description"),
     detailBlocks: jsonb("detail_blocks").$type<ProductDetailBlocks | null>(),

@@ -30,8 +30,11 @@ export type PublicProductView = {
   generatedDisplayName: string;
   displayName: string;
   h1: string;
+  h1IsManual: boolean;
   seoTitle: string;
+  seoTitleIsManual: boolean;
   seoDescription: string;
+  seoDescriptionIsManual: boolean;
   shortDescription: string;
   /** Full body copy after paragraph resolution (`\n\n` between paragraphs). */
   fullDescription: string;
@@ -66,9 +69,11 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
   const generatedDisplayName = formatProductDisplayName(product);
   const publicTitle = product.publicTitle?.trim();
   const h1Override = product.h1Override?.trim();
+  const seoTitleOverride = product.seoTitleOverride?.trim();
+  const seoDescriptionOverride = product.seoDescriptionOverride?.trim();
   const seriesPage = getSeriesSeoPageForProduct(product);
   const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
-  const h1 = h1Override || seriesPage?.h1 || resolveProductAutoH1(product);
+  const h1 = h1Override || resolveProductAutoH1(product);
   const sourceTitle = resolveProductSourceTitle(product);
   const detailContent = buildProductDetailContent(product, seriesPage);
   const fullDescription = detailContent.descriptionParagraphs.join("\n\n");
@@ -95,12 +100,15 @@ export function buildPublicProductView(product: PublicCatalogProduct): PublicPro
     generatedDisplayName,
     displayName,
     h1,
-    seoTitle: buildProductSeoTitleFromSource(sourceTitle, seriesPage?.seoTitle, product),
-    seoDescription: buildProductSeoDescription(
-      product,
-      sourceTitle,
-      seriesPage?.seoDescription,
-    ),
+    h1IsManual: Boolean(h1Override),
+    seoTitle:
+      seoTitleOverride ||
+      buildProductSeoTitleFromSource(sourceTitle, seriesPage?.seoTitle, product),
+    seoTitleIsManual: Boolean(seoTitleOverride),
+    seoDescription:
+      seoDescriptionOverride ||
+      buildProductSeoDescription(product, sourceTitle, seriesPage?.seoDescription),
+    seoDescriptionIsManual: Boolean(seoDescriptionOverride),
     shortDescription: product.shortDescription || detailContent.descriptionParagraphs[0] || "",
     fullDescription,
     contentSections,

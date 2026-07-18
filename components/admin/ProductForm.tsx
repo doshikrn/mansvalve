@@ -68,7 +68,7 @@ const SECTION_LINKS = [
   { id: "preview", label: "Предпросмотр" },
   { id: "main", label: "Основное" },
   { id: "images", label: "Изображения" },
-  { id: "seo", label: "Поиск и сниппет" },
+  { id: "seo", label: "SEO и адрес" },
   { id: "parameters", label: "Параметры" },
   { id: "description", label: "Описание на сайте" },
   { id: "documents", label: "Документы" },
@@ -144,6 +144,11 @@ export function ProductForm({
   const [h1OverrideDraft, setH1OverrideDraft] = useState<string>(
     product?.h1Override ?? "",
   );
+  const [seoTitleOverrideDraft, setSeoTitleOverrideDraft] = useState<string>(
+    product?.seoTitleOverride ?? "",
+  );
+  const [seoDescriptionOverrideDraft, setSeoDescriptionOverrideDraft] =
+    useState<string>(product?.seoDescriptionOverride ?? "");
   const [modelDraft, setModelDraft] = useState<string>(product?.model ?? "");
   const [dnDraft, setDnDraft] = useState<string>(
     product?.dn != null ? String(product.dn) : "",
@@ -216,6 +221,9 @@ export function ProductForm({
     setH1OverrideDraft("");
   };
 
+  const resetSeoTitleToAuto = () => setSeoTitleOverrideDraft("");
+  const resetSeoDescriptionToAuto = () => setSeoDescriptionOverrideDraft("");
+
   const selectedDocuments = {
     specification: product?.documents.specification ?? null,
     questionnaire: product?.documents.questionnaire ?? null,
@@ -255,6 +263,8 @@ export function ProductForm({
       name: nameDraft,
       publicTitle: publicTitleDraft,
       h1Override: h1OverrideDraft,
+      seoTitleOverride: seoTitleOverrideDraft,
+      seoDescriptionOverride: seoDescriptionOverrideDraft,
       slug: slugDraft,
       categorySlug: selectedCategory?.slug ?? product?.categorySlug ?? "",
       categoryName: selectedCategory?.name ?? product?.categoryName ?? "",
@@ -281,7 +291,9 @@ export function ProductForm({
       shortDescription: draftPreview.shortDescription || publicPreview?.shortDescription || "",
       seoTitle: draftPreview.seoTitle,
       seoTitleFull: draftPreview.seoTitleFull,
+      seoTitleIsManual: draftPreview.seoTitleIsManual,
       seoDescription: draftPreview.seoDescription || publicPreview?.seoDescription || "",
+      seoDescriptionIsManual: draftPreview.seoDescriptionIsManual,
       canonicalPath: draftPreview.canonicalPath,
       canonicalUrl: draftPreview.canonicalUrl,
       primaryImageUrl: draftPreview.primaryImageUrl,
@@ -294,6 +306,8 @@ export function ProductForm({
     nameDraft,
     publicTitleDraft,
     h1OverrideDraft,
+    seoTitleOverrideDraft,
+    seoDescriptionOverrideDraft,
     slugDraft,
     selectedCategory,
     selectedSubcategory,
@@ -337,7 +351,7 @@ export function ProductForm({
         <AdminSectionCard
           id="main"
           title="Основное"
-          description="Названия, ссылка на сайте, раздел каталога и видимость. Внутреннее название удобно для себя; клиент чаще видит «Название на сайте»."
+          description="Внутреннее и публичное названия, раздел каталога и видимость товара. URL и поисковые поля находятся в отдельном SEO-разделе."
         >
           <Field
             label="Внутреннее название"
@@ -380,110 +394,6 @@ export function ProductForm({
                   {livePublicPreview.generatedDisplayName}
                 </span>
               </p>
-            ) : null}
-          </Field>
-
-          <Field
-            label="Заголовок H1 вручную, необязательно"
-            name="h1Override"
-            error={state.fieldErrors?.h1Override}
-          >
-            <Input
-              name="h1Override"
-              value={h1OverrideDraft}
-              onChange={(event) => setH1OverrideDraft(event.target.value)}
-              placeholder={
-                livePublicPreview?.h1IsManual
-                  ? undefined
-                  : livePublicPreview?.h1 || "Подставится автоматически"
-              }
-            />
-            <div className="flex flex-wrap items-center gap-2">
-              {livePublicPreview ? (
-                h1OverrideDraft.trim() ? (
-                  <AdminStatusBadge tone="manual">изменено вручную</AdminStatusBadge>
-                ) : (
-                  <AdminStatusBadge tone="auto">автоматически</AdminStatusBadge>
-                )
-              ) : null}
-              {h1OverrideDraft.trim() ? (
-                <Button type="button" variant="outline" size="sm" onClick={resetH1ToAuto}>
-                  Вернуть H1 в авто
-                </Button>
-              ) : null}
-            </div>
-            <AdminFieldHint>
-              Если пусто — H1 берётся из «Названия на сайте» или автоматического имени.
-              Автоматически сгенерированный H1 в базу не сохраняется.
-            </AdminFieldHint>
-            {livePublicPreview ? (
-              <p className="rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                Фактический H1 на сайте:{" "}
-                <span className="font-medium text-foreground">{livePublicPreview.h1}</span>
-              </p>
-            ) : null}
-          </Field>
-
-          <Field
-            label={
-              <>
-                Ссылка товара{" "}
-                {product ? (
-                  <AdminStatusBadge tone="readonly">адрес сохранён</AdminStatusBadge>
-                ) : (
-                  <AdminStatusBadge tone="auto" />
-                )}
-              </>
-            }
-            name="slug"
-            error={state.fieldErrors?.slug}
-          >
-            <Input
-              name="slug"
-              value={slugDraft}
-              onChange={(event) => setManualSlug(event.target.value)}
-              placeholder={product ? undefined : "Заполнится из названия, модели и DN/PN"}
-            />
-            {!isExisting && !autoSlugActive ? (
-              <button
-                type="button"
-                className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-                onClick={() => setManualSlug(null)}
-              >
-                Снова собрать ссылку из названия на сайте
-              </button>
-            ) : null}
-            {isExisting ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-xs text-muted-foreground">
-                  У существующего товара URL не меняется автоматически, чтобы не ломать SEO и
-                  рекламу. Чтобы изменить URL, нажмите «Сгенерировать URL из текущего названия»
-                  или отредактируйте поле вручную — после сохранения старый адрес будет работать
-                  через редирект.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-fit"
-                  onClick={regenerateSlugFromCurrentFields}
-                >
-                  Сгенерировать URL из текущего названия
-                </Button>
-              </div>
-            ) : null}
-            <AdminFieldHint>
-              {product
-                ? "Ссылка товара не меняется автоматически после публикации, чтобы не ломать SEO и рекламу. Если нужно изменить URL, отредактируйте поле вручную — старый адрес будет перенаправлен на новый."
-                : "Можно оставить пустым — ссылка соберётся из «Названия на сайте» или автоматического имени. После сохранения товара адрес лучше не менять без нужды."}
-            </AdminFieldHint>
-            {product && slugDraft.trim() && slugDraft.trim() !== product.slug ? (
-              <AdminInlineNotice tone="auto">
-                Изменение slug меняет публичный URL. Старый адрес{" "}
-                <code className="rounded bg-amber-100 px-1">/{product.slug}</code>{" "}
-                сохранится и будет перенаправлять на новый. Поисковики обновят страницу
-                с задержкой.
-              </AdminInlineNotice>
             ) : null}
           </Field>
 
@@ -576,12 +486,182 @@ export function ProductForm({
 
         <AdminSectionCard
           id="seo"
-          title="Как выглядит в поиске"
-          description="Заголовок и описание для Google — из названия на сайте, описаний и параметров. Отдельных полей «для поиска» нет: здесь только предпросмотр, как сейчас соберётся страница."
-          badge="generated"
+          title="SEO и адрес страницы"
+          description="H1, метаданные для поиска и постоянный адрес товара. Пустые ручные поля оставляют действующую автоматическую генерацию."
+          badge="авто или вручную"
         >
+          <Field
+            label="Заголовок H1 вручную, необязательно"
+            name="h1Override"
+            error={state.fieldErrors?.h1Override}
+          >
+            <Input
+              name="h1Override"
+              value={h1OverrideDraft}
+              onChange={(event) => setH1OverrideDraft(event.target.value)}
+              placeholder={livePublicPreview?.h1 || "Подставится автоматически"}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <AdminStatusBadge tone={h1OverrideDraft.trim() ? "manual" : "auto"} />
+              {h1OverrideDraft.trim() ? (
+                <Button type="button" variant="outline" size="sm" onClick={resetH1ToAuto}>
+                  Вернуть H1 в авто
+                </Button>
+              ) : null}
+            </div>
+            <AdminFieldHint>
+              Если пусто — H1 берётся из «Названия на сайте», затем из автоматически
+              сформированного названия. Автоматический текст в БД не сохраняется.
+            </AdminFieldHint>
+          </Field>
+
+          <Field
+            label="SEO Title вручную, необязательно"
+            name="seoTitleOverride"
+            error={state.fieldErrors?.seoTitleOverride}
+          >
+            <Input
+              name="seoTitleOverride"
+              value={seoTitleOverrideDraft}
+              onChange={(event) => setSeoTitleOverrideDraft(event.target.value)}
+              placeholder={livePublicPreview?.seoTitle || "Сформируется автоматически"}
+            />
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <AdminStatusBadge tone={seoTitleOverrideDraft.trim() ? "manual" : "auto"} />
+              <span>
+                Длина фактического Title: {livePublicPreview?.seoTitleFull.length ?? 0} символов
+              </span>
+              {seoTitleOverrideDraft.trim() ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resetSeoTitleToAuto}
+                >
+                  Вернуть Title в авто
+                </Button>
+              ) : null}
+            </div>
+            <AdminFieldHint>
+              Рекомендуемая длина полного Title — до 90 символов. Бренд MANSVALVE GROUP
+              добавляется сайтом автоматически; ручной текст сохраняется без переписывания.
+            </AdminFieldHint>
+            {livePublicPreview && livePublicPreview.seoTitleFull.length > 90 ? (
+              <p className="text-xs font-medium text-amber-800">
+                Title длиннее рекомендуемого диапазона и может обрезаться поисковой системой.
+              </p>
+            ) : null}
+            {/mansvalve\s+group/iu.test(seoTitleOverrideDraft) ? (
+              <p className="text-xs font-medium text-amber-800">
+                Уберите бренд из ручного Title: он уже добавляется автоматически.
+              </p>
+            ) : null}
+          </Field>
+
+          <Field
+            label="SEO Description вручную, необязательно"
+            name="seoDescriptionOverride"
+            error={state.fieldErrors?.seoDescriptionOverride}
+          >
+            <Textarea
+              name="seoDescriptionOverride"
+              value={seoDescriptionOverrideDraft}
+              onChange={(event) => setSeoDescriptionOverrideDraft(event.target.value)}
+              rows={4}
+              placeholder={livePublicPreview?.seoDescription || "Сформируется автоматически"}
+            />
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <AdminStatusBadge
+                tone={seoDescriptionOverrideDraft.trim() ? "manual" : "auto"}
+              />
+              <span>
+                Длина фактического Description:{" "}
+                {livePublicPreview?.seoDescription.length ?? 0} символов
+              </span>
+              {seoDescriptionOverrideDraft.trim() ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resetSeoDescriptionToAuto}
+                >
+                  Вернуть Description в авто
+                </Button>
+              ) : null}
+            </div>
+            <AdminFieldHint>
+              Рекомендуемая длина — до 160 символов. Пустое поле использует нейтральное
+              автоматическое описание; ручной текст сохраняется без очистки и сокращения.
+            </AdminFieldHint>
+            {livePublicPreview && livePublicPreview.seoDescription.length > 160 ? (
+              <p className="text-xs font-medium text-amber-800">
+                Description длиннее рекомендуемого диапазона и может обрезаться поисковой системой.
+              </p>
+            ) : null}
+          </Field>
+
+          <Field
+            label={
+              <>
+                URL товара{" "}
+                {product ? (
+                  <AdminStatusBadge tone="readonly">адрес сохранён</AdminStatusBadge>
+                ) : (
+                  <AdminStatusBadge tone="auto" />
+                )}
+              </>
+            }
+            name="slug"
+            error={state.fieldErrors?.slug}
+          >
+            <Input
+              name="slug"
+              value={slugDraft}
+              onChange={(event) => setManualSlug(event.target.value)}
+              placeholder={product ? undefined : "Заполнится из названия, модели и DN/PN"}
+            />
+            {!isExisting && !autoSlugActive ? (
+              <button
+                type="button"
+                className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                onClick={() => setManualSlug(null)}
+              >
+                Снова собрать URL из названия на сайте
+              </button>
+            ) : null}
+            {isExisting ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-fit"
+                onClick={regenerateSlugFromCurrentFields}
+              >
+                Сгенерировать URL из текущего названия
+              </Button>
+            ) : null}
+            <AdminFieldHint>
+              Изменение H1, Title или Description не меняет URL. У существующего товара URL
+              обновляется только вручную или этой кнопкой; после сохранения старый адрес
+              останется рабочим через постоянный редирект.
+            </AdminFieldHint>
+            {product && slugDraft.trim() && slugDraft.trim() !== product.slug ? (
+              <AdminInlineNotice tone="auto">
+                После сохранения адрес изменится. Старый slug{" "}
+                <code className="rounded bg-amber-100 px-1">/{product.slug}</code>{" "}
+                будет сохранён в aliases и перенаправит посетителя на новый URL.
+              </AdminInlineNotice>
+            ) : null}
+          </Field>
+
           {livePublicPreview ? (
-            <div className="space-y-4">
+            <div className="space-y-4 border-t border-border pt-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold">Фактический результат</p>
+                <span className="text-xs text-muted-foreground">
+                  Обновляется сразу при изменении полей
+                </span>
+              </div>
               <AdminSeoPreview
                 title={livePublicPreview.seoTitleFull}
                 description={livePublicPreview.seoDescription}
@@ -599,17 +679,30 @@ export function ProductForm({
                     )
                   }
                 />
+                <PreviewValue
+                  label="SEO Title"
+                  value={livePublicPreview.seoTitleFull}
+                  badge={
+                    <AdminStatusBadge
+                      tone={livePublicPreview.seoTitleIsManual ? "manual" : "auto"}
+                    />
+                  }
+                />
+                <PreviewValue
+                  label="SEO Description"
+                  value={livePublicPreview.seoDescription}
+                  badge={
+                    <AdminStatusBadge
+                      tone={livePublicPreview.seoDescriptionIsManual ? "manual" : "auto"}
+                    />
+                  }
+                />
                 <PreviewValue label="Основная ссылка" value={livePublicPreview.canonicalPath} />
               </dl>
-              <AdminFieldHint>
-                <AdminStatusBadge tone="readonly" className="mr-2 align-middle" />
-                Отдельные поля «только для поиска» не заводим — чтобы текст на сайте и
-                в поиске всегда совпадал.
-              </AdminFieldHint>
             </div>
           ) : (
             <AdminFieldHint>
-              Предпросмотр для поиска появится после первого сохранения товара.
+              Предпросмотр появится после заполнения названия товара.
             </AdminFieldHint>
           )}
         </AdminSectionCard>

@@ -12,7 +12,9 @@ export type AdminProductPreviewData = {
   shortDescription: string;
   seoTitle: string;
   seoTitleFull?: string;
+  seoTitleIsManual?: boolean;
   seoDescription: string;
+  seoDescriptionIsManual?: boolean;
   canonicalPath: string;
   canonicalUrl: string;
   primaryImageUrl: string;

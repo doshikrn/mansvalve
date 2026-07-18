@@ -44,6 +44,12 @@ async function loadDbProductBySlug(slug: string) {
       h1Override: optional.h1Override
         ? productsTable.h1Override
         : sql<string | null>`null`,
+      seoTitleOverride: optional.seoTitleOverride
+        ? productsTable.seoTitleOverride
+        : sql<string | null>`null`,
+      seoDescriptionOverride: optional.seoDescriptionOverride
+        ? productsTable.seoDescriptionOverride
+        : sql<string | null>`null`,
       shortDescription: productsTable.shortDescription,
       longDescription: productsTable.longDescription,
       dn: productsTable.dn,
@@ -80,6 +86,8 @@ function toPublicProduct(row: NonNullable<Awaited<ReturnType<typeof loadDbProduc
     name: row.name,
     publicTitle: row.publicTitle ?? undefined,
     h1Override: row.h1Override ?? undefined,
+    seoTitleOverride: row.seoTitleOverride ?? undefined,
+    seoDescriptionOverride: row.seoDescriptionOverride ?? undefined,
     slug: row.slug,
     category: row.categorySlug,
     subcategory: row.subcategorySlug ?? "",
@@ -147,6 +155,10 @@ async function main() {
 
   console.log("\nPublic product view (from DB row via buildPublicProductView):");
   console.log(`  db h1_override: ${dbRow.h1Override ?? "(empty)"}`);
+  console.log(`  db seo_title_override: ${dbRow.seoTitleOverride ?? "(empty)"}`);
+  console.log(
+    `  db seo_description_override: ${dbRow.seoDescriptionOverride ?? "(empty)"}`,
+  );
   console.log(`  h1: ${view.h1}`);
   console.log(`  h1 source: ${h1Source}`);
   console.log(`  expected public <h1>: ${view.h1}`);
@@ -166,6 +178,16 @@ async function main() {
     ["subcategorySlug", dbRow.subcategorySlug ?? "", publicProduct.subcategory],
     ["publicTitle(db)", dbRow.publicTitle ?? "", publicProduct.publicTitle ?? ""],
     ["h1Override(db)", dbRow.h1Override ?? "", publicProduct.h1Override ?? ""],
+    [
+      "seoTitleOverride(db)",
+      dbRow.seoTitleOverride ?? "",
+      publicProduct.seoTitleOverride ?? "",
+    ],
+    [
+      "seoDescriptionOverride(db)",
+      dbRow.seoDescriptionOverride ?? "",
+      publicProduct.seoDescriptionOverride ?? "",
+    ],
     ["h1(view)", view.h1, view.h1],
     ["seoTitle", view.seoTitle, view.seoTitle],
     ["canonicalPath non-empty", Boolean(view.canonicalPath), true],

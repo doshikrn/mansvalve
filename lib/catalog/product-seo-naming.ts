@@ -67,8 +67,13 @@ export function buildProductAutoMetaTitlePart(
 }
 
 /** Полный title страницы товара, как в браузере (с брендом из root template). */
-export function formatProductPageTitle(titlePart: string): string {
-  const part = stripProductTitleEllipsis(stripBrandFromTitle(titlePart));
+export function formatProductPageTitle(
+  titlePart: string,
+  options: { preserveInput?: boolean } = {},
+): string {
+  const part = options.preserveInput
+    ? titlePart.trim()
+    : stripProductTitleEllipsis(stripBrandFromTitle(titlePart));
   if (!part) return COMPANY_BRAND_SEO;
   return `${part}${TITLE_TEMPLATE_BRAND_SUFFIX}`;
 }

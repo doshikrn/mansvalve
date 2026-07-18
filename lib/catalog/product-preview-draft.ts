@@ -1,20 +1,13 @@
-import { formatProductDisplayName } from "@/lib/catalog/product-naming";
-import {
-  buildProductSeoDescription,
-  buildProductSeoTitleFromSource,
-  formatProductPageTitle,
-  resolveProductAutoH1,
-  resolveProductSourceTitle,
-} from "@/lib/catalog/product-seo-naming";
-import { getCategoryVisual } from "@/lib/category-visuals";
-import { toAbsoluteSiteUrl } from "@/lib/site-url";
-import { getSeriesSeoPageForProduct } from "@/lib/seo-product-pages/product-series";
+import { formatProductPageTitle } from "@/lib/catalog/product-seo-naming";
+import { buildPublicProductView } from "@/lib/public-catalog/product-view";
 import type { PublicCatalogProduct } from "@/lib/public-catalog/types";
 
 export type ProductPreviewDraftInput = {
   name: string;
   publicTitle: string;
   h1Override: string;
+  seoTitleOverride?: string;
+  seoDescriptionOverride?: string;
   slug: string;
   categorySlug: string;
   categoryName: string;
@@ -40,7 +33,9 @@ export type ProductPreviewDraftResult = {
   shortDescription: string;
   seoTitle: string;
   seoTitleFull: string;
+  seoTitleIsManual: boolean;
   seoDescription: string;
+  seoDescriptionIsManual: boolean;
   canonicalPath: string;
   canonicalUrl: string;
   primaryImageUrl: string;
@@ -53,39 +48,24 @@ export function buildProductPreviewFromDraft(
   input: ProductPreviewDraftInput,
 ): ProductPreviewDraftResult {
   const product = toDraftPublicProduct(input);
-  const seriesPage = getSeriesSeoPageForProduct(product);
-  const generatedDisplayName = formatProductDisplayName(product);
-  const publicTitle = input.publicTitle.trim();
-  const h1Override = input.h1Override.trim();
-  const displayName = publicTitle || seriesPage?.title || generatedDisplayName;
-  const h1 = h1Override || seriesPage?.h1 || resolveProductAutoH1(product);
-  const sourceTitle = resolveProductSourceTitle(product);
-  const seoTitlePart = buildProductSeoTitleFromSource(
-    sourceTitle,
-    seriesPage?.seoTitle,
-    product,
-  );
-  const categoryVisual = getCategoryVisual(product.category);
-  const imageUrl = input.primaryImageUrl?.trim() || categoryVisual.imageSrc;
-  const imageAlt =
-    input.primaryImageAlt?.trim() ||
-    `${product.categoryName} - ${displayName}`;
-  const canonicalPath = `/tovar/${input.slug.trim() || "preview"}`;
-  const shortDescription = input.shortDescription?.trim() ?? "";
-
+  const view = buildPublicProductView(product);
   return {
-    generatedDisplayName,
-    displayName,
-    h1,
-    h1IsManual: Boolean(h1Override),
-    shortDescription,
-    seoTitle: seoTitlePart,
-    seoTitleFull: formatProductPageTitle(seoTitlePart),
-    seoDescription: buildProductSeoDescription(product, sourceTitle, seriesPage?.seoDescription),
-    canonicalPath,
-    canonicalUrl: toAbsoluteSiteUrl(canonicalPath),
-    primaryImageUrl: imageUrl,
-    primaryImageAlt: imageAlt,
+    generatedDisplayName: view.generatedDisplayName,
+    displayName: view.displayName,
+    h1: view.h1,
+    h1IsManual: view.h1IsManual,
+    shortDescription: view.shortDescription,
+    seoTitle: view.seoTitle,
+    seoTitleFull: formatProductPageTitle(view.seoTitle, {
+      preserveInput: view.seoTitleIsManual,
+    }),
+    seoTitleIsManual: view.seoTitleIsManual,
+    seoDescription: view.seoDescription,
+    seoDescriptionIsManual: view.seoDescriptionIsManual,
+    canonicalPath: view.canonicalPath,
+    canonicalUrl: view.canonicalUrl,
+    primaryImageUrl: view.primaryImageUrl,
+    primaryImageAlt: view.primaryImageAlt,
     imageCount: input.imageCount ?? 0,
   };
 }
@@ -96,6 +76,8 @@ function toDraftPublicProduct(input: ProductPreviewDraftInput): PublicCatalogPro
     name: input.name.trim() || "Товар",
     publicTitle: input.publicTitle.trim() || undefined,
     h1Override: input.h1Override.trim() || undefined,
+    seoTitleOverride: input.seoTitleOverride?.trim() || undefined,
+    seoDescriptionOverride: input.seoDescriptionOverride?.trim() || undefined,
     slug: input.slug.trim() || "preview",
     category: input.categorySlug || "catalog",
     subcategory: input.subcategorySlug ?? "",
@@ -113,5 +95,7 @@ function toDraftPublicProduct(input: ProductPreviewDraftInput): PublicCatalogPro
     weight: undefined,
     specs: {},
     shortDescription: input.shortDescription ?? "",
+    primaryImageUrl: input.primaryImageUrl?.trim() || undefined,
+    primaryImageAlt: input.primaryImageAlt?.trim() || undefined,
   };
 }

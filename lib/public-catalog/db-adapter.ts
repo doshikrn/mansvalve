@@ -31,6 +31,8 @@ type ProductDbRow = {
   name: string;
   publicTitle: string | null;
   h1Override: string | null;
+  seoTitleOverride: string | null;
+  seoDescriptionOverride: string | null;
   categoryName: string;
   subcategoryName: string | null;
   dn: number | null;
@@ -72,6 +74,12 @@ function productOptionalSelects(optionalColumns: ProductOptionalColumns) {
     h1Override: optionalColumns.h1Override
       ? productsTable.h1Override
       : sql<string | null>`null`,
+    seoTitleOverride: optionalColumns.seoTitleOverride
+      ? productsTable.seoTitleOverride
+      : sql<string | null>`null`,
+    seoDescriptionOverride: optionalColumns.seoDescriptionOverride
+      ? productsTable.seoDescriptionOverride
+      : sql<string | null>`null`,
     detailBlocks: optionalColumns.detailBlocks
       ? productsTable.detailBlocks
       : sql<ProductDetailBlocks | null>`null::jsonb`,
@@ -87,6 +95,8 @@ function productBaseSelect(optionalColumns: ProductOptionalColumns) {
     name: productsTable.name,
     publicTitle: optional.publicTitle,
     h1Override: optional.h1Override,
+    seoTitleOverride: optional.seoTitleOverride,
+    seoDescriptionOverride: optional.seoDescriptionOverride,
     categoryName: productsTable.categoryName,
     subcategoryName: productsTable.subcategoryName,
     dn: productsTable.dn,
@@ -252,6 +262,8 @@ async function fetchListingProductRows(filters?: {
         name: productsTable.name,
         publicTitle: optional.publicTitle,
         h1Override: optional.h1Override,
+        seoTitleOverride: optional.seoTitleOverride,
+        seoDescriptionOverride: optional.seoDescriptionOverride,
         categoryName: productsTable.categoryName,
         subcategoryName: productsTable.subcategoryName,
         dn: productsTable.dn,
@@ -405,6 +417,8 @@ function mapProductRow(
     name: product.name,
     publicTitle: product.publicTitle ?? undefined,
     h1Override: product.h1Override ?? undefined,
+    seoTitleOverride: product.seoTitleOverride ?? undefined,
+    seoDescriptionOverride: product.seoDescriptionOverride ?? undefined,
     slug: product.slug,
     category: category.slug,
     subcategory: subcategory?.slug ?? "",
@@ -446,6 +460,8 @@ function mapListingProductRow(
     name: product.name,
     publicTitle: product.publicTitle ?? undefined,
     h1Override: product.h1Override ?? undefined,
+    seoTitleOverride: product.seoTitleOverride ?? undefined,
+    seoDescriptionOverride: product.seoDescriptionOverride ?? undefined,
     slug: product.slug,
     category: category.slug,
     subcategory: subcategory?.slug ?? "",

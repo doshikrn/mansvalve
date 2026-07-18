@@ -10,6 +10,8 @@ export function productDetailToPublicCatalogProduct(
     name: product.name,
     publicTitle: product.publicTitle ?? undefined,
     h1Override: product.h1Override ?? undefined,
+    seoTitleOverride: product.seoTitleOverride ?? undefined,
+    seoDescriptionOverride: product.seoDescriptionOverride ?? undefined,
     slug: product.slug,
     category: product.categorySlug,
     subcategory: product.subcategorySlug ?? "",

@@ -104,6 +104,40 @@ const baseProduct: PublicCatalogProduct = {
   );
 }
 
+// 5a. Product overrides are independent and clearing them restores auto mode.
+{
+  const auto = buildPublicProductView(baseProduct);
+  const manual = buildPublicProductView({
+    ...baseProduct,
+    h1Override: "Ручной H1",
+    seoTitleOverride: "Ручной SEO Title",
+    seoDescriptionOverride: "Ручной SEO Description без автоматической очистки...",
+  });
+  const cleared = buildPublicProductView({
+    ...baseProduct,
+    h1Override: "",
+    seoTitleOverride: "",
+    seoDescriptionOverride: "",
+  });
+
+  check("manual SEO title has priority", manual.seoTitle === "Ручной SEO Title");
+  check(
+    "manual SEO description has priority",
+    manual.seoDescription === "Ручной SEO Description без автоматической очистки...",
+  );
+  check("manual H1 is independent from SEO title", manual.h1 === "Ручной H1");
+  check("cleared SEO title restores auto", cleared.seoTitle === auto.seoTitle);
+  check(
+    "cleared SEO description restores auto",
+    cleared.seoDescription === auto.seoDescription,
+  );
+  check("cleared H1 restores auto", cleared.h1 === auto.h1);
+  check(
+    "SEO overrides do not change canonical",
+    manual.canonicalPath === auto.canonicalPath,
+  );
+}
+
 // 6. A long preferred description is word-clamped without a generated ellipsis.
 {
   const description = buildProductSeoDescription(

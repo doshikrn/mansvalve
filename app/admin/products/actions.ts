@@ -51,6 +51,13 @@ const productSchema = z.object({
   name: z.string().trim().min(2).max(300),
   publicTitle: z.string().trim().max(300).optional().transform((v) => v || null),
   h1Override: z.string().trim().max(300).optional().transform((v) => v || null),
+  seoTitleOverride: z.string().trim().max(1000).optional().transform((v) => v || null),
+  seoDescriptionOverride: z
+    .string()
+    .trim()
+    .max(5000)
+    .optional()
+    .transform((v) => v || null),
   slug: z
     .string()
     .trim()
@@ -210,6 +217,8 @@ function parseProductForm(
     name: data.name,
     publicTitle: data.publicTitle,
     h1Override: data.h1Override,
+    seoTitleOverride: data.seoTitleOverride,
+    seoDescriptionOverride: data.seoDescriptionOverride,
     categoryId: data.categoryId,
     subcategoryId: data.subcategoryId,
     dn: data.dn ?? null,
